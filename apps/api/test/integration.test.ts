@@ -1,6 +1,11 @@
 import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { get } from "node:http";
+import { gzipSync, gunzipSync } from "node:zlib";
 import argon2 from "argon2";
 import {
   connect,
@@ -1581,4 +1586,68 @@ test("ekstraksi mendarat di dermaga baru dan retry tidak mengembalikan posisi se
     (await b.request("/adventure/state")).data.surface.y,
     position.y - 15,
   );
+});
+
+test("static game assets negotiate precompressed bytes and preserve uncompressed fallback", async () => {
+  const directory = mkdtempSync(join(tmpdir(), "jalasmara-static-"));
+  const original = Buffer.concat([
+    Buffer.from([0, 97, 115, 109, 1, 0, 0, 0]),
+    Buffer.alloc(8192, 42),
+  ]);
+  mkdirSync(join(directory, "game"));
+  writeFileSync(
+    join(directory, "index.html"),
+    "<!doctype html><title>Static fixture</title>",
+  );
+  writeFileSync(join(directory, "game", "test.wasm"), original);
+  writeFileSync(join(directory, "game", "test.wasm.gz"), gzipSync(original));
+  const previous = process.env.WEB_DIST;
+  let staticApp: FastifyInstance | undefined;
+  try {
+    process.env.WEB_DIST = directory;
+    staticApp = await buildApp(s, false);
+    const address = await staticApp.listen({ host: "127.0.0.1", port: 0 });
+    const read = (encoding?: string) =>
+      new Promise<{
+        headers: import("node:http").IncomingHttpHeaders;
+        status: number | undefined;
+        body: Buffer;
+      }>((resolve, reject) => {
+        get(
+          `${address}/game/test.wasm`,
+          { headers: encoding ? { "Accept-Encoding": encoding } : {} },
+          (response) => {
+            const chunks: Buffer[] = [];
+            response.on("data", (chunk) => chunks.push(Buffer.from(chunk)));
+            response.on("end", () =>
+              resolve({
+                headers: response.headers,
+                status: response.statusCode,
+                body: Buffer.concat(chunks),
+              }),
+            );
+            response.on("error", reject);
+          },
+        ).on("error", reject);
+      });
+    const compressed = await read("gzip");
+    assert.equal(compressed.status, 200);
+    assert.equal(compressed.headers["content-encoding"], "gzip");
+    assert.match(
+      String(compressed.headers["content-type"]),
+      /application\/wasm/,
+    );
+    assert.match(String(compressed.headers.vary), /accept-encoding/i);
+    assert(compressed.body.length < original.length);
+    assert.deepEqual(gunzipSync(compressed.body), original);
+    const plain = await read();
+    assert.equal(plain.status, 200);
+    assert.equal(plain.headers["content-encoding"], undefined);
+    assert.deepEqual(plain.body, original);
+  } finally {
+    if (previous === undefined) delete process.env.WEB_DIST;
+    else process.env.WEB_DIST = previous;
+    await staticApp?.close();
+    rmSync(directory, { recursive: true, force: true });
+  }
 });

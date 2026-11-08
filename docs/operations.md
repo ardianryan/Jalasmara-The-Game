@@ -23,6 +23,8 @@ curl --fail http://10.1.0.8:3000/api/health
 
 Jalankan dari checkout yang akan dirilis. `APP_VERSION` dapat diisi commit singkat agar image rilis sebelumnya tetap tersedia. Jangan menghapus volume saat pembaruan. `docker compose down -v` menghapus database.
 
+Exporter mengimpor font dalam dua tahap agar build dari checkout bersih tidak bergantung pada cache editor. Ia juga membuat salinan gzip mesin WebAssembly dan JavaScript; Fastify memilihnya melalui `Accept-Encoding` dan mengirim `Vary: Accept-Encoding`. Berkas asli tetap tersedia sebagai fallback. PCK tidak dikompresi ulang bila penghematannya di bawah 5%. Proxy cukup meneruskan negosiasi encoding standar; tidak ada perubahan konfigurasi aaPanel dari aplikasi.
+
 Untuk membuat owner, jalankan dari terminal pengguna, tanpa `-T`:
 
 ```sh

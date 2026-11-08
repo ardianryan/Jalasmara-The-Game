@@ -75,37 +75,31 @@ export async function buildApp(s: Store, logging = true) {
   });
   app.setErrorHandler((error, req, reply) => {
     if (error instanceof ZodError)
-      return reply
-        .code(400)
-        .send({
-          error: error.issues
-            .map((x) => `${x.path.join(".")}: ${x.message}`)
-            .join("; "),
-          code: "VALIDATION",
-        });
+      return reply.code(400).send({
+        error: error.issues
+          .map((x) => `${x.path.join(".")}: ${x.message}`)
+          .join("; "),
+        code: "VALIDATION",
+      });
     if (error instanceof AppError)
       return reply
         .code(error.status)
         .send({ error: error.message, code: error.code });
     if ((error as { code?: number }).code === 11000)
-      return reply
-        .code(409)
-        .send({
-          error: "Data sudah tersedia atau diubah oleh operasi lain.",
-          code: "CONFLICT",
-        });
+      return reply.code(409).send({
+        error: "Data sudah tersedia atau diubah oleh operasi lain.",
+        code: "CONFLICT",
+      });
     const httpError = error as { statusCode?: number; message?: string };
     if (httpError.statusCode && httpError.statusCode < 500)
       return reply
         .code(httpError.statusCode)
         .send({ error: httpError.message, code: "REQUEST_ERROR" });
     req.log.error({ err: error }, "Request failed");
-    return reply
-      .code(500)
-      .send({
-        error: "Layanan mengalami gangguan. Coba lagi.",
-        code: "SERVER_ERROR",
-      });
+    return reply.code(500).send({
+      error: "Layanan mengalami gangguan. Coba lagi.",
+      code: "SERVER_ERROR",
+    });
   });
   app.get("/api/health", async () => {
     await s.db.command({ ping: 1 });
@@ -118,7 +112,11 @@ export async function buildApp(s: Store, logging = true) {
   await adminRoutes(app, s, g);
   const root = resolve(process.env.WEB_DIST ?? "apps/web/dist");
   if (existsSync(root)) {
-    await app.register(fastifyStatic, { root, wildcard: false });
+    await app.register(fastifyStatic, {
+      root,
+      wildcard: false,
+      preCompressed: true,
+    });
     app.setNotFoundHandler((req, reply) => {
       if (req.url.startsWith("/api/"))
         return reply.code(404).send({ error: "Endpoint tidak ditemukan." });

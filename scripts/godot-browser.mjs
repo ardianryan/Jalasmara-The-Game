@@ -64,7 +64,7 @@ try {
   ).contentFrame();
   await frame.waitForFunction(() => window.jalasmaraReady === true, null, {
     polling: 200,
-    timeout: 90000,
+    timeout: origin.startsWith("https:") ? 240000 : 90000,
   });
   await frame.waitForFunction(() => window.jalasmaraSnapshot != null, null, {
     polling: 200,

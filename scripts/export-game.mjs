@@ -1,5 +1,13 @@
 import { spawnSync } from "node:child_process";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  readFileSync,
+  writeFileSync,
+  readdirSync,
+  unlinkSync,
+} from "node:fs";
+import { join } from "node:path";
+import { gzipSync } from "node:zlib";
 const candidates = [
   process.env.GODOT_BIN,
   "godot",
@@ -14,17 +22,7 @@ if (!binary)
   throw new Error(
     "Godot 4.7.2 diperlukan. Isi GODOT_BIN dengan path executable Godot, lalu pasang export template Web.",
   );
-for (const args of [
-  ["--headless", "--path", "client-godot", "--editor", "--import", "--quit"],
-  [
-    "--headless",
-    "--path",
-    "client-godot",
-    "--export-release",
-    "Web",
-    "../apps/web/public/game/index.html",
-  ],
-]) {
+function runGodot(args) {
   const result = spawnSync(binary, args, { encoding: "utf8" });
   process.stdout.write(result.stdout ?? "");
   process.stderr.write(result.stderr ?? "");
@@ -34,8 +32,39 @@ for (const args of [
       (result.stdout ?? "") + (result.stderr ?? ""),
     )
   )
-    process.exit(1);
+    throw new Error(
+      `Godot ${args.includes("--import") ? "import" : "export"} failed`,
+    );
 }
+const importArgs = [
+  "--headless",
+  "--path",
+  "client-godot",
+  "--editor",
+  "--import",
+  "--quit",
+];
+const projectPath = "client-godot/project.godot";
+const project = readFileSync(projectPath, "utf8");
+const importProject = project.replace(/^theme\/custom=.*(?:\r?\n|$)/m, "");
+// A global theme resolves its imported font before a fresh editor import can create it.
+if (importProject !== project) {
+  try {
+    writeFileSync(projectPath, importProject);
+    runGodot(importArgs);
+  } finally {
+    writeFileSync(projectPath, project);
+  }
+}
+runGodot(importArgs);
+runGodot([
+  "--headless",
+  "--path",
+  "client-godot",
+  "--export-release",
+  "Web",
+  "../apps/web/public/game/index.html",
+]);
 if (!existsSync("apps/web/public/game/index.wasm"))
   throw new Error("Ekspor Web tidak ditemukan.");
 
@@ -50,3 +79,27 @@ const html = readFileSync(htmlPath, "utf8").replace(
   },
 );
 writeFileSync(htmlPath, html);
+
+function compressGameAssets(directory) {
+  for (const item of readdirSync(directory, { withFileTypes: true })) {
+    const path = join(directory, item.name);
+    if (item.isDirectory()) compressGameAssets(path);
+    else if (/\.(wasm|pck|js)$/.test(item.name)) {
+      const source = readFileSync(path);
+      const compressed = gzipSync(source, { level: 9 });
+      if (
+        item.name.endsWith(".pck") &&
+        compressed.length > source.length * 0.95
+      ) {
+        if (existsSync(`${path}.gz`)) unlinkSync(`${path}.gz`);
+        console.log(`Skipped ${item.name} gzip: savings below 5%`);
+        continue;
+      }
+      writeFileSync(`${path}.gz`, compressed);
+      console.log(
+        `Precompressed ${item.name}: ${source.length} → ${compressed.length} bytes`,
+      );
+    }
+  }
+}
+compressGameAssets("apps/web/public/game");

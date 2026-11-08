@@ -6,6 +6,7 @@ const EXTENT := Vector2(2400, 1600)
 const ENTRY := Vector2(200, 1320)
 const WALK_SPEED := 175.0
 var avatar: CharacterBody2D
+var _snapshot_at := 0
 var camera: Camera2D
 var actors: Node2D
 var game_hud: CanvasLayer
@@ -417,7 +418,8 @@ func _physics_process(delta: float) -> void:
 		avatar.facing = direction
 	avatar.queue_redraw()
 	_find_nearby()
-	if OS.has_feature("web") and Engine.get_process_frames() % 10 == 0:
+	if OS.has_feature("web") and Time.get_ticks_msec()-_snapshot_at>=100:
+		_snapshot_at = Time.get_ticks_msec()
 		_publish_snapshot()
 	if Input.is_action_just_pressed("interact") and not modal_open:
 		_interact()

@@ -38,6 +38,7 @@ var surface_clock := 0.0
 var environment: Node
 var dive_lamp: PointLight2D
 var port_lamps: Array[PointLight2D] = []
+var snapshot_at := 0
 var surface_actors: Array[Node2D] = []
 func _ready() -> void:
 	y_sort_enabled = true
@@ -269,7 +270,8 @@ func _process(delta: float) -> void:
 			surface_clock = 0
 			_sync_surface()
 	entities.nearest = str(nearby.get("id",""))
-	if OS.has_feature("web") and Engine.get_process_frames()%30==0:
+	if OS.has_feature("web") and Time.get_ticks_msec()-snapshot_at>=100:
+		snapshot_at = Time.get_ticks_msec()
 		var snapshot := {"x":nala.position.x,"y":nala.position.y,"stage":GameState.player.get("progress",{}).get("stage",""),"modal":modal_open,"nearby":str(nearby.get("id","")),"diving":not GameState.dive.is_empty()}
 		snapshot["audio"] = AudioManager.debug_status()
 		JavaScriptBridge.get_interface("window").jalasmaraSnapshot = JavaScriptBridge.get_interface("JSON").parse(JSON.stringify(snapshot))

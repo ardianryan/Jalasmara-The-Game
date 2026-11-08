@@ -14,7 +14,7 @@ Sepuluh spesies fauna dihasilkan offline melalui Core Procedural Pixel Creatures
 
 ## Bukti pemeriksaan
 
-- 38 pengujian backend lulus, termasuk autentikasi, izin, versi konten, hadiah idempoten, eksplorasi, tiga siklus, boss, serta batas dan migrasi layout hub.
+- 39 pengujian backend lulus, termasuk autentikasi, izin, versi konten, hadiah idempoten, eksplorasi, tiga siklus, boss, batas dan migrasi layout hub, serta pengiriman berkas terkompresi melalui HTTP.
 - Sepuluh spritesheet procedural lulus pemeriksaan batas dan perubahan piksel; dua proses generasi terpisah menghasilkan PNG/JSON identik. Import Godot dan smoke test scene hutan lulus setelah pemasangan Ark Pixel; pengujian font memastikan cakupan huruf Latin, angka, tanda baca, diakritik, dan panah.
 - Setelah perombakan, alur berjalan–menyelam–menjala–penemuan–peta lulus di Firefox; tujuh pemeriksaan peta geografis dan enam pemeriksaan audio lulus di Chromium. Empat tangkapan siang/malam hub dan hutan menunjukkan dunia meredup sementara HUD tetap terbaca, tanpa error browser, shader, atau API. Pengujian audio memeriksa status pemutar, gesture, mute dan reload; kualitas suara melalui speaker tetap memerlukan pendengaran manusia.
 - Game diuji di Chromium dan Firefox desktop: berjalan, menyelam, berenang, menjala tanpa kuis, mengamati, dan membuka peta. Tidak ada error browser pada alur tersebut.
@@ -24,13 +24,13 @@ Sepuluh spesies fauna dihasilkan offline melalui Core Procedural Pixel Creatures
 - Admin diuji pada Chromium, Firefox, dan WebKit, termasuk perubahan koin, audit, salinan/edit/publikasi konten, serta lebar 1440, 768, dan 390 piksel tanpa overflow dokumen.
 - Build Godot Web, web, API, pemeriksaan dependensi, dan CodeQL dijalankan oleh GitLab CI. Status aktual dan laporan berada pada tautan pipeline repository; GitHub Actions nonaktif.
 
-Bukti browser lokal disimpan di `artifacts/` yang diabaikan Git. Gambar di `docs/screenshots/` adalah tangkapan prototipe Jalasmara sendiri, bukan referensi Dave the Diver; sebagian mendahului perombakan peta terbaru.
+Bukti browser lokal disimpan di `artifacts/` yang diabaikan Git. Gambar di `docs/screenshots/` adalah tangkapan prototipe Jalasmara setelah perombakan peta, bukan referensi Dave the Diver.
 
 Senter kerucut mengikuti arah gerak penyelam. Lentera dermaga serta hutan mengikuti cahaya sekitar dan awan; dua lampu hutan menghasilkan bayangan sederhana. Rincian implementasi dan batas efek dijelaskan dalam [waktu, cuaca, dan efek lingkungan](world/environment.md).
 
 ## Yang memerlukan tindak lanjut
 
-Owner pertama harus dibuat lewat perintah interaktif pada [panduan operasi](operations.md); tidak ada password bawaan. Pengujian perangkat HP fisik, uji bermain manusia untuk durasi/keseimbangan, peninjauan budaya oleh manusia, dan pemolesan aset belum dilakukan. Fase 2 hanya pengantar, bukan zona permainan lengkap. SMTP, multiplayer, leaderboard kelas, dan analitik lanjutan belum termasuk.
+Pada instalasi baru, owner pertama dibuat lewat perintah interaktif pada [panduan operasi](operations.md); tidak ada password bawaan. Akun owner staging yang sudah dibuat dipertahankan saat deployment. Pengujian perangkat HP fisik, uji bermain manusia untuk durasi/keseimbangan, peninjauan budaya oleh manusia, dan pemolesan aset belum dilakukan. Fase 2 hanya pengantar, bukan zona permainan lengkap. SMTP, multiplayer, leaderboard kelas, dan analitik lanjutan belum termasuk.
 
 ![Prototipe dermaga Bandar Hujung](screenshots/bandar-hujung.png)
 
