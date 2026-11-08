@@ -15,6 +15,7 @@ func configure(renderer: Node, map: Dictionary) -> void:
 	material.shader = preload("res://scripts/land/LandWater3D.gdshader")
 	material.set_shader_parameter("shoreline",_shoreline_texture())
 	material.set_shader_parameter("map_extent",_extent)
+	material.set_shader_parameter("river",str(map.get("id",""))=="forest")
 	var vertices := PackedVector3Array()
 	var uv := PackedVector2Array()
 	var normals := PackedVector3Array()
@@ -40,6 +41,7 @@ func configure(renderer: Node, map: Dictionary) -> void:
 	add_child(mesh_instance)
 
 func _shoreline_texture() -> ImageTexture:
+	_wet_cells = 0
 	var land: Array[PackedVector2Array] = []
 	for surface in _map.get("surfaces",[]):
 		if not bool(surface.get("walkable",true)) or str(surface.get("material","")) in ["dock","bridge","wood"]: continue
@@ -90,4 +92,4 @@ func _process(delta: float) -> void:
 	material.set_shader_parameter("motion",0.2 if bool(weather.get("reduced_motion",false)) else 1.0)
 
 func debug_status() -> Dictionary:
-	return {"mesh":is_instance_valid(mesh_instance),"elapsed":elapsed,"shoreMask":[MASK_SIZE.x,MASK_SIZE.y],"waterCells":_wet_cells,"vertexWaves":true,"shoreFoam":true,"rainRings":true,"walkable":false}
+	return {"mesh":is_instance_valid(mesh_instance),"elapsed":elapsed,"shoreMask":[MASK_SIZE.x,MASK_SIZE.y],"waterCells":_wet_cells,"vertexWaves":true,"shoreFoam":true,"rainRings":true,"directionalFlow":str(_map.get("id",""))=="forest","walkable":false}

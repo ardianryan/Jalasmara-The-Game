@@ -21,6 +21,7 @@ func run() -> void:
 		var first: Dictionary = water.debug_status()
 		assert(first.mesh and first.vertexWaves and first.shoreFoam and first.rainRings)
 		assert(first.waterCells>0 and not first.walkable)
+		assert(first.directionalFlow==(area=="forest"),"River currents must be distinct from coastal surface motion")
 		var arrays: Array = water.mesh_instance.mesh.surface_get_arrays(0)
 		assert(arrays[Mesh.ARRAY_VERTEX].size()==32*24*6,"Waves need a subdivided mesh, not only four moving corners")
 		var a: float = water.elapsed

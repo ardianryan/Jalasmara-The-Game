@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import {
   LAND_MAPS,
   isLandWalkable,
@@ -114,8 +115,44 @@ test("terrace edges cannot be climbed outside authored stairs and a river cannot
   assert.equal(mapFootMaterial(hub, { x: 1370, y: 775 }), "stone");
   assert.equal(mapFootMaterial(hub, hub.spawn), "dock");
   assert.equal(isLandWalkable(forest, { x: 1450, y: 450 }), false);
+  assert.equal(forest.bridges?.length, 2);
+  for (const bridge of forest.bridges ?? []) {
+    assert.ok(bridge.width >= 100 && bridge.width <= 115);
+    const [a, b] = bridge.path;
+    assert.ok(
+      isLandSegmentWalkable(
+        forest,
+        { x: a[0], y: a[1] },
+        { x: b[0], y: b[1] },
+        13,
+      ),
+    );
+    assert.equal(
+      forest.surfaces.find((surface) => surface.bridgeId === bridge.id)
+        ?.material,
+      "bridge",
+    );
+    for (const railId of bridge.railIds) {
+      const rail = forest.obstacles.find((obstacle) => obstacle.id === railId)!;
+      assert.equal(rail.variant, "bridge_rail");
+      assert.equal(rail.height3d, 44);
+      const center = {
+        x: rail.footprint.reduce((sum, p) => sum + p[0], 0) / 4,
+        y: rail.footprint.reduce((sum, p) => sum + p[1], 0) / 4,
+      };
+      assert.equal(isLandWalkable(forest, center), false);
+    }
+  }
+  const [upper, lower] = forest.bridges!;
   assert.ok(
-    isLandSegmentWalkable(forest, { x: 1280, y: 710 }, { x: 1620, y: 620 }),
+    Math.max(...upper.path.map((p) => p[1])) + 200 <
+      Math.min(...lower.path.map((p) => p[1])),
+    "Crossings must not intersect as a doubled V carpet",
+  );
+  assert.equal(
+    isLandWalkable(forest, { x: 1450, y: 850 }),
+    false,
+    "River between crossings must remain open water",
   );
   const fake = {
     ...forest,
@@ -175,6 +212,39 @@ test("coastal backing remains visual-only and twenty-five canopy trees preserve 
     o.id.startsWith("forest_canopy_tree_"),
   );
   assert.equal(additions.length, 25);
+  const originalTrees = forest.obstacles
+    .filter(
+      (o) => o.kind === "tree" && !o.id.startsWith("forest_cluster_tree_"),
+    )
+    .map((o) => [o.id, o.x, o.y, o.width, o.height, o.height3d, o.variant]);
+  assert.equal(originalTrees.length, 35);
+  assert.equal(
+    createHash("sha256").update(JSON.stringify(originalTrees)).digest("hex"),
+    "0cf672a461368a04d3dc566016a658eefd9cbb9f5cc798da37c842240f97fca7",
+    "Authored companions must not relocate the established canopy layout",
+  );
+  const companions = forest.obstacles.filter((o) =>
+    o.id.startsWith("forest_cluster_tree_"),
+  );
+  assert.equal(companions.length, 8);
+  assert.ok(new Set(companions.map((o) => o.height3d)).size >= 6);
+  for (const tree of companions) {
+    const center = { x: tree.x + tree.width / 2, y: tree.y + tree.height / 2 };
+    assert.equal(isLandWalkable(forest, center, 13), false);
+    assert.ok(
+      Math.min(
+        ...forest.routes.flatMap((route) =>
+          route
+            .slice(1)
+            .map((end, i) => landDistanceToSegment(center, route[i], end)),
+        ),
+      ) >= 100,
+    );
+    for (const bridge of forest.bridges ?? [])
+      for (const point of bridge.path)
+        assert.ok(Math.hypot(center.x - point[0], center.y - point[1]) >= 120);
+  }
+
   for (const tree of additions) {
     const point = { x: tree.x + tree.width / 2, y: tree.y + tree.height / 2 };
     assert.equal(

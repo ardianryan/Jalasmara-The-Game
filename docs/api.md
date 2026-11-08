@@ -91,7 +91,7 @@ Tindakan lain: `inventory`, `ability`, `progress`, `reset`, `block`, `unblock`, 
 
 Bypass tetap memvalidasi batas saldo, ID, level, dan konsistensi progres. Mutasi membatalkan sesi permainan lama dan menyimpan audit dalam transaksi yang sama. Konten terbit bersifat versi; pengarsipan mempertahankan data yang dirujuk sesi dan inventori. Publikasi menolak penghapusan ID fragmen, level kemampuan, atau resep yang dibutuhkan progres lama.
 
-### Posisi daratan modular, layout 4
+### Posisi daratan modular, layout 5
 
 `WORLD.landMaps.hub` dan `.forest` menerbitkan poligon lantai, material/elevasi, footprint prop, serta konektor tangga yang sama untuk renderer, physics dan server. Air tidak dapat dilalui secara default. Overlay jalan dengan `walkable: false` hanya dekorasi/material dan tidak menciptakan lantai di atas sungai. Badan pemain memerlukan clearance 12 piksel; server memeriksa titik tengah dan delapan sampel keliling pada gabungan lantai, lalu menolak footprint prop beserta marginnya.
 
@@ -99,7 +99,7 @@ Bypass tetap memvalidasi batas saldo, ID, level, dan konsistensi progres. Mutasi
 
 Server memeriksa setiap ruas dari posisi tersimpan, melalui breadcrumb, hingga endpoint; ruas tidak boleh memotong atap, prop, celah elevasi atau air. Jumlah panjang seluruh ruas diperiksa terhadap waktu server dan batas laju yang sama dengan gerak biasa, sehingga loop panjang tidak lolos hanya karena endpoint dekat. Tanpa `path`, endpoint divalidasi sebagai satu ruas lurus. Respons tetap `{surface}` dan `positionAt` selalu meningkat. Kegagalan tidak memindahkan posisi tersimpan.
 
-Save daratan lama dimigrasikan ke layout 4. Koordinat yang masih sah dipertahankan; hanya koordinat tidak sah yang dipindahkan ke lantai aman terdekat dalam area yang sama. Migrasi posisi tidak menulis ulang koin, inventori, progres, penampilan atau versi akun.
+Save daratan lama dimigrasikan ke layout 5. Koordinat yang masih sah dipertahankan; hanya koordinat tidak sah yang dipindahkan ke lantai aman terdekat dalam area yang sama. Migrasi posisi tidak menulis ulang koin, inventori, progres, penampilan atau versi akun.
 
 
 Perubahan versi akun akibat upgrade, tutorial atau penampilan tidak lagi memindahkan pemain ke spawn: posisi sah, area dan basis `positionAt` dipertahankan. Server membedakannya dari perubahan admin melalui audit transaksi `player.*` dengan versi setelah posisi tersimpan. Pembatalan admin tetap mereset posisi/sesi sesuai semantik sebelumnya. Steering klien memakai margin 13 piksel secara konservatif, sementara API memvalidasi radius 12 piksel pada footprint yang sama; perbedaan ini mencegah ruas breadcrumb pendek memotong sudut karena aproksimasi gerakan.

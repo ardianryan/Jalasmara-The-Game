@@ -58,6 +58,19 @@ func _run() -> void:
 	var forest: Dictionary=renderer.debug_status()
 	assert(forest.trees>=30 and forest.glbModels>=4)
 	assert(forest.water.mesh and forest.water.vertexWaves)
+	var authored_bridges: Array=state.world.landMaps.forest.get("bridges",[])
+	assert(authored_bridges.size()==2,"Renderer test needs both authoritative river crossings")
+	assert(forest.get("bridges",{}).size()==authored_bridges.size())
+	for bridge in authored_bridges:
+		var emitted: Dictionary=forest.bridges.get(str(bridge.id),{})
+		assert(not emitted.is_empty(),"Priority overlays must not skip bridge geometry")
+		assert(emitted.oriented and float(emitted.thickness)>=12,"Bridge deck needs actual oriented thickness")
+		assert(int(emitted.planks)>=8 and int(emitted.sideBeams)==2,"Planks and both supporting side beams must actually be emitted")
+		assert(int(emitted.railPosts)>=8 and int(emitted.railBeams)>=4,"Both authoritative rail blockers need posts and horizontal beams")
+		for index in range(2):
+			assert(Vector2(float(emitted.endpoints[index][0]),float(emitted.endpoints[index][1])).distance_to(Vector2(float(bridge.path[index][0]),float(bridge.path[index][1])))<.01)
+		var expected_axis:=(Vector2(float(bridge.path[1][0]),float(bridge.path[1][1]))-Vector2(float(bridge.path[0][0]),float(bridge.path[0][1]))).normalized()
+		assert(Vector2(float(emitted.axis[0]),float(emitted.axis[1])).dot(expected_axis)>.999,"Visible planks must follow the crossing axis, not world X/Y")
 	assert(JSON.stringify({"world":state.world,"player":state.player,"dive":state.dive})==before)
 	state.dive={"id":"renderer-test","oxygen":77,"loot":[]}
 	renderer.set_area("hub")
@@ -66,5 +79,5 @@ func _run() -> void:
 	assert(renderer.viewport_3d.render_target_update_mode==SubViewport.UPDATE_DISABLED)
 	assert(state.dive.oxygen==77)
 	scene.free()
-	print("LAND RENDERER PASS: ",checks," exact projected feet across4 elevations, 35degree camera, true3D architecture/GLB/trees/stairs, bounded batches, alpha-foot anchors, warm spatial lamps, no collision/resource mutation, dive transition")
+	print("LAND RENDERER PASS: ",checks," exact projected feet across4 elevations, 35degree camera, true3D architecture/GLB/trees/stairs, bounded batches, alpha-foot anchors, warm spatial lamps, emitted oriented bridge planks/beams/rails/thickness, no collision/resource mutation, dive transition")
 	quit()

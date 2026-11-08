@@ -244,6 +244,16 @@ try {
           validFeet(map, state),
           "Rendered player feet entered a solid or left the floor union",
         );
+        if (area === "forest") {
+          assert.equal(map.bridges.length, 2);
+          for (const bridge of map.bridges) {
+            const emitted = land.bridges?.[bridge.id];
+            assert(emitted?.oriented && emitted.thickness >= 12);
+            assert(emitted.planks >= 8 && emitted.sideBeams === 2);
+            assert(emitted.railPosts >= 8 && emitted.railBeams >= 4);
+            assert.deepEqual(emitted.endpoints, bridge.path);
+          }
+        }
         return land;
       };
       const go = async (map, destination) => {
@@ -432,6 +442,62 @@ try {
         "Forest exploration must really cross onto the bridge component",
       );
       assert.equal(forest.foley.material, "bridge");
+      const crossing = maps.forest.bridges.find(
+        (item) => item.id === bridge.bridgeId,
+      );
+      assert(crossing);
+      const [start, end] = crossing.path;
+      const length = Math.hypot(end[0] - start[0], end[1] - start[1]);
+      const normal = [
+        -(end[1] - start[1]) / length,
+        (end[0] - start[0]) / length,
+      ];
+      const railKey =
+        Math.abs(normal[0]) > Math.abs(normal[1])
+          ? normal[0] > 0
+            ? "d"
+            : "a"
+          : normal[1] > 0
+            ? "s"
+            : "w";
+      await page.keyboard.down(railKey);
+      await page.waitForTimeout(850);
+      await page.keyboard.up(railKey);
+      await page.waitForTimeout(350);
+      const stopped = await snapshot(frame);
+      const lateral =
+        (stopped.x - bridgeCenter.x) * normal[0] +
+        (stopped.y - bridgeCenter.y) * normal[1];
+      assert(
+        lateral > crossing.width / 2 - 35 && lateral < crossing.width / 2 - 18,
+        "Actual movement must stop at the rail before reaching the deck/water edge",
+      );
+      rendered(stopped, "forest");
+      const downstream = maps.forest.surfaces.find(
+        (item) => item.id === "bridge_lower",
+      );
+      assert(downstream?.bridgeId && downstream.material === "bridge");
+      const downstreamCenter = {
+        x:
+          downstream.polygon.reduce((sum, p) => sum + p[0], 0) /
+          downstream.polygon.length,
+        y:
+          downstream.polygon.reduce((sum, p) => sum + p[1], 0) /
+          downstream.polygon.length,
+      };
+      assert(
+        Math.hypot(
+          downstreamCenter.x - bridgeCenter.x,
+          downstreamCenter.y - bridgeCenter.y,
+        ) > 250,
+      );
+      await go(maps.forest, downstreamCenter);
+      const secondCrossing = await capture(
+        "05-forest-downstream-bridge",
+        "forest",
+      );
+      assert(inside([secondCrossing.x, secondCrossing.y], downstream.polygon));
+      assert.equal(secondCrossing.foley.material, "bridge");
       assert(
         Math.hypot(
           views[0].land.camera[0] - views[2].land.camera[0],
@@ -467,7 +533,8 @@ try {
               "animated-3d-shore-water",
               "hub-forest-roundtrip",
               "forest-bridge-material-and-movement",
-              "four-camera-server-synced-captures",
+              "five-camera-server-synced-captures",
+              "two-oriented-bridges-and-physical-rails",
               "actor-feet-projection",
             ],
             stairs: climbed,

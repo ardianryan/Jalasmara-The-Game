@@ -8,6 +8,7 @@ export type LandSurface = {
   elevation: number;
   priority?: number;
   connectorId?: string;
+  bridgeId?: string;
   walkable?: boolean;
 };
 export type LandObstacle = {
@@ -34,6 +35,13 @@ export type LandStair = {
   y: number;
   material: LandMaterial;
 };
+export type LandBridge = {
+  id: string;
+  path: LandPoint[];
+  width: number;
+  elevation: number;
+  railIds: string[];
+};
 export type LandMap = {
   id: "hub" | "forest";
   layoutVersion: number;
@@ -44,6 +52,7 @@ export type LandMap = {
   surfaces: LandSurface[];
   obstacles: LandObstacle[];
   stairs: LandStair[];
+  bridges?: LandBridge[];
   terraces: { id: string; elevation: number }[];
   routes: LandPoint[][];
 };
@@ -201,8 +210,36 @@ const hubSurfaces: LandSurface[] = [
     "dirt",
     2,
   ),
-  floor("garden_wing", rectangle(1620, 450, 560, 285), "grass", 2),
-  floor("forest_ridge", rectangle(1670, 80, 680, 310), "sand", 3),
+  floor(
+    "garden_wing",
+    [
+      [1620, 475],
+      [1660, 450],
+      [2125, 450],
+      [2180, 485],
+      [2180, 705],
+      [2165, 735],
+      [1650, 735],
+      [1620, 705],
+    ],
+    "grass",
+    2,
+  ),
+  floor(
+    "forest_ridge",
+    [
+      [1710, 80],
+      [2285, 80],
+      [2350, 120],
+      [2350, 345],
+      [2305, 390],
+      [1700, 390],
+      [1670, 350],
+      [1670, 125],
+    ],
+    "sand",
+    3,
+  ),
 ];
 for (const stair of hubStairs)
   hubSurfaces.push({
@@ -283,13 +320,20 @@ const forestRoutes: LandPoint[][] = [
     [650, 1050],
     [930, 950],
     [1200, 730],
-    [1530, 650],
+    [1260, 660],
+    [1300, 660],
+    [1600, 640],
+    [1660, 600],
     [1830, 470],
     [2080, 430],
   ],
   [
     [1200, 730],
-    [1600, 1000],
+    [1180, 1000],
+    [1260, 1080],
+    [1310, 1080],
+    [1620, 1080],
+    [1700, 1050],
     [2130, 1050],
     [2160, 1090],
   ],
@@ -298,15 +342,41 @@ const forestRoutes: LandPoint[][] = [
     [1200, 300],
   ],
 ];
+const forestBridges: LandBridge[] = [
+  {
+    id: "bridge_upper",
+    path: [
+      [1300, 660],
+      [1600, 640],
+    ],
+    width: 110,
+    elevation: 0,
+    railIds: ["bridge_upper_left_rail", "bridge_upper_right_rail"],
+  },
+  {
+    id: "bridge_lower",
+    path: [
+      [1310, 1080],
+      [1620, 1080],
+    ],
+    width: 110,
+    elevation: 0,
+    railIds: ["bridge_lower_left_rail", "bridge_lower_right_rail"],
+  },
+];
 const forestSurfaces: LandSurface[] = [
   floor(
     "forest_west_land",
     [
       [80, 120],
-      [1340, 120],
-      [1340, 680],
-      [1320, 900],
+      [1320, 120],
+      [1350, 290],
+      [1310, 470],
+      [1340, 650],
+      [1320, 820],
+      [1340, 1000],
       [1370, 1180],
+      [1340, 1330],
       [1320, 1480],
       [120, 1480],
       [80, 1350],
@@ -316,18 +386,31 @@ const forestSurfaces: LandSurface[] = [
   floor(
     "forest_east_land",
     [
-      [1560, 120],
+      [1580, 120],
       [2340, 120],
       [2350, 1430],
       [1560, 1430],
-      [1580, 1110],
-      [1530, 900],
+      [1580, 1280],
+      [1600, 1130],
+      [1570, 1020],
+      [1530, 890],
+      [1560, 710],
       [1560, 620],
+      [1590, 450],
+      [1550, 280],
     ],
     "grass",
   ),
-  floor("bridge_upper", strip([1280, 710], [1620, 620], 150), "bridge", 0, 30),
-  floor("bridge_lower", strip([1280, 790], [1620, 1020], 150), "bridge", 0, 30),
+  ...forestBridges.map((bridge) => ({
+    ...floor(
+      bridge.id,
+      strip(bridge.path[0], bridge.path[1], bridge.width),
+      "bridge",
+      bridge.elevation,
+      30,
+    ),
+    bridgeId: bridge.id,
+  })),
 ];
 for (const [routeIndex, route] of forestRoutes.entries())
   for (let i = 1; i < route.length; i++) {
@@ -348,6 +431,42 @@ const forestObstacles: LandObstacle[] = [
   obstacle("gate_east", "fence", 2205, 1140, 110, 220, 110, "bamboo"),
   obstacle("forest_hut", "house", 1960, 600, 160, 100, 110, "thatch"),
 ];
+for (const bridge of forestBridges) {
+  const [a, b] = bridge.path,
+    length = Math.hypot(b[0] - a[0], b[1] - a[1]);
+  const normal = [-(b[1] - a[1]) / length, (b[0] - a[0]) / length];
+  for (const [side, sign] of [-1, 1].entries()) {
+    const offset = bridge.width / 2 - 5;
+    const start: LandPoint = [
+      a[0] + normal[0] * offset * sign,
+      a[1] + normal[1] * offset * sign,
+    ];
+    const end: LandPoint = [
+      b[0] + normal[0] * offset * sign,
+      b[1] + normal[1] * offset * sign,
+    ];
+    const footprint = strip(start, end, 8),
+      xs = footprint.map((p) => p[0]),
+      ys = footprint.map((p) => p[1]);
+    const x = Math.min(...xs),
+      y = Math.min(...ys),
+      width = Math.max(...xs) - x,
+      height = Math.max(...ys) - y;
+    forestObstacles.push({
+      ...obstacle(
+        bridge.railIds[side],
+        "fence",
+        x,
+        y,
+        width,
+        height,
+        44,
+        "bridge_rail",
+      ),
+      footprint,
+    });
+  }
+}
 for (const [i, x, y] of [
   [0, 470, 1030],
   [1, 820, 780],
@@ -384,7 +503,7 @@ for (const [i, x, y] of [
 export const LAND_MAPS: Record<"hub" | "forest", LandMap> = {
   hub: {
     id: "hub",
-    layoutVersion: 4,
+    layoutVersion: 5,
     landmass: [
       [240, 300],
       [680, 280],
@@ -424,13 +543,14 @@ export const LAND_MAPS: Record<"hub" | "forest", LandMap> = {
   },
   forest: {
     id: "forest",
-    layoutVersion: 4,
+    layoutVersion: 5,
     width: 2400,
     height: 1600,
     spawn: { x: 200, y: 1320 },
     surfaces: forestSurfaces,
     obstacles: forestObstacles,
     stairs: [],
+    bridges: forestBridges,
     terraces: [{ id: "forest_floor", elevation: 0 }],
     routes: forestRoutes,
   },
@@ -477,13 +597,22 @@ for (const [index, [x, y, w, h, elevation]] of [
   [1200, 1080, 250, 35, 1],
   [1690, 100, 90, 60, 3],
   [2190, 320, 130, 50, 3],
-  [1640, 680, 140, 50, 2],
+  [1650, 680, 130, 45, 2],
   [315, 480, 35, 120, 2],
 ].entries())
   LAND_MAPS.hub.surfaces.push({
     ...floor(
       `hub_edge_grass_${index}`,
-      rectangle(x, y, w, h),
+      [
+        [x + w * 0.18, y],
+        [x + w * 0.7, y + h * 0.08],
+        [x + w, y + h * 0.32],
+        [x + w * 0.94, y + h * 0.8],
+        [x + w * 0.65, y + h],
+        [x + w * 0.22, y + h * 0.92],
+        [x, y + h * 0.6],
+        [x + w * 0.04, y + h * 0.2],
+      ],
       "grass",
       elevation,
       6,
@@ -567,6 +696,63 @@ if (forestAdded !== 25)
   throw new Error(
     "Forest canopy placement could not fit the authored clearance budget",
   );
+const forestCompanionTrees: readonly (readonly [
+  number,
+  number,
+  number,
+  "broadleaf" | "mangrove",
+  number,
+])[] = [
+  [310, 1400, 135, "broadleaf", 24],
+  [430, 1420, 210, "mangrove", 30],
+  [425, 1000, 145, "broadleaf", 24],
+  [405, 1100, 225, "mangrove", 30],
+  [1305, 405, 125, "mangrove", 24],
+  [1310, 345, 200, "broadleaf", 30],
+  [1690, 825, 140, "broadleaf", 24],
+  [1760, 805, 220, "mangrove", 30],
+];
+for (const [
+  index,
+  [x, y, height, variant, size],
+] of forestCompanionTrees.entries()) {
+  const map = LAND_MAPS.forest,
+    point = { x, y };
+  if (!isLandWalkable(map, point, 18))
+    throw new Error(`Forest companion ${index} has no clear floor`);
+  if (
+    map.routes.some((route) =>
+      route
+        .slice(1)
+        .some((end, i) => landDistanceToSegment(point, route[i], end) < 100),
+    )
+  )
+    throw new Error(`Forest companion ${index} crowds an authored route`);
+  const protectedPoints: LandPoint[] = [
+    [650, 1050],
+    [1200, 730],
+    [1830, 470],
+    [2130, 1050],
+    [200, 1320],
+    ...(map.bridges ?? []).flatMap((b) => b.path),
+  ];
+  if (protectedPoints.some((p) => Math.hypot(x - p[0], y - p[1]) < 120))
+    throw new Error(
+      `Forest companion ${index} crowds an interaction or bridge landing`,
+    );
+  map.obstacles.push(
+    obstacle(
+      `forest_cluster_tree_${index}`,
+      "tree",
+      x - size / 2,
+      y - size / 2,
+      size,
+      size,
+      height,
+      variant,
+    ),
+  );
+}
 export function landDistanceToSegment(
   point: LandPosition,
   a: LandPoint,

@@ -22,8 +22,11 @@ void fragment() {
 	vec2 planar=abs(normal_world.z)>.6 ? at.xy : abs(normal_world.y)>.6 ? at.xz : at.yz;
 	vec2 pixel=floor(planar/2.7);
 	float fine=floor(hash(vec3(pixel,0.0))*5.0)/4.0;
-	float patch=hash(floor(at/24.0));
-	vec3 color=base_color.rgb*(.94+fine*.05+patch*.06);
+	vec2 broad_at=planar/110.0;
+	vec2 blend=smoothstep(vec2(0.0),vec2(1.0),fract(broad_at));
+	vec2 cell=floor(broad_at);
+	float patch=mix(mix(hash(vec3(cell,0.0)),hash(vec3(cell+vec2(1,0),0.0)),blend.x),mix(hash(vec3(cell+vec2(0,1),0.0)),hash(vec3(cell+vec2(1,1),0.0)),blend.x),blend.y);
+	vec3 color=base_color.rgb*(.93+fine*.035+patch*.09);
 	if(has_micro) { vec3 texel=texture(micro_texture,fract(planar/96.0)).rgb; float luma=dot(texel,vec3(.299,.587,.114)); color*=.84+mix(vec3(luma),texel,.28)*.36; }
 	if(has_atlas) {
 		vec2 tile=fract(planar/150.0);
@@ -44,6 +47,10 @@ void fragment() {
 		float course=step(25.0,mod(planar.y,28.0));
 		float fiber=step(2.5,mod(planar.x+floor(planar.y/28.0)*7.0,4.0));
 		color*=1.0-course*.25-fiber*.10;
+	}
+	if(kind==9) {
+		float fiber=hash(vec3(floor(planar.x/9.0),floor(planar.y/2.7),9.0));
+		color*=.96+fiber*.045;
 	}
 	if(kind==8) color*=.92+step(13.0,mod(planar.x,18.0))*.12;
 	ALBEDO=color;
@@ -66,7 +73,7 @@ func _init() -> void:
 func get_material(id: String) -> ShaderMaterial:
 	var key: String={"dock":"wood","bridge":"wood","cliff":"stone"}.get(id,id)
 	if _cache.has(key): return _cache[key]
-	var types: Dictionary={"dirt":[0,"786b5b",0],"grass":[1,"657361",-1],"sand":[2,"c6b787",-1],"stone":[3,"938e80",1],"wood":[4,"887055",2],"thatch":[5,"a48c63",4],"bamboo":[6,"b39d74",3],"leaves":[7,"657361",5],"metal":[8,"344a4b",-1]}
+	var types: Dictionary={"dirt":[0,"786b5b",0],"grass":[1,"657361",-1],"sand":[2,"c6b787",-1],"stone":[3,"938e80",1],"wood":[4,"887055",2],"thatch":[5,"a48c63",4],"bamboo":[6,"b39d74",3],"leaves":[7,"657361",5],"metal":[8,"344a4b",-1],"bridge_board":[9,"88775f",-1],"bridge_board_light":[9,"8b7a62",-1],"bridge_board_dark":[9,"85745d",-1]}
 	var data: Array=types.get(key,types.stone)
 	var material:=ShaderMaterial.new()
 	material.shader=_shader

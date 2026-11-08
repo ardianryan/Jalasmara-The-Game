@@ -31,6 +31,6 @@ Uji native `scripts/tests/land-rock-render.gd` membuktikan mesh serta viewport n
 Penempatan hub terpilih berada di (790, 850) dengan ukuran 65 × 46 piksel, di dalam area solid lama (740, 675, 250, 205). Dua bayangan kontak pendek digambar dekat kaki batu. Sprite hasil proyeksi disembunyikan sampai kalibrasi alpha selesai agar bingkai awal tidak tampil pada posisi/skala yang salah. Tangkapan komposit native siang/malam pada `artifacts/godot/land-rock-3d/composite-*.png` dipakai untuk meninjau pertemuan model dengan bitmap peta; kelulusan helper terisolasi tidak dianggap otomatis sebagai kelulusan kualitas penempatan.
 
 
-## Renderer modular layout 4
+## Renderer modular layout 5
 
 Renderer `LandWorld3D` kini memuat model batu pada scene komponen darat bersama floor, rumah dan pohon. Bukti per-rock SubViewport di atas adalah tahap migrasi sebelumnya; tampilan aktif tidak memakai bitmap peta sebagai floor atau collision. Model sumber dan kredit CC BY 4.0 tidak berubah. Finishing material, pencahayaan dan komposisi komponen tetap ditinjau pada native lokal serta browser; keberadaan GLB bukan jaminan kualitas visual akhir.

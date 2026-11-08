@@ -35,6 +35,7 @@ var _leaves: Array[Dictionary] = []
 var _lanterns: Array[OmniLight3D] = []
 var _glow_material: StandardMaterial3D
 var _components: Dictionary={}
+var _bridges: Dictionary={}
 
 func setup(scene: Node2D, player: Node2D, camera: Camera2D, place: String) -> void:
 	source=scene
@@ -82,7 +83,10 @@ func setup(scene: Node2D, player: Node2D, camera: Camera2D, place: String) -> vo
 	camera_3d.current=true
 	viewport_3d.add_child(camera_3d)
 	sunlight=DirectionalLight3D.new()
-	sunlight.rotation_degrees=Vector3(-38,-28,-20)
+	sunlight.rotation_degrees=Vector3(-18,-12,-10)
+	sunlight.directional_shadow_blend_splits=true
+	sunlight.shadow_blur=1.8
+	sunlight.shadow_opacity=.64
 	sunlight.light_color=Color("fff0ce")
 	sunlight.light_energy=1.15
 	sunlight.shadow_enabled=true
@@ -108,6 +112,7 @@ func set_area(place: String) -> void:
 	_stair_treads=0
 	_meshes=0
 	_components.clear()
+	_bridges.clear()
 	_leaves.clear()
 	_lanterns.clear()
 	if ResourceLoader.exists("res://scripts/land/LandWater3D.gd"):
@@ -126,6 +131,7 @@ func set_area(place: String) -> void:
 	for stair in map.get("stairs",[]): _build_stair(stair)
 	for obstacle in map.get("obstacles",[]): _build_obstacle(obstacle)
 	_build_ground_details()
+	_build_wet_banks()
 	_batch_static_geometry()
 	if is_instance_valid(actors_3d): actors_3d.queue_free()
 	actors_3d=preload("res://scripts/land/LandActors3D.gd").new()
@@ -242,6 +248,7 @@ func _build_surface(surface: Dictionary) -> void:
 	var decoration:=_polygon(surface.get("polygon",[]))
 	for floor_surface in map.get("surfaces",[]):
 		if not bool(floor_surface.get("walkable",true)): continue
+		if str(floor_surface.get("material","")) in ["bridge","dock","wood"]: continue
 		var floor_polygon:=_polygon(floor_surface.get("polygon",[]))
 		for intersection in Geometry2D.intersect_polygons(decoration,floor_polygon):
 			var clipped:=surface.duplicate()
@@ -252,8 +259,13 @@ func _build_surface(surface: Dictionary) -> void:
 			_build_surface_geometry(clipped)
 
 func _build_surface_geometry(surface: Dictionary) -> void:
+	if str(surface.get("material",""))=="bridge":
+		_build_bridge(surface)
+		return
 	var polygon:=_polygon(surface.polygon)
 	if polygon.size()<3: return
+	if not bool(surface.get("walkable",true)) and str(surface.get("material",""))=="grass":
+		polygon=_ragged_patch(polygon)
 	var height:=float(surface.get("heightPixels",float(surface.get("elevation",0))*LEVEL_HEIGHT))+float(surface.get("priority",0))*.018
 	var vertices:=PackedVector3Array()
 	for point in polygon: vertices.append(map_point(point,height))
@@ -592,6 +604,9 @@ func _garden(_entry: Dictionary,rect: Rect2,center: Vector3) -> void:
 			_box("CropLeaves",plant+Vector3(0,0,14),Vector3(13,12,4),_materials.get_material("leaves"))
 
 func _fence(_entry: Dictionary,rect: Rect2,center: Vector3) -> void:
+	if str(_entry.get("variant",""))=="bridge_rail":
+		_bridge_rail(_entry)
+		return
 	var wood: Material=_materials.get_material("bamboo")
 	var count:=maxi(3,ceili(rect.size.x/20))
 	for i in range(count):
@@ -608,6 +623,18 @@ func _crate(entry: Dictionary,rect: Rect2,center: Vector3) -> void:
 func _build_ground_details() -> void:
 	var fern_path:="res://resources/art/polyfork/fern-plant.png"
 	var fern: Texture2D=load(fern_path) if ResourceLoader.exists(fern_path) else null
+	var ground_foliage: Array[Texture2D]=[]
+	if fern!=null: ground_foliage.append(fern)
+	var foliage_path:="res://resources/art/land-foliage-v1.png"
+	if ResourceLoader.exists(foliage_path):
+		var atlas: Texture2D=load(foliage_path)
+		var cell:=atlas.get_size()/Vector2(3,2)
+		for frame_index in [2,4]:
+			var frame:=AtlasTexture.new()
+			frame.atlas=atlas
+			frame.region=Rect2(Vector2(frame_index%3,frame_index/3)*cell,cell)
+			frame.filter_clip=true
+			ground_foliage.append(frame)
 	var flower_material:=StandardMaterial3D.new()
 	flower_material.albedo_color=Color("bc9c7e")
 	flower_material.roughness=1
@@ -618,23 +645,29 @@ func _build_ground_details() -> void:
 		for obstacle in map.get("obstacles",[]):
 			if str(obstacle.kind)=="tree" and clusters.size()<18: clusters.append(Vector2(float(obstacle.x)+48,float(obstacle.y)+48))
 	for cluster_index in range(clusters.size()):
-		for tuft in range(4):
-			var angle:=float(tuft)*TAU/4+cluster_index
-			var point:=clusters[cluster_index]+Vector2(cos(angle),sin(angle))*19
+		for tuft in range(4+cluster_index%4):
+			var angle:=float(tuft)*2.39996+cluster_index*.71
+			var radius:=10.0+fposmod(tuft*13.7+cluster_index*3.1,26.0)
+			var point:=clusters[cluster_index]+Vector2(cos(angle),sin(angle))*radius
 			if not _decor_ground(point): continue
 			var at:=map_point(point,ground_height(point)+1)
-			if fern!=null:
+			if not ground_foliage.is_empty():
+				var ground_texture: Texture2D=ground_foliage[(tuft+cluster_index)%ground_foliage.size()]
 				var plant:=Sprite3D.new()
-				plant.texture=fern
+				plant.texture=ground_texture
 				plant.billboard=BaseMaterial3D.BILLBOARD_ENABLED
 				plant.alpha_cut=SpriteBase3D.ALPHA_CUT_DISCARD
 				plant.alpha_scissor_threshold=.3
 				plant.shaded=true
 				plant.texture_filter=BaseMaterial3D.TEXTURE_FILTER_NEAREST
-				plant.pixel_size=(22.0+tuft*3)/fern.get_width()
-				plant.position=at+camera_up()*9
+				var plant_width:=16.0+fposmod(tuft*5.7+cluster_index*2.4,24.0)
+				plant.pixel_size=plant_width/ground_texture.get_width()
+				plant.position=at+camera_up()*plant_width*.36
 				plant.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 				_geometry.add_child(plant)
+			for litter in range(3):
+				var leaf_offset:=Vector3(litter*7-7,tuft%3*3-3,.4)
+				_box("LeafLitter",at+leaf_offset,Vector3(4+tuft%3,2,0.8),_materials.get_material("leaves"))
 			if area=="hub":
 				var flower:=at+Vector3(7,0,9+tuft)
 				_column(at+Vector3(7,0,0),flower,.7,_materials.get_material("leaves"))
@@ -748,4 +781,176 @@ func _process(delta: float) -> void:
 		environment.ambient_light_color=Color("8da4a8").lerp(Color("bdc0b5"),daylight)
 
 func debug_status() -> Dictionary:
-	return {"active":active,"area":area,"renderer":"LandSubViewport3D","viewport":[480,270],"tilt":55,"elevationDegrees":35,"meshes":_meshes,"houses":_houses,"trees":_trees,"glbModels":_models,"stairTreads":_stair_treads,"surfaces":map.get("surfaces",[]).size(),"obstacles":map.get("obstacles",[]).size(),"actors":actors_3d.counts if is_instance_valid(actors_3d) else {},"maxFootError":actors_3d.max_foot_error if is_instance_valid(actors_3d) else 0,"camera":[_center.x,_center.y],"warmLanterns":_lanterns.size(),"components":_components.duplicate(),"bitmapGround":false,"water":water_node.debug_status() if is_instance_valid(water_node) else {}}
+	return {"active":active,"area":area,"renderer":"LandSubViewport3D","viewport":[480,270],"tilt":55,"elevationDegrees":35,"meshes":_meshes,"houses":_houses,"trees":_trees,"glbModels":_models,"stairTreads":_stair_treads,"surfaces":map.get("surfaces",[]).size(),"obstacles":map.get("obstacles",[]).size(),"actors":actors_3d.counts if is_instance_valid(actors_3d) else {},"maxFootError":actors_3d.max_foot_error if is_instance_valid(actors_3d) else 0,"camera":[_center.x,_center.y],"warmLanterns":_lanterns.size(),"components":_components.duplicate(),"bridges":_bridges.duplicate(true),"bitmapGround":false,"water":water_node.debug_status() if is_instance_valid(water_node) else {}}
+
+func _build_bridge(surface: Dictionary) -> void:
+	var polygon:=_polygon(surface.polygon)
+	if polygon.size()<4: return
+	var id:=str(surface.get("bridgeId",surface.id))
+	var metadata: Dictionary={}
+	for bridge in map.get("bridges",[]):
+		if str(bridge.id)==id: metadata=bridge; break
+	var a: Vector2
+	var b: Vector2
+	if metadata.has("path"):
+		a=_v2(metadata.path[0])
+		b=_v2(metadata.path[-1])
+	elif polygon[0].distance_to(polygon[1])>polygon[1].distance_to(polygon[2]):
+		a=(polygon[0]+polygon[3])*.5
+		b=(polygon[1]+polygon[2])*.5
+	else:
+		a=(polygon[0]+polygon[1])*.5
+		b=(polygon[2]+polygon[3])*.5
+	var axis: Vector2=(b-a).normalized()
+	var side:=Vector2(-axis.y,axis.x)
+	var width:=float(metadata.get("width",minf(polygon[0].distance_to(polygon[1]),polygon[1].distance_to(polygon[2]))))
+	var height:=float(surface.get("elevation",0))*LEVEL_HEIGHT
+	var count:=maxi(2,ceili(a.distance_to(b)/19.0))
+	var boards: Array[Material]=[_materials.get_material("bridge_board"),_materials.get_material("bridge_board_light"),_materials.get_material("bridge_board_dark")]
+	var wood: Material=_materials.get_material("wood")
+	var bamboo: Material=_materials.get_material("bamboo")
+	_bridges[id]={"id":id,"axis":[axis.x,axis.y],"endpoints":[[a.x,a.y],[b.x,b.y]],"planks":0,"sideBeams":2,"railPosts":0,"railBeams":0,"thickness":18,"oriented":true}
+	for index in range(count):
+		var start:=a.lerp(b,float(index)/count)
+		var end:=a.lerp(b,float(index+1)/count)
+		var gap:=Vector2.ZERO
+		var board: Material=boards[(index*7+floori(float(index)/3.0))%boards.size()]
+		var plank:=PackedVector2Array([start-side*width*.5+gap,end-side*width*.5-gap,end+side*width*.5-gap,start+side*width*.5+gap])
+		for piece in Geometry2D.intersect_polygons(plank,polygon):
+			var top:=PackedVector3Array()
+			for point in piece: top.append(map_point(point,height)+Vector3(0,0,.75))
+			_mesh("BridgePlank",top,Geometry2D.triangulate_polygon(piece),board)
+			for edge in range(piece.size()):
+				var p:=map_point(piece[edge],height)+Vector3(0,0,.75)
+				var q:=map_point(piece[(edge+1)%piece.size()],height)+Vector3(0,0,.75)
+				_face("BridgePlankEdge",[p,q,q-Vector3(0,0,18),p-Vector3(0,0,18)],wood)
+			_bridges[id].planks=int(_bridges[id].planks)+1
+	for sign_value in [-1.0,1.0]:
+		var offset: Vector2=side*(width*.5-7)*float(sign_value)
+		_column(map_point(a+offset,height)-Vector3(0,0,21),map_point(b+offset,height)-Vector3(0,0,21),7,wood)
+		for fraction in [.08,.48,.92]:
+			var at:=map_point(a.lerp(b,fraction)+offset,height)-Vector3(0,0,18)
+			_column(at-Vector3(0,0,95),at,7,bamboo)
+			_column(at-Vector3(0,0,64),at+Vector3(axis.x*24,-axis.y*24/cos(TILT),0),3,wood)
+	for end_point in [a,b]:
+		var start:=map_point(end_point-side*width*.48,height)-Vector3(0,0,20)
+		var end:=map_point(end_point+side*width*.48,height)-Vector3(0,0,20)
+		_column(start,end,10,_materials.get_material("stone"))
+
+func _bridge_rail(entry: Dictionary) -> void:
+	var polygon:=_polygon(entry.footprint)
+	if polygon.size()!=4: return
+	var a: Vector2
+	var b: Vector2
+	var thickness: float
+	if polygon[0].distance_to(polygon[1])>polygon[1].distance_to(polygon[2]):
+		a=(polygon[0]+polygon[3])*.5
+		b=(polygon[1]+polygon[2])*.5
+		thickness=polygon[0].distance_to(polygon[3])
+	else:
+		a=(polygon[0]+polygon[1])*.5
+		b=(polygon[2]+polygon[3])*.5
+		thickness=polygon[0].distance_to(polygon[1])
+	var height:=float(entry.get("elevation",0))*LEVEL_HEIGHT
+	var rail_height:=float(entry.get("height3d",44))
+	var radius:=minf(3.5,thickness*.36)
+	var posts:=maxi(2,ceili(a.distance_to(b)/67.0))
+	var inset:=(b-a).normalized()*radius
+	a+=inset
+	b-=inset
+	var bamboo: Material=_materials.get_material("bamboo")
+	for index in range(posts+1):
+		var at:=map_point(a.lerp(b,float(index)/posts),height)
+		_column(at,at+Vector3(0,0,rail_height),radius,bamboo)
+	for z in [rail_height*.46,rail_height*.90]:
+		_column(map_point(a,height)+Vector3(0,0,z),map_point(b,height)+Vector3(0,0,z),radius*.66,bamboo)
+	for bridge in map.get("bridges",[]):
+		if str(entry.id) in bridge.get("railIds",[]):
+			var id:=str(bridge.id)
+			if _bridges.has(id):
+				_bridges[id].railPosts=int(_bridges[id].railPosts)+posts+1
+				_bridges[id].railBeams=int(_bridges[id].railBeams)+2
+
+func _ragged_patch(polygon: PackedVector2Array) -> PackedVector2Array:
+	var center:=Vector2.ZERO
+	for point in polygon: center+=point
+	center/=polygon.size()
+	var result:=PackedVector2Array()
+	for index in range(polygon.size()):
+		var a:=polygon[index]
+		var b:=polygon[(index+1)%polygon.size()]
+		var count:=maxi(2,ceili(a.distance_to(b)/15.0))
+		for part in range(count):
+			var point:=a.lerp(b,float(part)/count)
+			var seed_value:=sin(point.x*.127+point.y*.193)*4375.43
+			var inward:=(center-point).normalized()*(3.0+fposmod(seed_value,1)*7.0)
+			var candidate:=point+inward
+			result.append(candidate if Geometry2D.is_point_in_polygon(candidate,polygon) else point)
+	return result
+
+func _build_wet_banks() -> void:
+	if area!="forest": return
+	var atlas_path:="res://resources/art/land-foliage-v1.png"
+	if not ResourceLoader.exists(atlas_path): return
+	var atlas: Texture2D=load(atlas_path)
+	var cell:=atlas.get_size()/Vector2(3,2)
+	var fronds:=AtlasTexture.new()
+	fronds.atlas=atlas
+	fronds.region=Rect2(Vector2(2,0)*cell,cell)
+	fronds.filter_clip=true
+	var placed: Array[Vector2]=[]
+	for bridge in map.get("bridges",[]):
+		var center:=(_v2(bridge.path[0])+_v2(bridge.path[-1]))*.5
+		for bank in ["forest_west_land","forest_east_land"]:
+			var floor_polygon:=PackedVector2Array()
+			for surface in map.get("surfaces",[]):
+				if str(surface.id)==bank: floor_polygon=_polygon(surface.polygon); break
+			for displacement in [-170.0,150.0,230.0]:
+				if placed.size()>=12: return
+				var y: float=center.y+displacement+(-19.0 if bank=="forest_west_land" else 23.0)
+				var intersections: Array[float]=[]
+				for edge in range(floor_polygon.size()):
+					var a:=floor_polygon[edge]
+					var b:=floor_polygon[(edge+1)%floor_polygon.size()]
+					if (a.y<=y and b.y>y) or (b.y<=y and a.y>y):
+						intersections.append(lerpf(a.x,b.x,(y-a.y)/(b.y-a.y)))
+				if intersections.size()<2: continue
+				intersections.sort()
+				var west: bool=bank=="forest_west_land"
+				var point:=Vector2(intersections[-1]+14 if west else intersections[0]-14,y)
+				if not _wet_bank_clear(point,placed): continue
+				placed.append(point)
+				_components["WetBankClusters"]=placed.size()
+				for index in range(3):
+					var offset:=Vector2((index-1)*3,index%2*5-2)
+					var at:=map_point(point+offset,0)-Vector3(0,0,11)
+					var plant:=Sprite3D.new()
+					plant.name="WetBankFronds"
+					plant.texture=fronds
+					plant.billboard=BaseMaterial3D.BILLBOARD_ENABLED
+					plant.shaded=true
+					plant.alpha_cut=SpriteBase3D.ALPHA_CUT_DISCARD
+					plant.alpha_scissor_threshold=.25
+					plant.texture_filter=BaseMaterial3D.TEXTURE_FILTER_NEAREST
+					plant.pixel_size=(16.0+index*3)/cell.x
+					plant.position=at+camera_up()*(6+index)
+					plant.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+					_geometry.add_child(plant)
+				for pebble in range(4):
+					var offset:=Vector2(pebble*4-6,(pebble%2)*6-3)
+					_box("WetBankPebble",map_point(point+offset,0)-Vector3(0,0,8),Vector3(4+pebble%3,5,8),_materials.get_material("stone"))
+	_components["WetBankClusters"]=placed.size()
+
+func _wet_bank_clear(point: Vector2,placed: Array[Vector2]) -> bool:
+	for previous in placed:
+		if point.distance_to(previous)<65: return false
+	for bridge in map.get("bridges",[]):
+		var a:=_v2(bridge.path[0])
+		var b:=_v2(bridge.path[-1])
+		if point.distance_to(Geometry2D.get_closest_point_to_segment(point,a,b))<100: return false
+	for surface in map.get("surfaces",[]):
+		if not bool(surface.get("walkable",true)): continue
+		var polygon:=_polygon(surface.polygon)
+		for sample in [Vector2.ZERO,Vector2(12,0),Vector2(-12,0),Vector2(0,12),Vector2(0,-12)]:
+			if Geometry2D.is_point_in_polygon(point+sample,polygon): return false
+	return true
