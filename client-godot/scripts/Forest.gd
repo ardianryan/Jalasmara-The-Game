@@ -40,6 +40,7 @@ var forest_lights: Array[Dictionary] = []
 var light_clock := 0.0
 var discovered: Array = []
 var last_position := ENTRY
+var world_foley: Node
 var depth_planes: Node2D
 
 class ForestProp extends Node2D:
@@ -212,6 +213,9 @@ func _ready() -> void:
 	collider.position = Vector2(0,-6)
 	avatar.add_child(collider)
 	actors.add_child(avatar)
+	world_foley = preload("res://scripts/WorldFoley.gd").new()
+	add_child(world_foley)
+	world_foley.configure(avatar,"forest")
 	for item in [["ular_muara",Vector2(960,900),90.0],["kura_pesisir",Vector2(1630,980),60.0]]:
 		var creature := ForestCreature.new()
 		creature.species = item[0]
@@ -667,6 +671,8 @@ func _select_character(id: String) -> void:
 func _publish_snapshot() -> void:
 	var snapshot := {"area":"forest","x":avatar.position.x,"y":avatar.position.y,"modal":modal_open,"nearby":str(nearest.get("id","")),"appearance":avatar.variant,"diving":false}
 	snapshot["audio"] = AudioManager.debug_status()
+	snapshot["weather"] = EnvironmentState.snapshot()
+	snapshot["foley"] = world_foley.debug_status() if is_instance_valid(world_foley) else {}
 	if game_hud.has_method("debug_layout"):
 		snapshot["hud"] = game_hud.debug_layout()
 	JavaScriptBridge.get_interface("window").jalasmaraSnapshot = JavaScriptBridge.get_interface("JSON").parse(JSON.stringify(snapshot))

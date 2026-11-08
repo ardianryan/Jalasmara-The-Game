@@ -1,0 +1,22 @@
+{
+  "source": "https://github.com/img2threejs/img2threejs",
+  "revision": "0c0c49bc168e648dbaf9c8c080474de0b3a941b6",
+  "upstreamLicense": "Apache-2.0",
+  "mode": "official strict-validated blockout factory → browser GLTFExporter → static GLB",
+  "metrics": {
+    "meshCount": 2,
+    "triangles": 60,
+    "bounds": [
+      1,
+      1,
+      0.18000000715255737
+    ]
+  },
+  "sha256": "e19a1dde491e9a12a687ccc14242b6e9f9c5713dd6e25dcecfeb661bed71607d",
+  "browserErrors": [],
+  "limitations": [
+    "Approximate low-poly slab; hidden back and thickness inferred.",
+    "Only blockout pass rendered; complete eight-pass upstream fidelity approval is not claimed.",
+    "No Three.js code runs in the Godot web game."
+  ]
+}

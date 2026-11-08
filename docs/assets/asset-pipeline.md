@@ -1,13 +1,13 @@
 # Produksi aset Jalasmara
 
-Permainan tetap memakai Godot 2D dan GDScript pada browser. Alat produksi dapat menggunakan 3D untuk membuat sprite, tanpa menambah mesin 3D ke permainan.
+Permainan memakai Godot Compatibility dan GDScript pada browser. Laut/gua memakai mesh 3D dan Sprite3D dalam viewport piksel; kota/hutan masih 2D. Alat produksi offline dapat menghasilkan GLB langsung atau sprite ortografis. Lihat [daftar integrasi tetap](../reference-integrations.md).
 
 | Jalur | Kegunaan | Status di proyek |
 | --- | --- | --- |
 | Bitmap AI yang diarahkan | Karakter dan lingkungan Nusantara dengan sudut serta palet yang ditentukan | Dipakai; setiap hasil tetap perlu pemeriksaan budaya, siluet, transparansi, skala, dan collision |
 | GLB Polyfork → render ortografis → PNG | Prop alam sederhana dengan sudut yang dapat diulang | Tiga GLB gratis dirender lokal; PNG pakis dan bambu dipakai pada hutan/hub; GLB batu karang dipakai langsung pada pilot laut 3D, sementara render PNG batunya belum dipakai |
-| img2threejs → model prosedural → GLB → PNG | Rekonstruksi satu prop dari referensi yang haknya jelas | Referensi proses telah diperiksa; belum diinstal atau dijalankan |
-| Metode Strata | Menata kepadatan piksel dan batas material pada medan | Rujukan desain; bukan plugin Godot yang terpasang |
+| img2threejs → model prosedural → GLB → PNG | Rekonstruksi satu prop dari referensi yang haknya jelas | Forge resmi dipatok, strict spec/factory dijalankan; GLB backing tablet aktif. Three.js hanya alat ekspor offline. Lihat `tools/img2threejs/README.md` |
+| Metode Strata | Menata kepadatan piksel dan batas material pada medan | Profil top/side/edge/teras aktif dalam implementasi Godot orisinal; tanpa menyalin paket Unity yang belum menyatakan lisensi |
 | Procedural Pixel Creatures | Variasi tubuh, warna, rig, dan animasi dari parameter | Sepuluh spesies diekspor offline; 722 bingkai, klip arah/locomotion, dan metadata pivot dipakai oleh animator Godot |
 
 ## Jalur rekonstruksi prop
@@ -22,7 +22,7 @@ Untuk satu prop Jalasmara, jalur yang sesuai adalah:
 4. Ekspor GLB setelah geometri dan warnanya disetujui.
 5. Render melalui kamera ortografis yang sama dengan prop lain, lalu periksa PNG pada ukuran sebenarnya di game.
 
-Bagian yang tidak terlihat dalam gambar harus dicatat sebagai perkiraan. Pemasangan skill tidak otomatis mengubah gambar menjadi model. Installer global img2threejs tidak dijalankan karena mengubah konfigurasi agen. Tidak ada klaim bahwa seluruh aset gambar sudah direkonstruksi.
+Bagian yang tidak terlihat dalam gambar harus dicatat sebagai perkiraan. Pipeline lokal menjalankan forge resmi melalui Python 3.10+ dan mengekspor factory melalui GLTFExporter. Installer global tidak dijalankan dan konfigurasi agen tidak diubah. Model pertama adalah backing tablet beresolusi rendah, bukan rekonstruksi seluruh peta atau hasil delapan tahap fidelity yang sudah disetujui.
 
 ## Batas alat dan referensi
 

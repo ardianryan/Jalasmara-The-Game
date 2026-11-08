@@ -5,6 +5,20 @@ var story_stage := "dive"
 var elapsed_seconds := 0.0
 var visual_minutes := 480.0
 var _night := false
+var reduced_motion := false
+
+func _ready() -> void:
+	if OS.has_feature("web"):
+		reduced_motion = bool(JavaScriptBridge.get_interface("window").matchMedia("(prefers-reduced-motion: reduce)").matches)
+	var preferences := ConfigFile.new()
+	if preferences.load("user://environment.cfg")==OK:
+		reduced_motion = bool(preferences.get_value("visual","reduced_motion",reduced_motion))
+
+func set_reduced_motion(value: bool) -> void:
+	reduced_motion = value
+	var preferences := ConfigFile.new()
+	preferences.set_value("visual","reduced_motion",value)
+	preferences.save("user://environment.cfg")
 
 func update_story(day: int, stage: String) -> void:
 	var next_night := stage == "night"
@@ -29,4 +43,6 @@ func snapshot() -> Dictionary:
 	if not _night and visual_minutes<900.0:
 		daylight = 0.88+sin(clampf((visual_minutes-480.0)/420.0,0.0,1.0)*PI)*0.12
 	var minute := int(visual_minutes)
-	return {"clock":"%02d:%02d" % [minute/60,minute%60],"weather":weather,"rain":rain,"clouds":coverage,"daylight":daylight,"night":_night,"day":story_day}
+	var wind := 9.0+coverage*22.0+sin(elapsed_seconds*0.21+story_day)*4.0
+	var current := 7.0+coverage*11.0+sin(elapsed_seconds*0.13)*3.0
+	return {"clock":"%02d:%02d" % [minute/60,minute%60],"weather":weather,"rain":rain,"clouds":coverage,"daylight":daylight,"night":_night,"day":story_day,"wind_x":wind,"wind_y":2.0+coverage*3.0,"current_x":current,"current_y":sin(elapsed_seconds*0.08)*2.2,"sea_state":0.2+coverage*0.6,"reduced_motion":reduced_motion,"phase":"malam" if _night else "senja" if minute>=990 else "siang"}

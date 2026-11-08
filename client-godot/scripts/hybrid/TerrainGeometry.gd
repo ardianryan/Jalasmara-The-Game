@@ -2,6 +2,8 @@ extends Node3D
 
 @export var projection_tilt_degrees := 12.0
 const FRONT_DEPTH := 26.0
+const Layers = preload("res://scripts/hybrid/TerrainLayerProfile.gd")
+var layered_band_count := 0
 var world: Dictionary = {}
 var terrain_count := 0
 var triangle_count := 0
@@ -9,6 +11,7 @@ var volume_depth_range := Vector2(220, 440)
 var projected_bounds: Array[Rect2] = []
 var _uv_rect := Rect2(0,0,512,512)
 var model_instances := 0
+var backing_instances := 0
 var _atlas: Texture2D
 var _materials: Array[Material] = []
 
@@ -18,8 +21,10 @@ func configure(data: Dictionary) -> void:
 		remove_child(child)
 		child.queue_free()
 	terrain_count = 0
+	layered_band_count = 0
 	triangle_count = 0
 	model_instances = 0
+	backing_instances = 0
 	projected_bounds.clear()
 	_atlas = load("res://resources/art/ocean-terrain-atlas.png")
 	_materials.clear()
@@ -39,6 +44,7 @@ func configure(data: Dictionary) -> void:
 		terrain_count += 1
 	_build_cave_backwall()
 	_build_model_rocks()
+	_build_memory_backing()
 	_build_growth()
 
 func _point(at: Vector2, depth: float) -> Vector3:
@@ -68,10 +74,11 @@ func _build_reef(rect: Rect2, index: int) -> void:
 	if outline.size() < 3:
 		outline = PackedVector2Array([rect.position,Vector2(rect.end.x,rect.position.y),rect.end,Vector2(rect.position.x,rect.end.y)])
 	var column := 0 if rect.get_center().y < 2080 else 1 if rect.get_center().y < 3060 else 2
-	var depth := lerpf(260.0,440.0,(sin(index * 2.137) + 1.0) * 0.5)
+	var profile: Dictionary = Layers.at_depth(rect.get_center().y)
+	var depth := float(profile.extrusion) * (0.88 + 0.12 * sin(index * 2.137))
 	var front := PackedVector2Array()
 	for point in outline:
-		var inset_point := point.lerp(rect.get_center(),0.12)
+		var inset_point := point.lerp(rect.get_center(),float(profile.inset))
 		front.append(inset_point if Geometry2D.is_point_in_polygon(inset_point,outline) else point.lerp(rect.get_center(),0.025))
 	var tool := SurfaceTool.new()
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
@@ -81,26 +88,32 @@ func _build_reef(rect: Rect2, index: int) -> void:
 		var b := front[triangles[offset+1]]
 		var c := front[triangles[offset+2]]
 		var center := (a+b+c)/3.0
-		var peak := FRONT_DEPTH + 25.0 + 24.0 * sin(offset * 1.71 + index * 2.13)
+		var peak := FRONT_DEPTH + float(profile.peak) * (0.75 + 0.50 * sin(offset * 1.71 + index * 2.13))
 		var raised := _point(center,peak)
 		var tint := Color(1.12,1.13,1.02) if center.y < rect.get_center().y else Color(0.95,1.05,1.02)
 		_triangle(tool,_point(a,FRONT_DEPTH),_point(b,FRONT_DEPTH),raised,column,tint)
 		_triangle(tool,_point(b,FRONT_DEPTH),_point(c,FRONT_DEPTH),raised,column,tint)
 		_triangle(tool,_point(c,FRONT_DEPTH),_point(a,FRONT_DEPTH),raised,column,tint)
+	var terrace_count := int(profile.terraces)
 	for segment in range(outline.size()):
 		var next := (segment + 1) % outline.size()
-		var mid_a := _point(outline[segment].lerp(front[segment],0.35),-35)
-		var mid_b := _point(outline[next].lerp(front[next],0.35),-35)
-		var back_a := _point(outline[segment],-depth)
-		var back_b := _point(outline[next],-depth)
-		var front_a := _point(front[segment],FRONT_DEPTH)
-		var front_b := _point(front[next],FRONT_DEPTH)
-		var upper := outline[segment].y < rect.get_center().y
-		var edge_tint := Color(1.17,1.17,1.02) if upper else Color(0.68,0.92,0.92)
-		_triangle(tool,mid_a,mid_b,front_b,column,edge_tint)
-		_triangle(tool,mid_a,front_b,front_a,column,edge_tint)
-		_triangle(tool,back_a,back_b,mid_b,column,Color(0.60,0.83,0.86))
-		_triangle(tool,back_a,mid_b,mid_a,column,Color(0.60,0.83,0.86))
+		var tangent := outline[next] - outline[segment]
+		var outward := Vector2(tangent.y,-tangent.x).normalized()
+		var top_weight := clampf(-outward.y,0,1)
+		for band in range(terrace_count):
+			var t0 := Layers.outline_band_factor(band,terrace_count,segment,index)
+			var t1 := Layers.outline_band_factor(band,terrace_count,next,index)
+			var t2 := Layers.outline_band_factor(band+1,terrace_count,segment,index)
+			var t3 := Layers.outline_band_factor(band+1,terrace_count,next,index)
+			var outer_a := _point(outline[segment].lerp(front[segment],t0),lerpf(-depth,FRONT_DEPTH,pow(t0,0.65)))
+			var outer_b := _point(outline[next].lerp(front[next],t1),lerpf(-depth,FRONT_DEPTH,pow(t1,0.65)))
+			var inner_a := _point(outline[segment].lerp(front[segment],t2),lerpf(-depth,FRONT_DEPTH,pow(t2,0.65)))
+			var inner_b := _point(outline[next].lerp(front[next],t3),lerpf(-depth,FRONT_DEPTH,pow(t3,0.65)))
+			var tint: Color = Color(profile.side).lerp(Color(profile.top),top_weight * 0.65)
+			if band % 2 == 1: tint = tint.lerp(Color(profile.edge),0.70)
+			_triangle(tool,outer_a,outer_b,inner_b,column,tint)
+			_triangle(tool,outer_a,inner_b,inner_a,column,tint)
+			layered_band_count += 1
 	var back_triangles := Geometry2D.triangulate_polygon(outline)
 	for offset in range(0,back_triangles.size(),3):
 		_triangle(tool,_point(outline[back_triangles[offset]],-depth),_point(outline[back_triangles[offset+1]],-depth),_point(outline[back_triangles[offset+2]],-depth),column,Color(0.50,0.67,0.73))
@@ -142,6 +155,33 @@ func _build_model_rocks() -> void:
 			mesh.material_override = rock_material
 		add_child(rock)
 		model_instances += 1
+
+func _build_memory_backing() -> void:
+	var path := "res://resources/models/memory-slab.glb"
+	var model: Node3D
+	if ResourceLoader.exists(path):
+		var scene = load(path)
+		if scene is PackedScene: model = scene.instantiate()
+	elif FileAccess.file_exists(path):
+		var document := GLTFDocument.new()
+		var state := GLTFState.new()
+		if document.append_from_file(path,state) == OK: model = document.generate_scene(state)
+	if model == null: return
+	var at := Vector2(1550,620)
+	for landmark in world.get("landmarks",[]):
+		if str(landmark.get("id","")) == "cell": at = Vector2(float(landmark.x),float(landmark.y))
+	model.name = "MemorySlabBacking"
+	model.position = _point(at + Vector2(4,32),-12)
+	model.scale = Vector3(44,52,44)
+	model.rotation.y = -0.10
+	var stone := StandardMaterial3D.new()
+	stone.albedo_color = Color("3e514b")
+	stone.roughness = 0.96
+	stone.metallic_specular = 0.12
+	for mesh in model.find_children("*","MeshInstance3D",true,false):
+		mesh.material_override = stone
+	add_child(model)
+	backing_instances += 1
 
 func _build_solid_lip(rect: Rect2, index: int, column: int) -> void:
 	if rect.size.x < 250 or rect.position.y < 600 or index % 2 != 0:
@@ -192,4 +232,4 @@ func _build_growth() -> void:
 		add_child(plant)
 
 func debug_status() -> Dictionary:
-	return {"terrainVolumes":terrain_count,"modelInstances":model_instances,"triangles":triangle_count,"depthRange":volume_depth_range,"bounds":projected_bounds,"units":"world pixels; x,-y,z; front26/backnegative"}
+	return {"terrainVolumes":terrain_count,"layeredBands":layered_band_count,"modelInstances":model_instances,"memoryBackingInstances":backing_instances,"triangles":triangle_count,"depthRange":volume_depth_range,"bounds":projected_bounds,"units":"world pixels; x,-y,z; front26/backnegative"}

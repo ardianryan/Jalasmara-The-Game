@@ -1,0 +1,26 @@
+{
+  "referenceOrigin": "Original Jalasmara image-generation artwork; no upstream img2threejs/Strata/Polyfork reference-image pixels used.",
+  "sourceAtlas": "client-godot/resources/art/ocean-props-atlas.png",
+  "sourceAtlasSha256": "1c6d8e24cd8a7391a077db3b9ce85b00ddcaaf2e5224665679b1e21607dfaf4b",
+  "slabCrop": [
+    135,
+    170,
+    220,
+    225
+  ],
+  "materialCrop": [
+    190,
+    220,
+    100,
+    100
+  ],
+  "upstreamTool": {
+    "url": "https://github.com/img2threejs/img2threejs",
+    "revision": "0c0c49bc168e648dbaf9c8c080474de0b3a941b6",
+    "license": "Apache-2.0"
+  },
+  "output": "memory-slab.glb",
+  "purpose": "Approximate static physical backing behind the original interactive PNG tablet",
+  "fidelityStatus": "Strict-valid blockout factory, three rendered camera views; full eight-pass approval not claimed",
+  "culturalBoundary": "No historical inscription or sacred motif recreated; not a claim of authentic archaeological object."
+}

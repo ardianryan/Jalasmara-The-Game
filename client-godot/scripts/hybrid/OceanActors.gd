@@ -125,12 +125,12 @@ func _mirror_wildlife(entities: Node, origin: Vector2) -> void:
 		index += 1
 		if at.distance_to(origin)>1100:
 			continue
-		_creature(key,int(creature.species),at,float(creature.size),float(wildlife.elapsed)+float(creature.phase)/7.0,float(creature.facing),-4,Color(0.68,0.86,0.87,0.90))
+		_creature(key,int(creature.species),at,float(creature.size),float(creature.get("animation_time", wildlife.elapsed)),float(creature.facing),-4,Color(0.68,0.86,0.87,0.90),str(creature.get("animation_state","walk")))
 		debug_counts.wildlife += 1
 
-func _creature(key: String, species: int, at: Vector2, width: float, seconds: float, facing: float, depth: float, tint: Color) -> void:
+func _creature(key: String, species: int, at: Vector2, width: float, seconds: float, facing: float, depth: float, tint: Color, state: String = "walk") -> void:
 	var id: String = Wildlife._generated_species(species)
-	var data: Dictionary = Animator.frame_data(id,seconds,facing)
+	var data: Dictionary = Animator.frame_data(id,seconds,facing,state)
 	if data.is_empty():
 		return
 	var size: Vector2 = data.size

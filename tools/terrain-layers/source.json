@@ -1,0 +1,19 @@
+{
+  "reference": "https://github.com/carthageadev/strata",
+  "revision": "b00c9b0b4a89a86b9279093634796ee054b8e698",
+  "upstreamVersion": "0.6.6",
+  "upstreamLicense": null,
+  "status": "Original Godot adaptation of top/side/edge elevation workflow; NOT a Strata installation or literal code port. No upstream code, shader, texture or example asset copied.",
+  "runtime": "TerrainLayerProfile.gd + TerrainGeometry.gd, authoritative contour unchanged",
+  "roles": [
+    "top",
+    "side",
+    "edge",
+    "terrace elevation"
+  ],
+  "profiles": [
+    "porous_limestone",
+    "karst_sediment",
+    "fractured_basalt"
+  ]
+}

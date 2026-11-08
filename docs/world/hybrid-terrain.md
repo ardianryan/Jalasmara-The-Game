@@ -18,8 +18,18 @@ Pilot ini belum mengubah kota atau hutan menjadi medan 3D bertingkat. Kualitas v
 
 Efek partikel menggunakan modul 2D dan gelembung karakter yang sudah berjalan. Partikel mesh CPUParticles3D dikeluarkan dari pilot setelah pengujian WebGL menampilkan bentuk partikel yang membesar dan peringatan buffer. Mesh terrain, aktor Sprite3D, senter, dan bayangan tetap memakai renderer 3D. Pengujian browser tidak menggantikan verifikasi kompatibilitas dan performa pada GPU/perangkat fisik.
 
-Firefox berhasil merender scene hybrid tanpa error shader dan tanpa bidang transparan yang salah. Namun cold startup melewati batas pengujian 90 detik; kelanjutan tangkapan, gua, dan peta pada renderer baru belum terverifikasi di Firefox. Jalur lengkap pilot sudah lulus pada Chromium lokal dan HTTPS staging.
+Firefox berhasil merender scene hybrid tanpa error shader dan tanpa bidang transparan yang salah. Namun cold startup melewati batas pengujian 90 detik; kelanjutan tangkapan, gua, dan peta pada renderer baru belum terverifikasi di Firefox. Jalur pilot sebelum penambahan medium air terbaru sudah lulus pada Chromium lokal dan HTTPS staging. Pengujian gabungan medium terbaru yang dicatat di bawah dijalankan pada server lokal.
 
 Perbaikan lanjutan menempatkan senter di depan helm pada kedua arah, mengganti tekstur batu yang berulang dengan campuran crop bertumpang-tindih, dan menempatkan tiga variasi koral transparan pada kontur ledge bersama. Dermaga memakai volume papan, fascia, penutup ujung, dan tangga terbuka pada titik ekstraksi yang sama; tidak ada collider tambahan di jalur berenang.
 
-Setelah partikel mesh dihapus, pemeriksaan screenshot browser tidak lagi memperlihatkan bidang besar di sekitar karakter. Peringatan pembaruan buffer masih teramati pada SwiftShader; hasil ini belum membuktikan performa atau kompatibilitas GPU perangkat fisik.
+Setelah partikel mesh dihapus, pemeriksaan screenshot patch tersebut tidak lagi memperlihatkan bidang partikel yang membesar di sekitar karakter. Peringatan pembaruan buffer juga pernah teramati pada SwiftShader; hasil pengujian lokal belum membuktikan performa atau kompatibilitas GPU perangkat fisik.
+
+## Pelapisan medan dan medium air
+
+`TerrainLayerProfile.gd` kini menyediakan tiga profil orisinal: batu kapur berpori, sedimen karst, dan basal retak. Setiap profil memisahkan warna permukaan, sisi, tepian, kedalaman ekstrusi, serta tiga atau empat tingkat teras. `TerrainGeometry.gd` membentuk pita tepi dan relief muka dari profil tersebut sambil mempertahankan proyeksi `terrainContours` yang dipakai server. Metadata sumber, revisi referensi, dan batas pemakaiannya ada di `tools/terrain-layers/source.json`.
+
+Strata menjadi acuan cara memisahkan peran permukaan, sisi, tepian, dan elevasi. Ini implementasi Godot orisinal, bukan pemasangan Unity atau salinan kode, shader, maupun aset Strata. Catatan pemeriksaan sumber belum menyatakan lisensi upstream; tidak ada berkas upstream yang dimasukkan sebagai ketergantungan runtime. Pelapisan baru ini berlaku pada laut pilot. Kota dan hutan tetap berupa dunia 2D dengan tabrakan dan layering yang sudah ada.
+
+`LivingWater.gd` menambahkan medium air native 2D di atas hasil renderer 3D: partikel berparallax dalam koordinat dunia, jejak renang, kilau kontur, dan cahaya dangkal yang dipotong kontur batu. Intensitas berkas dan pencahayaan mengikuti waktu, kedalaman, serta awan; arus dekoratif memakai kondisi cuaca bersama. Tidak ada partikel mesh 3D atau simulasi fluida. Rincian anggaran efek, pengurangan gerak, dan batas occlusion ada pada [dokumentasi lingkungan](environment.md).
+
+Pengujian gabungan lokal mencatat 29 dari 29 fauna berpindah dalam selang 2,4 detik, empat kawanan, 33 partikel medium, dan enam ray tepi cahaya yang terpotong kontur. Dua tangkapan layar di `artifacts/godot/living/` memperlihatkan perubahan posisi fauna dan pose renang dengan HUD tetap terbaca. Efek medium sengaja lebih halus daripada aktor dan objek interaktif; keberadaan penghitung bukan pengganti peninjauan gambar. Uji ini belum memverifikasi semua kedalaman, komposisi aset, atau performa perangkat fisik.

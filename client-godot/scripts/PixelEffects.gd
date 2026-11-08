@@ -25,7 +25,7 @@ func add_effect(kind: String, at: Vector2, size: float = 1.0, phase: int = 0, on
 		effect.sprite_frames.set_animation_loop("idle",false)
 		effect.animation_finished.connect(effect.queue_free)
 	else:
-		_ambient.append({"node":effect,"kind":kind,"phase":float(phase)})
+		_ambient.append({"node":effect,"kind":kind,"phase":float(phase),"base":at})
 	effect.play("idle")
 	effect.frame = posmod(phase,effect.sprite_frames.get_frame_count("idle"))
 	return effect
@@ -46,13 +46,20 @@ func _process(delta: float) -> void:
 	var state := get_node_or_null("/root/EnvironmentState")
 	var environment: Dictionary = state.snapshot() if state != null else {"daylight":0.9}
 	var daylight := float(environment.get("daylight",0.9))
+	var wind := float(environment.get("wind_x",9.0))
+	var rain := float(environment.get("rain",0.0))
+	var reduced := bool(environment.get("reduced_motion",false))
 	for entry in _ambient:
 		var effect: AnimatedSprite2D = entry.node
 		if not is_instance_valid(effect):
 			continue
 		if str(entry.kind) == "lantern-flame":
 			effect.modulate.a = lerpf(0.88,0.42,daylight)
+			effect.rotation = 0.0 if reduced else sin(_clock*2.1+float(entry.phase))*minf(0.08,wind*0.002)
+			effect.speed_scale = 0.6 if reduced else 1.0+wind*0.006
 		elif str(entry.kind) == "pot-steam":
-			effect.modulate.a = 0.48
+			effect.modulate.a = 0.48+rain*0.14
+			effect.position = entry.base if reduced else Vector2(entry.base)+Vector2(sin(_clock*0.8+float(entry.phase))*wind*0.07,0)
+			effect.speed_scale = 0.5 if reduced else 1.0
 		else:
 			effect.modulate.a = 0.45+sin(_clock*1.5+float(entry.phase))*0.15

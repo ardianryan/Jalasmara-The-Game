@@ -37,6 +37,8 @@ verify:
     - mkdir -p reports
     - npx tsx --test --test-concurrency=1 --test-reporter=junit --test-reporter-destination=reports/tests.xml apps/api/test/*.test.ts
     - npm audit --json > reports/dependencies.json
+    - npm ci --prefix tools/img2threejs --ignore-scripts
+    - npm audit --prefix tools/img2threejs --json > reports/asset-tool-dependencies.json
   artifacts:
     when: always
     paths: [reports/]
@@ -53,7 +55,8 @@ godot_web:
     - apt-get update -qq && apt-get install -y -qq curl unzip libfontconfig1 libx11-6 libxcursor1 libxinerama1 libxrandr2 libxi6 libgl1 libasound2
     - bash ci/setup-godot.sh
   artifacts:
-    paths: [apps/web/public/game/]
+    when: always
+    paths: [apps/web/public/game/, reports/world/]
     expire_in: 7 days
 build:
   stage: build
@@ -88,6 +91,8 @@ report_to_github:
     - job: build
       artifacts: false
     - job: codeql
+      artifacts: true
+    - job: godot_web
       artifacts: true
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_COMMIT_REF_PROTECTED == "true"'

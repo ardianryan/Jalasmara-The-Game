@@ -20,6 +20,8 @@ var sunlight: DirectionalLight3D
 var headlamp: SpotLight3D
 var terrain_geometry: Node3D
 var actors: Node3D
+var living_water: Node2D
+var _living_layer: CanvasLayer
 var _built := false
 var _camera_center := Vector2.ZERO
 var _depth := 0.0
@@ -55,6 +57,12 @@ func setup(source: Node2D) -> void:
 	display.texture = viewport_3d.get_texture()
 	get_viewport().size_changed.connect(_resize_display)
 	_resize_display()
+	_living_layer = CanvasLayer.new()
+	_living_layer.layer = 4
+	add_child(_living_layer)
+	living_water = preload("res://scripts/hybrid/LivingWater.gd").new()
+	_living_layer.add_child(living_water)
+	living_water.setup(main)
 
 func _resize_display() -> void:
 	if is_instance_valid(display):
@@ -248,6 +256,7 @@ func _process(delta: float) -> void:
 	if next_active and not _built:
 		_create_world()
 	active = next_active and _built
+	if is_instance_valid(living_water): living_water.set_active(not GameState.dive.is_empty())
 	display.visible = active
 	viewport_3d.render_target_update_mode = SubViewport.UPDATE_ALWAYS if active else SubViewport.UPDATE_DISABLED
 	if is_instance_valid(actors):
@@ -322,4 +331,5 @@ func debug_status() -> Dictionary:
 		"camera_center": [_camera_center.x, _camera_center.y], "depth_m": _depth,
 		"spot_shadow": is_instance_valid(headlamp) and headlamp.shadow_enabled,
 		"flashlight": _flashlight_status(),
+		"water": living_water.debug_status() if is_instance_valid(living_water) else {},
 	}

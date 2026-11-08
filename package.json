@@ -19,7 +19,8 @@
     "owner": "tsx apps/api/src/cli.ts owner",
     "recover-owner": "tsx apps/api/src/cli.ts recover-owner",
     "check": "npm run typecheck && npm test && npm run build",
-    "build:game": "node scripts/export-game.mjs"
+    "build:game": "node scripts/export-game.mjs",
+    "check:world": "node scripts/verify-living-world.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.0",

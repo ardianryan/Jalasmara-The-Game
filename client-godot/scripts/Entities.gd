@@ -128,8 +128,10 @@ func target_position(target: Dictionary, time_offset: float = 0.0) -> Vector2:
 		return anchor
 	var phase := float(posmod(hash(str(target.get("id", ""))), 1000)) / 100.0
 	var time := elapsed + time_offset
-	var jelly := _target_species(target) == 0
-	var offset := Vector2(sin(time * 0.65 + phase) * (8 if jelly else 22), cos(time * 0.9 + phase) * (17 if jelly else 8))
+	var species := _target_species(target)
+	var amplitude := Vector2(8,17) if species == 0 else Vector2(10,5) if species == 4 else Vector2(9,2) if species == 3 else Vector2(22,8)
+	var frequency := 0.42 if species == 0 else 0.32 if species in [3,4] else 0.65
+	var offset := Vector2(sin(time * frequency + phase) * amplitude.x, cos(time * frequency * 1.3 + phase) * amplitude.y)
 	if is_instance_valid(player):
 		var away := anchor - player.position
 		var distance := away.length()
@@ -138,7 +140,6 @@ func target_position(target: Dictionary, time_offset: float = 0.0) -> Vector2:
 	if offset.length() > 30:
 		offset = offset.normalized() * 30
 	var point := anchor + offset
-	for terrain in GameState.world.get("terrain", []):
-		if Rect2(float(terrain[0]), float(terrain[1]), float(terrain[2]), float(terrain[3])).grow(12).has_point(point):
-			return anchor
+	if is_instance_valid(wildlife) and wildlife._blocked(point, 12.0):
+		return anchor
 	return point

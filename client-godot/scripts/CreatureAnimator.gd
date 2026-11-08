@@ -57,8 +57,8 @@ static func frame_data(id: String, seconds: float, facing: float, state := "walk
 		"direction": direction, "clip": str(clip.get("name", state)), "fps": fps, "frame_count": frames.size(),
 	}
 
-static func draw_creature(canvas: Node2D, id: String, point: Vector2, width: float, seconds: float, facing: float, tint := Color.WHITE, centered := true) -> bool:
-	var frame := frame_data(id, seconds, facing)
+static func draw_creature(canvas: Node2D, id: String, point: Vector2, width: float, seconds: float, facing: float, tint := Color.WHITE, centered := true, state := "walk") -> bool:
+	var frame := frame_data(id, seconds, facing, state)
 	if frame.is_empty():
 		return false
 	var size: Vector2 = frame.size

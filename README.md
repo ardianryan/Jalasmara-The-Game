@@ -56,6 +56,7 @@ OIDC opsional melalui ZITADEL. Pemain menautkan identitas eksternal dari akun lo
 
 ## Dokumentasi
 
+- [Referensi teknis dan status integrasi](docs/reference-integrations.md): Polyfork, Strata, Procedural Pixel Creatures, img2threejs, SpriteCook, Ark Pixel Font, dan Pixelbolt.
 - [Operasi dan deployment](docs/operations.md), termasuk upstream reverse proxy **10.1.0.8:3000**.
 - [Kontrak API](docs/api.md).
 - [Identitas merek](docs/brand/identity.md) dan [arah budaya](docs/brand/cultural-direction.md).

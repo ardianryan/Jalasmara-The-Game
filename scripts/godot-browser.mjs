@@ -93,6 +93,14 @@ try {
       world.hub.divePoint,
     ))
       await walkTo(frame, x, y);
+    if (process.env.VERIFY_LIVING === "1") {
+      const walking = await snapshot(frame);
+      assert(
+        walking.foley?.steps > 0,
+        "Walking must dispatch distance-based foley",
+      );
+      assert(walking.audio?.sfxPlayed > 0);
+    }
     await page.keyboard.press("e");
     await frame.waitForFunction(
       () => window.jalasmaraSnapshot?.diving === true,
@@ -144,6 +152,60 @@ try {
     path: "artifacts/godot/swimming.png",
     fullPage: true,
   });
+  if (process.env.VERIFY_LIVING === "1") {
+    const output = "artifacts/godot/living";
+    mkdirSync(output, { recursive: true });
+    const before = await snapshot(frame);
+    assert.equal(before.life?.generated, true);
+    assert(before.life.creatures >= 29 && before.life.schools >= 4);
+    assert.equal(before.hybrid.water?.active, true);
+    assert.equal(before.hybrid.water.threeDParticles, 0);
+    assert(before.hybrid.water.contourClips > 0);
+    assert(before.hybrid.water.motes > 0 && before.hybrid.water.motes <= 48);
+    await page.screenshot({ path: `${output}/01-alive.png`, fullPage: true });
+    await page.waitForTimeout(2400);
+    const after = await snapshot(frame);
+    const moving = after.life.positions.filter(
+      (p, i) =>
+        Math.hypot(
+          p[0] - before.life.positions[i][0],
+          p[1] - before.life.positions[i][1],
+        ) > 2,
+    ).length;
+    assert(
+      moving >= 12,
+      `Expected visible world simulation, only ${moving} creatures moved`,
+    );
+    assert.notEqual(
+      after.weather.current_x,
+      before.weather.current_x,
+      "Current must evolve with weather/time",
+    );
+    assert(after.foley.underwater && after.audio.underwater);
+    await page.screenshot({ path: `${output}/02-alive.png`, fullPage: true });
+    writeFileSync(
+      `${output}/results.json`,
+      JSON.stringify(
+        {
+          origin,
+          moving,
+          life: after.life,
+          water: after.hybrid.water,
+          foley: after.foley,
+          checks: [
+            "generated-creature-runtime",
+            "schooling-simulation-advances",
+            "world-space-water",
+            "contour-occluded-light",
+            "dynamic-current",
+            "motion-foley",
+          ],
+        },
+        null,
+        2,
+      ),
+    );
+  }
   if (process.env.VERIFY_HYBRID === "1") {
     const output = "artifacts/godot/hybrid";
     mkdirSync(output, { recursive: true });

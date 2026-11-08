@@ -41,6 +41,7 @@ var port_lamps: Array[PointLight2D] = []
 var snapshot_at := 0
 var surface_actors: Array[Node2D] = []
 var hybrid: Node2D
+var world_foley: Node
 func _ready() -> void:
 	y_sort_enabled = true
 	_setup_input()
@@ -49,6 +50,9 @@ func _ready() -> void:
 	nala.position = _surface_point()
 	nala.frozen = true
 	add_child(nala)
+	world_foley = preload("res://scripts/WorldFoley.gd").new()
+	add_child(world_foley)
+	world_foley.configure(nala,"hub")
 	camera = Camera2D.new()
 	camera.zoom = Vector2(.88,.88)
 	camera.position_smoothing_enabled = true
@@ -85,6 +89,7 @@ func _ready() -> void:
 		var actor = preload("res://scripts/HubActor.gd").new()
 		actor.actor_name = str(district.npc)
 		actor.position = Vector2(float(district.x),float(district.y))
+		actor.player = nala
 		add_child(actor)
 		surface_actors.append(actor)
 	nala.position = _surface_point()
@@ -285,6 +290,9 @@ func _process(delta: float) -> void:
 		var snapshot := {"x":nala.position.x,"y":nala.position.y,"stage":GameState.player.get("progress",{}).get("stage",""),"modal":modal_open,"nearby":str(nearby.get("id","")),"diving":not GameState.dive.is_empty()}
 		snapshot["audio"] = AudioManager.debug_status()
 		snapshot["flashlight2d"] = _flashlight_status_2d()
+		snapshot["weather"] = EnvironmentState.snapshot()
+		snapshot["foley"] = world_foley.debug_status() if is_instance_valid(world_foley) else {}
+		snapshot["life"] = entities.wildlife.debug_status() if is_instance_valid(entities.wildlife) and entities.wildlife.has_method("debug_status") else {}
 		snapshot["hybrid"] = hybrid.debug_status() if is_instance_valid(hybrid) else {"active":false}
 		if hud.has_method("debug_layout"):
 			snapshot["hud"] = hud.debug_layout()
@@ -439,6 +447,9 @@ func _sync_position() -> bool:
 		var snapshot := {"x":nala.position.x,"y":nala.position.y,"stage":GameState.player.get("progress",{}).get("stage",""),"modal":modal_open,"nearby":str(nearby.get("id","")),"diving":not GameState.dive.is_empty()}
 		snapshot["audio"] = AudioManager.debug_status()
 		snapshot["flashlight2d"] = _flashlight_status_2d()
+		snapshot["weather"] = EnvironmentState.snapshot()
+		snapshot["foley"] = world_foley.debug_status() if is_instance_valid(world_foley) else {}
+		snapshot["life"] = entities.wildlife.debug_status() if is_instance_valid(entities.wildlife) and entities.wildlife.has_method("debug_status") else {}
 		snapshot["hybrid"] = hybrid.debug_status() if is_instance_valid(hybrid) else {"active":false}
 		if hud.has_method("debug_layout"):
 			snapshot["hud"] = hud.debug_layout()
@@ -594,7 +605,7 @@ func _start_net() -> void:
 	network_busy = false
 	if r.get("ok",false):
 		net_started = true
-		AudioManager.play_sfx("harpoon_shoot",1.0,-12.0)
+		AudioManager.play_sfx("net_throw",1.0,-9.0)
 		net_time = 0
 		status.text = "Lepaskan saat lingkaran jala terbuka. Tidak perlu kuis untuk menjala biota biasa."
 	else:

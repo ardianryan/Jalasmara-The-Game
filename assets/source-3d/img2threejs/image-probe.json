@@ -1,0 +1,13 @@
+{
+  "path": "/Users/ardianryan/Documents/Jalasmara/assets/source-3d/img2threejs/memory-slab-reference.png",
+  "type": "png",
+  "bytes": 95252,
+  "width": 220,
+  "height": 225,
+  "aspectRatio": 0.9777777777777777,
+  "technicalSuitability": "conditional",
+  "warnings": [
+    "low resolution; small geometry/material details may be unreliable"
+  ],
+  "note": "This is only technical image probing. Semantic object suitability still requires visual inspection."
+}

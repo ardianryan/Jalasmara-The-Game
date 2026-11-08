@@ -1,0 +1,22 @@
+import * as THREE from 'three';
+import { GLTFExporter } from 'three/examples/jsm/exporters/GLTFExporter.js';
+import { createSmaraMemorySlabModel } from '../../assets/source-3d/img2threejs/memory-slab.factory';
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#203b3f');
+const renderer = new THREE.WebGLRenderer({antialias:false,preserveDrawingBuffer:true});
+renderer.setSize(512,512); renderer.setPixelRatio(1); renderer.outputColorSpace=THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
+const camera = new THREE.OrthographicCamera(-.9,.9,.9,-.9,.01,20);
+const model = createSmaraMemorySlabModel({textureSize:128,textureAnisotropy:1});
+model.traverse((node:any)=>{node.userData={};if(node.material){if(node.name==='Stone backing insert')node.material.color.set('#697d74');for(const mat of Array.isArray(node.material)?node.material:[node.material]){for(const key of ['map','normalMap','roughnessMap','aoMap','bumpMap'])if(mat[key]){mat[key].magFilter=THREE.NearestFilter;mat[key].minFilter=THREE.NearestFilter;mat[key].generateMipmaps=false;}}}});
+model.userData={source:'Jalasmara own reference / img2threejs official factory blockout',approximate:true};scene.add(model);
+scene.add(new THREE.HemisphereLight('#d8ece6','#263b3d',1.4));
+const key = new THREE.DirectionalLight('#fff0d4',2.0);key.position.set(-2,4,6);scene.add(key);
+const bounds=new THREE.Box3().setFromObject(model),center=bounds.getCenter(new THREE.Vector3());
+function render(yaw=0){camera.position.copy(center).add(new THREE.Vector3(Math.sin(yaw)*3,.35,Math.cos(yaw)*3));camera.lookAt(center);renderer.render(scene,camera);}
+(window as any).renderModel=render;
+(window as any).assetMetrics={meshCount:0,triangles:0,bounds:bounds.getSize(new THREE.Vector3()).toArray()};
+model.traverse((node:any)=>{if(node.isMesh){(window as any).assetMetrics.meshCount++;(window as any).assetMetrics.triangles+=(node.geometry.index?.count??node.geometry.attributes.position.count)/3;}});
+(window as any).exportModel=async()=>{const result=await new GLTFExporter().parseAsync(model,{binary:true,onlyVisible:true});const bytes=new Uint8Array(result as ArrayBuffer);let text='';for(let i=0;i<bytes.length;i++)text+=String.fromCharCode(bytes[i]);return btoa(text);};
+THREE.DefaultLoadingManager.onLoad=()=>{render();(window as any).modelReady=true;};
+setTimeout(()=>{render();(window as any).modelReady=true;},1200);

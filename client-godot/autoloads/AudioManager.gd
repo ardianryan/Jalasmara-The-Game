@@ -37,6 +37,11 @@ var _last_oxygen := 100.0
 var _oxygen_updated_at := 0.0
 var _baseline_ready := false
 var _menu_override := false
+var _played_sfx := 0
+var _last_sfx := ""
+
+func can_play_environment() -> bool:
+	return audio_unlocked and not muted and _focused
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -172,6 +177,8 @@ func play_sfx(sound_name: String,pitch_scale: float=1.0,volume_db: float=0.0) ->
 	sound.pitch_scale = clampf(pitch_scale,0.5,2.0)
 	sound.volume_db = clampf(SFX_VOLUME_DB+volume_db,-60.0,0.0)
 	sound.play()
+	_played_sfx += 1
+	_last_sfx = sound_name
 
 func play_bgm(track_name: String,fade_duration: float=1.0) -> void:
 	var key := track_name.trim_prefix("bgm_")
@@ -359,4 +366,4 @@ func _exit_tree() -> void:
 	sfx_streams.clear()
 
 func debug_status() -> Dictionary:
-	return {"unlocked":audio_unlocked,"muted":muted,"track":current_bgm_track,"playing":is_instance_valid(bgm_player) and bgm_player.playing,"underwater":is_underwater,"heartbeat":is_instance_valid(panic_player) and panic_player.playing}
+	return {"unlocked":audio_unlocked,"muted":muted,"track":current_bgm_track,"playing":is_instance_valid(bgm_player) and bgm_player.playing,"underwater":is_underwater,"heartbeat":is_instance_valid(panic_player) and panic_player.playing,"sfxPlayed":_played_sfx,"lastSfx":_last_sfx}
