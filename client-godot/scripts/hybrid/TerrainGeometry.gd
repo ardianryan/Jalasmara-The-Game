@@ -39,12 +39,13 @@ func configure(data: Dictionary) -> void:
 		terrain_count += 1
 	_build_cave_backwall()
 	_build_model_rocks()
+	_build_growth()
 
 func _point(at: Vector2, depth: float) -> Vector3:
 	return Vector3(at.x, -at.y + sin(deg_to_rad(projection_tilt_degrees)) * depth, depth)
 
 func _uv(at: Vector2, _column: int) -> Vector2:
-	return at / 512.0
+	return at / 360.0
 
 func _triangle(tool: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, column: int, shade: Color) -> void:
 	if (b - a).cross(c - a).z < 0.0:
@@ -161,49 +162,34 @@ func _build_solid_lip(rect: Rect2, index: int, column: int) -> void:
 	add_child(lip)
 
 func _build_dock(rect: Rect2) -> void:
-	var wood := StandardMaterial3D.new()
-	wood.albedo_color = Color("76634b")
-	wood.roughness = 0.95
-	var dock := SurfaceTool.new()
-	dock.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var corners := [rect.position,Vector2(rect.end.x,rect.position.y),rect.end,Vector2(rect.position.x,rect.end.y)]
-	for side in range(4):
-		var next := (side + 1) % 4
-		var a := _point(corners[side],FRONT_DEPTH)
-		var b := _point(corners[next],FRONT_DEPTH)
-		var c := _point(corners[next],-170)
-		var d := _point(corners[side],-170)
-		_triangle(dock,a,b,c,0,Color.WHITE)
-		_triangle(dock,a,c,d,0,Color.WHITE)
-	for depth in [FRONT_DEPTH,-170.0]:
-		_triangle(dock,_point(corners[0],depth),_point(corners[1],depth),_point(corners[2],depth),0,Color.WHITE)
-		_triangle(dock,_point(corners[0],depth),_point(corners[2],depth),_point(corners[3],depth),0,Color.WHITE)
-	var body := MeshInstance3D.new()
-	body.name = "DockSolidVolume"
-	body.mesh = dock.commit()
-	body.material_override = wood
-	add_child(body)
-	var planks := SurfaceTool.new()
-	planks.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var count := ceili(rect.size.x / 85.0)
-	for index in range(count):
-		var x := rect.position.x + index * rect.size.x / count
-		var right := x + rect.size.x / count - 2.0
-		var a := _point(Vector2(x,rect.position.y),FRONT_DEPTH + 2)
-		var b := _point(Vector2(right,rect.position.y),FRONT_DEPTH + 2)
-		var c := _point(Vector2(right,rect.end.y),FRONT_DEPTH + 2)
-		var d := _point(Vector2(x,rect.end.y),FRONT_DEPTH + 2)
-		_triangle(planks,a,b,c,0,Color.WHITE)
-		_triangle(planks,a,c,d,0,Color.WHITE)
-	var plank_mesh := MeshInstance3D.new()
-	plank_mesh.name = "DockPlankFaces"
-	plank_mesh.mesh = planks.commit()
-	var plank_material := StandardMaterial3D.new()
-	plank_material.albedo_color = Color("a68a61")
-	plank_material.roughness = 0.9
-	plank_material.cull_mode = BaseMaterial3D.CULL_DISABLED
-	plank_mesh.material_override = plank_material
-	add_child(plank_mesh)
+	var dock := preload("res://scripts/hybrid/CoastalDockGeometry.gd").new()
+	add_child(dock)
+	dock.configure(rect,projection_tilt_degrees)
+
+func _build_growth() -> void:
+	var path := "res://resources/art/coral-clusters.png"
+	if not ResourceLoader.exists(path): return
+	var atlas: Texture2D = load(path)
+	var cell := Vector2(atlas.get_width()/3.0,634.0)
+	for entry in preload("res://scripts/ReefGrowth.gd").placements(world):
+		var texture := AtlasTexture.new()
+		texture.atlas = atlas
+		texture.region = Rect2(Vector2(int(entry.kind)*cell.x,0),cell)
+		texture.filter_clip = true
+		var plant := Sprite3D.new()
+		plant.texture = texture
+		plant.pixel_size = 1.0
+		plant.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		plant.shaded = true
+		plant.modulate = Color(0.78,0.83,0.78)
+		plant.alpha_cut = SpriteBase3D.ALPHA_CUT_DISCARD
+		plant.alpha_scissor_threshold = 0.5
+		plant.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+		plant.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		plant.position = _point(entry.at-Vector2(0,entry.size.y/2),36)
+		plant.scale = Vector3(entry.size.x/cell.x,entry.size.y/cell.y,1)
+		plant.flip_h = bool(entry.flip)
+		add_child(plant)
 
 func debug_status() -> Dictionary:
 	return {"terrainVolumes":terrain_count,"modelInstances":model_instances,"triangles":triangle_count,"depthRange":volume_depth_range,"bounds":projected_bounds,"units":"world pixels; x,-y,z; front26/backnegative"}

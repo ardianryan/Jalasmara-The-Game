@@ -16,6 +16,8 @@ var backdrop: Sprite2D
 var hub_art: Texture2D
 var decoration_count := 0
 var near_growth: Array[Dictionary] = []
+var dock_wood: Texture2D
+var harbor_backdrop: Sprite2D
 func configure(data: Dictionary, rectangles: Array[Rect2]) -> void:
 	world = data
 	terrain.assign(rectangles)
@@ -47,6 +49,33 @@ func _collect_anchors() -> void:
 		anchors.append(Vector2(float(boss.x),float(boss.get("y",3320))))
 
 func _build_water() -> void:
+	var sky_gradient := Gradient.new()
+	sky_gradient.colors = PackedColorArray([Color("507d8a"),Color("aec4ba")])
+	var sky := GradientTexture2D.new()
+	sky.gradient = sky_gradient
+	sky.width = 16
+	sky.height = 128
+	sky.fill_from = Vector2(0.5,0)
+	sky.fill_to = Vector2(0.5,1)
+	var sky_plane := Sprite2D.new()
+	sky_plane.texture = sky
+	sky_plane.centered = false
+	sky_plane.position = Vector2(-100,-700)
+	sky_plane.scale = Vector2((WORLD_SIZE.x+200)/16.0,1100.0/128.0)
+	sky_plane.z_index = -35
+	add_child(sky_plane)
+	if hub_art != null:
+		var town := Sprite2D.new()
+		town.texture = hub_art
+		town.centered = false
+		town.position = Vector2(-250,-250)
+		town.scale = Vector2(3600,600)/hub_art.get_size()
+		town.z_index = -32
+		var haze := ShaderMaterial.new()
+		haze.shader = preload("res://shaders/harbor-distance.gdshader")
+		town.material = haze
+		add_child(town)
+		harbor_backdrop = town
 	var gradient := Gradient.new()
 	gradient.offsets = PackedFloat32Array([0.0,0.24,0.55,0.84,1.0])
 	gradient.colors = PackedColorArray([Color("299ca5"),Color("247e89"),Color("1c586c"),Color("173c55"),Color("102a42")])
@@ -172,51 +201,32 @@ func _material_index(depth: float) -> float:
 	return 0.0 if depth<2080 else 1.0 if depth<3060 else 2.0
 
 func _build_anchored_growth() -> void:
-	if atlas == null:
-		return
-	var rng := RandomNumberGenerator.new()
-	rng.seed = 18342
-	for index in range(terrain.size()):
-		var rect := terrain[index]
-		if rect.position.y < 550 or rect.size.x < 150 or rect.position.y>3370:
-			continue
-		if rect.position.y<2080:
-			var count := clampi(int(rect.size.x/170),1,20)
-			for step in range(count):
-				var x := rect.position.x+70+float(step)*maxf(1,(rect.size.x-140)/maxi(count-1,1))
-				var height := rng.randf_range(75,140)
-				var width := height*rng.randf_range(1.0,1.5)
-				var kind := 2 if rect.position.y>1100 and step%3==0 else 0
-				var at := Vector2(x,rect.position.y+25)
-				_add_growth(at,kind,Vector2(width,height),step*0.7)
-		if rect.size.y>700:
-			for step in range(2,mini(14,int(rect.size.y/160))):
-				var at := Vector2(rect.position.x+65,rect.position.y+step*160)
-				_add_growth(at,1,Vector2(130,95),step)
+	var path := "res://resources/art/coral-clusters.png"
+	if not ResourceLoader.exists(path): return
+	for entry in preload("res://scripts/ReefGrowth.gd").placements(world):
+		_add_growth(entry.at,int(entry.kind),entry.size,entry.at.x*0.01,bool(entry.flip))
 
-func _add_growth(at: Vector2,kind: int,dimensions: Vector2,phase: float) -> void:
+func _add_growth(at: Vector2,kind: int,dimensions: Vector2,phase: float,flip := false) -> void:
+	var source: Texture2D = load("res://resources/art/coral-clusters.png")
 	var texture := AtlasTexture.new()
-	texture.atlas = atlas
-	var cell := atlas.get_size()/Vector2(3,2)
-	texture.region = Rect2(Vector2(kind*cell.x,cell.y),cell)
+	texture.atlas = source
+	var cell := Vector2(source.get_width()/3.0,634.0)
+	texture.region = Rect2(Vector2(kind*cell.x,0),cell)
 	var plant := Sprite2D.new()
 	plant.texture = texture
 	plant.position = at
 	plant.offset = Vector2(0,-cell.y/2)
 	plant.scale = dimensions/cell
-	plant.modulate = Color(0.78,0.92,0.83,0.95) if at.y>2080 else Color.WHITE
-	if kind==2:
-		var sway := ShaderMaterial.new()
-		sway.shader = SWAY_SHADER
-		sway.set_shader_parameter("strength",7.5)
-		sway.set_shader_parameter("wind_speed",0.8)
-		sway.set_shader_parameter("wind_phase",phase)
-		plant.material = sway
+	plant.flip_h = flip
+	plant.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	plant.modulate = Color(0.71,0.84,0.86,0.9) if at.y>2080 else Color.WHITE
 	add_child(plant)
 	decoration_count += 1
 
 func _process(delta: float) -> void:
 	elapsed += delta
+	if is_instance_valid(harbor_backdrop):
+		harbor_backdrop.position = Vector2(-250,-250)+camera_point*0.018
 	if is_instance_valid(backdrop):
 		backdrop.position = Vector2(-128+camera_point.x*0.018,390+camera_point.y*0.008)
 	_update_near_growth()
@@ -224,9 +234,7 @@ func _process(delta: float) -> void:
 
 func _draw() -> void:
 	if camera_point.y<850:
-		if hub_art != null:
-			var source := Rect2(Vector2.ZERO,Vector2(hub_art.get_width(),hub_art.get_height()*0.68125))
-			draw_texture_rect_region(hub_art,Rect2(0,-160,3080,545),source)
+		_draw_dock()
 		# Surface reflection is atmospheric; it does not add invisible collision.
 		for index in range(16):
 			var x := index*210.0+sin(elapsed*0.5+index)*13
@@ -237,38 +245,49 @@ func _draw() -> void:
 		if view.has_point(at):
 			draw_circle(at,1.0+index%2,Color(0.62,0.84,0.79,0.14))
 
+func _draw_dock() -> void:
+	if dock_wood == null:
+		var path := "res://scripts/hybrid/CoastalDockGeometry.gd"
+		if ResourceLoader.exists(path): dock_wood = load(path).wood_texture()
+	for rect in terrain:
+		if rect.position.y>=WATERLINE or rect.size.x<500 or rect.size.y>100: continue
+		if dock_wood != null:
+			var x := rect.position.x
+			var index := 0
+			while x<rect.end.x:
+				var width := minf(78+float(posmod(index*37,31)),rect.end.x-x)
+				draw_texture_rect(dock_wood,Rect2(x,rect.position.y,width-2,rect.size.y),false,Color(0.79,0.83,0.76) if index%3==0 else Color(0.9,0.88,0.78))
+				x += width
+				index += 1
+			draw_texture_rect(dock_wood,Rect2(rect.end.x-14,rect.position.y,14,rect.size.y),false,Color("706650"))
+		draw_rect(Rect2(rect.position+Vector2(0,rect.size.y-7),Vector2(rect.size.x,7)),Color("344e4e"))
+		draw_line(rect.position,Vector2(rect.end.x,rect.position.y),Color("b5b18a"),3)
+	# This is an open ladder to the existing extraction point, not a new wall.
+	for x in [1102,1138]: draw_line(Vector2(x,350),Vector2(x,485),Color("807c63"),4)
+	for y in range(365,485,22): draw_line(Vector2(1102,y),Vector2(1138,y),Color("b9b08a"),3)
+
 func _build_near_growth() -> void:
-	if atlas == null:
-		return
-	var cell := atlas.get_size()/Vector2(3,2)
-	for index in range(terrain.size()):
-		var rect := terrain[index]
-		if rect.position.y<650 or rect.size.x<280:
-			continue
-		for side in [0,1]:
-			var at := Vector2(rect.position.x+65 if side==0 else rect.end.x-65,rect.position.y+35)
-			var kind := 2 if rect.position.y>1100 and rect.position.y<2080 else 0
-			if rect.position.y>2080:
-				kind = 1
-			var tile := AtlasTexture.new()
-			tile.atlas = atlas
-			tile.region = Rect2(Vector2(kind*cell.x,cell.y),cell)
-			var plant := Sprite2D.new()
-			plant.texture = tile
-			plant.offset = Vector2(0,-cell.y/2)
-			plant.scale = Vector2(235,225)/cell
-			plant.z_index = 20
-			plant.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-			plant.position = at
-			plant.modulate = Color(0.32,0.53,0.47,0)
-			var sway := ShaderMaterial.new()
-			sway.shader = SWAY_SHADER
-			sway.set_shader_parameter("strength",5.0 if kind==2 else 1.5)
-			sway.set_shader_parameter("wind_speed",0.65)
-			sway.set_shader_parameter("wind_phase",index*1.7+side)
-			plant.material = sway
-			add_child(plant)
-			near_growth.append({"node":plant,"base":at})
+	var path := "res://resources/art/coral-clusters.png"
+	if not ResourceLoader.exists(path): return
+	var source: Texture2D = load(path)
+	var cell := Vector2(source.get_width()/3.0,634.0)
+	var index := 0
+	for entry in preload("res://scripts/ReefGrowth.gd").placements(world):
+		index += 1
+		if index%5!=0: continue
+		var texture := AtlasTexture.new()
+		texture.atlas = source
+		texture.region = Rect2(Vector2(int(entry.kind)*cell.x,0),cell)
+		var plant := Sprite2D.new()
+		plant.texture = texture
+		plant.offset = Vector2(0,-cell.y/2)
+		plant.scale = entry.size*1.18/cell
+		plant.position = entry.at
+		plant.flip_h = bool(entry.flip)
+		plant.z_index = 20
+		plant.modulate = Color(0.4,0.65,0.61,0)
+		add_child(plant)
+		near_growth.append({"node":plant,"base":entry.at})
 
 func _update_near_growth() -> void:
 	var camera := get_viewport().get_camera_2d()

@@ -249,8 +249,9 @@ func _process(delta: float) -> void:
 		environment.update_depth(maxf(0,(nala.position.y-400)/28))
 	if dive_lamp:
 		dive_lamp.visible = submerged and not hybrid_active
-		var direction := nala.velocity.normalized() if nala.velocity.length()>8 else Vector2(float(nala.direction),0)
-		dive_lamp.rotation = lerp_angle(dive_lamp.rotation,direction.angle(),minf(1,delta*7))
+		var facing := 1.0 if nala.direction >= 0 else -1.0
+		dive_lamp.position = Vector2(32.0 * facing,-8.0)
+		dive_lamp.rotation = 0.0 if facing > 0 else PI
 		dive_lamp.energy = lerpf(0.3,0.85,clampf((nala.position.y-400)/2300,0,1))
 	for i in port_lamps.size():
 		var lamp := port_lamps[i]
@@ -283,6 +284,7 @@ func _process(delta: float) -> void:
 		snapshot_at = Time.get_ticks_msec()
 		var snapshot := {"x":nala.position.x,"y":nala.position.y,"stage":GameState.player.get("progress",{}).get("stage",""),"modal":modal_open,"nearby":str(nearby.get("id","")),"diving":not GameState.dive.is_empty()}
 		snapshot["audio"] = AudioManager.debug_status()
+		snapshot["flashlight2d"] = _flashlight_status_2d()
 		snapshot["hybrid"] = hybrid.debug_status() if is_instance_valid(hybrid) else {"active":false}
 		if hud.has_method("debug_layout"):
 			snapshot["hud"] = hud.debug_layout()
@@ -436,6 +438,7 @@ func _sync_position() -> bool:
 	if OS.has_feature("web"):
 		var snapshot := {"x":nala.position.x,"y":nala.position.y,"stage":GameState.player.get("progress",{}).get("stage",""),"modal":modal_open,"nearby":str(nearby.get("id","")),"diving":not GameState.dive.is_empty()}
 		snapshot["audio"] = AudioManager.debug_status()
+		snapshot["flashlight2d"] = _flashlight_status_2d()
 		snapshot["hybrid"] = hybrid.debug_status() if is_instance_valid(hybrid) else {"active":false}
 		if hud.has_method("debug_layout"):
 			snapshot["hud"] = hud.debug_layout()
@@ -748,16 +751,7 @@ func _close_shift(abandon: bool) -> void:
 func _show_inventory() -> void:
 	var box := _open("Tas Nala")
 	_label(box,"%d koin · Fragmen permanen" % int(GameState.player.get("coins",0)))
-	for item in GameState.player.get("inventory",[]):
-		var row := HBoxContainer.new()
-		box.add_child(row)
-		var icon := TextureRect.new()
-		icon.texture = preload("res://scripts/ItemIcons.gd").texture(str(item.fragmentId))
-		icon.custom_minimum_size = Vector2(48,48)
-		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		row.add_child(icon)
-		_label(row,"%s · %d bintang × %d" % [GameState.fragment_name(str(item.fragmentId)),int(item.stars),int(item.quantity)],14)
+	preload("res://scripts/InventoryView.gd").add_rows(box,GameState.player.get("inventory",[]))
 	if GameState.player.get("inventory",[]).is_empty():
 		_label(box,"Belum ada fragmen yang dibawa pulang.",14)
 	if not GameState.dive.is_empty():
@@ -948,9 +942,9 @@ func _add_lights() -> void:
 	dive_lamp.texture = _torch_texture()
 	dive_lamp.color = Color(.55,.85,.76)
 	dive_lamp.energy = .65
-	dive_lamp.texture_scale = 3.0
-	dive_lamp.position = Vector2(0,-8)
-	dive_lamp.texture_offset = Vector2(70,0)
+	dive_lamp.texture_scale = 2.0
+	dive_lamp.position = Vector2(32,-8)
+	dive_lamp.offset = Vector2.ZERO
 	dive_lamp.shadow_enabled = true
 	dive_lamp.shadow_filter = Light2D.SHADOW_FILTER_PCF5
 	dive_lamp.shadow_color = Color(0.04,0.09,0.13,0.65)
@@ -967,16 +961,23 @@ func _add_lights() -> void:
 		port_lamps.append(lamp)
 
 func _torch_texture() -> Texture2D:
-	var image := Image.create(192,128,false,Image.FORMAT_RGBA8)
-	for y in 128:
-		for x in 192:
-			var along := float(x)/192.0
-			var across := absf(float(y)-64.0)/64.0
-			var width := 0.08+along*0.85
+	# The centered texture's left half is empty, so its cone starts at the lamp mount.
+	var image := Image.create(384,192,false,Image.FORMAT_RGBA8)
+	for y in 192:
+		for x in range(192,384):
+			var along := float(x-192)/192.0
+			var across := absf(float(y)-96.0)/96.0
+			var width := 0.035+along*0.80
 			var edge := 1.0-smoothstep(width*0.55,width,across)
-			var reach := (1.0-smoothstep(0.4,1.0,along))*smoothstep(0.0,0.12,along)
+			var reach := (1.0-smoothstep(0.45,1.0,along))*smoothstep(0.0,0.025,along)
 			image.set_pixel(x,y,Color(1,1,1,edge*reach*0.72))
 	return ImageTexture.create_from_image(image)
+
+func _flashlight_status_2d() -> Dictionary:
+	if not is_instance_valid(dive_lamp): return {}
+	var at := dive_lamp.global_position
+	var ahead := at+Vector2.RIGHT.rotated(dive_lamp.global_rotation)*560.0
+	return {"mount":[at.x,at.y],"aim":[ahead.x,ahead.y],"facing":nala.direction,"active":dive_lamp.visible}
 
 func _surface_point() -> Vector2:
 	var spawn: Dictionary = GameState.world.get("surfaceSpawn",{})

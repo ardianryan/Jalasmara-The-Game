@@ -1,0 +1,51 @@
+{
+  "asset": "coral-clusters.png",
+  "origin": "Original Jalasmara project bitmap generated through the built-in imagegen tool; one generation and one alpha-edge cleanup edit.",
+  "reference": "Own Jalasmara ocean-terrain-atlas.png, style/color reference only. No third-party game reference pixels.",
+  "size": [
+    2172,
+    724
+  ],
+  "layout": {
+    "columns": 3,
+    "rows": 1,
+    "cell": [
+      724,
+      724
+    ],
+    "baselineY": 634
+  },
+  "variants": [
+    "pink branching coral and ochre tube sponges on limestone",
+    "teal staghorn, olive seagrass and rust plate coral",
+    "muted red fan coral with ochre plates and teal growth"
+  ],
+  "alpha": {
+    "transparentPixelFraction": 0.7216227628379273,
+    "visibleThreshold": 16,
+    "visibleBoundsPerCell": [
+      [
+        90,
+        263,
+        629,
+        633
+      ],
+      [
+        119,
+        185,
+        607,
+        635
+      ],
+      [
+        114,
+        99,
+        593,
+        632
+      ]
+    ],
+    "note": "A few chromatic RGB texels have alpha 1\u20133/255; no neon fringe exists above alpha 16/255. Use normal alpha blending or the existing alpha-discard material, never force opaque alpha."
+  },
+  "sha256": "918a3af153c9026fc8fcefb39de8d6660607622ffeed2f2a95cac2e244e085fd",
+  "externalLicenseClaim": null,
+  "culture": "General tropical Indonesian reef inspiration; no sacred motif or assertion of an exact biological species."
+}

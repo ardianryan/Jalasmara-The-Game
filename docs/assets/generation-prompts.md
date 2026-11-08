@@ -39,3 +39,5 @@ Dibuat melalui **built-in imagegen**, lalu diperiksa dan disalin ke `client-godo
 - `sea-life-atlas.png`: delapan fauna laut, dibuat dan dibersihkan alpha-nya untuk eksplorasi awal. Fauna runtime kemudian diganti dengan keluaran generator prosedural pilihan pengguna; atlas ini bukan sumber animasi generator tersebut.
 
 Konten referensi Dave the Diver tetap hanya pada `moodboard/` yang diabaikan Git dan tidak didistribusikan. Properti, arsitektur dan material dunia mempertahankan arah Nusantara keseharian yang telah disetujui.
+
+- `coral-clusters.png`: tiga rumpun koral tropis berbeda dalam tiga kolom sama besar, dasar kapur, koral cabang merah muda/teal, spons oker, kipas merah redup dan lamun zaitun. Latar alpha asli, tanpa gradien, bayangan lantai, teks, atau simbol budaya. Palet mengacu atlas Jalasmara sendiri; satu edit pembersihan edge. Hasil 2172 × 724, sel 724 × 724, tanpa pengambilan piksel karya game lain.

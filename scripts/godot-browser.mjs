@@ -169,6 +169,61 @@ try {
       null,
       { polling: 100 },
     );
+    for (const [key, facing] of [
+      ["d", 1],
+      ["a", -1],
+    ]) {
+      await page.keyboard.down(key);
+      await page.waitForTimeout(220);
+      await page.keyboard.up(key);
+      await page.waitForTimeout(350);
+      const state = await snapshot(frame),
+        lamp = state.hybrid.flashlight;
+      assert.equal(lamp.facing, facing);
+      assert(
+        (lamp.mount[0] - state.x) * facing > 20,
+        "3D flashlight must mount in front of Nala",
+      );
+      assert(
+        (lamp.aim[0] - lamp.mount[0]) * facing > 400,
+        "3D beam must point forward",
+      );
+      await page.keyboard.press("F6");
+      await frame.waitForFunction(
+        () => window.jalasmaraSnapshot?.flashlight2d?.active === true,
+        null,
+        { polling: 100 },
+      );
+      const fallback = await snapshot(frame),
+        lamp2d = fallback.flashlight2d;
+      assert(
+        (lamp2d.mount[0] - fallback.x) * facing > 20,
+        "2D flashlight must mount in front of Nala",
+      );
+      assert(
+        (lamp2d.aim[0] - lamp2d.mount[0]) * facing > 400,
+        "2D beam must point forward",
+      );
+      await page.screenshot({
+        path: `${output}/flashlight-2d-${facing}.png`,
+        fullPage: true,
+      });
+      await page.keyboard.press("F6");
+      await frame.waitForFunction(
+        () => window.jalasmaraSnapshot?.hybrid?.active === true,
+        null,
+        { polling: 100 },
+      );
+    }
+    await page.keyboard.press("i");
+    await frame.waitForFunction(
+      () => window.jalasmaraSnapshot?.modal === true,
+      null,
+      { polling: 100 },
+    );
+    await page.screenshot({ path: `${output}/inventory.png`, fullPage: true });
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(250);
     for (const [x, y] of [
       [1000, 580],
       [1000, 900],
@@ -195,6 +250,8 @@ try {
             "F6-comparison-toggle",
             "swim-through-authoritative-cave-gap",
             "shadowed-headlamp",
+            "forward-flashlight-both-facings-both-renderers",
+            "inventory-modal",
           ],
           reef: rendered,
           cave: cave.hybrid,

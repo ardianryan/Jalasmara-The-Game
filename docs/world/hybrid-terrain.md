@@ -16,4 +16,10 @@ Pemeriksaan browser dijalankan dengan `VERIFY_HYBRID=1 APP_TEST_ORIGIN=http://lo
 
 Pilot ini belum mengubah kota atau hutan menjadi medan 3D bertingkat. Kualitas visual dan performa perangkat fisik perlu dinilai terpisah; keberadaan mesh atau kelulusan tes tidak membuktikan kualitas seni maupun FPS pada HP.
 
-Pada pengujian Chromium dengan renderer perangkat lunak SwiftShader, konsol masih mencatat peringatan WebGL terkait pembaruan buffer. Alur permainan dan perbandingan renderer tetap lulus; pengujian tersebut tidak menggantikan verifikasi kompatibilitas dan performa pada GPU/perangkat fisik.
+Efek partikel menggunakan modul 2D dan gelembung karakter yang sudah berjalan. Partikel mesh CPUParticles3D dikeluarkan dari pilot setelah pengujian WebGL menampilkan bentuk partikel yang membesar dan peringatan buffer. Mesh terrain, aktor Sprite3D, senter, dan bayangan tetap memakai renderer 3D. Pengujian browser tidak menggantikan verifikasi kompatibilitas dan performa pada GPU/perangkat fisik.
+
+Firefox berhasil merender scene hybrid tanpa error shader dan tanpa bidang transparan yang salah. Namun cold startup melewati batas pengujian 90 detik; kelanjutan tangkapan, gua, dan peta pada renderer baru belum terverifikasi di Firefox. Jalur lengkap pilot sudah lulus pada Chromium lokal dan HTTPS staging.
+
+Perbaikan lanjutan menempatkan senter di depan helm pada kedua arah, mengganti tekstur batu yang berulang dengan campuran crop bertumpang-tindih, dan menempatkan tiga variasi koral transparan pada kontur ledge bersama. Dermaga memakai volume papan, fascia, penutup ujung, dan tangga terbuka pada titik ekstraksi yang sama; tidak ada collider tambahan di jalur berenang.
+
+Setelah partikel mesh dihapus, pemeriksaan screenshot browser tidak lagi memperlihatkan bidang besar di sekitar karakter. Peringatan pembaruan buffer masih teramati pada SwiftShader; hasil ini belum membuktikan performa atau kompatibilitas GPU perangkat fisik.

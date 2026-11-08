@@ -2,7 +2,7 @@
 
 Bandar Hujung memakai bidang 2400 × 1600 yang diselaraskan dengan gambar desa, bukan deretan bangunan pada satu jalan. Dermaga, pelataran bawah, pelataran kedai/galangan, dan punggung bukit dihubungkan lewat jalur serta tangga. `WORLD.hub` menyimpan ukuran, jalur, penghalang, tingkat pelataran, tangga, dan potongan foreground. Titik menyelam berada pada tangga yang tampak di gambar. Posisi permukaan dari tata letak lama dipindahkan ke dermaga tanpa mengubah inventori, saldo, atau progres akun.
 
-`GeoMap` menampilkan gambar wilayah dan bentuk batu pada koordinat permainan. Posisi pemain, bangunan, titik belajar, tangga dan pintu tertutup menggunakan transformasi koordinat yang sama. Peta dapat digeser, diperbesar, dan dipilih lokasinya. Daratan serta penampang kedalaman laut adalah dua tampilan berbeda: arah vertikal pada penampang menunjukkan kedalaman, bukan utara. Minimap memakai data yang sama. Peta tidak menyediakan teleport atau membuka kawasan rencana.
+`GeoMap` menggambar satu semenanjung pesisir kontinu untuk Bandar Hujung–Wringin, dengan jalur dan footprint bangunan dari metadata permainan, sungai, kanopi, dan kontur bukit. Atlas darat tidak lagi menempelkan dua gambar persegi. Penampang laut menampilkan bentuk batu pada koordinat permainan. Posisi pemain, bangunan, titik belajar, tangga dan pintu tertutup menggunakan transformasi koordinat yang sama. Peta dapat digeser, diperbesar, dan dipilih lokasinya. Daratan serta penampang kedalaman laut adalah dua tampilan berbeda: arah vertikal pada penampang menunjukkan kedalaman, bukan utara. Minimap memakai data yang sama. Peta tidak menyediakan teleport atau membuka kawasan rencana.
 
 ## Laut dan darat
 

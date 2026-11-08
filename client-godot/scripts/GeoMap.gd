@@ -1,5 +1,6 @@
 class_name GeoMap
 extends Control
+const Geography = preload("res://scripts/MapGeography.gd")
 
 signal place_selected(place: Dictionary)
 var world: Dictionary = {}
@@ -25,7 +26,7 @@ const SEA := Color("254d5b")
 func _ready() -> void:
 	clip_contents = true
 	mouse_filter = Control.MOUSE_FILTER_IGNORE if mini else Control.MOUSE_FILTER_STOP
-	for key in ["coastal-village-map","forest-muara","ocean-depth-background"]:
+	for key in ["ocean-depth-background"]:
 		var path: String = "res://resources/art/" + str(key) + ".png"
 		if ResourceLoader.exists(path): _textures[key] = load(path)
 	queue_redraw()
@@ -61,7 +62,7 @@ func _player_global() -> Vector2:
 func _source() -> Rect2:
 	if mini:
 		return Rect2(_player_global()-Vector2(520,360),Vector2(1040,720))
-	var base := Rect2(0,0,6144,3584) if area == "sea" else Rect2(-150,-1200,4700,2950)
+	var base := Rect2(0,0,6144,3584) if area == "sea" else Rect2(-300,-1400,5100,3100)
 	var view_size := base.size/zoom
 	return Rect2(base.get_center()-view_size/2+pan,view_size)
 
@@ -92,6 +93,90 @@ func _path(points: Array, offset: Vector2, width: float, color: Color) -> void:
 		draw_polyline(line,Color("574d38"),maxf(2,width+2),false)
 		draw_polyline(line,color,width,false)
 
+func _land_outline() -> PackedVector2Array:
+	return Geography.coastline(_forest_offset())
+
+func _outline_on_screen(points: PackedVector2Array) -> PackedVector2Array:
+	var result := PackedVector2Array()
+	for point in points:
+		result.append(_screen(point))
+	return result
+
+func _draw_land_polygon(points: PackedVector2Array, color: Color) -> void:
+	if points.size() >= 3:
+		draw_colored_polygon(_outline_on_screen(points), color)
+
+func _near_road(point: Vector2) -> bool:
+	for group in [[world.get("hub",{}).get("paths",[]),Vector2.ZERO],[world.get("forest",{}).get("walkablePaths",[]),_forest_offset()]]:
+		for path in group[0]:
+			for index in range(path.size()-1):
+				var a: Vector2 = Vector2(float(path[index][0]),float(path[index][1]))+group[1]
+				var b: Vector2 = Vector2(float(path[index+1][0]),float(path[index+1][1]))+group[1]
+				if Geometry2D.get_closest_point_to_segment(point,a,b).distance_to(point)<145:
+					return true
+	return false
+
+func _draw_land_geography() -> void:
+	var offset := _forest_offset()
+	var shore := _land_outline()
+	var edge := _outline_on_screen(shore)
+	edge.append(edge[0])
+	draw_polyline(edge,Color("65918e"),10 if not mini else 6,false)
+	draw_polyline(edge,Color("adc2a3"),5 if not mini else 3,false)
+	_draw_land_polygon(shore,Color("c8b98b"))
+	draw_polyline(edge,Color("8c805d"),1.5,false)
+	var forest_area := Geography.forest_outline(offset)
+	for piece in Geometry2D.intersect_polygons(forest_area,shore):
+		_draw_land_polygon(piece,Color("97a67a"))
+	# Contour bands describe the inland rise while preserving the same map coordinates.
+	for ring in range(4):
+		var line := PackedVector2Array()
+		for step in range(37):
+			var angle := TAU*step/36.0
+			var point := offset+Vector2(1340,470)+Vector2(cos(angle)*(350+ring*140),sin(angle)*(220+ring*95))
+			if Geometry2D.is_point_in_polygon(point,shore):
+				line.append(_screen(point))
+		if line.size()>1:
+			draw_polyline(line,Color(0.33,0.43,0.30,0.18),1,false)
+	var river: Array = Geography.stream(offset)
+	_path(river,Vector2.ZERO,4 if not mini else 3,Color("679c9b"))
+	for row in range(7):
+		for column in range(9):
+			var point := offset+Vector2(170+column*255+sin(row*3.1+column)*45,130+row*215+cos(column*1.9+row)*40)
+			if not Geometry2D.is_point_in_polygon(point,shore) or not Geometry2D.is_point_in_polygon(point,forest_area) or _near_road(point):
+				continue
+			var at := _screen(point)
+			if not Rect2(Vector2.ZERO,size).grow(8).has_point(at):
+				continue
+			var crown := 2.5 if mini else clampf(3.5*sqrt(zoom),3.5,6)
+			draw_line(at,at+Vector2(0,crown),Color("657658"),1)
+			for leaf in [Vector2(-0.4,0),Vector2(0.4,0),Vector2(0,-0.45)]:
+				draw_circle(at+leaf*crown,crown*0.65,Color("6c855e"))
+	for building in world.get("hub",{}).get("foreground",[]):
+		var roof := PackedVector2Array()
+		for point in building.get("polygon",[]):
+			roof.append(Vector2(float(point[0]),float(point[1])))
+		_draw_land_polygon(roof,Color("a1815c"))
+		var rim := _outline_on_screen(roof)
+		if rim.size()>2:
+			rim.append(rim[0])
+			draw_polyline(rim,Color("6d6146"),1,false)
+	for path in world.get("hub",{}).get("paths",[]):
+		_path(path,Vector2.ZERO,2 if mini else 3,Color("eee0b5"))
+	for path in world.get("forest",{}).get("walkablePaths",[]):
+		_path(path,offset,1.5 if mini else 2,Color("e4d3a3"))
+	if not mini:
+		_map_caption("BANDAR HUJUNG",Vector2(1040,1080),Color("554e36"))
+		_map_caption("HUTAN WRINGIN",offset+Vector2(780,550),Color("405a40"))
+		_map_caption("PALUNG SMARA",Vector2(2690,1050),Color("9bb5ac"))
+		draw_string(PIXEL_FONT,Vector2(size.x-19,20),"N",HORIZONTAL_ALIGNMENT_LEFT,-1,10,PAPER)
+		draw_line(Vector2(size.x-16,27),Vector2(size.x-16,39),PAPER,1)
+
+func _map_caption(title: String, point: Vector2, color: Color) -> void:
+	var at := _screen(point)
+	if Rect2(Vector2(5,15),size-Vector2(10,25)).has_point(at):
+		draw_string(PIXEL_FONT,at,title,HORIZONTAL_ALIGNMENT_LEFT,-1,11,color)
+
 func _draw() -> void:
 	if world.is_empty(): return
 	draw_rect(Rect2(Vector2.ZERO,size),SEA)
@@ -114,10 +199,8 @@ func _draw() -> void:
 				draw_dashed_line(Vector2(0,y),Vector2(size.x,y),Color(0.83,0.9,0.82,0.28),1,4)
 				draw_string(PIXEL_FONT,Vector2(5,y-4),"%d m"%depth,HORIZONTAL_ALIGNMENT_LEFT,-1,10,PAPER)
 	else:
-		_image("coastal-village-map",Rect2(0,0,2400,1600))
-		_image("forest-muara",Rect2(_forest_offset(),Vector2(2400,1600)))
-		for path in world.get("hub",{}).get("paths",[]): _path(path,Vector2.ZERO,2 if mini else 3,Color("dfc388"))
-		for path in world.get("forest",{}).get("walkablePaths",[]): _path(path,_forest_offset(),1.5 if mini else 2,Color("d4b77c"))
+		_draw_land_geography()
+
 	var label_boxes: Array[Rect2] = []
 	var label_order: Array = places.duplicate()
 	if not selected.is_empty():

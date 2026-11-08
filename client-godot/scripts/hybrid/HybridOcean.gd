@@ -18,7 +18,6 @@ var camera_3d: Camera3D
 var environment: Environment
 var sunlight: DirectionalLight3D
 var headlamp: SpotLight3D
-var suspended: CPUParticles3D
 var terrain_geometry: Node3D
 var actors: Node3D
 var _built := false
@@ -121,13 +120,12 @@ func _create_world() -> void:
 	headlamp = SpotLight3D.new()
 	headlamp.light_color = Color("fff1c4")
 	headlamp.light_energy = 2.4
-	headlamp.spot_range = 1000.0
-	headlamp.spot_angle = 35.0
+	headlamp.spot_range = 760.0
+	headlamp.spot_angle = 23.0
 	headlamp.spot_attenuation = 0.8
 	headlamp.shadow_enabled = true
 	headlamp.shadow_bias = 0.08
 	viewport_3d.add_child(headlamp)
-	_add_particles()
 	_built = true
 
 func _add_backdrop() -> void:
@@ -243,33 +241,6 @@ func _add_distant_reefs() -> void:
 		stone.position = _depth_point(point, -420.0 if index % 2 == 0 else -720.0)
 		stone.rotation_degrees.z = sin(seed_value * 3.1) * 18
 
-func _add_particles() -> void:
-	suspended = CPUParticles3D.new()
-	suspended.amount = 36
-	suspended.lifetime = 12.0
-	suspended.preprocess = 2.0
-	suspended.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
-	suspended.emission_box_extents = Vector3(650, 400, 100)
-	suspended.direction = Vector3(0, 1, 0)
-	suspended.spread = 18.0
-	suspended.initial_velocity_min = 5.0
-	suspended.initial_velocity_max = 14.0
-	suspended.gravity = Vector3(0, 0.8, 0)
-	suspended.scale_amount_min = 0.45
-	suspended.scale_amount_max = 1.0
-	var bubble := SphereMesh.new()
-	bubble.radius = 1.5
-	bubble.height = 3.0
-	bubble.radial_segments = 4
-	bubble.rings = 2
-	var material := StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	material.albedo_color = Color(0.5, 0.83, 0.86, 0.32)
-	bubble.material = material
-	suspended.mesh = bubble
-	viewport_3d.add_child(suspended)
-
 func _process(delta: float) -> void:
 	if not is_instance_valid(main) or not is_instance_valid(viewport_3d):
 		return
@@ -294,14 +265,32 @@ func _process(delta: float) -> void:
 	camera_3d.size = 540.0 / maxf(0.1, main.camera.zoom.y)
 	var at: Vector2 = main.nala.position
 	var facing := float(main.nala.direction)
-	headlamp.position = Vector3(at.x, -at.y / cos(TILT), 260)
-	headlamp.look_at(Vector3(at.x + facing * 220, -(at.y + 35) / cos(TILT), 0), Vector3.UP)
-	suspended.position = center + Vector3(0, 0, -25)
+	_update_headlamp(at, facing)
 	_depth = maxf(0, (at.y - float(GameState.world.get("surface", 400))) / 28.0)
 	_lighting_clock += delta
 	if _lighting_clock >= 0.25:
 		_lighting_clock = 0.0
 		_update_lighting()
+
+func _update_headlamp(at: Vector2, facing: float) -> void:
+	var direction := -1.0 if facing < 0 else 1.0
+	var mount := at + Vector2(direction * 30.0, -14.0)
+	# Keep the emitter just ahead of the helmet, on the actor's depth plane.
+	# The small Y correction cancels the extra depth's projection through the tilted camera.
+	var actor_depth := 12.0
+	var lamp_depth := 24.0
+	headlamp.position = Vector3(mount.x, -mount.y / cos(TILT) + tan(TILT) * (lamp_depth - actor_depth), lamp_depth)
+	var ahead := at + Vector2(direction * 560.0, 18.0)
+	headlamp.look_at(Vector3(ahead.x, -ahead.y / cos(TILT), 0), Vector3.UP)
+
+func _flashlight_status() -> Dictionary:
+	if not is_instance_valid(headlamp):
+		return {}
+	var origin := headlamp.position
+	var ahead := origin - headlamp.basis.z * 560.0
+	var mount := Vector2(origin.x, -origin.y * cos(TILT) + origin.z * sin(TILT))
+	var aim := Vector2(ahead.x, -ahead.y * cos(TILT) + ahead.z * sin(TILT))
+	return {"mount":[mount.x,mount.y],"aim":[aim.x,aim.y],"facing":float(main.nala.direction) if is_instance_valid(main) else 1.0,"depth":origin.z,"shadow":headlamp.shadow_enabled}
 
 func _update_lighting() -> void:
 	var state := EnvironmentState.snapshot()
@@ -332,4 +321,5 @@ func debug_status() -> Dictionary:
 		"sprite_count": _count_nodes(world_root, "Sprite3D") if _built else 0,
 		"camera_center": [_camera_center.x, _camera_center.y], "depth_m": _depth,
 		"spot_shadow": is_instance_valid(headlamp) and headlamp.shadow_enabled,
+		"flashlight": _flashlight_status(),
 	}

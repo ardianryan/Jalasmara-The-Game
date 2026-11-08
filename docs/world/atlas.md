@@ -2,7 +2,7 @@
 
 Bandar Hujung terletak di muara fiksi yang menghadap Palung Smara. Daratan berhutan berada di sisi timur kota, sementara zona bawah laut mengikuti lereng teluk menuju dasar palung. Nama dan susunan geografis merupakan rekaan; rujukan bunyi toponimi Nusantara bukan pemetaan situs sejarah nyata.
 
-Atlas memperlihatkan wilayah yang dapat dimainkan, jalur yang terbuka melalui cerita, dan tujuan pengembangan berikutnya dalam satu jaringan. Garis pada atlas menunjukkan hubungan wilayah, bukan skala jarak atau petunjuk bahwa semua jalur sudah bisa dilalui.
+Atlas utama berupa peta geografis: daratan Bandar Hujung dan Wringin berada pada satu garis pantai, dengan jalur berjalan, footprint bangunan, sungai, dan kontur bukit. Marker pemain dan tujuan memakai transformasi koordinat game. Jalur menuju kawasan rencana tetap ditandai tertutup. Penampang palung adalah tampilan terpisah karena sumbu vertikalnya menunjukkan kedalaman, bukan utara.
 
 ## Permukaan: kota, muara, dan hulu
 
@@ -39,7 +39,9 @@ Lamun merupakan tumbuhan berbunga laut, sedangkan kelp adalah alga. Lingkungan W
 
 ## Data dan status atlas
 
-Sumber metadata berada pada `WORLD.atlas` di modul dunia bersama. `regions` memuat ID, nama, jenis wilayah, posisi ilustrasi atlas, deskripsi, koneksi, dan status. `roads` menghubungkan pasangan ID yang sama. Koordinat atlas bersifat ilustratif dan berbeda dari koordinat gerak pemain.
+Peta geografis memakai `WORLD.hub`, jalur hutan, dan titik gerbang bersama. Offset hutan menyatukan gerbang masuk dengan koordinat kota; pan, zoom, marker, dan minimap memakai transformasi yang sama. `MapGeography.gd` menambahkan garis pantai dan relief kartografis, yang tidak mengubah collider atau membuka wilayah baru. Gambar peta desa dan hutan tidak ditempelkan sebagai dua persegi.
+
+`WORLD.atlas` tetap menyimpan katalog wilayah cerita, deskripsi, koneksi, dan status pengembangan. Posisi ilustratif pada katalog tersebut tidak menggantikan koordinat pemain pada peta geografis.
 
 API menghitung status `story` menjadi `open` setelah hari pemain mencapai `requiresDay`. Status `coming_soon` tetap terkunci. Status atlas tidak menggantikan validasi perjalanan, jarak interaksi, syarat boss, atau batas penyelaman pada server.
 
