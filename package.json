@@ -1,0 +1,32 @@
+{
+  "name": "jalasmara",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "dev": "concurrently -k \"npm run dev -w @jalasmara/api\" \"npm run dev -w @jalasmara/web\"",
+    "build": "npm run build:game && npm run build -w @jalasmara/web && npm run build -w @jalasmara/api",
+    "typecheck": "tsc --noEmit -p apps/api/tsconfig.json && tsc --noEmit -p apps/web/tsconfig.json",
+    "test": "tsx --test --test-concurrency=1 apps/api/test/*.test.ts",
+    "seed": "tsx apps/api/src/cli.ts seed",
+    "owner": "tsx apps/api/src/cli.ts owner",
+    "recover-owner": "tsx apps/api/src/cli.ts recover-owner",
+    "check": "npm run typecheck && npm test && npm run build",
+    "build:game": "node scripts/export-game.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.0",
+    "@types/node": "^22.0.0",
+    "concurrently": "^9.0.0",
+    "prettier": "^3.9.10",
+    "tsx": "^4.0.0",
+    "typescript": "^5.9.0"
+  }
+}

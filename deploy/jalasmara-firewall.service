@@ -1,0 +1,12 @@
+[Unit]
+Description=Jalasmara upstream restricted to aaPanel proxy
+After=docker.service network-online.target
+Requires=docker.service
+PartOf=docker.service
+[Service]
+Type=oneshot
+Environment=PROXY_IP=10.1.0.18 APP_IP=10.1.0.8 APP_PORT=3000
+ExecStart=/opt/jalasmara/scripts/proxy-firewall.sh
+RemainAfterExit=yes
+[Install]
+WantedBy=docker.service

@@ -1,0 +1,54 @@
+{
+  "brand": "Jalasmara",
+  "tagline": "Menjaring Ingatan",
+  "brief": "Petualangan laut 2D di Bandar Hujung. Identitas pesisir yang hangat, membumi, dan menghormati budaya Indonesia.",
+  "adjectives": [
+    "hangat",
+    "ingin tahu",
+    "membumi",
+    "pesisir"
+  ],
+  "criteria": "Terbaca pada ukuran kecil, bekerja satu warna, dan tidak mengklaim motif adat atau simbol sakral.",
+  "mockups": [
+    "readme",
+    "app-icon",
+    "website",
+    "social",
+    "sticker",
+    "signage"
+  ],
+  "nav": [
+    "Jelajah",
+    "Catatan Smara",
+    "Kedai Waras"
+  ],
+  "brand_color": "#173f43",
+  "tile_color": "#082e35",
+  "greyscale": false,
+  "final": true,
+  "designer": "Jalasmara",
+  "round": 2,
+  "concepts": [
+    {
+      "name": "Jala Muara",
+      "symbol": "symbol.svg",
+      "lockup": "horizontal.svg",
+      "stacked": "stacked.svg",
+      "symbol_on_tile": "symbol-white.svg",
+      "symbol_on_dark": "symbol-white.svg",
+      "lockup_on_dark": "horizontal-white.svg",
+      "idea": "Lengkung jala menerima kembali ingatan, dengan sulur baru yang mengalir seperti perairan muara.",
+      "rationale": [
+        "Bentuk lentur menggambarkan merawat dan memulihkan.",
+        "Tinta bandar, lamun, dan pasir memberi suasana pesisir yang tenang.",
+        "Ornamen adalah gambar baru; bukan tiruan lambang adat atau keagamaan."
+      ]
+    }
+  ],
+  "recommendation": "Arah C — Jala Muara telah dipilih pemilik proyek. Gunakan master final dan pedoman pemakaian yang disertakan.",
+  "next_steps": [
+    "Master SVG dan PNG tersedia dalam kit.",
+    "Gunakan simbol kecil pada favicon 16–23 piksel.",
+    "Tinjau ornamen dan busana bersama pembaca budaya sebelum rilis publik."
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "@jalasmara/api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --env-file=../../.env src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/apps/api/src/index.js"
+  },
+  "dependencies": {
+    "@fastify/cookie": "^11.0.0",
+    "@fastify/helmet": "^13.0.0",
+    "@fastify/rate-limit": "^10.0.0",
+    "@fastify/static": "^10.1.10",
+    "argon2": "^0.44.0",
+    "fastify": "^5.0.0",
+    "ioredis": "^5.0.0",
+    "mongodb": "^6.0.0",
+    "openid-client": "^6.0.0",
+    "zod": "^4.6.7"
+  }
+}

@@ -1,0 +1,21 @@
+config_version=5
+[application]
+config/name="Jalasmara"
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.7", "GL Compatibility")
+[autoload]
+ApiClient="*res://autoloads/ApiClient.gd"
+GameState="*res://autoloads/GameState.gd"
+[display]
+window/size/viewport_width=960
+window/size/viewport_height=540
+window/size/window_width_override=1440
+window/size/window_height_override=810
+window/stretch/mode="canvas_items"
+window/stretch/scale_mode="fractional"
+[rendering]
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/default_filters/use_nearest_mipmap_filter=false
+textures/canvas_textures/default_texture_filter=0
+environment/defaults/default_clear_color=Color(0.025,0.12,0.16,1)

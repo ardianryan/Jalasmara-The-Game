@@ -1,0 +1,16 @@
+node_modules
+.git
+.env*
+.runtime
+artifacts
+.taste-skill
+test-results
+apps/*/dist
+apps/api/test
+deploy
+docs
+moodboard
+references/private
+client-godot/.godot
+
+.cache

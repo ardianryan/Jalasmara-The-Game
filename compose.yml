@@ -1,0 +1,76 @@
+name: jalasmara
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: '3'
+services:
+  mongo:
+    image: mongo:8.0
+    command: [mongod, --replSet, rs0, --bind_ip_all, --wiredTigerCacheSizeGB, '0.5']
+    restart: unless-stopped
+    volumes: [mongo-data:/data/db]
+    networks: [data]
+    logging: *logging
+    healthcheck:
+      test: [CMD, mongosh, --quiet, --eval, 'db.adminCommand({ping:1}).ok ? quit(0) : quit(1)']
+      interval: 10s
+      timeout: 5s
+      retries: 20
+  mongo-init:
+    image: mongo:8.0
+    depends_on:
+      mongo: {condition: service_healthy}
+    networks: [data]
+    restart: 'no'
+    logging: *logging
+    entrypoint: [/bin/bash, -ec]
+    command:
+      - |
+        mongosh --host mongo:27017 --quiet --eval 'try { rs.status() } catch (e) { if(e.codeName === "NotYetInitialized") rs.initiate({_id:"rs0",members:[{_id:0,host:"mongo:27017"}]}); else throw e; }'
+        until mongosh --host mongo:27017 --quiet --eval 'db.hello().isWritablePrimary ? quit(0) : quit(1)'; do sleep 1; done
+  redis:
+    image: redis:7.4-alpine
+    command: [redis-server, --appendonly, 'yes', --maxmemory, 128mb, --maxmemory-policy, noeviction]
+    restart: unless-stopped
+    volumes: [redis-data:/data]
+    networks: [data]
+    logging: *logging
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+  app:
+    image: jalasmara:${APP_VERSION:-current}
+    build: .
+    restart: unless-stopped
+    init: true
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    ports: ['${APP_BIND:-127.0.0.1}:${APP_PORT:-3000}:3000']
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3000
+      APP_ORIGIN: ${APP_ORIGIN:-http://localhost:3000}
+      TRUST_PROXY: ${TRUST_PROXY:-}
+      MONGO_URL: mongodb://mongo:27017/jalasmara?replicaSet=rs0
+      REDIS_URL: redis://redis:6379
+      OIDC_ISSUER: ${OIDC_ISSUER:-}
+      OIDC_CLIENT_ID: ${OIDC_CLIENT_ID:-}
+      OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET:-}
+      OIDC_LABEL: ${OIDC_LABEL:-Google / Microsoft / OIDC}
+    depends_on:
+      mongo-init: {condition: service_completed_successfully}
+      redis: {condition: service_healthy}
+    networks: [data, egress]
+    logging: *logging
+networks:
+  data: {internal: true}
+  egress: {}
+volumes:
+  mongo-data:
+  redis-data:

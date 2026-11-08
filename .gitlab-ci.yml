@@ -1,0 +1,101 @@
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS'
+      when: never
+    - if: '$CI_COMMIT_BRANCH'
+  auto_cancel:
+    on_new_commit: interruptible
+stages: [verify, build, analyze, report]
+default:
+  image: node:22-bookworm-slim
+  interruptible: true
+variables:
+  npm_config_cache: '$CI_PROJECT_DIR/.cache/npm'
+  FF_NETWORK_PER_BUILD: 'true'
+cache:
+  key:
+    files: [package-lock.json]
+  paths: [.cache/npm/]
+verify:
+  stage: verify
+  services:
+    - name: mongo:8.0
+      alias: mongo
+      variables:
+        HEALTHCHECK_TCP_PORT: "27018"
+      command: [mongod, --replSet, rs0, --bind_ip_all, --port, '27018']
+    - name: redis:7.4-alpine
+      alias: redis
+  variables:
+    TEST_MONGO_URL: 'mongodb://mongo:27018/jalasmara_ci?replicaSet=rs0'
+    TEST_REDIS_URL: 'redis://redis:6379/14'
+  script:
+    - npm ci
+    - node ci/init-mongo.mjs
+    - npm run typecheck
+    - mkdir -p reports
+    - npx tsx --test --test-concurrency=1 --test-reporter=junit --test-reporter-destination=reports/tests.xml apps/api/test/*.test.ts
+    - npm audit --json > reports/dependencies.json
+  artifacts:
+    when: always
+    paths: [reports/]
+    reports:
+      junit: reports/tests.xml
+    expire_in: 30 days
+godot_web:
+  stage: build
+  needs: [verify]
+  cache:
+    key: godot-4.7.2-web
+    paths: [.cache/godot-4.7.2/]
+  script:
+    - apt-get update -qq && apt-get install -y -qq curl unzip libfontconfig1 libx11-6 libxcursor1 libxinerama1 libxrandr2 libxi6 libgl1 libasound2
+    - bash ci/setup-godot.sh
+  artifacts:
+    paths: [apps/web/public/game/]
+    expire_in: 7 days
+build:
+  stage: build
+  needs: [verify, godot_web]
+  script:
+    - npm ci
+    - npm run build -w @jalasmara/web
+    - npm run build -w @jalasmara/api
+  artifacts:
+    paths: [apps/web/dist/, apps/api/dist/]
+    expire_in: 7 days
+codeql:
+  stage: analyze
+  needs: [verify]
+  cache:
+    key: codeql-linux64-v1
+    paths: [.cache/codeql/]
+  script:
+    - apt-get update -qq && apt-get install -y -qq curl git gzip
+    - bash ci/codeql.sh
+  artifacts:
+    when: always
+    paths: [reports/codeql.sarif]
+    expire_in: 30 days
+report_to_github:
+  stage: report
+  interruptible: false
+  resource_group: github-reports
+  needs:
+    - job: verify
+      artifacts: true
+    - job: build
+      artifacts: false
+    - job: codeql
+      artifacts: true
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_COMMIT_REF_PROTECTED == "true"'
+      when: always
+  script:
+    - apt-get update -qq && apt-get install -y -qq git openssh-client curl python3
+    - bash ci/publish-reports.sh
+  artifacts:
+    when: always
+    paths: [reports/]
+    expire_in: 30 days
