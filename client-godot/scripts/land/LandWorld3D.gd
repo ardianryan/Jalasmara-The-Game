@@ -130,6 +130,7 @@ func set_area(place: String) -> void:
 		_build_surface(surface)
 	for stair in map.get("stairs",[]): _build_stair(stair)
 	for obstacle in map.get("obstacles",[]): _build_obstacle(obstacle)
+	_build_corridor_landmarks()
 	_build_ground_details()
 	_build_wet_banks()
 	_batch_static_geometry()
@@ -237,9 +238,38 @@ void fragment(){float wave=sin(UV.x*210.0+TIME)*sin(UV.y*170.0-TIME*.7);ALBEDO=m
 
 func _build_landmass() -> void:
 	var points: Array=map.get("landmass",[])
-	if points.size()<3: return
-	var surface:={"id":"OrganicCoastalBacking","polygon":points,"material":"grass","elevation":0,"heightPixels":-8.0,"priority":0}
-	_build_surface_geometry(surface)
+	if points.size()>=3:
+		var surface:={"id":"OrganicCoastalBacking","polygon":points,"material":"grass","elevation":0,"heightPixels":-8.0,"priority":0}
+		_build_surface_geometry(surface)
+		if area=="hub":
+			_build_surface_geometry({"id":"HubGatewayBackingPatch","polygon":[[2160,15],[2390,20],[2385,95],[2160,95]],"material":"grass","elevation":3,"heightPixels":3.0*LEVEL_HEIGHT-2.0,"priority":1})
+			_build_surface_geometry({"id":"HubGatewayBackingTrail","polygon":[[2238,18],[2324,18],[2324,88],[2238,88]],"material":"dirt","elevation":3,"heightPixels":3.0*LEVEL_HEIGHT+0.15,"priority":8})
+		return
+	if area=="forest":
+		_build_surface_geometry({
+			"id":"WestForestBacking",
+			"polygon":[[-420,-260],[1295,-260],[1320,120],[1300,800],[1315,1480],[1240,1820],[-420,1820]],
+			"material":"grass",
+			"elevation":0,
+			"heightPixels":-0.05,
+			"priority":0,
+		})
+		_build_surface_geometry({
+			"id":"EastForestBacking",
+			"polygon":[[1585,120],[1615,-260],[2820,-260],[2820,1820],[1610,1820],[1565,1430],[1580,800]],
+			"material":"grass",
+			"elevation":0,
+			"heightPixels":-0.05,
+			"priority":0,
+		})
+		_build_surface_geometry({
+			"id":"ForestEntryBackingTrail",
+			"polygon":[[-45,1405],[110,1330],[150,1408],[-5,1485]],
+			"material":"dirt",
+			"elevation":0,
+			"heightPixels":0.15,
+			"priority":8,
+		})
 
 func _build_surface(surface: Dictionary) -> void:
 	if bool(surface.get("walkable",true)):
@@ -278,9 +308,17 @@ func _build_surface_geometry(surface: Dictionary) -> void:
 	_mesh(str(surface.id),vertices,indices,_materials.get_material(str(surface.material)))
 	if int(surface.get("priority",0))>0: return
 	var edge_material: Material=_materials.get_material("wood" if str(surface.material) in ["dock","wood","bridge"] else "stone")
+	var surface_id:=str(surface.id)
+	var is_forest_bank:=surface_id in ["forest_west_land","forest_east_land"]
+	var is_forest_backing:=surface_id in ["WestForestBacking","EastForestBacking"]
+	if is_forest_backing: return
 	for i in range(polygon.size()):
 		var first:=polygon[i]
 		var second:=polygon[(i+1)%polygon.size()]
+		if is_forest_bank:
+			var edge_mid:=(first+second)*.5
+			if edge_mid.x<1250.0 or edge_mid.x>1650.0 or (first.y<=125.0 and second.y<=125.0) or (first.y>=1425.0 and second.y>=1425.0):
+				continue
 		var parts:=maxi(1,ceili(first.distance_to(second)/32.0))
 		for part in range(parts):
 			var a:=first.lerp(second,float(part)/parts)
@@ -954,3 +992,77 @@ func _wet_bank_clear(point: Vector2,placed: Array[Vector2]) -> bool:
 		for sample in [Vector2.ZERO,Vector2(12,0),Vector2(-12,0),Vector2(0,12),Vector2(0,-12)]:
 			if Geometry2D.is_point_in_polygon(point+sample,polygon): return false
 	return true
+
+func _gateway_arch(label: String, post_a: Vector2, post_b: Vector2, elevation_z: float) -> void:
+	if _glow_material==null:
+		_glow_material=StandardMaterial3D.new()
+		_glow_material.albedo_color=Color("f4cc88")
+		_glow_material.emission_enabled=true
+		_glow_material.emission=Color("ffc773")
+		_glow_material.emission_energy_multiplier=.38
+	var wood: Material=_materials.get_material("wood")
+	var bamboo: Material=_materials.get_material("bamboo")
+	var thatch: Material=_materials.get_material("thatch")
+	var stone: Material=_materials.get_material("stone")
+	var a3:=map_point(post_a,elevation_z)
+	var b3:=map_point(post_b,elevation_z)
+	var mid:=(a3+b3)*.5
+	for post in [a3,b3]:
+		_box(label+"_Base",post+Vector3(0,0,10),Vector3(18,18,20),stone)
+		_column(post+Vector3(0,0,16),post+Vector3(0,0,118),6.5,wood)
+		_column(post+Vector3(0,0,28),post+Vector3(0,0,112),4.0,bamboo)
+	_column(a3+Vector3(0,0,98),b3+Vector3(0,0,98),5.0,wood)
+	_column(a3+Vector3(0,0,114),b3+Vector3(0,0,114),6.0,bamboo)
+	var span:=a3.distance_to(b3)+26.0
+	_box(label+"_LintelRoof",mid+Vector3(0,0,122),Vector3(span,26,12),thatch)
+	_box(label+"_Signboard",mid+Vector3(0,0,105),Vector3(span*.55,8,14),wood)
+	var lamp_pos:=a3.lerp(b3,0.18)+Vector3(0,0,84)
+	_box(label+"_LanternGlass",lamp_pos,Vector3(9,9,14),_glow_material)
+	_box(label+"_LanternCap",lamp_pos+Vector3(0,0,8),Vector3(13,13,4),wood)
+	_box(label+"_LanternBase",lamp_pos-Vector3(0,0,8),Vector3(13,13,4),wood)
+
+func _build_corridor_landmarks() -> void:
+	var wood: Material=_materials.get_material("wood")
+	var bamboo: Material=_materials.get_material("bamboo")
+	var stone: Material=_materials.get_material("stone")
+	if area=="hub":
+		var ridge_z:=3.0*LEVEL_HEIGHT
+		_gateway_arch("HubForestGate",Vector2(2248,108),Vector2(2326,108),ridge_z)
+		for side_x in [1720.0,1840.0]:
+			var step_pillar:=map_point(Vector2(side_x,392),ridge_z)
+			_box("RidgeStepPillar",step_pillar+Vector3(0,0,16),Vector3(16,16,32),stone)
+			_box("RidgeStepCap",step_pillar+Vector3(0,0,34),Vector3(20,20,6),wood)
+		for cairn_pt in [Vector2(2040,248),Vector2(2215,245)]:
+			var c_at:=map_point(cairn_pt,ridge_z)
+			_box("RidgeGuideStone",c_at+Vector3(0,0,11),Vector3(14,12,22),stone)
+		for backdrop_pt in [Vector2(2205,48),Vector2(2355,52)]:
+			_tree({"height3d":185,"variant":"broadleaf"},Rect2(backdrop_pt-Vector2(16,16),Vector2(32,32)),map_point(backdrop_pt,ridge_z-2.0))
+	elif area=="forest":
+		_gateway_arch("ForestEntryGate",Vector2(108,1358),Vector2(188,1358),0.0)
+		var sign_at:=map_point(Vector2(228,1348),0.0)
+		_column(sign_at,sign_at+Vector3(0,0,58),4.5,wood)
+		_box("ForestDirectionSign",sign_at+Vector3(0,0,48),Vector3(38,8,14),wood)
+		_box("ForestEntryCairn",sign_at+Vector3(-18,8,10),Vector3(16,14,20),stone)
+		for border_pt in [Vector2(45,1150),Vector2(95,1010),Vector2(185,910),Vector2(-25,1280)]:
+			_tree({"height3d":195,"variant":"broadleaf"},Rect2(border_pt-Vector2(17,17),Vector2(34,34)),map_point(border_pt,0.0))
+		# Landmark 1: Celah Cahaya Tajuk (650, 1050)
+		var canopy_pt:=map_point(Vector2(692,1005),0.0)
+		_box("CanopyCairnBase",canopy_pt+Vector3(0,0,10),Vector3(24,20,20),stone)
+		_box("CanopyCairnTop",canopy_pt+Vector3(0,0,24),Vector3(14,12,12),stone)
+		_column(canopy_pt+Vector3(-28,16,7),canopy_pt+Vector3(18,24,7),6.0,wood)
+		# Landmark 2: Akar dan Serasah (1200, 730)
+		var roots_pt:=map_point(Vector2(1148,688),0.0)
+		for arc in [-1.0,1.0]:
+			_column(roots_pt+Vector3(arc*22,0,0),roots_pt+Vector3(0,0,46),5.5,wood)
+		_box("RootsMarkerStone",roots_pt+Vector3(0,0,12),Vector3(18,16,24),stone)
+		# Landmark 3: Aliran Hulu Bandar (1830, 470)
+		var stream_pt:=map_point(Vector2(1788,425),0.0)
+		_column(stream_pt,stream_pt+Vector3(0,0,54),4.5,bamboo)
+		_column(stream_pt+Vector3(28,8,0),stream_pt+Vector3(28,8,54),4.5,bamboo)
+		_column(stream_pt+Vector3(0,0,42),stream_pt+Vector3(28,8,42),3.5,bamboo)
+		_box("StreamWatchStone",stream_pt+Vector3(-16,12,9),Vector3(18,14,18),stone)
+		# Landmark 4: Peti Perbekalan (2130, 1050)
+		var cache_pt:=map_point(Vector2(2166,1008),0.0)
+		_box("CachePlatform",cache_pt+Vector3(0,0,5),Vector3(46,34,10),bamboo)
+		_box("CacheChest",cache_pt+Vector3(0,0,20),Vector3(34,24,22),wood)
+		_box("CacheChestBand",cache_pt+Vector3(0,0,21),Vector3(36,26,5),bamboo)

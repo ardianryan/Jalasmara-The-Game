@@ -13,8 +13,12 @@ var bgm_streams: Dictionary = {}
 var sfx_players: Array[AudioStreamPlayer] = []
 var max_sfx_players := 8
 var current_sfx_idx := 0
+var water_sfx_players: Array[AudioStreamPlayer] = []
+var max_water_sfx_players := 2
+var current_water_sfx_idx := 0
 var bgm_player: AudioStreamPlayer
 var panic_player: AudioStreamPlayer
+var ambience_player: AudioStreamPlayer
 var current_bgm_track := ""
 var is_underwater := false
 var audio_unlocked := false
@@ -39,6 +43,10 @@ var _baseline_ready := false
 var _menu_override := false
 var _played_sfx := 0
 var _last_sfx := ""
+var _played_water_sfx := 0
+var _last_water_sfx := ""
+var _ambience_target_db := SILENCE_DB
+var _ambience_desired := false
 
 func can_play_environment() -> bool:
 	return audio_unlocked and not muted and _focused
@@ -77,6 +85,12 @@ func _setup_audio_players() -> void:
 		sound.playback_type = AudioServer.PLAYBACK_TYPE_STREAM
 		add_child(sound)
 		sfx_players.append(sound)
+	for i in range(max_water_sfx_players):
+		var water_sound := AudioStreamPlayer.new()
+		water_sound.bus = ENVIRONMENT_BUS
+		water_sound.playback_type = AudioServer.PLAYBACK_TYPE_STREAM
+		add_child(water_sound)
+		water_sfx_players.append(water_sound)
 	for i in range(2):
 		var music := AudioStreamPlayer.new()
 		music.bus = ENVIRONMENT_BUS
@@ -90,6 +104,11 @@ func _setup_audio_players() -> void:
 	panic_player.playback_type = AudioServer.PLAYBACK_TYPE_STREAM
 	panic_player.volume_db = -18.0
 	add_child(panic_player)
+	ambience_player = AudioStreamPlayer.new()
+	ambience_player.bus = ENVIRONMENT_BUS
+	ambience_player.playback_type = AudioServer.PLAYBACK_TYPE_STREAM
+	ambience_player.volume_db = SILENCE_DB
+	add_child(ambience_player)
 
 func _load_audio_resources() -> void:
 	var all_sfx := [
@@ -115,7 +134,9 @@ func _load_audio_resources() -> void:
 		# Interaksi Taktil Kayu & Menu UI
 		"wooden_click_light", "wooden_click_heavy", "wooden_toggle", "page_turn", "recipe_cooked",
 		# Mekanisme, Katup & Tetesan
-		"rope_creak", "metal_valve_turn", "bell_ding", "water_drip"
+		"rope_creak", "metal_valve_turn", "bell_ding", "water_drip",
+		# Deburan Ombak Pesisir & Deru Air Pantai (Coast Surf, Wave Lap & Crash)
+		"coastal_wave_lap", "coastal_wave_surge", "wave_crash_rock", "ambient_coastal_waves"
 	]
 	for sound_name in all_sfx:
 		var path: String = SFX_PATH + sound_name + ".wav"
@@ -123,6 +144,10 @@ func _load_audio_resources() -> void:
 			sfx_streams[sound_name] = load(path)
 	if sfx_streams.has("heartbeat"):
 		sfx_streams["heartbeat"] = _looping_copy(sfx_streams.heartbeat)
+	if sfx_streams.has("ambient_coastal_waves"):
+		sfx_streams["ambient_coastal_waves"] = _looping_copy(sfx_streams.ambient_coastal_waves)
+		if is_instance_valid(ambience_player):
+			ambience_player.stream = sfx_streams.ambient_coastal_waves
 	var definitions := {
 		"coastal_day":["bgm_coastal_day.mp3","bgm_coastal_day.wav"],
 		"underwater_segaran":["bgm_underwater_segaran.mp3","bgm_underwater_ambient.wav"],
@@ -186,6 +211,40 @@ func play_sfx(sound_name: String,pitch_scale: float=1.0,volume_db: float=0.0) ->
 	_played_sfx += 1
 	_last_sfx = sound_name
 
+func play_water_sfx(sound_name: String,pitch_scale: float=1.0,volume_db: float=0.0) -> void:
+	if not can_play_environment() or _menu_paused() or not sfx_streams.has(sound_name) or water_sfx_players.is_empty():
+		return
+	var sound := water_sfx_players[current_water_sfx_idx]
+	current_water_sfx_idx = (current_water_sfx_idx+1)%max_water_sfx_players
+	sound.stop()
+	sound.bus = ENVIRONMENT_BUS
+	sound.playback_type = AudioServer.PLAYBACK_TYPE_STREAM
+	sound.stream = sfx_streams[sound_name]
+	sound.pitch_scale = clampf(pitch_scale,0.5,2.0)
+	sound.volume_db = clampf(SFX_VOLUME_DB+volume_db,-60.0,0.0)
+	sound.play()
+	_played_water_sfx += 1
+	_last_water_sfx = sound_name
+
+func update_coastal_ambience(target_db: float,active: bool,step_db: float=18.0) -> void:
+	_ambience_desired = active
+	_ambience_target_db = clampf(target_db,SILENCE_DB,-8.0) if active else SILENCE_DB
+	if not is_instance_valid(ambience_player):
+		return
+	var allowed := active and can_play_environment() and not _menu_paused() and not is_underwater and sfx_streams.has("ambient_coastal_waves")
+	if not allowed:
+		if ambience_player.playing:
+			ambience_player.volume_db = move_toward(ambience_player.volume_db,SILENCE_DB,step_db)
+			if ambience_player.volume_db<=SILENCE_DB+1.0 or not can_play_environment() or _menu_paused():
+				ambience_player.stop()
+		return
+	if ambience_player.stream!=sfx_streams.ambient_coastal_waves:
+		ambience_player.stream = sfx_streams.ambient_coastal_waves
+	if not ambience_player.playing:
+		ambience_player.volume_db = minf(_ambience_target_db,-28.0)
+		ambience_player.play()
+	ambience_player.volume_db = move_toward(ambience_player.volume_db,_ambience_target_db,step_db)
+
 func play_bgm(track_name: String,fade_duration: float=1.0) -> void:
 	var key := track_name.trim_prefix("bgm_")
 	if key=="underwater_ambient":
@@ -245,11 +304,18 @@ func set_underwater_filter(underwater: bool) -> void:
 		return
 	is_underwater = underwater
 	AudioServer.set_bus_effect_enabled(_environment_bus_index,_filter_slot,underwater)
+	if underwater and is_instance_valid(ambience_player):
+		ambience_player.stop()
 
 func set_menu_paused(paused: bool) -> void:
 	_menu_override = paused
 	if paused:
 		panic_player.stop()
+		if is_instance_valid(ambience_player):
+			ambience_player.stop()
+		for water_sound in water_sfx_players:
+			if is_instance_valid(water_sound):
+				water_sound.stop()
 
 func _menu_paused() -> bool:
 	if _menu_override or get_tree().paused:
@@ -276,6 +342,11 @@ func set_muted(value: bool) -> void:
 	_apply_mute()
 	if muted:
 		panic_player.stop()
+		if is_instance_valid(ambience_player):
+			ambience_player.stop()
+		for water_sound in water_sfx_players:
+			if is_instance_valid(water_sound):
+				water_sound.stop()
 	var config := ConfigFile.new()
 	config.set_value("audio","muted",muted)
 	config.save("user://audio.cfg")
@@ -354,6 +425,11 @@ func _notification(what: int) -> void:
 		_focused = false
 		if is_instance_valid(panic_player):
 			panic_player.stop()
+		if is_instance_valid(ambience_player):
+			ambience_player.stop()
+		for water_sound in water_sfx_players:
+			if is_instance_valid(water_sound):
+				water_sound.stop()
 	elif what==NOTIFICATION_APPLICATION_FOCUS_IN or what==NOTIFICATION_WM_WINDOW_FOCUS_IN:
 		_focused = true
 
@@ -365,11 +441,30 @@ func _exit_tree() -> void:
 	for sound in sfx_players:
 		sound.stop()
 		sound.stream = null
+	for water_sound in water_sfx_players:
+		water_sound.stop()
+		water_sound.stream = null
 	if is_instance_valid(panic_player):
 		panic_player.stop()
 		panic_player.stream = null
+	if is_instance_valid(ambience_player):
+		ambience_player.stop()
+		ambience_player.stream = null
 	bgm_streams.clear()
 	sfx_streams.clear()
 
 func debug_status() -> Dictionary:
-	return {"unlocked":audio_unlocked,"muted":muted,"track":current_bgm_track,"playing":is_instance_valid(bgm_player) and bgm_player.playing,"underwater":is_underwater,"heartbeat":is_instance_valid(panic_player) and panic_player.playing,"sfxPlayed":_played_sfx,"lastSfx":_last_sfx}
+	return {
+		"unlocked":audio_unlocked,
+		"muted":muted,
+		"track":current_bgm_track,
+		"playing":is_instance_valid(bgm_player) and bgm_player.playing,
+		"underwater":is_underwater,
+		"heartbeat":is_instance_valid(panic_player) and panic_player.playing,
+		"sfxPlayed":_played_sfx,
+		"lastSfx":_last_sfx,
+		"waterSfxPlayed":_played_water_sfx,
+		"lastWaterSfx":_last_water_sfx,
+		"coastalAmbiencePlaying":is_instance_valid(ambience_player) and ambience_player.playing,
+		"coastalAmbienceDb":ambience_player.volume_db if is_instance_valid(ambience_player) else SILENCE_DB,
+	}

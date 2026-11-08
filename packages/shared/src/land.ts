@@ -116,6 +116,70 @@ function strip(a: LandPoint, b: LandPoint, width: number): LandPoint[] {
     [b[0] + nx, b[1] + ny],
   ];
 }
+function miteredRouteSegments(
+  route: readonly LandPoint[],
+  width: number,
+): LandPoint[][] {
+  if (route.length < 2) return [];
+  const half = width / 2;
+  const normals: [number, number][] = [];
+  for (let i = 0; i < route.length - 1; i++) {
+    const a = route[i],
+      b = route[i + 1],
+      len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+    normals.push([-(b[1] - a[1]) / len, (b[0] - a[0]) / len]);
+  }
+  const offsets: [number, number][] = [];
+  for (let i = 0; i < route.length; i++) {
+    if (i === 0) {
+      offsets.push([normals[0][0] * half, normals[0][1] * half]);
+    } else if (i === route.length - 1) {
+      const last = normals[normals.length - 1];
+      offsets.push([last[0] * half, last[1] * half]);
+    } else {
+      const n0 = normals[i - 1],
+        n1 = normals[i];
+      let bx = n0[0] + n1[0],
+        by = n0[1] + n1[1];
+      const blen = Math.hypot(bx, by);
+      if (blen < 1e-4) {
+        offsets.push([n0[0] * half, n0[1] * half]);
+      } else {
+        bx /= blen;
+        by /= blen;
+        const dot = Math.max(0.68, bx * n0[0] + by * n0[1]);
+        const scale = Math.min(1.42, 1 / dot) * half;
+        offsets.push([bx * scale, by * scale]);
+      }
+    }
+  }
+  const segments: LandPoint[][] = [];
+  for (let i = 1; i < route.length; i++) {
+    const a = route[i - 1],
+      b = route[i],
+      oa = offsets[i - 1],
+      ob = offsets[i];
+    segments.push([
+      [
+        Math.round((a[0] + oa[0]) * 100) / 100,
+        Math.round((a[1] + oa[1]) * 100) / 100,
+      ],
+      [
+        Math.round((a[0] - oa[0]) * 100) / 100,
+        Math.round((a[1] - oa[1]) * 100) / 100,
+      ],
+      [
+        Math.round((b[0] - ob[0]) * 100) / 100,
+        Math.round((b[1] - ob[1]) * 100) / 100,
+      ],
+      [
+        Math.round((b[0] + ob[0]) * 100) / 100,
+        Math.round((b[1] + ob[1]) * 100) / 100,
+      ],
+    ]);
+  }
+  return segments;
+}
 const hubStairs: LandStair[] = [
   {
     id: "dock_gangway",
@@ -237,7 +301,7 @@ const hubSurfaces: LandSurface[] = [
       [1670, 350],
       [1670, 125],
     ],
-    "sand",
+    "grass",
     3,
   ),
 ];
@@ -412,12 +476,15 @@ const forestSurfaces: LandSurface[] = [
     bridgeId: bridge.id,
   })),
 ];
-for (const [routeIndex, route] of forestRoutes.entries())
-  for (let i = 1; i < route.length; i++) {
+for (const [routeIndex, route] of forestRoutes.entries()) {
+  const visualRoute: readonly LandPoint[] =
+    routeIndex === 0 ? [[85, 1378], ...route] : route;
+  const segments = miteredRouteSegments(visualRoute, 105);
+  for (let i = 0; i < segments.length; i++) {
     forestSurfaces.push({
       ...floor(
-        `forest_trail_${routeIndex}_${i}`,
-        strip(route[i - 1], route[i], 105),
+        `forest_trail_${routeIndex}_${i + 1}`,
+        segments[i],
         "dirt",
         0,
         10,
@@ -425,6 +492,7 @@ for (const [routeIndex, route] of forestRoutes.entries())
       walkable: false,
     });
   }
+}
 const forestObstacles: LandObstacle[] = [
   obstacle("bridge_east", "fence", 2140, 360, 180, 80, 75, "broken_bridge"),
   obstacle("landslide_north", "rock", 1080, 155, 240, 90, 125, "landslide"),
@@ -512,8 +580,8 @@ export const LAND_MAPS: Record<"hub" | "forest", LandMap> = {
       [1600, 170],
       [1650, 65],
       [2060, 40],
-      [2370, 70],
-      [2390, 420],
+      [2360, 65],
+      [2365, 420],
       [2250, 470],
       [2250, 760],
       [1980, 820],
@@ -752,6 +820,23 @@ for (const [
       variant,
     ),
   );
+}
+const hubRidgeTrail = miteredRouteSegments(
+  [
+    [1780, 390],
+    [1780, 345],
+    [1950, 295],
+    [2180, 295],
+    [2282, 225],
+    [2282, 82],
+  ],
+  92,
+);
+for (const [index, segment] of hubRidgeTrail.entries()) {
+  LAND_MAPS.hub.surfaces.push({
+    ...floor(`hub_ridge_trail_${index}`, segment, "dirt", 3, 10),
+    walkable: false,
+  });
 }
 export function landDistanceToSegment(
   point: LandPosition,

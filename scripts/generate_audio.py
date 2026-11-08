@@ -1277,6 +1277,185 @@ def gen_water_drip():
         samples.append(math.sin(phase) * env * 0.6)
     return samples
 
+# ----------------- SFX DEBURAN OMBAK & DERU AIR PESISIR (OCEAN WAVES & SURF) -----------------
+
+def gen_coastal_wave_lap():
+    """Deburan ombak pesisir (gelombang air bergulung, pecahan lembut di pasir pantai, lalu desis buih surut)."""
+    dur = 2.8
+    n = int(SAMPLE_RATE * dur)
+    samples = []
+    rnd = random.Random(10101)
+    
+    rumble_phase = 0.0
+    pink_lp1 = 0.0
+    pink_lp2 = 0.0
+    foam_hp = 0.0
+    foam_lp = 0.0
+    
+    for i in range(n):
+        t = i / SAMPLE_RATE
+        
+        # 1. Gelombang masuk bergulung (Inflow surge: t dari 0.0 ke 1.1s)
+        inflow_env = 0.0
+        if t < 1.1:
+            inflow_env = math.sin(math.pi * 0.5 * (t / 1.1))
+        else:
+            inflow_env = math.exp(-2.2 * (t - 1.1))
+            
+        rumble_freq = 55.0 + 18.0 * math.sin(2.0 * math.pi * 0.4 * t)
+        rumble_phase += 2.0 * math.pi * rumble_freq / SAMPLE_RATE
+        rumble = math.sin(rumble_phase) * inflow_env * 0.45
+        
+        # 2. Deburan pecahan ombak di pasir (Crest break & white water: puncak di t=0.9 - 1.6s)
+        raw = rnd.uniform(-1.0, 1.0)
+        pink_lp1 += 0.08 * (raw - pink_lp1)
+        pink_lp2 += 0.12 * (pink_lp1 - pink_lp2)
+        
+        break_env = 0.0
+        if 0.5 < t < 2.0:
+            dt = t - 0.5
+            break_env = math.sin(math.pi * (dt / 1.5))
+        water_body = pink_lp2 * break_env * 0.75
+        
+        # 3. Desisan air laut surut berbusa di butiran pasir (Seafoam hiss & percolation: t=1.1 ke 2.8s)
+        foam_env = 0.0
+        if t > 1.1:
+            dt = t - 1.1
+            foam_env = math.sin(math.pi * min(1.0, dt / 0.5)) * math.exp(-1.4 * dt)
+            
+        foam_hp = raw - 0.65 * foam_hp
+        foam_lp += 0.25 * (foam_hp - foam_lp)
+        foam = foam_lp * foam_env * 0.42
+        
+        total = rumble + water_body + foam
+        samples.append(math.tanh(total * 1.5) * 0.85)
+        
+    return samples
+
+def gen_coastal_wave_surge():
+    """Deru ombak laut pasang besar (gemuruh massa air laut bertenaga menghempas bibir pesisir)."""
+    dur = 3.4
+    n = int(SAMPLE_RATE * dur)
+    samples = []
+    rnd = random.Random(20202)
+    
+    sub_phase = 0.0
+    body_lp = 0.0
+    wash_hp = 0.0
+    wash_lp = 0.0
+    
+    for i in range(n):
+        t = i / SAMPLE_RATE
+        
+        # Sub-bass massa air laut besar (42Hz - 68Hz)
+        sub_freq = 46.0 + 20.0 * math.sin(2.0 * math.pi * 0.3 * t)
+        sub_phase += 2.0 * math.pi * sub_freq / SAMPLE_RATE
+        
+        surge_env = math.sin(math.pi * min(1.0, t / 1.3)) if t < 1.3 else math.exp(-1.3 * (t - 1.3))
+        sub = math.sin(sub_phase) * surge_env * 0.55
+        
+        # Hempasan gulungan air berbusa tebal
+        raw = rnd.uniform(-1.0, 1.0)
+        body_lp += 0.07 * (raw - body_lp)
+        body_env = math.sin(math.pi * min(1.0, t / 1.5)) if t < 1.5 else math.exp(-1.6 * (t - 1.5))
+        body = body_lp * body_env * 0.85
+        
+        # Deru desis sapuan busa panjang
+        wash_hp = raw - 0.7 * wash_hp
+        wash_lp += 0.2 * (wash_hp - wash_lp)
+        wash_env = 0.0
+        if t > 0.8:
+            dt = t - 0.8
+            wash_env = math.sin(math.pi * min(1.0, dt / 0.7)) * math.exp(-1.1 * dt)
+        wash = wash_lp * wash_env * 0.45
+        
+        val = math.tanh((sub + body + wash) * 1.6) * 0.88
+        samples.append(val)
+        
+    return samples
+
+def gen_wave_crash_rock():
+    """Hempasan deburan ombak menabrak tiang pancang dermaga atau batu karang pemecah ombak."""
+    dur = 1.9
+    n = int(SAMPLE_RATE * dur)
+    samples = []
+    rnd = random.Random(30303)
+    
+    impact_phase = 0.0
+    splash_lp = 0.0
+    spray_hp = 0.0
+    
+    for i in range(n):
+        t = i / SAMPLE_RATE
+        
+        # 1. Hantaman massa air pada karang / tiang (benturan padat tumpul)
+        impact_freq = 110.0 * math.exp(-14.0 * t) + 38.0
+        impact_phase += 2.0 * math.pi * impact_freq / SAMPLE_RATE
+        impact = math.tanh(math.sin(impact_phase) * 2.2) * math.exp(-10.0 * t) * 0.65
+        
+        # 2. Guyuran dan cipratan air deras (splash)
+        raw = rnd.uniform(-1.0, 1.0)
+        splash_lp += 0.15 * (raw - splash_lp)
+        splash_env = math.sin(math.pi * min(1.0, t / 0.6)) * math.exp(-6.0 * t)
+        splash = splash_lp * splash_env * 0.8
+        
+        # 3. Percikan partikel air menyembur ke udara (spray hiss)
+        spray_hp = raw - 0.8 * spray_hp
+        spray_env = math.exp(-4.5 * t)
+        spray = spray_hp * spray_env * 0.35
+        
+        samples.append(math.tanh((impact + splash + spray) * 1.1) * 0.85)
+        
+    return samples
+
+def gen_ambient_coastal_waves(dur=12.0):
+    """Loop ambien deburan ombak pesisir pantai stereo (gelombang air laut mengalun lembut di latar belakang)."""
+    n = int(SAMPLE_RATE * dur)
+    left = []
+    right = []
+    rnd = random.Random(40404)
+    
+    lp_l = 0.0
+    lp_r = 0.0
+    sub_phase_l = 0.0
+    sub_phase_r = 0.0
+    
+    for i in range(n):
+        t = i / SAMPLE_RATE
+        
+        # 2 siklus ombak dalam 12 detik (periode 6 detik)
+        cycle_mod_l = 0.5 + 0.5 * math.sin(2.0 * math.pi * (t / 6.0) - math.pi * 0.5)
+        cycle_mod_r = 0.5 + 0.5 * math.sin(2.0 * math.pi * (t / 6.0) - math.pi * 0.5 + 0.35)
+        
+        # Sub-rumble massa air
+        sub_phase_l += 2.0 * math.pi * 48.0 / SAMPLE_RATE
+        sub_phase_r += 2.0 * math.pi * 51.0 / SAMPLE_RATE
+        sub_l = math.sin(sub_phase_l) * (0.15 + 0.35 * cycle_mod_l)
+        sub_r = math.sin(sub_phase_r) * (0.15 + 0.35 * cycle_mod_r)
+        
+        # Deburan dan buih air laut (pink/bandpass noise)
+        raw_l = rnd.uniform(-1.0, 1.0)
+        raw_r = rnd.uniform(-1.0, 1.0)
+        lp_l += 0.09 * (raw_l - lp_l)
+        lp_r += 0.09 * (raw_r - lp_r)
+        
+        body_l = lp_l * (0.2 + 0.75 * cycle_mod_l)
+        body_r = lp_r * (0.2 + 0.75 * cycle_mod_r)
+        
+        # Seamless loop crossfade di ujung awal dan akhir
+        fade = 1.0
+        if t < 0.4:
+            fade = t / 0.4
+        elif t > (dur - 0.4):
+            fade = (dur - t) / 0.4
+            
+        val_l = math.tanh((sub_l + body_l) * 1.5) * 0.8 * fade
+        val_r = math.tanh((sub_r + body_r) * 1.5) * 0.8 * fade
+        left.append(val_l)
+        right.append(val_r)
+        
+    return left, right
+
 # ----------------- BGM GENERATORS -----------------
 
 def gen_underwater_ambient(dur=14.0):
@@ -1528,7 +1707,14 @@ def main():
     write_wav(os.path.join(sfx_dir, "bell_ding.wav"), gen_bell_ding())
     write_wav(os.path.join(sfx_dir, "water_drip.wav"), gen_water_drip())
 
-    # 9. BGM Suasana Prosedural (Loopable fallback)
+    # 9. SFX Deburan Ombak Pesisir & Deru Air Pantai (Coast Surf, Wave Lap & Crash)
+    write_wav(os.path.join(sfx_dir, "coastal_wave_lap.wav"), gen_coastal_wave_lap())
+    write_wav(os.path.join(sfx_dir, "coastal_wave_surge.wav"), gen_coastal_wave_surge())
+    write_wav(os.path.join(sfx_dir, "wave_crash_rock.wav"), gen_wave_crash_rock())
+    ambient_w_l, ambient_w_r = gen_ambient_coastal_waves(12.0)
+    write_stereo_wav(os.path.join(sfx_dir, "ambient_coastal_waves.wav"), ambient_w_l, ambient_w_r)
+
+    # 10. BGM Suasana Prosedural (Loopable fallback)
     bgm_amb_l, bgm_amb_r = gen_underwater_ambient(14.0)
     write_stereo_wav(os.path.join(bgm_dir, "bgm_underwater_ambient.wav"), bgm_amb_l, bgm_amb_r)
 

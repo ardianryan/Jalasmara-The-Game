@@ -446,10 +446,11 @@ func _physics_process(delta: float) -> void:
 			_show_characters()
 	if Input.is_key_pressed(KEY_ESCAPE) and modal_open:
 		_close_dialog()
-	sync_clock += delta
-	if (sync_clock >= 1.3 or (land_path.needs_flush() and sync_clock >= 1.0)) and not syncing and not busy:
-		sync_clock = 0.0
-		_sync_position()
+	if not modal_open:
+		sync_clock += delta
+		if (sync_clock >= 1.3 or (land_path.needs_flush() and sync_clock >= 1.0)) and not syncing and not busy:
+			sync_clock = 0.0
+			_sync_position()
 
 func _find_nearby() -> void:
 	nearest = {}
@@ -540,14 +541,16 @@ func _interact() -> void:
 			game_hud.message(str(result.get("error","Belum dapat kembali ke dermaga.")))
 		return
 	var response: Dictionary = await ApiClient.call_api("/adventure/surface-interact",{"id":item.id})
-	busy = false
 	if not response.get("ok",false):
+		busy = false
 		game_hud.message(str(response.get("error","Pengamatan belum tersimpan.")))
 		return
 	if response.has("player"):
 		GameState.player = response.player
 	if response.has("adventure"):
 		GameState.adventure = response.adventure
+	await GameState.refresh()
+	busy = false
 	var reward := int(response.get("reward",0))
 	var knowledge: Dictionary = response.get("knowledge",{}) if response.get("knowledge") is Dictionary else {}
 	var text := str(knowledge.get("text",item.get("text","Perbekalan ini dapat membantu perjalanan berikutnya.")))

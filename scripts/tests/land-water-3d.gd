@@ -22,12 +22,22 @@ func run() -> void:
 		assert(first.mesh and first.vertexWaves and first.shoreFoam and first.rainRings)
 		assert(first.waterCells>0 and not first.walkable)
 		assert(first.directionalFlow==(area=="forest"),"River currents must be distinct from coastal surface motion")
+		assert(int(first.get("emitters",0))>=10,"WaterField must extract shore, dock pile, or bridge pile emitters")
+		assert(int(first.get("activeSplashes",0))>0 and int(first.get("activeFlecks",0))>0,"Initial pooled splashes and foam flecks must be seeded on water")
+		if area=="hub":
+			var under_dock: Dictionary = water.water_field.sample_world(Vector2(1120,1280))
+			assert(not bool(under_dock.get("on_land",true)),"Water under dock deck must remain wet in WaterField")
+		else:
+			var under_bridge: Dictionary = water.water_field.sample_world(Vector2(1450,650))
+			assert(not bool(under_bridge.get("on_land",true)),"Water under forest bridge deck must remain wet in WaterField")
 		var arrays: Array = water.mesh_instance.mesh.surface_get_arrays(0)
 		assert(arrays[Mesh.ARRAY_VERTEX].size()==32*24*6,"Waves need a subdivided mesh, not only four moving corners")
 		var a: float = water.elapsed
 		water._process(3.0)
 		assert(water.elapsed>a+2.9)
 		assert(float(water.material.get_shader_parameter("clock"))==water.elapsed)
+		var after_step: Dictionary = water.debug_status()
+		assert(int(after_step.get("swellEvents",0))>0,"Advancing water clock must emit swell crest events for synchronized audio/foam")
 		var environment := root.get_node("EnvironmentState")
 		environment.reduced_motion = true
 		water._process(0.1)
