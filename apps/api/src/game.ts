@@ -763,10 +763,16 @@ export async function gameRoutes(app: FastifyInstance, s: Store, g: Guards) {
             p.progress.missions.includes(r.id)
           )
             return fail("Pelanggan tidak tersedia.", 409);
-          if (r.fragmentId !== b.fragmentId)
-            return fail(
-              "Fragmen belum sesuai. Baca kembali keluhan pelanggan.",
-            );
+          if (r.fragmentId !== b.fragmentId) {
+            const c = await content(shift.contentId),
+              needed = c.catalog.fragments.find((f) => f.id === r.fragmentId),
+              chosen = c.catalog.fragments.find((f) => f.id === b.fragmentId);
+            const reason =
+              r.id === "akar"
+                ? `Fragmen ${chosen?.name ?? b.fragmentId} belum menjawab akar masalah kebun apung Bu Darmi. Tanaman yang layu karena media tergenang memerlukan ingatan biologi tumbuhan (${needed?.name ?? "Benih Hayati"}) tentang respirasi akar, osmosis, dan fotosintesis.`
+                : `Fragmen ${chosen?.name ?? b.fragmentId} belum sesuai untuk keluhan ${r.customer}. Gunakan fragmen ${needed?.name ?? r.fragmentId} (${needed?.subject ?? "terkait"}) yang menjawab masalah ini.`;
+            return fail(reason, 400, "WRONG_FRAGMENT");
+          }
           const item = p.inventory.find(
             (x) =>
               x.fragmentId === b.fragmentId &&

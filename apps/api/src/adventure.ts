@@ -331,18 +331,23 @@ export async function adventureRoutes(
           );
         const p = await surfacePlayer(req.user!.id),
           point = await surfacePosition(p),
-          obj = [...WORLD.forest.landmarks, ...WORLD.forest.caches].find(
+          hubObj = WORLD.surface_hub.landmarks.find((x) => x.id === b.id),
+          forestObj = [...WORLD.forest.landmarks, ...WORLD.forest.caches].find(
             (x) => x.id === b.id,
-          );
-        if (!obj) return fail("Penemuan hutan tidak tersedia.", 404);
+          ),
+          obj = hubObj ?? forestObj,
+          requiredArea = hubObj ? "hub" : "forest";
+        if (!obj) return fail("Penemuan daratan tidak tersedia.", 404);
         const knowledge =
           "text" in obj ? { title: obj.title, text: obj.text } : null;
         if (
-          point.area !== "forest" ||
+          point.area !== requiredArea ||
           Math.hypot(obj.x - point.x, obj.y - point.y) > 180
         )
           return fail(
-            "Dekati objek hutan untuk mengamatinya.",
+            requiredArea === "hub"
+              ? "Dekati titik kebun apung di Bandar Hujung untuk mengamatinya."
+              : "Dekati objek hutan untuk mengamatinya.",
             409,
             "POSITION",
           );
@@ -399,7 +404,6 @@ export async function adventureRoutes(
         await saveSurface(p, {
           ...point,
           playerVersion: result.player.version,
-          positionAt: Date.now(),
         });
         return result;
       });

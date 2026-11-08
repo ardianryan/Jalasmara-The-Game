@@ -291,7 +291,8 @@ func _process(delta: float) -> void:
 		hud.message(last_status)
 	if GameState.dive.is_empty() and not modal_open:
 		surface_clock += delta
-		if (surface_clock>1.3 or (nala.land_path.needs_flush() and surface_clock>1.0)) and not network_busy and not syncing:
+		var moved_on_surface: bool = nala.position.distance_to(_surface_point()) > 0.5 or bool(nala.land_path.needs_flush())
+		if moved_on_surface and (surface_clock>1.3 or (bool(nala.land_path.needs_flush()) and surface_clock>1.0)) and not network_busy and not syncing:
 			surface_clock = 0
 			_sync_surface()
 	entities.nearest = str(nearby.get("id",""))
@@ -382,17 +383,23 @@ func _find_nearby() -> void:
 	var objects: Array = []
 	if GameState.dive.is_empty():
 		for district in GameState.world.get("surface_hub",{}).get("districts",[]):
-			objects.append({"id":district.id,"x":district.x,"y":district.y,"name":district.npc,"kind":"npc"})
+			objects.append({"id":district.id,"x":district.x,"y":district.y,"name":district.npc,"kind":"npc","radius":140.0})
+		for landmark in GameState.world.get("surface_hub",{}).get("landmarks",[]):
+			var item: Dictionary = landmark.duplicate()
+			item["kind"] = "surface_landmark"
+			item["radius"] = 85.0
+			objects.append(item)
 		var gate: Dictionary = GameState.world.get("forest",{}).get("gate",{})
-		objects.append({"id":"forest_gate","x":gate.get("x",0),"y":gate.get("y",0),"name":"Jalur ke Hutan Pesisir","kind":"forest"})
+		objects.append({"id":"forest_gate","x":gate.get("x",0),"y":gate.get("y",0),"name":"Jalur ke Hutan Pesisir","kind":"forest","radius":140.0})
 		var ladder: Dictionary = GameState.world.get("hub",{}).get("divePoint",{})
-		objects.append({"id":"ladder","x":ladder.get("x",0),"y":ladder.get("y",0),"name":"Tangga Palung Smara","kind":"dive"})
+		objects.append({"id":"ladder","x":ladder.get("x",0),"y":ladder.get("y",0),"name":"Tangga Palung Smara","kind":"dive","radius":140.0})
 	else:
-		objects.append({"id":"boat","x":1120,"y":470,"name":"Tangga pulang ke Bandar Hujung","kind":"extract"})
+		objects.append({"id":"boat","x":1120,"y":470,"name":"Tangga pulang ke Bandar Hujung","kind":"extract","radius":140.0})
 		for collection in ["landmarks","puzzles","caches"]:
 			for item in GameState.world.get(collection,[]):
 				var obj: Dictionary = item.duplicate()
 				obj.kind = collection
+				obj["radius"] = 140.0
 				if not obj.has("name"):
 					obj.name = "Peti peninggalan"
 				objects.append(obj)
@@ -403,6 +410,7 @@ func _find_nearby() -> void:
 			if not target.get("caught",false) and available:
 				var obj: Dictionary = target.duplicate()
 				obj.kind = "biota"
+				obj["radius"] = 140.0
 				var point: Vector2 = entities.target_position(target)
 				obj.x = point.x
 				obj.y = point.y
@@ -410,15 +418,63 @@ func _find_nearby() -> void:
 				objects.append(obj)
 	for obj in objects:
 		var distance := nala.position.distance_to(Vector2(float(obj.x),float(obj.y)))
-		if distance<best:
+		var max_r := float(obj.get("radius",140.0))
+		if distance <= max_r and (distance < best or (is_equal_approx(distance,best) and str(obj.get("id","")) < str(nearby.get("id","~")))):
 			best = distance
 			nearby = obj
 	if nearby.is_empty():
-		hint.text = "WASD / arah: bergerak · E: amati · Tahan & lepas spasi: jala · M: peta"
+		hint.text = "WASD / arah: bergerak · E: amati · Tahan & lepas spasi: jala · M: peta · J: jurnal"
+	elif str(nearby.get("kind","")) == "dive":
+		var ab: Dictionary = GameState.player.get("abilities",{})
+		var day_now := int(GameState.player.get("progress",{}).get("day",1))
+		var target_zone := "Dangkalan Segaran (0–25 m)" if day_now==1 else "Hutan Lamun Wringin (25–60 m)" if day_now==2 else "Rongga Kapur Jalatunda & Tamansari (60–110 m)"
+		hint.text = "[E] Selami: %s · Siap selam: Oksigen Lv %d, Tas Lv %d · Tujuan: %s" % [str(nearby.name),int(ab.get("oxygen",0)),int(ab.get("bag",0)),target_zone]
 	else:
-		hint.text = ("Tahan & lepas spasi: " if nearby.kind=="biota" else "[E] ")+str(nearby.name)
+		hint.text = ("Tahan & lepas spasi: " if nearby.kind=="biota" else "[E] ")+_action_label(nearby)
+func _action_label(obj: Dictionary) -> String:
+	if obj.is_empty():
+		return "Dekati tempat atau tokoh"
+	var kind := str(obj.get("kind",""))
+	var label_name := str(obj.get("name",""))
+	var found: Array = GameState.adventure.get("discoveries",[])
+	match kind:
+		"npc":
+			return "Bicara: " + label_name
+		"surface_landmark":
+			return ("Periksa Ulang: " if found.has(str(obj.get("id",""))) else "Amati Kebun: ") + label_name
+		"forest":
+			return "Masuk: " + label_name
+		"dive":
+			return "Selami: " + label_name
+		"extract":
+			return "Naik: " + label_name
+		"landmarks":
+			return ("Periksa: " if found.has(str(obj.get("id",""))) else "Amati: ") + label_name
+		"puzzles":
+			return "Pulihkan: " + label_name
+		"caches":
+			return ("Periksa: " if found.has(str(obj.get("id",""))) else "Buka: ") + label_name
+		"biota":
+			return "Jala: " + label_name
+	return label_name
 func _biota_name(subject: String) -> String:
 	return "Ubur-Ubur Klorofil" if subject=="Biologi" else "Ikan Simpul Ekosistem" if subject=="Lingkungan" else "Keong Rasio" if subject=="Matematika" else "Ikan Lentera Alkalin"
+func _mission_counts() -> Dictionary:
+	var disc: Array = GameState.adventure.get("discoveries",[])
+	var garden := 0
+	for gid in ["garden_leaf","garden_root","garden_channel"]:
+		if disc.has(gid): garden += 1
+	var forest := 0
+	for fid in ["forest_canopy","forest_roots","forest_stream"]:
+		if disc.has(fid): forest += 1
+	var sea := 0
+	for sid in ["nitrogen","photosynthesis","osmosis"]:
+		if disc.has(sid): sea += 1
+	var has_klorofil := false
+	for inv in GameState.player.get("inventory",[]):
+		if str(inv.get("fragmentId","")) == "klorofil" and int(inv.get("quantity",0)) > 0:
+			has_klorofil = true
+	return {"garden":garden,"forest":forest,"sea":sea,"has_klorofil":has_klorofil}
 func _update_hud() -> void:
 	if GameState.player.is_empty():
 		return
@@ -431,9 +487,29 @@ func _update_hud() -> void:
 				region = str(zone.name)
 	var day := int(p.progress.day)
 	var stage := str(p.progress.stage)
-	var goal := "Layani warga di Kedai Waras." if stage=="night" else "Pulihkan Gajah Mina di Tamansari." if stage=="boss" else "Prasasti Smara Kuno ditemukan. Fase 1 selesai." if stage=="done" else "Jelajahi Segaran dan jala bekal kedai. Hutan ada di timur dermaga." if day==1 else "Amati Nitrogen, Fotosintesis, dan Osmosis di Wringin." if day==2 else "Selidiki pipa dan pulihkan penyaring Jalatunda."
+	var counts := _mission_counts()
+	var goal := "Layani warga di Kedai Waras."
+	if stage == "night":
+		goal = "Buka Kedai Waras bersama Mbah Wira & racik solusi warga malam ini."
+	elif stage == "boss":
+		goal = "Pulihkan Gajah Mina di Tamansari."
+	elif stage == "done":
+		goal = "Prasasti Smara Kuno ditemukan. Fase 1 selesai."
+	elif day == 1:
+		goal = "Jelajahi Segaran dan jala bekal kedai. Hutan Pesisir ada di timur laut dermaga."
+	elif day == 2:
+		if not GameState.dive.is_empty():
+			goal = "Hutan Lamun Wringin (25–60 m): Amati Nitrogen, Fotosintesis, & Osmosis (%d/3) lalu jala Benih Hayati." % int(counts.sea)
+		elif int(counts.garden) < 3:
+			goal = "Misi Bu Darmi: Amati Kebun Apung (%d/3), Hutan Pesisir (%d/3), & Hutan Lamun (%d/3)." % [int(counts.garden),int(counts.forest),int(counts.sea)]
+		elif int(counts.forest) < 3:
+			goal = "Kebun diamati (3/3). Bandingkan di Hutan Pesisir (%d/3) atau selami Hutan Lamun (%d/3)." % [int(counts.forest),int(counts.sea)]
+		else:
+			goal = "Daratan diamati. Selami Hutan Lamun Wringin (25–60 m) untuk pengamatan laut (%d/3) & Benih Hayati." % int(counts.sea)
+	else:
+		goal = "Selidiki pipa korporasi dan pulihkan penyaring Jalatunda."
 	var d: Dictionary = GameState.dive
-	var state := {"area":region,"depth":depth,"diving":not d.is_empty(),"oxygen":d.get("oxygen",0),"maxOxygen":d.get("maxOxygen",100),"coins":p.coins,"weight":d.get("weight",0),"capacity":d.get("capacity",12),"objective":goal,"action":str(nearby.get("name","Dekati tempat atau tokoh")),"canInteract":not nearby.is_empty() and nearby.get("kind","")!="biota","canNet":nearby.get("kind","")=="biota" and not d.is_empty()}
+	var state := {"area":region,"depth":depth,"diving":not d.is_empty(),"oxygen":d.get("oxygen",0),"maxOxygen":d.get("maxOxygen",100),"coins":p.coins,"weight":d.get("weight",0),"capacity":d.get("capacity",12),"objective":goal,"action":_action_label(nearby),"canInteract":not nearby.is_empty() and nearby.get("kind","")!="biota","canNet":nearby.get("kind","")=="biota" and not d.is_empty()}
 	state.merge(EnvironmentState.snapshot(),true)
 	state["netCharging"] = net_started
 	state["netProgress"] = clampf(net_time/0.3,0,1)
@@ -492,6 +568,8 @@ func _interact() -> void:
 	match str(obj.kind):
 		"npc":
 			_npc_interact(str(obj.name))
+		"surface_landmark":
+			_surface_discover(obj)
 		"forest":
 			_enter_forest()
 		"dive":
@@ -505,6 +583,31 @@ func _interact() -> void:
 		"biota":
 			_start_net()
 			net_released = true
+func _surface_discover(obj: Dictionary) -> void:
+	network_busy = true
+	while syncing: await get_tree().process_frame
+	if not await _sync_surface():
+		network_busy = false
+		return
+	var r: Dictionary = await ApiClient.call_api("/adventure/surface-interact",{"id":obj.id})
+	network_busy = false
+	if r.get("ok",false):
+		GameState.player = r.player
+		GameState.adventure = r.adventure
+		if r.has("surface"):
+			GameState.surface = r.surface
+		elif not GameState.surface.is_empty():
+			GameState.surface["playerVersion"] = int(r.player.get("version",0))
+		surface_clock = 0.0
+		nala.land_path.reset(nala.position)
+		var reward := int(r.get("reward",0))
+		AudioManager.play_sfx("path_reveal_chime" if reward > 0 else "wooden_click_light")
+		var counts := _mission_counts()
+		var summary := "\n\nGejala Kebun Apung diamati: %d/3 · " % int(counts.garden) + ("Sudah tercatat dalam jurnal." if r.get("alreadyFound",false) else "+%d koin · Dicatat dalam jurnal." % reward)
+		_show_message(str(obj.get("title",obj.get("name","Pengamatan Kebun"))),str(obj.get("text",""))+summary)
+		_update_hud()
+	else:
+		status.text = str(r.get("error","Dekati titik kebun terlebih dahulu."))
 func _enter_water(dive: Dictionary) -> void:
 	GameState.dive = dive
 	var pos: Dictionary = dive.get("position",{"x":1120,"y":470})
@@ -693,17 +796,36 @@ func _npc_interact(name_text: String) -> void:
 	var saved := await _sync_surface()
 	network_busy = false
 	if not saved: return
+	var p: Dictionary = GameState.player
+	var progress: Dictionary = p.get("progress",{})
+	var missions: Array = progress.get("missions",[])
+	var day := int(progress.get("day",1))
+	var stage := str(progress.get("stage","dive"))
+	var counts := _mission_counts()
 	if name_text=="Mbah Wira":
-		if GameState.player.progress.stage=="night":
+		if stage=="night":
 			_open_kedai()
-		elif GameState.player.progress.stage=="boss":
+		elif stage=="boss":
 			_talk([{"name":"Babak 4 · Sabotase di Kedai Waras","text":"Inspektur Raka menuntut kedai ditutup: pengetahuan tanpa lisensi, katanya. Lalu gempa mengguncang dermaga. Pipa raksasa di Tamansari pecah, dan sesuatu menarik jangkar kota."},{"name":"Nala","text":"Dia kabur sebelum selesai membacakan pasalnya. Aku anggap itu izin menyelam."},{"name":"Mbah Wira","text":"Gajah Mina sedang kesakitan. Netralisasi lapisan racunnya dalam simulasi alatmu, lepaskan pipa, dan pulihkan inti ingatannya. Jangan lukai sang penjaga. Tabung dan jala level tiga harus siap."}])
+		elif day==2:
+			_talk([{"name":"Mbah Wira","text":"Malam nanti Bu Darmi akan datang ke Kedai Waras. Agar racikanmu tepat, jangan hanya menyelam: amati dulu gejala kebun apung di timur pelataran (%d/3), bandingkan dengan Hutan Pesisir Wringin di daratan (%d/3), lalu selami Hutan Lamun Wringin pada kedalaman 25–60 m (%d/3)." % [int(counts.garden),int(counts.forest),int(counts.sea)]},{"name":"Nala","text":"Aku juga akan memastikan fragmen Benih Hayati (Biologi Tumbuhan) sudah ada di tas sebelum membuka kedai malam ini."}])
 		else:
 			_talk([{"name":"Mbah Wira","text":"Kedai buka setelah kamu kembali membawa fragmen. Jika bekal kurang, tutup sementara dan cari lagi. Pelanggan yang sudah dilayani tetap tercatat."},{"name":"Nala","text":"Baik. Menjaring ingatan dulu, meracik solusi kemudian."}])
 	elif name_text=="Beno":
 		_show_upgrades()
 	elif name_text=="Bu Darmi":
-		_talk([{"name":"Babak 2 · Kebun Apung yang Sekarat","text":"Daun kebun apung menguning dan akarnya membusuk. Kabut membuat Bu Darmi lupa bagaimana cahaya, unsur hara, dan air menopang tanaman."},{"name":"Bu Darmi","text":"Raka menawarkan Kapsul Tani dengan harga tiga kali penghasilanku. Aku ingin memahami kebunku lagi, bukan sekadar menyuruh tanaman hidup sehari."},{"name":"Nala","text":"Di Wringin ada Koral Nitrogen, Lentera Fotosintesis, dan Kerang Osmosis. Aku akan membawa catatannya pulang."}])
+		if missions.has("akar") and (day>=3 or stage in ["boss","done"]):
+			_talk([{"name":"Bu Darmi · Kebun Apung Pulih Bertahap","text":"Lihatlah petak kebunku, Nala! Pucuk-pucuk hijau sudah tumbuh tinggi dan mulai berbunga. Sejak kita memasang penyangga aerasi bambu dan menjaga saluran pasang tetap lancar, akarnya tidak lagi membusuk."},{"name":"Nala","text":"Saat pori media memiliki udara untuk respirasi seluler dan air tidak lagi tergenang payau, akar mampu menyerap nitrogen untuk membentuk klorofil kembali."}])
+		elif missions.has("akar"):
+			_talk([{"name":"Bu Darmi · Perawatan Kebun Dimulai","text":"Terima kasih atas seduhan di Kedai Waras malam ini, Nala. Aku sudah melonggarkan media tanam, memasang penyangga bambu, dan membuka saluran pembuangan di tepi selatan agar air pasang tidak menggenang."},{"name":"Nala","text":"Perawatan sudah dimulai malam ini, Bu. Begitu akarnya kembali mendapat oksigen untuk bernapas, kebun apung akan pulih bertahap mulai besok."}])
+		elif stage=="night":
+			_talk([{"name":"Bu Darmi","text":"Aku sudah mencatat semua gejala kebunku. Temui Mbah Wira di Kedai Waras sekarang—kita bahas temuanmu dari kebun apung, Hutan Pesisir Wringin, dan Hutan Lamun Wringin untuk meracik solusinya."}])
+		elif int(counts.garden) < 3:
+			_talk([{"name":"Babak 2 · Kebun Apung yang Sekarat","text":"Daun kebun apung menguning dan akarnya membusuk. Raka menawarkan Kapsul Tani dengan harga tiga kali penghasilanku, padahal kapsul itu hanya memaksa daun tampak segar sehari."},{"name":"Bu Darmi","text":"Tolong periksa tiga titik di sekeliling petak kebunku di sebelah timur ini (%d/3): Daun Kebun Menguning, Media Tanam Tergenang, dan Saluran Air Kebun Apung." % int(counts.garden)},{"name":"Nala","text":"Setelah memeriksa kebunmu, aku akan membandingkannya dengan tanah berhumus serta aliran hulu di Hutan Pesisir Wringin (daratan timur laut), lalu menyelam ke Hutan Lamun Wringin (kedalaman 25–60 m) untuk mengamati Koral Nitrogen, Lentera Fotosintesis, dan Kerang Osmosis."}])
+		elif int(counts.forest) < 3 or int(counts.sea) < 3:
+			_talk([{"name":"Bu Darmi","text":"Kamu sudah memeriksa ketiga gejala di kebunku (3/3): daunnya pucat klorosis, medianya padat tergenang tanpa udara, dan saluran pasangnya tersendat."},{"name":"Nala","text":"Benar, Bu. Sekarang aku sedang melengkapi perbandingan di Hutan Pesisir Wringin daratan (%d/3) dan pengamatan bawah laut di Hutan Lamun Wringin 25–60 m (%d/3) sambil menjala fragmen Benih Hayati." % [int(counts.forest),int(counts.sea)]}])
+		else:
+			_talk([{"name":"Bu Darmi","text":"Semua catatan dari kebun apung (3/3), Hutan Pesisir Wringin (3/3), dan Hutan Lamun Wringin (3/3) sudah lengkap!"},{"name":"Nala","text":"Begitu kembali dari penyelaman dan malam tiba, aku akan menemui Mbah Wira di Kedai Waras untuk meracik solusinya dengan Benih Hayati."}])
 	else:
 		_talk([{"name":"Inspektur Raka","text":"PT Cakrawala Sintetis menyediakan Kapsul Instan untuk seluruh kebutuhan kerja Anda. Belajar mandiri meningkatkan risiko kesalahan prosedur."},{"name":"Nala","text":"Menarik. Apakah prosedurnya juga menjelaskan pipa yang bocor di bawah kota?"},{"name":"Inspektur Raka","text":"Akses ke fasilitas Sektor Tuban-7 dibatasi. Percakapan ini dicatat."}])
 func _show_upgrades() -> void:
@@ -735,7 +857,7 @@ func _open_kedai() -> void:
 	GameState.shift = r.shift
 	_kedai_customer()
 func _kedai_customer() -> void:
-	var box := _open("Malam di Kedai Waras")
+	var box := _open("Meja Racik · Malam di Kedai Waras")
 	var current: Dictionary = {}
 	for customer in GameState.shift.get("customers",[]):
 		if not GameState.shift.get("served",[]).has(customer.id):
@@ -745,27 +867,44 @@ func _kedai_customer() -> void:
 		_label(box,"Semua pelanggan mulai mengingat kembali. Mbah Wira menutup buku racikan malam ini.")
 		_button(box,"Tutup kedai · lanjutkan cerita",func(): await _close_shift(false))
 	else:
-		_label(box,str(current.customer),20)
-		_label(box,"“"+str(current.complaint)+"”",18)
-		_label(box,"Pilih fragmen untuk meracik Seduhan Solusi:",14)
+		var counts := _mission_counts()
+		_label(box,"Pelanggan: "+str(current.customer),20)
+		_label(box,"Keluhan: “"+str(current.complaint)+"”",17)
+		if str(current.id) == "akar":
+			_label(box,"Ringkasan Bukti Lapangan (Kebun %d/3 · Hutan Pesisir %d/3 · Laut Wringin %d/3):\n• Media tanam kebun apung tergenang rapat & saluran pasang tersendat -> pori media kehilangan oksigen untuk respirasi seluler akar.\n• Fragmen Benih Hayati menyimpan ingatan Biologi Tumbuhan utuh (respirasi akar, keseimbangan osmosis, asimilasi nitrogen, dan fotosintesis daun)." % [int(counts.garden),int(counts.forest),int(counts.sea)],13)
+		elif str(current.id) == "daun_kuning":
+			_label(box,"Petunjuk Meja Racik: Gejala daun menguning berkaitan dengan biologi sel tumbuhan, klorofil, dan kesehatan akar (Benih Hayati).",13)
+		_label(box,"Pilih Fragmen Ingatan dari Tas untuk Meracik Seduhan Solusi:",14)
+		var feedback_label := _label(box,"",13)
+		feedback_label.modulate = Color("8c2d19")
 		var any := false
 		for item in GameState.player.get("inventory",[]):
 			if int(item.quantity)<=0:
 				continue
 			any = true
 			var selected: Dictionary = item.duplicate()
-			_button(box,"%s · %d bintang · %d buah" % [GameState.fragment_name(str(item.fragmentId)),int(item.stars),int(item.quantity)],func():
+			var frag_id := str(item.fragmentId)
+			var scope := "Biologi Tumbuhan: akar, osmosis, nitrogen, & fotosintesis" if frag_id=="klorofil" else "Lingkungan & Ekosistem Pesisir" if frag_id=="ekosistem" else "Matematika: rasio, debit, & kapasitas" if frag_id=="rasio" else "Kimia: larutan & netralisasi"
+			_button(box,"%s (%s) · %d bintang · %d buah" % [GameState.fragment_name(frag_id),scope,int(item.stars),int(item.quantity)],func():
 				var r: Dictionary = await ApiClient.call_api("/kedai/serve",{"shiftId":GameState.shift.id,"recipeId":current.id,"fragmentId":selected.fragmentId,"stars":int(selected.stars)})
 				if r.get("ok",false):
+					AudioManager.play_sfx("recipe_cooked")
+					if str(current.id) == "akar":
+						AudioManager.play_sfx("quest_complete")
 					GameState.player = r.player
 					GameState.shift = r.shift
-					var result_box := _open(str(current.customer))
-					_label(result_box,str(r.solution))
-					_label(result_box,"+%d koin" % int(r.earned))
+					var result_box := _open("Racikan Berhasil · "+str(current.customer))
+					_label(result_box,str(r.solution),16)
+					if str(current.id) == "akar":
+						_label(result_box,"Dampak ke Rakit Tani Tanggulangen:\n• Malam ini: PERAWATAN DIMULAI — Bu Darmi memasang penyangga aerasi bambu dan membuka saluran pembuangan pasang agar akar kembali bernapas.\n• Hari berikutnya: PULIH BERTAHAP — Pucuk hijau dan bunga kebun apung akan tumbuh kembali.",14)
+					_label(result_box,"Upah racikan: +%d koin" % int(r.earned),16)
 					_button(result_box,"Pelanggan berikutnya",_kedai_customer)
 					_update_hud()
 				else:
-					status.text = str(r.get("error","Fragmen belum sesuai."))
+					AudioManager.play_sfx("ui_Toggle_off")
+					var err_msg := str(r.get("error","Fragmen belum sesuai. Baca kembali keluhan pelanggan dan bukti lapangan."))
+					feedback_label.text = "Belum tepat (fragmen tidak berkurang): " + err_msg
+					status.text = err_msg
 			)
 		if not any:
 			_label(box,"Tas kosong. Tutup kedai sementara untuk kembali menyelam.")
@@ -804,17 +943,29 @@ func _show_journal() -> void:
 	box.add_child(scroll)
 	var entries := VBoxContainer.new()
 	entries.custom_minimum_size.x = 560
-	entries.add_theme_constant_override("separation",14)
+	entries.add_theme_constant_override("separation",12)
 	scroll.add_child(entries)
+	var counts := _mission_counts()
+	var progress: Dictionary = GameState.player.get("progress",{})
+	var missions: Array = progress.get("missions",[])
+	var day := int(progress.get("day",1))
+	var stage := str(progress.get("stage","dive"))
+	_label(entries,"1. Langkah Berikutnya & Kesiapan Misi",18)
+	var garden_status := "Pulih Bertahap (Hari 3+)" if (missions.has("akar") and (day>=3 or stage in ["boss","done"])) else "Perawatan Dimulai (Malam Hari 2)" if missions.has("akar") else "Sekarat / Layu (Menunggu Solusi)"
+	_label(entries,"• Status Kebun Apung Bu Darmi: %s\n• Gejala Kebun Apung (Bandar Hujung): %d/3\n• Pembanding Daratan (Hutan Pesisir Wringin): %d/3\n• Pengamatan Bawah Laut (Hutan Lamun Wringin 25–60 m): %d/3\n• Fragmen Benih Hayati (Biologi Tumbuhan) di Tas: %s" % [garden_status,int(counts.garden),int(counts.forest),int(counts.sea),"Tersedia" if bool(counts.has_klorofil) else "Belum ada — jala Ubur-Ubur Klorofil di laut"],14)
+	_label(entries,"2. Dugaan & Hubungan Konsep",18)
+	_label(entries,"• Mengapa kebun apung layu walau terendam? Media tanam yang terus tergenang kehilangan oksigen di pori-porinya sehingga respirasi seluler akar terhenti (hipoksia akar), ditambah saluran pasang yang menahan air payau dan menghambat osmosis serta serapan nitrogen.\n• Pembeda Wilayah Wringin: Hutan Pesisir Wringin adalah hutan daratan di timur laut desa (tempat mengamati celah tajuk, humus berpori, dan membersihkan aliran hulu), sedangkan Hutan Lamun Wringin adalah zona penyelaman bawah laut (25–60 m) tempat mengamati Koral Nitrogen, Lentera Fotosintesis, dan Kerang Osmosis.\n• Cakupan Benih Hayati: Menyimpan ingatan biologi tumbuhan secara utuh—bukan hanya klorofil daun, melainkan juga respirasi akar, osmosis, dan asimilasi nitrogen.",14)
+	_label(entries,"3. Catatan Temuan Lapangan",18)
 	var count := 0
-	for item in GameState.world.get("landmarks",[])+GameState.world.get("forest",{}).get("landmarks",[]):
+	var all_landmarks: Array = GameState.world.get("surface_hub",{}).get("landmarks",[]) + GameState.world.get("forest",{}).get("landmarks",[]) + GameState.world.get("landmarks",[])
+	for item in all_landmarks:
 		if GameState.adventure.get("discoveries",[]).has(item.id):
 			count += 1
-			_label(entries,str(item.title),18)
+			_label(entries,"• "+str(item.title),16)
 			_label(entries,str(item.text),14)
 	if count==0:
-		_label(entries,"Temukan prasasti dan tempat pengamatan. Catatan yang kamu amati tersimpan di sini, tanpa perlu menjawab kuis.",16)
-	_label(entries,"Catatan biologi: lamun adalah tumbuhan berbunga laut; kelp adalah alga cokelat. Hutan Wringin adalah ekosistem fantasi yang menggabungkan biota bercahaya.",13)
+		_label(entries,"Belum ada catatan temuan. Amati petak Kebun Apung Bu Darmi di timur pelataran, Hutan Pesisir Wringin di daratan, dan prasasti bawah laut.",15)
+	_label(entries,"Catatan biologi: lamun adalah tumbuhan berbunga laut; kelp adalah alga cokelat. Hutan Lamun Wringin adalah ekosistem fantasi bawah laut yang menggabungkan biota bercahaya.",13)
 	_button(box,"Tutup jurnal",_close)
 func _show_map() -> void:
 	if modal_open and is_instance_valid(modal) and modal.get_meta("world_map",false):
@@ -877,8 +1028,9 @@ func _sync_surface() -> bool:
 	if syncing or not GameState.dive.is_empty():
 		return false
 	syncing = true
-	var route: Dictionary = nala.land_path.snapshot(nala.position)
-	var r: Dictionary = await ApiClient.call_api("/adventure/surface-position",{"area":"hub","x":nala.position.x,"y":nala.position.y,"path":route.path,"fromPositionAt":int(GameState.surface.get("positionAt",0)),"version":int(GameState.player.get("version",0))})
+	var sent_pos := nala.position
+	var route: Dictionary = nala.land_path.snapshot(sent_pos)
+	var r: Dictionary = await ApiClient.call_api("/adventure/surface-position",{"area":"hub","x":sent_pos.x,"y":sent_pos.y,"path":route.path,"fromPositionAt":int(GameState.surface.get("positionAt",0)),"version":int(GameState.player.get("version",0))})
 	syncing = false
 	if r.get("ok",false):
 		GameState.surface = r.surface
@@ -948,6 +1100,10 @@ func _show_character(first: bool) -> void:
 			network_busy = false
 			if r.get("ok",false):
 				GameState.player = r.player
+				if not GameState.surface.is_empty():
+					GameState.surface["playerVersion"] = int(r.player.get("version",0))
+				surface_clock = 0.0
+				nala.land_path.reset(nala.position)
 				_close()
 				if first and not GameState.player.progress.get("tutorial",false):
 					_story_intro()

@@ -128,15 +128,44 @@ export async function connect() {
 }
 export type Store = Awaited<ReturnType<typeof connect>>;
 export async function seed(store: Store) {
-  if ((await store.contents.countDocuments()) === 0)
+  const fresh = seedCatalog();
+  if ((await store.contents.countDocuments()) === 0) {
     await store.contents.insertOne({
       id: randomUUID(),
       label: "Palung Smara · Fase 1",
       state: "published",
-      catalog: seedCatalog(),
+      catalog: fresh,
       createdAt: new Date().toISOString(),
       publishedAt: new Date().toISOString(),
     });
+    return;
+  }
+  const published = await store.contents.findOne({
+    state: "published",
+    label: "Palung Smara · Fase 1",
+  });
+  const oldAkar = published?.catalog.recipes.find((r) => r.id === "akar");
+  if (
+    published &&
+    oldAkar?.complaint ===
+      "Akar di kebun terus terendam. Mengapa tanaman tetap layu?"
+  ) {
+    const klorofil = fresh.fragments.find((f) => f.id === "klorofil")!;
+    const akar = fresh.recipes.find((r) => r.id === "akar")!;
+    await store.contents.updateOne(
+      { id: published.id },
+      {
+        $set: {
+          "catalog.fragments.$[frag].description": klorofil.description,
+          "catalog.recipes.$[rec].complaint": akar.complaint,
+          "catalog.recipes.$[rec].solution": akar.solution,
+        },
+      },
+      {
+        arrayFilters: [{ "frag.id": "klorofil" }, { "rec.id": "akar" }],
+      },
+    );
+  }
 }
 export async function currentContent(
   s: Store,
@@ -153,7 +182,17 @@ export async function lock<T>(
 ): Promise<T> {
   const token = opaque(),
     key = `lock:${id}`;
-  if (!(await s.redis.set(key, token, "PX", 30000, "NX")))
+  let acquired = false;
+  for (let attempt = 0; attempt < 12; attempt++) {
+    if (await s.redis.set(key, token, "PX", 30000, "NX")) {
+      acquired = true;
+      break;
+    }
+    if (attempt < 11) {
+      await new Promise((resolve) => setTimeout(resolve, 25));
+    }
+  }
+  if (!acquired)
     return fail("Operasi lain sedang berlangsung. Coba lagi.", 409, "BUSY");
   try {
     return await fn();

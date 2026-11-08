@@ -85,15 +85,19 @@ func _physics_process(delta: float) -> void:
 			else:
 				position = previous
 				velocity = Vector2.ZERO
+	var moved_velocity := (position-previous)/maxf(delta,0.001) if not in_water else velocity
+	if not in_water and moved_velocity.length()<8.0:
+		velocity = Vector2.ZERO
+		moved_velocity = Vector2.ZERO
 	if not in_water:
 		surface_traversal.set_reduced_motion(EnvironmentState.reduced_motion)
-		traversal_state = surface_traversal.sample(position,velocity,delta)
+		traversal_state = surface_traversal.sample(position,moved_velocity,delta)
 		land_path.record(position)
 	else:
 		traversal_state = {}
 	if swim_sprite:
 		swim_sprite.set_appearance(str(GameState.player.get("appearance","male_default")))
-		swim_sprite.animate(velocity.length()>10,in_water,direction,walk_time)
+		swim_sprite.animate(moved_velocity.length()>10,in_water,direction,walk_time)
 		if not in_water: swim_sprite.position.y += float(traversal_state.get("footBob",0.0))
 		swim_sprite.visible = not hybrid_visual
 	queue_redraw()

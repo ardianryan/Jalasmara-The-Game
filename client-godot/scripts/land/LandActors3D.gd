@@ -144,7 +144,8 @@ func update_actors(delta: float) -> void:
 			var index: int={"Mbah Wira":0,"Beno":1,"Bu Darmi":2,"Inspektur Raka":3}.get(key,0)
 			var cell:=sheet.get_size()/2.0
 			frame=_frame(sheet,Rect2(Vector2(index%2,index/2)*cell,cell))
-		_sprite("NPC_"+key,frame,npc.position,Vector2(70,70) if bool(npc.crate) else Vector2(100,100),30 if bool(npc.crate) else 36)
+		var flip_npc := false if bool(npc.crate) else float(npc.get("_facing")) < 0.0
+		_sprite("NPC_"+key,frame,npc.position,Vector2(70,70) if bool(npc.crate) else Vector2(100,100),30 if bool(npc.crate) else 36,flip_npc)
 		counts.npcs=int(counts.npcs)+1
 
 	for creature in _creatures:

@@ -36,6 +36,22 @@ var _lanterns: Array[OmniLight3D] = []
 var _glow_material: StandardMaterial3D
 var _components: Dictionary={}
 var _bridges: Dictionary={}
+var _garden_state := 0
+var _stream_cleared := false
+
+func _compute_garden_state() -> int:
+	var progress: Dictionary = GameState.player.get("progress",{})
+	var missions: Array = progress.get("missions",[])
+	var day := int(progress.get("day",1))
+	var stage := str(progress.get("stage","dive"))
+	if not missions.has("akar"):
+		return 0
+	if day >= 3 or stage in ["boss","done"]:
+		return 2
+	return 1
+
+func _compute_stream_cleared() -> bool:
+	return GameState.adventure.get("discoveries",[]).has("forest_stream")
 
 func setup(scene: Node2D, player: Node2D, camera: Camera2D, place: String) -> void:
 	source=scene
@@ -115,6 +131,8 @@ func set_area(place: String) -> void:
 	_bridges.clear()
 	_leaves.clear()
 	_lanterns.clear()
+	_garden_state=_compute_garden_state()
+	_stream_cleared=_compute_stream_cleared()
 	if ResourceLoader.exists("res://scripts/land/LandWater3D.gd"):
 		if is_instance_valid(water_node): water_node.queue_free()
 		water_node=load("res://scripts/land/LandWater3D.gd").new()
@@ -632,14 +650,56 @@ func _rock(entry: Dictionary, rect: Rect2, center: Vector3) -> void:
 
 func _garden(_entry: Dictionary,rect: Rect2,center: Vector3) -> void:
 	var wood: Material=_materials.get_material("wood")
+	var dirt: Material=_materials.get_material("dirt")
+	var leaves: Material=_materials.get_material("leaves")
+	var bamboo: Material=_materials.get_material("bamboo")
+	var thatch: Material=_materials.get_material("thatch")
+	var stone: Material=_materials.get_material("stone")
+	var sand: Material=_materials.get_material("sand")
+	var elev_z: float=float(_entry.get("elevation",2))*LEVEL_HEIGHT
 	for index in range(3):
 		var offset: float=(index-1)*rect.size.x*.3
 		_box("RaisedBed",center+Vector3(offset,0,14),Vector3(rect.size.x*.27,rect.size.y/cos(TILT),28),wood)
-		_box("DarkSoil",center+Vector3(offset,0,30),Vector3(rect.size.x*.25,rect.size.y/cos(TILT)-6,4),_materials.get_material("dirt"))
+		_box("DarkSoil",center+Vector3(offset,0,30),Vector3(rect.size.x*.25,rect.size.y/cos(TILT)-6,4),dirt)
+		if _garden_state>=1:
+			var bed_half_y: float=rect.size.y/cos(TILT)*.42
+			for end_sign in [-1.0,1.0]:
+				var post:=center+Vector3(offset,end_sign*bed_half_y,30)
+				_column(post,post+Vector3(0,0,34),2.5,bamboo)
+			_column(center+Vector3(offset,-bed_half_y,58),center+Vector3(offset,bed_half_y,58),2.0,bamboo)
 		for crop in range(5):
 			var plant:=center+Vector3(offset,-rect.size.y*.48+crop*rect.size.y*.24,31)
-			_column(plant,plant+Vector3(0,0,16),2,_materials.get_material("leaves"))
-			_box("CropLeaves",plant+Vector3(0,0,14),Vector3(13,12,4),_materials.get_material("leaves"))
+			if _garden_state==0:
+				var droop:=Vector3((crop%2*2-1)*4,3,9)
+				_column(plant,plant+droop,1.8,thatch if (crop+index)%2==0 else leaves)
+				_box("CropLeaves",plant+droop,Vector3(10,9,3),thatch if (crop+index)%2==0 else leaves)
+				_box("WiltedCropLeaves",plant+droop+Vector3(0,2,-1),Vector3(8,7,2),thatch)
+			elif _garden_state==1:
+				_column(plant,plant+Vector3(0,0,17),2.2,leaves)
+				_box("CropLeaves",plant+Vector3(0,0,15),Vector3(14,13,5),leaves)
+				_box("CareCropLeaves",plant+Vector3(0,0,18),Vector3(10,9,3),leaves)
+				_column(plant+Vector3(4,0,0),plant+Vector3(4,0,22),1.6,bamboo)
+			else:
+				_column(plant,plant+Vector3(0,0,24),2.6,leaves)
+				_box("CropLeaves",plant+Vector3(0,0,18),Vector3(18,16,7),leaves)
+				_box("RecoveredCropLeaves",plant+Vector3(0,0,25),Vector3(12,11,5),leaves)
+				if (crop+index)%2==0:
+					_box("GardenBloom",plant+Vector3(0,0,29),Vector3(6,6,4),sand)
+	# Titik pengamatan 1: Daun Kebun Menguning (1775, 515)
+	var leaf_marker:=map_point(Vector2(1795,515),elev_z)
+	_column(leaf_marker,leaf_marker+Vector3(0,0,34),2.6,bamboo)
+	_box("GardenLeafBoard",leaf_marker+Vector3(0,0,28),Vector3(14,6,10),thatch if _garden_state==0 else leaves)
+	# Titik pengamatan 2: Media Tanam Tergenang (1775, 635)
+	var root_marker:=map_point(Vector2(1795,635),elev_z)
+	_box("GardenRootTrough",root_marker+Vector3(0,0,8),Vector3(18,16,14),stone)
+	_box("GardenRootMedia",root_marker+Vector3(0,0,15),Vector3(14,12,4),dirt if _garden_state==0 else bamboo)
+	# Titik pengamatan 3: Saluran Air Kebun Apung (1975, 700)
+	var channel_marker:=map_point(Vector2(1975,676),elev_z)
+	_box("GardenChannelSluice",channel_marker+Vector3(0,0,7),Vector3(36,14,14),stone)
+	if _garden_state==0:
+		_box("GardenChannelDebris",channel_marker+Vector3(0,0,15),Vector3(22,12,8),thatch)
+	else:
+		_column(channel_marker+Vector3(-14,0,14),channel_marker+Vector3(14,0,14),2.4,bamboo)
 
 func _fence(_entry: Dictionary,rect: Rect2,center: Vector3) -> void:
 	if str(_entry.get("variant",""))=="bridge_rail":
@@ -787,6 +847,8 @@ func _batch_static_geometry() -> void:
 
 func _process(delta: float) -> void:
 	if not _built or not is_instance_valid(actor) or not is_instance_valid(source_camera): return
+	if (area=="hub" and _garden_state!=_compute_garden_state()) or (area=="forest" and _stream_cleared!=_compute_stream_cleared()):
+		set_area(area)
 	active=area=="forest" or GameState.dive.is_empty()
 	display.visible=active
 	viewport_3d.render_target_update_mode=SubViewport.UPDATE_ALWAYS if active else SubViewport.UPDATE_DISABLED
@@ -819,7 +881,7 @@ func _process(delta: float) -> void:
 		environment.ambient_light_color=Color("8da4a8").lerp(Color("bdc0b5"),daylight)
 
 func debug_status() -> Dictionary:
-	return {"active":active,"area":area,"renderer":"LandSubViewport3D","viewport":[480,270],"tilt":55,"elevationDegrees":35,"meshes":_meshes,"houses":_houses,"trees":_trees,"glbModels":_models,"stairTreads":_stair_treads,"surfaces":map.get("surfaces",[]).size(),"obstacles":map.get("obstacles",[]).size(),"actors":actors_3d.counts if is_instance_valid(actors_3d) else {},"maxFootError":actors_3d.max_foot_error if is_instance_valid(actors_3d) else 0,"camera":[_center.x,_center.y],"warmLanterns":_lanterns.size(),"components":_components.duplicate(),"bridges":_bridges.duplicate(true),"bitmapGround":false,"water":water_node.debug_status() if is_instance_valid(water_node) else {}}
+	return {"active":active,"area":area,"renderer":"LandSubViewport3D","viewport":[480,270],"tilt":55,"elevationDegrees":35,"meshes":_meshes,"houses":_houses,"trees":_trees,"glbModels":_models,"stairTreads":_stair_treads,"surfaces":map.get("surfaces",[]).size(),"obstacles":map.get("obstacles",[]).size(),"actors":actors_3d.counts if is_instance_valid(actors_3d) else {},"maxFootError":actors_3d.max_foot_error if is_instance_valid(actors_3d) else 0,"camera":[_center.x,_center.y],"warmLanterns":_lanterns.size(),"gardenState":_garden_state,"streamCleared":_stream_cleared,"components":_components.duplicate(),"bridges":_bridges.duplicate(true),"bitmapGround":false,"water":water_node.debug_status() if is_instance_valid(water_node) else {}}
 
 func _build_bridge(surface: Dictionary) -> void:
 	var polygon:=_polygon(surface.polygon)
@@ -1061,6 +1123,11 @@ func _build_corridor_landmarks() -> void:
 		_column(stream_pt+Vector3(28,8,0),stream_pt+Vector3(28,8,54),4.5,bamboo)
 		_column(stream_pt+Vector3(0,0,42),stream_pt+Vector3(28,8,42),3.5,bamboo)
 		_box("StreamWatchStone",stream_pt+Vector3(-16,12,9),Vector3(18,14,18),stone)
+		if not _stream_cleared:
+			_box("StreamWeirDebris",stream_pt+Vector3(14,18,8),Vector3(32,18,14),_materials.get_material("thatch"))
+			_column(stream_pt+Vector3(-6,22,12),stream_pt+Vector3(32,12,18),4.0,wood)
+		else:
+			_column(stream_pt+Vector3(4,16,8),stream_pt+Vector3(24,22,8),3.0,bamboo)
 		# Landmark 4: Peti Perbekalan (2130, 1050)
 		var cache_pt:=map_point(Vector2(2166,1008),0.0)
 		_box("CachePlatform",cache_pt+Vector3(0,0,5),Vector3(46,34,10),bamboo)

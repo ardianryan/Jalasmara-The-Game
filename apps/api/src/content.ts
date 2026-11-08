@@ -664,7 +664,7 @@ export function seedCatalog(): Catalog {
         name: "Benih Hayati",
         subject: "Biologi",
         description:
-          "Ingatan tentang tumbuhan, sel, dan kehidupan yang saling menopang.",
+          "Fragmen biologi tumbuhan: fotosintesis daun, respirasi seluler akar, asimilasi hara nitrogen, dan keseimbangan osmosis.",
         weight: 1,
       },
       {
@@ -730,9 +730,10 @@ export function seedCatalog(): Catalog {
         id: "akar",
         day: 2,
         customer: "Bu Darmi",
-        complaint: "Akar di kebun terus terendam. Mengapa tanaman tetap layu?",
+        complaint:
+          "Media kebun apung saya terus terendam dan daunnya layu menguning. Mengapa disiram dan dipupuk tetap tidak menolong?",
         solution:
-          "Akar membutuhkan oksigen untuk respirasi. Perbaiki aerasi dan pengelolaan air agar pori media tidak selalu tergenang.",
+          "Akar memerlukan oksigen di pori media untuk respirasi seluler serta keseimbangan potensial air (osmosis) agar mampu menyerap hara nitrogen bagi fotosintesis. Buka saluran pembuangan dan longgarkan media tanam agar akar kembali bernapas.",
         fragmentId: "klorofil",
         reward: 120,
       },

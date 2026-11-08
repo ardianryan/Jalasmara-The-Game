@@ -2034,3 +2034,106 @@ test("versi permainan normal mempertahankan wilayah hutan dan tidak melewati lar
   assert.equal(state.data.surface.positionAt, before.positionAt);
   assert.equal(state.data.surface.playerVersion, updated.data.player.version);
 });
+
+test("misi Bu Darmi: pengamatan gejala kebun di hub, sebab-akibat hutan, umpan balik fragmen salah tanpa konsumsi, dan pemulihan kebun", async () => {
+  const u = await account(),
+    b = await new Browser().login(u);
+  await s.users.updateOne(
+    { id: u.id },
+    {
+      $set: {
+        "progress.day": 2,
+        "progress.stage": "dive",
+        "progress.missions": ["daun_kuning", "air_keruh", "takaran", "malam_1"],
+        inventory: [
+          { fragmentId: "klorofil", stars: 3, quantity: 1 },
+          { fragmentId: "rasio", stars: 3, quantity: 1 },
+          { fragmentId: "ekosistem", stars: 3, quantity: 1 },
+        ],
+      },
+    },
+  );
+  // 1. Gejala kebun di hub memerlukan kedekatan dan wilayah hub
+  await fixtureSurface(u, "hub", WORLD.surfaceSpawn);
+  const farGarden = await b.request("/adventure/surface-interact", {
+    id: "garden_leaf",
+  });
+  assert.equal(farGarden.status, 409);
+  assert.equal(farGarden.data.code, "POSITION");
+
+  for (const spot of WORLD.surface_hub.landmarks) {
+    assert.ok(
+      isLandWalkable(WORLD.landMaps.hub, spot),
+      `Garden landmark ${spot.id} must be on walkable ground`,
+    );
+    await fixtureSurface(u, "hub", { x: spot.x, y: spot.y });
+    const found = await b.request("/adventure/surface-interact", {
+      id: spot.id,
+    });
+    assert.equal(found.status, 200, JSON.stringify(found.data));
+    assert.equal(found.data.reward, 35);
+    assert.equal(found.data.alreadyFound, false);
+    assert.ok(found.data.adventure.discoveries.includes(spot.id));
+    const again = await b.request("/adventure/surface-interact", {
+      id: spot.id,
+    });
+    assert.equal(again.status, 200);
+    assert.equal(again.data.reward, 0);
+    assert.equal(again.data.alreadyFound, true);
+  }
+
+  // 2. Pengamatan sebab-akibat di Hutan Pesisir Wringin menolak dari hub dan berhasil di forest
+  const forestFromHub = await b.request("/adventure/surface-interact", {
+    id: "forest_stream",
+  });
+  assert.equal(forestFromHub.status, 409);
+  await fixtureSurface(u, "forest", { x: 1830, y: 470 });
+  const clearedStream = await b.request("/adventure/surface-interact", {
+    id: "forest_stream",
+  });
+  assert.equal(clearedStream.status, 200, JSON.stringify(clearedStream.data));
+  assert.equal(clearedStream.data.reward, 120);
+  assert.match(clearedStream.data.knowledge.text, /pintu air|aliran/i);
+
+  // 3. Kembali ke hub, selesaikan pengamatan bawah laut Hutan Lamun Wringin, lalu buka Kedai Waras
+  await fixtureSurface(u, "hub", WORLD.hub.divePoint);
+  const d = await start(b);
+  for (const id of ["nitrogen", "photosynthesis", "osmosis"]) {
+    assert.equal((await observe(b, d, id)).status, 200);
+  }
+  await fixturePosition(b, WORLD.spawn);
+  assert.equal(
+    (await b.request("/dive/extract", { diveId: d.id })).status,
+    200,
+  );
+  const shiftRes = await b.request("/kedai/start", {});
+  assert.equal(shiftRes.status, 200, JSON.stringify(shiftRes.data));
+  const shift = shiftRes.data.shift;
+
+  // 4. Memilih fragmen yang salah untuk Bu Darmi (akar) memberi penjelasan diagnostik tanpa mengurangi stok
+  const wrongFrag = await b.request("/kedai/serve", {
+    shiftId: shift.id,
+    recipeId: "akar",
+    fragmentId: "rasio",
+    stars: 3,
+  });
+  assert.equal(wrongFrag.status, 400);
+  assert.equal(wrongFrag.data.code, "WRONG_FRAGMENT");
+  assert.match(wrongFrag.data.error, /Benih Hayati/i);
+  const afterWrong = (await b.request("/game/state")).data.player;
+  assert.equal(
+    afterWrong.inventory.find((i: any) => i.fragmentId === "rasio")?.quantity,
+    1,
+  );
+
+  // 5. Memilih Benih Hayati (klorofil) menyelesaikan misi akar Bu Darmi
+  const served = await b.request("/kedai/serve", {
+    shiftId: shift.id,
+    recipeId: "akar",
+    fragmentId: "klorofil",
+    stars: 3,
+  });
+  assert.equal(served.status, 200, JSON.stringify(served.data));
+  assert.ok(served.data.player.progress.missions.includes("akar"));
+  assert.match(served.data.solution, /respirasi|aerasi|oksigen/i);
+});

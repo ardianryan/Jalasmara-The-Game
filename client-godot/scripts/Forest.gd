@@ -412,16 +412,29 @@ func _physics_process(delta: float) -> void:
 	avatar.move_and_slide()
 	path_notice_cooldown = maxf(0.0,path_notice_cooldown-delta)
 	if not _is_walkable(avatar.position):
-		avatar.position = previous_position
-		avatar.velocity = Vector2.ZERO
-		if path_notice_cooldown <= 0.0:
-			game_hud.message("Vegetasi lebat menutup jalur. Ikuti jalan tanah atau telusuri cabangnya.")
-			path_notice_cooldown = 4.0
+		var along_x := Vector2(avatar.position.x,previous_position.y)
+		var along_y := Vector2(previous_position.x,avatar.position.y)
+		if _is_walkable(along_x):
+			avatar.position = along_x
+			avatar.velocity.y = 0
+		elif _is_walkable(along_y):
+			avatar.position = along_y
+			avatar.velocity.x = 0
+		else:
+			avatar.position = previous_position
+			avatar.velocity = Vector2.ZERO
+			if path_notice_cooldown <= 0.0:
+				game_hud.message("Vegetasi lebat menutup jalur. Ikuti jalan tanah atau telusuri cabangnya.")
+				path_notice_cooldown = 4.0
 	avatar.position = avatar.position.clamp(Vector2(12,12),Vector2(2388,1588))
+	var moved_velocity := (avatar.position-previous_position)/maxf(delta,0.001)
+	if moved_velocity.length() < 8.0:
+		avatar.velocity = Vector2.ZERO
+		moved_velocity = Vector2.ZERO
 	surface_traversal.set_reduced_motion(EnvironmentState.reduced_motion)
-	traversal_state = surface_traversal.sample(avatar.position,avatar.velocity,delta)
+	traversal_state = surface_traversal.sample(avatar.position,moved_velocity,delta)
 	land_path.record(avatar.position)
-	avatar.walking = avatar.velocity.length() > 8
+	avatar.walking = moved_velocity.length() > 8
 	light_clock += delta
 	if Engine.get_physics_frames() % 6 == 0:
 		_update_lighting()
@@ -448,25 +461,49 @@ func _physics_process(delta: float) -> void:
 		_close_dialog()
 	if not modal_open:
 		sync_clock += delta
-		if (sync_clock >= 1.3 or (land_path.needs_flush() and sync_clock >= 1.0)) and not syncing and not busy:
+		var moved_in_forest: bool = avatar.position.distance_to(last_position) > 0.5 or bool(land_path.needs_flush())
+		if moved_in_forest and (sync_clock >= 1.3 or (bool(land_path.needs_flush()) and sync_clock >= 1.0)) and not syncing and not busy:
 			sync_clock = 0.0
 			_sync_position()
 
 func _find_nearby() -> void:
 	nearest = {}
-	var distance := 95.0
+	var best_distance := 95.0
 	for item in landmarks:
 		var candidate := avatar.position.distance_to(Vector2(item.x,item.y))
-		if candidate < distance:
-			distance = candidate
+		if candidate < best_distance or (is_equal_approx(candidate,best_distance) and str(item.get("id","")) < str(nearest.get("id","~"))):
+			best_distance = candidate
 			nearest = item
 	for exit in blocked_exits:
 		var rect := Rect2(Vector2(exit.x,exit.y)-Vector2(exit.width,exit.height)/2,Vector2(exit.width,exit.height)).grow(75)
 		if rect.has_point(avatar.position):
-			nearest = {"id":exit.id,"name":exit.name,"blocked":true,"reason":exit.get("reason","Jalur ini belum terbuka.")}
+			var exit_dist := avatar.position.distance_to(Vector2(exit.x,exit.y))
+			if nearest.is_empty() or exit_dist < best_distance:
+				best_distance = exit_dist
+				nearest = {"id":exit.id,"name":exit.name,"blocked":true,"reason":exit.get("reason","Jalur ini belum terbuka.")}
 	if avatar.position.distance_to(ENTRY) < 110:
-		nearest = {"id":"return","name":"Kembali ke Bandar Hujung"}
-	var hud_state := {"area":"Hutan Pesisir Wringin","coins":GameState.player.get("coins",0),"weight":0,"capacity":GameState.player.get("bagCapacity",20),"objective":"Amati celah tajuk, akar hidup, dan aliran hulu.","action":str(nearest.get("name","Dekati temuan alam untuk mengamati")),"canInteract":not nearest.is_empty() and not busy,"canNet":false,"diving":false}
+		var entry_dist := avatar.position.distance_to(ENTRY)
+		if nearest.is_empty() or entry_dist <= best_distance:
+			nearest = {"id":"return","name":"Kembali ke Bandar Hujung"}
+	var discoveries: Array = GameState.adventure.get("discoveries",[])
+	var forest_done := 0
+	for fid in ["forest_canopy","forest_roots","forest_stream"]:
+		if discoveries.has(fid): forest_done += 1
+	var objective := "Bandingkan tajuk, tanah berhumus, dan aliran hulu (%d/3) untuk masalah Kebun Apung Bu Darmi." % forest_done if forest_done < 3 else "Pengamatan Hutan Pesisir selesai (3/3). Kembali ke Bandar Hujung atau selami Hutan Lamun Wringin."
+	var action_label := "Dekati temuan alam untuk mengamati"
+	if not nearest.is_empty():
+		var nid := str(nearest.get("id",""))
+		if nid == "return":
+			action_label = "Masuk Gerbang: Kembali ke Bandar Hujung"
+		elif nearest.get("blocked",false):
+			action_label = "Periksa Jalur: " + str(nearest.get("name",""))
+		elif nid == "forest_stream":
+			action_label = ("Amati: " if discoveries.has("forest_stream") else "Bersihkan & Amati: ") + str(nearest.get("name","Aliran Hulu Bandar"))
+		elif nid == "forest_cache":
+			action_label = ("Periksa: " if discoveries.has("forest_cache") else "Buka: ") + str(nearest.get("name","Peti Perbekalan"))
+		else:
+			action_label = "Amati: " + str(nearest.get("name",""))
+	var hud_state := {"area":"Hutan Pesisir Wringin","coins":GameState.player.get("coins",0),"weight":0,"capacity":GameState.player.get("bagCapacity",20),"objective":objective,"action":action_label,"canInteract":not nearest.is_empty() and not busy,"canNet":false,"diving":false}
 	var environment = get_node_or_null("/root/EnvironmentState")
 	if environment != null:
 		hud_state.merge(environment.snapshot())
@@ -477,8 +514,9 @@ func _sync_position() -> bool:
 	if syncing:
 		return false
 	syncing = true
-	var route: Dictionary = land_path.snapshot(avatar.position)
-	var result: Dictionary = await ApiClient.call_api("/adventure/surface-position",{"area":"forest","x":avatar.position.x,"y":avatar.position.y,"path":route.path,"fromPositionAt":int(GameState.surface.get("positionAt",0)),"version":int(GameState.player.get("version",0))})
+	var sent_pos := avatar.position
+	var route: Dictionary = land_path.snapshot(sent_pos)
+	var result: Dictionary = await ApiClient.call_api("/adventure/surface-position",{"area":"forest","x":sent_pos.x,"y":sent_pos.y,"path":route.path,"fromPositionAt":int(GameState.surface.get("positionAt",0)),"version":int(GameState.player.get("version",0))})
 	syncing = false
 	if not result.get("ok",false):
 		if str(result.get("code","")) in ["SESSION_CHANGED","AREA_CHANGED","POSITION_CHANGED"]:
@@ -512,7 +550,7 @@ func _sync_position() -> bool:
 	if result.has("surface"):
 		GameState.surface = result.surface
 	land_path.acknowledge(int(route.ticket))
-	last_position = avatar.position
+	last_position = sent_pos
 	if result.has("adventure"):
 		GameState.adventure = result.adventure
 	return true
@@ -549,11 +587,24 @@ func _interact() -> void:
 		GameState.player = response.player
 	if response.has("adventure"):
 		GameState.adventure = response.adventure
-	await GameState.refresh()
+	if response.has("surface"):
+		GameState.surface = response.surface
+		sync_clock = 0.0
+		land_path.reset(avatar.position)
+	else:
+		await GameState.refresh()
 	busy = false
 	var reward := int(response.get("reward",0))
+	if str(item.get("id","")) == "forest_stream":
+		AudioManager.play_sfx("machete_cut_bush" if reward > 0 else "wooden_click_light")
+		if reward > 0:
+			AudioManager.play_sfx("path_reveal_chime")
+	else:
+		AudioManager.play_sfx("path_reveal_chime" if reward > 0 else "wooden_click_light")
 	var knowledge: Dictionary = response.get("knowledge",{}) if response.get("knowledge") is Dictionary else {}
 	var text := str(knowledge.get("text",item.get("text","Perbekalan ini dapat membantu perjalanan berikutnya.")))
+	if str(item.get("id","")) == "forest_stream":
+		text += "\n\nTindakan sebab–akibat: Sumbatan serasah di pintu air hulu telah disingkirkan sehingga aliran air tawar ke teluk Bandar Hujung kembali lancar."
 	if reward > 0:
 		text += "\n\nPenemuan baru: +%d koin. Tersimpan di jurnal." % reward
 	else:
@@ -633,18 +684,49 @@ func _close_dialog() -> void:
 func _show_journal() -> void:
 	if busy:
 		return
-	var text := ""
 	var entries: Array = GameState.adventure.get("discoveries",[])
+	var progress: Dictionary = GameState.player.get("progress",{})
+	var missions: Array = progress.get("missions",[])
+	var garden_count := 0
+	for gid in ["garden_leaf","garden_root","garden_channel"]:
+		if entries.has(gid): garden_count += 1
+	var forest_count := 0
+	for fid in ["forest_canopy","forest_roots","forest_stream"]:
+		if entries.has(fid): forest_count += 1
+	var sea_count := 0
+	for sid in ["nitrogen","photosynthesis","osmosis"]:
+		if entries.has(sid): sea_count += 1
+	var has_klorofil := false
+	for inv in GameState.player.get("inventory",[]):
+		if str(inv.get("fragmentId","")) == "klorofil" and int(inv.get("quantity",0)) > 0:
+			has_klorofil = true
+	var text := "=== 1. LANGKAH BERIKUTNYA ===\n"
+	text += "• Gejala Kebun Apung Bu Darmi (Bandar Hujung): %d/3\n" % garden_count
+	text += "• Pembanding Daratan (Hutan Pesisir Wringin): %d/3\n" % forest_count
+	text += "• Ekosistem Bawah Laut (Hutan Lamun Wringin 25–60 m): %d/3\n" % sea_count
+	text += "• Fragmen Benih Hayati (Biologi Tumbuhan) di Tas: %s\n" % ("Siap diracik" if has_klorofil else "Belum ada (jala di laut)")
+	if missions.has("akar"):
+		text += "Status Misi Kebun Apung: Selesai diracik (%s).\n\n" % ("Pulih bertahap" if int(progress.get("day",1)) >= 3 else "Perawatan dimulai malam ini")
+	elif forest_count < 3:
+		text += "Saran: Amati Celah Cahaya Tajuk, Akar dan Serasah, serta bersihkan Aliran Hulu Bandar di hutan ini.\n\n"
+	else:
+		text += "Saran: Kembali ke Bandar Hujung melalui gerbang barat daya, lalu selami Hutan Lamun Wringin (25–60 m) atau buka Kedai Waras saat malam.\n\n"
+	text += "=== 2. DUGAAN & HUBUNGAN KONSEP ===\n"
+	text += "• Mengapa tanaman Bu Darmi layu walau terendam? Media kebun apung yang rapat dan tergenang membuat akar kekurangan oksigen untuk respirasi seluler, ditambah rembesan air payau yang mengganggu osmosis.\n"
+	text += "• Pembeda Wilayah: Hutan Pesisir Wringin adalah hutan daratan di timur laut desa (tempat mengamati humus berpori dan aliran hulu), sedangkan Hutan Lamun Wringin adalah zona penyelaman bawah laut (25–60 m) tempat mengamati Koral Nitrogen, Lentera Fotosintesis, dan Kerang Osmosis.\n\n"
+	text += "=== 3. CATATAN TEMUAN LAPANGAN ===\n"
+	var found_any := false
 	for item in landmarks:
-		var seen := false
-		for entry in entries:
-			if (entry is Dictionary and str(entry.get("id","")) == str(item.id)) or (entry is String and entry == item.id):
-				seen = true
-		if seen:
-			text += str(item.name) + "\n" + str(item.get("text","Perbekalan ditemukan.")) + "\n\n"
-	if text.is_empty():
-		text = "Belum ada catatan hutan. Dekati penanda di sepanjang jalan, lalu tekan E untuk mengamati.\n\nKembali ke lingkaran jalan di barat daya untuk pulang ke Bandar Hujung."
-	_show_dialog("Jurnal hutan",text)
+		if entries.has(str(item.id)):
+			found_any = true
+			text += "• %s: %s\n\n" % [str(item.name),str(item.get("text","Perbekalan ditemukan."))]
+	for item in GameState.world.get("surface_hub",{}).get("landmarks",[]):
+		if entries.has(str(item.id)):
+			found_any = true
+			text += "• %s (Kebun Apung): %s\n\n" % [str(item.name),str(item.get("text",""))]
+	if not found_any:
+		text += "Belum ada catatan temuan. Dekati penanda di sepanjang jalan, lalu tekan E untuk mengamati.\n"
+	_show_dialog("Jurnal Lapangan Nala",text)
 
 func _show_inventory() -> void:
 	var text := ""
