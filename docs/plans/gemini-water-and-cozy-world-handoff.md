@@ -102,9 +102,9 @@ Daftar ini adalah snapshot, bukan izin mengabaikan perubahan baru. Jangan `git r
 - Empat audio baru terdaftar pada AudioManager lokal, tetapi belum dipanggil otomatis oleh gameplay. Staging baseline belum memuat tambahan audio tersebut.
 - `play_bgm("coastal_waves")` adalah contoh pemanggilan yang diberikan agen audio. Jangan menggunakannya sebagai implementasi ambience final karena dapat menggantikan musik yang sedang berjalan.
 
-## 6. Rencana implementasi berurutan ✅ (Selesai Tahap A–E)
+## 6. Rencana implementasi berurutan
 
-### Tahap A — Field air bersama dan emitter yang jelas ✅ (Selesai)
+### Tahap A — Field air bersama dan emitter yang jelas
 
 1. Buat helper data air, misalnya `WaterField.gd`, dengan tanggung jawab terbatas: jarak ke pantai, normal pantai, arah/kecepatan arus visual, dan kedekatan penghalang air.
 2. Perluas mask yang sekarang dibuat sekali oleh `LandWater3D._shoreline_texture()`. Mask saat ini 160 × 112; pertahankan dahulu, naikkan hanya jika bukti visual menunjukkan resolusinya tidak cukup.
@@ -115,7 +115,7 @@ Daftar ini adalah snapshot, bukan izin mengabaikan perubahan baru. Jangan `git r
 7. Simpan hasil sampling, cache dan spatial lookup. Jangan memindai semua poligon atau membuat ulang gambar mask setiap frame.
 8. Field dan metadata baru tidak boleh membuat lantai berjalan baru atau collider tersembunyi.
 
-### Tahap B — Gerakan air yang terbaca dan nyaman ✅ (Selesai)
+### Tahap B — Gerakan air yang terbaca dan nyaman
 
 1. Pertahankan palet air hijau-toska redup, bukan neon atau permukaan plastik mengilap.
 2. Pesisir: gabungkan swell lebar dan detail kecil yang bergerak pada laju berbeda. Hindari satu pola sinus yang berulang jelas di seluruh layar.
@@ -127,7 +127,7 @@ Daftar ini adalah snapshot, bukan izin mengabaikan perubahan baru. Jangan `git r
 8. Pengurangan gerak mengurangi amplitudo/partikel/kontras gerakan tanpa mematikan keterbacaan air. Ikuti kebijakan pause yang sudah ada; jangan membuat timer gameplay berhenti karena efek air.
 9. Tetap gunakan Compatibility/WebGL. Jangan menambah compute shader, OS thread, atau simulasi fluida berat.
 
-### Tahap C — Buih, sapuan pantai dan percikan benturan ✅ (Selesai)
+### Tahap C — Buih, sapuan pantai dan percikan benturan
 
 1. Beri tiap segmen pantai fase swell yang bervariasi secara halus dan stabil dari ID/koordinat, bukan random ulang setiap frame.
 2. Pada pasir: pita wash maju ke bibir pantai → berhenti sebentar → surut. Buih pecah menjadi fleck kecil lalu memudar, bukan satu outline putih permanen.
@@ -138,7 +138,7 @@ Daftar ini adalah snapshot, bukan izin mengabaikan perubahan baru. Jangan `git r
 7. Bila perlu efek basah di pantai, gunakan strip terbatas sesuai metadata. Jangan mengubah seluruh terrain menjadi air yang bisa diinjak.
 8. Sebagai anggaran awal, batasi sekitar 8 emitter dekat kamera, 24 splash aktif, dan 96 fleck. Ukur hasilnya sebelum menaikkan; angka ini anggaran desain, bukan klaim performa yang sudah terbukti.
 
-### Tahap D — Hubungkan audio pesisir yang sudah tersedia ✅ (Selesai)
+### Tahap D — Hubungkan audio pesisir yang sudah tersedia
 
 1. Tinjau WAV/import dan perubahan AudioManager dari agen audio. Jangan generate ulang aset jika file yang ada valid.
 2. Tambahkan pemutar ambience tersendiri yang dapat berjalan bersama BGM, misalnya pada manager `WaterAmbience.gd` atau API ambience AudioManager. Gunakan environment bus yang sudah ada.
@@ -152,7 +152,7 @@ Daftar ini adalah snapshot, bukan izin mengabaikan perubahan baru. Jangan `git r
 10. Saat menyelam, kurangi ambience permukaan dan ikuti filter bawah air. Napas, peringatan oksigen serta BGM harus tetap terdengar dan tidak dimulai ulang akibat update volume air.
 11. Registrasi stream atau kenaikan penghitung debug bukan bukti suara sudah terdengar. Lakukan pemeriksaan pemutar aktual dan dengarkan hasilnya melalui speaker/headphone.
 
-### Tahap E — Pemolesan koridor setelah air lulus ✅ (Selesai)
+### Tahap E — Pemolesan koridor setelah air lulus
 
 Kerjakan satu segmen sampai koheren sebelum memperluas map:
 
@@ -179,7 +179,7 @@ Sepakati kontrak event sebelum implementasi, misalnya `{id, area, position, norm
 
 Jika hanya ada satu Gemini, kerjakan A → B → C → D → pengujian → E. Jangan membuka seluruh pekerjaan sekaligus lalu berhenti pada scaffolding.
 
-## 8. Pengujian yang harus membuktikan hasil ✅ (Lulus Seluruhnya)
+## 8. Pengujian yang harus membuktikan hasil
 
 ### Perilaku dan regresi
 
@@ -230,7 +230,7 @@ Baseline Firefox baru terverifikasi pada cakupan tertentu dan cold startup dapat
 
 Catat ukuran PCK, waktu startup, frame time sebelum/sesudah dan jumlah emitter/partikel. Sasaran awal 30 FPS pada perangkat target adalah target pengukuran, bukan janji. Jangan menambah full-screen pass berat atau readback GPU tiap frame.
 
-## 9. Build, repository dan deployment ✅ (Selesai & Live di Staging)
+## 9. Build, repository dan deployment
 
 1. Tinjau diff dan stage eksplisit. Sertakan audio baru yang sudah diverifikasi; jangan ikut meng-commit pekerjaan lisensi yang belum disepakati agen pemiliknya.
 2. Bila masih ada perubahan agen lain, buat snapshot kandidat terisolasi dari commit dasar lalu overlay hanya file yang disetujui. Export Godot dari snapshot itu. Jangan membuat PCK dari working tree campuran lalu mengklaimnya berasal dari commit bersih.
@@ -244,21 +244,21 @@ Catat ukuran PCK, waktu startup, frame time sebelum/sesudah dan jumlah emitter/p
 10. Hapus akun/sesi/data uji secara terbatas setelah browser selesai. Jalankan backup baru, lalu `scripts/verify-restore.sh` terhadap archive itu. Script memulihkan ke `jalasmara_restore_check`, membandingkan jumlah, lalu menghapus database pemeriksaan tersebut—jangan menggantinya dengan restore ke database live.
 11. Catat commit, pipeline, checksum PCK, bukti video/gambar, backup dan keterbatasan. Jangan mengklaim seluruh map sudah final hanya karena tes lulus.
 
-## 10. Kriteria selesai ✅ (Seluruh Butir Terpenuhi)
+## 10. Kriteria selesai
 
 Pekerjaan air selesai jika seluruh butir berikut terbukti:
 
-- [x] ✅ Ombak dan arus terlihat bergerak pada video/tangkapan *multi-frame* renderer aktual.
-- [x] ✅ Pesisir, sungai, pasir dan penghalang mempunyai respons yang berbeda (`sand`, `rock`, `bank`, `pile`).
-- [x] ✅ Buih maju/pecah/surut, bukan outline putih statis atau motif berulang yang mencolok.
-- [x] ✅ Air tidak menutupi dek/daratan, dan pemain tidak memperoleh pijakan baru (`on_land = false` di kolong dek dermaga/jembatan, oklusi *depth buffer* 3D pada `z = -13.1 .. -12.9`).
-- [x] ✅ Suara ombak otomatis terdengar dekat pesisir, melemah saat menjauh, serta sinkron dengan event visual (`pop_swell_events()`).
-- [x] ✅ BGM, napas, langkah, mute, fokus dan transisi selam tetap benar (`ambient_coastal_waves` berjalan di kanal `ambience_player` terpisah dari `bgm_player`).
-- [x] ✅ Tidak ada error shader/WebGL atau pertumbuhan node/audio tanpa batas (*pool* `MultiMeshInstance3D` maks. 24 *splash* & 96 *fleck*, *pool* `water_sfx_players` 2 kanal).
-- [x] ✅ Tes, build dan pipeline untuk SHA final (`7e765ce`) lulus; source didorong ke `gitlab/main` dan `github/main`.
-- [x] ✅ Staging (`https://staging-jalasmara.ardianryan.com`) benar-benar memakai paket final (`index.pck` SHA-256 `998a17d55d49522a4baf9c933b0a1df0eec6f29ab7808cb94430f5c6479f7ed9`) dan telah diuji melalui HTTPS.
-- [x] ✅ Akun uji dibersihkan dan backup berhasil diuji restore (`/var/backups/jalasmara/jalasmara-20261108T151407Z.archive.gz`).
-- [x] ✅ Keterbatasan visual, perangkat yang belum diuji, dan pekerjaan koridor yang tersisa dilaporkan jujur pada Bagian 12.
+- [x] Ombak dan arus terlihat bergerak pada video/tangkapan *multi-frame* renderer aktual.
+- [x] Pesisir, sungai, pasir dan penghalang mempunyai respons yang berbeda (`sand`, `rock`, `bank`, `pile`).
+- [x] Buih maju/pecah/surut, bukan outline putih statis atau motif berulang yang mencolok.
+- [x] Air tidak menutupi dek/daratan, dan pemain tidak memperoleh pijakan baru (`on_land = false` di kolong dek dermaga/jembatan, oklusi *depth buffer* 3D pada `z = -13.1 .. -12.9`).
+- [x] Suara ombak otomatis terdengar dekat pesisir, melemah saat menjauh, serta sinkron dengan event visual (`pop_swell_events()`).
+- [x] BGM, napas, langkah, mute, fokus dan transisi selam tetap benar (`ambient_coastal_waves` berjalan di kanal `ambience_player` terpisah dari `bgm_player`).
+- [x] Tidak ada error shader/WebGL atau pertumbuhan node/audio tanpa batas (*pool* `MultiMeshInstance3D` maks. 24 *splash* & 96 *fleck*, *pool* `water_sfx_players` 2 kanal).
+- [x] Tes, build dan pipeline untuk SHA final (`7e765ce`) lulus; source didorong ke `gitlab/main` dan `github/main`.
+- [x] Staging (`https://staging-jalasmara.ardianryan.com`) benar-benar memakai paket final (`index.pck` SHA-256 `998a17d55d49522a4baf9c933b0a1df0eec6f29ab7808cb94430f5c6479f7ed9`) dan telah diuji melalui HTTPS.
+- [x] Akun uji dibersihkan dan backup berhasil diuji restore (`/var/backups/jalasmara/jalasmara-20261108T151407Z.archive.gz`).
+- [x] Keterbatasan visual, perangkat yang belum diuji, dan pekerjaan koridor yang tersisa dilaporkan jujur pada Bagian 12.
 
 ## 11. Instruksi penutup untuk agen pelaksana
 

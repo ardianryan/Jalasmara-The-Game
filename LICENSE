@@ -1,0 +1,61 @@
+# JALASMARA LICENSE
+
+Copyright (c) 2026 Ardian Ryan and Jalasmara Contributors.
+
+Proyek Jalasmara menggunakan skema lisensi ganda (*split licensing*) yang umum digunakan dalam industri pengembangan permainan video independen (indie game), untuk membedakan antara kode perangkat lunak dan kekayaan intelektual/aset kreatif:
+
+---
+
+## 1. Kode Sumber Perangkat Lunak (Source Code)
+
+Seluruh kode sumber perangkat lunak dalam repositori ini—termasuk kode engine Godot (`client-godot/scripts/`, `client-godot/autoloads/`, `client-godot/shaders/`), server API (`apps/api/`), aplikasi web antarmuka (`apps/web/`), paket bersama (`packages/`), dan skrip otomatisasi/alat pipa aset (`scripts/`, `tools/`)—dilisensikan di bawah **Lisensi MIT**:
+
+```text
+MIT License
+
+Copyright (c) 2026 Ardian Ryan and Jalasmara Contributors.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+---
+
+## 2. Aset Permainan, Seni Visual, Musik, & Kekayaan Intelektual (Game Assets & Lore)
+
+Seluruh konten kreatif orisinal yang membentuk identitas dunia **Jalasmara**—termasuk namun tidak terbatas pada:
+- Nama dagang dan merek *"Jalasmara"*
+- Desain karakter (Nala, Mbah Wira, Beno, Bu Darmi, Inspektur Raka, dll.)
+- Makhluk dan monster mitologi bahari (Gajah Mina, Sidat Smara, Ubur Smaragd, dll.)
+- Ilustrasi piksel seni, peta wilayah, tekstur, dan atlas visual (`client-godot/resources/art/`, `apps/web/src/assets/`)
+- Desain narasi, naskah dialog, lore, naskah teka-teki, dan tata letak dunia
+- Rekaman musik latar orisinal dan aransemen tema
+
+**HAK CIPTA DILINDUNGI UNDANG-UNDANG (ALL RIGHTS RESERVED).**
+
+Aset-aset di atas disediakan semata-mata untuk keperluan kompilasi, pengujian, dan peninjauan proyek secara pribadi. Anda **tidak diizinkan** untuk mendistribusikan ulang, menjual, mengomersialisasikan, atau menggunakan aset visual, audio, dan karakter Jalasmara ke dalam produk atau permainan lain tanpa izin tertulis dari pemilik hak cipta.
+
+---
+
+## 3. Komponen, Pustaka, & Font Pihak Ketiga (Third-Party Works)
+
+Proyek ini menggunakan berbagai mesin permainan, pustaka sumber terbuka, fon tipografi, dan model 3D pihak ketiga yang masing-masing dilindungi oleh lisensi aslinya (MIT, Apache 2.0, SIL Open Font License 1.1, CC BY 4.0).
+
+Daftar lengkap pustaka, atribusi kepemilikan, dan teks lisensi pihak ketiga dapat dilihat pada berkas:
+👉 **[THIRD_PARTY_LICENSES.md](./THIRD_PARTY_LICENSES.md)**
+

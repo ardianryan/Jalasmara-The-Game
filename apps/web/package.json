@@ -1,6 +1,7 @@
 {
   "name": "@jalasmara/web",
   "private": true,
+  "license": "SEE LICENSE IN ../../LICENSE",
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
