@@ -1,0 +1,30 @@
+{
+  "asset": "ocean-atmosphere-atlas.png",
+  "origin": "Original Jalasmara bitmap generated using built-in imagegen",
+  "date": "2026-11-08",
+  "size": [
+    1536,
+    1024
+  ],
+  "layout": {
+    "columns": 3,
+    "rows": 2,
+    "cell": [
+      512,
+      512
+    ]
+  },
+  "cells": [
+    "porous_limestone_wall",
+    "karst_pillar",
+    "fictional_split_gate",
+    "seagrass_and_algae",
+    "broken_rock_arch",
+    "coral_rock_edge"
+  ],
+  "sha256": "e0fb6634a2c4153251a1609af55fa1b1408ffa032efd0a5e81070f1b6e9e4eff",
+  "prompt": "docs/assets/ocean-atmosphere-prompt.md",
+  "culture": "Fictional maritime Nusantara ruins; no sacred symbols, lettering or real monument replica",
+  "references": "Private screenshot for depth composition only; own ocean-terrain-atlas.png for palette and material",
+  "externalLicenseClaim": null
+}

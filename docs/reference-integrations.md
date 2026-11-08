@@ -32,9 +32,23 @@ Lihat [panduan lingkungan](dynamic-environment-guidelines.md), [catatan referens
 
 ## Reproduksi dan pemeriksaan
 
-- `npm run check:world`: enam pemeriksaan Godot headless, termasuk terrain, 141 transformasi peta, animasi, perilaku fauna, air/occlusion, dan foley, lalu verifikasi 722 bingkai generator.
+- `npm run check:world`: tujuh pemeriksaan Godot headless, termasuk terrain, 141 transformasi peta, animasi, perilaku fauna, air/occlusion, foley, serta perspektif atmosfer/parallax, lalu verifikasi 722 bingkai generator.
 - `tools/img2threejs/README.md`: setup Python/Node lokal, pin upstream, validasi spec resmi, ekspor GLB dan render tiga sudut. Python/Three.js hanya alat produksi, tidak ikut runtime Godot browser.
 - `tools/procedural-creatures/README.md`, `tools/pixelbolt/README.md`, dan `docs/assets/polyfork.md`: jalur produksi masing-masing sumber yang sudah dipakai.
 - `VERIFY_LIVING=1 VERIFY_HYBRID=1 APP_TEST_ORIGIN=http://localhost:3100 node scripts/godot-browser.mjs`: perjalanan, simulasi makhluk yang benar-benar maju, arus, clipping cahaya, foley, tangkapan, gua, dan HUD dengan fixture privat.
 
 Fog of war penuh, dampak cuaca pada ekonomi, dan damage predator baru tidak diklaim aktif. Hunter/prey pada fauna adalah perilaku visual; resource dan progres tetap diputuskan server.
+
+## Pekerjaan baru: komposisi latar bawah air
+
+**Status: implementasi native dan uji semantik lulus; pemeriksaan browser gabungan masih berlangsung.** Tinjauan tangkapan privat `underwater-03-vertical-canyon-descent` dan `underwater-02-harpoon-cavern` memperlihatkan pemisahan batu dekat, formasi tengah, serta siluet jauh yang lebih dingin dan rendah kontras. Yang diadaptasi adalah hubungan skala, warna, dan ruang negatif; piksel maupun susunan level referensi tidak disalin.
+
+| Kedalaman cerita | Komposisi latar orisinal yang dibutuhkan |
+| --- | --- |
+| Segaran, 0–25 m | Tebing kapur pucat bertingkat membingkai jalur; pilar karst jauh berwarna biru air, tambalan koral kecil, serta cahaya permukaan. Celah diagonal dan bagian tengah tetap lega agar penyelam, biota, dan tangkapan terbaca. |
+| Wringin, 25–60 m | Tiga jarak rumpun vegetasi bawah air: siluet jauh tipis, sulur ganggang tengah yang mengapit lembah, serta tepian batu dekat yang lebih hangat. Vegetasi tidak menjadi tirai pekat di atas pemain. Nama fiksi Wringin tidak menjadi klaim bahwa akar beringin hidup sebagai lamun laut. |
+| Jalatunda/Tamansari, 60–100 m | Rusuk gua kapur dan lengkung ruang dalam membentuk kedalaman; struktur penampung air atau batu roboh hanya samar di kejauhan. Pipa korporasi menjadi aksen rusak yang terbatas. Tanpa menyalin candi, aksara, atau lambang sakral tertentu; latar tidak mengesankan jalan Fase 2 sudah dapat dimainkan. |
+
+Setiap zona memerlukan sedikitnya tiga bidang dekorasi dengan respons kamera berbeda. Bidang jauh lebih dingin, kurang jenuh, dan rendah kontras; bidang dekat lebih tajam dan hangat, sedangkan pemain/objek interaksi mempertahankan kontras tertinggi. Parallax mengikuti kamera tanpa menggeser terrain, collider, titik tangkapan, atau koordinat server. Kondisi malam/awan mengubah atmosfer dari state bersama. Pengurangan gerak mempertahankan petunjuk jarak yang statis dan menghentikan gerakan tambahan yang tidak diperlukan.
+
+Penerimaan membutuhkan bukti semantik untuk perbedaan parallax/perspektif atmosfer, batas instance, tidak adanya perubahan collision/progres, dan pengurangan gerak; kemudian tangkapan browser pada beberapa posisi kamera. Banyak lapisan atau aset baru saja belum membuktikan kedalaman terlihat saat bermain. Rincian kontrak dan bukti terbaru dicatat pada [lingkungan](world/environment.md).

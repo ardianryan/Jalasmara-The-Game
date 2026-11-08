@@ -323,6 +323,143 @@ try {
       ),
     );
   }
+  if (process.env.VERIFY_BACKDROP === "1") {
+    const output = "artifacts/godot/backdrop";
+    mkdirSync(output, { recursive: true });
+    // Both the ordinary route and the hybrid cave route reach this same clear-water start.
+    for (const [x, y] of [
+      [1000, 900],
+      [1000, 580],
+      [1550, 620],
+    ])
+      await walkTo(frame, x, y);
+    await page.waitForTimeout(450);
+    const shallow = await snapshot(frame);
+    const before = shallow.hybrid?.backdrop;
+    assert.equal(shallow.hybrid?.active, true);
+    assert.equal(before?.active, true);
+    assert.equal(
+      before.atlasAvailable,
+      true,
+      "Generated atmosphere atlas must actually load",
+    );
+    assert(
+      before.layers.length >= 3,
+      "Need distinct far, middle, and near scenery",
+    );
+    for (const layer of before.layers) {
+      assert(
+        layer.cards > 0,
+        `Backdrop layer ${layer.id} has no rendered cards`,
+      );
+      assert(layer.parallax.every((factor) => factor > 0 && factor < 1));
+      assert(layer.tint.length === 4 && layer.tint.every(Number.isFinite));
+    }
+    await page.screenshot({ path: `${output}/01-shallow.png`, fullPage: true });
+    for (const [x, y] of [
+      [1000, 580],
+      [1000, 900],
+      [750, 900],
+    ])
+      await walkTo(frame, x, y);
+    await page.waitForTimeout(450);
+    const deeper = await snapshot(frame),
+      after = deeper.hybrid?.backdrop;
+    assert.equal(after?.active, true);
+    assert(after.depth > before.depth, "Depth tint must follow actual descent");
+    const cameraDelta = deeper.hybrid.camera_center.map(
+      (value, axis) => value - shallow.hybrid.camera_center[axis],
+    );
+    assert(
+      Math.abs(cameraDelta[0]) > 300 && cameraDelta[1] > 80,
+      "Backdrop proof requires real horizontal and vertical camera movement",
+    );
+    let changedTints = 0;
+    const offsets = [];
+    for (const previous of before.layers) {
+      const current = after.layers.find((layer) => layer.id === previous.id);
+      assert(
+        current,
+        `Lost backdrop layer ${previous.id} during camera movement`,
+      );
+      const cameraBefore = shallow.hybrid.camera_center;
+      const cameraAfter = deeper.hybrid.camera_center;
+      const expected = [0, 1].map((axis) => {
+        const origin = axis === 0 ? 1550 : 620;
+        const project = (value) => {
+          const offset = (value - origin) * (1 - previous.parallax[axis]);
+          return axis === 1 ? Math.max(-220, Math.min(220, offset)) : offset;
+        };
+        return project(cameraAfter[axis]) - project(cameraBefore[axis]);
+      });
+      const actual = current.offset.map(
+        (value, axis) => value - previous.offset[axis],
+      );
+      for (const axis of [0, 1])
+        assert(
+          Math.abs(actual[axis] - expected[axis]) < 2,
+          `${previous.id} axis ${axis}: parallax ${actual[axis]} should be ${expected[axis]}`,
+        );
+      if (
+        current.tint.some(
+          (value, channel) => Math.abs(value - previous.tint[channel]) > 0.0001,
+        )
+      )
+        changedTints++;
+      offsets.push({
+        id: previous.id,
+        factors: previous.parallax,
+        actual,
+        expected,
+      });
+    }
+    const ordered = [...after.layers].sort(
+      (a, b) => a.parallax[0] - b.parallax[0],
+    );
+    assert(ordered[0].parallax[0] < ordered.at(-1).parallax[0]);
+    assert(ordered[0].parallax[1] < ordered.at(-1).parallax[1]);
+    assert(
+      ordered[0].contrast < ordered.at(-1).contrast,
+      "Distant scenery must have lower contrast than nearby scenery",
+    );
+    assert(
+      changedTints > 0,
+      "Descent must change atmospheric tint, not only position",
+    );
+    await page.screenshot({ path: `${output}/02-deeper.png`, fullPage: true });
+    writeFileSync(
+      `${output}/results.json`,
+      JSON.stringify(
+        {
+          origin,
+          engine,
+          checks: [
+            "generated-atlas-loaded",
+            "three-rendered-depth-layers",
+            "real-camera-travel",
+            "per-layer-parallax-x-y",
+            "distant-contrast-falloff",
+            "depth-tint-progression",
+          ],
+          cameraDelta,
+          changedTints,
+          offsets,
+          shallow: {
+            position: [shallow.x, shallow.y],
+            camera: shallow.hybrid.camera_center,
+            backdrop: before,
+          },
+          deeper: {
+            position: [deeper.x, deeper.y],
+            camera: deeper.hybrid.camera_center,
+            backdrop: after,
+          },
+        },
+        null,
+        2,
+      ),
+    );
+  }
   await page.keyboard.press("m");
   await frame.waitForFunction(
     () => window.jalasmaraSnapshot?.modal === true,

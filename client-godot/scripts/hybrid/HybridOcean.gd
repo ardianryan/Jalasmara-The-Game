@@ -6,9 +6,7 @@ const LOW_RESOLUTION := Vector2i(480, 270)
 var main: Node2D
 var active := false
 var enabled := true
-var _backdrop: MeshInstance3D
-var _backdrop_home := Vector3.ZERO
-var _distant: Node3D
+var backdrop: Node3D
 var _fill_light: DirectionalLight3D
 var screen_layer: CanvasLayer
 var display: TextureRect
@@ -98,9 +96,10 @@ func _create_world() -> void:
 	camera_3d.far = 4500.0
 	camera_3d.current = true
 	viewport_3d.add_child(camera_3d)
-	_add_backdrop()
+	backdrop = preload("res://scripts/hybrid/OceanBackdrop.gd").new()
+	world_root.add_child(backdrop)
+	backdrop.configure(GameState.world)
 	_add_sky_and_water()
-	_add_distant_reefs()
 	var terrain_path := "res://scripts/hybrid/TerrainGeometry.gd"
 	if ResourceLoader.exists(terrain_path):
 		terrain_geometry = load(terrain_path).new()
@@ -135,28 +134,6 @@ func _create_world() -> void:
 	headlamp.shadow_bias = 0.08
 	viewport_3d.add_child(headlamp)
 	_built = true
-
-func _add_backdrop() -> void:
-	var texture_path := "res://resources/art/ocean-depth-background.png"
-	if not ResourceLoader.exists(texture_path):
-		return
-	var plane := MeshInstance3D.new()
-	plane.name = "DistantOceanPlane"
-	var quad := QuadMesh.new()
-	var surface := float(GameState.world.get("surface", 400))
-	quad.size = Vector2(float(GameState.world.get("width", 6144)), float(GameState.world.get("height", 3584)) - surface)
-	plane.mesh = quad
-	plane.position = _depth_point(Vector2(quad.size.x / 2, surface + quad.size.y / 2), -1000)
-	_backdrop = plane
-	_backdrop_home = plane.position
-	var material := StandardMaterial3D.new()
-	material.albedo_texture = load(texture_path)
-	material.albedo_color = Color(0.60, 0.78, 0.82)
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
-	plane.material_override = material
-	plane.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	world_root.add_child(plane)
 
 func _depth_point(point: Vector2, z: float) -> Vector3:
 	return Vector3(point.x, -point.y + sin(TILT) * z, z)
@@ -198,57 +175,6 @@ void fragment() {
 }
 """)
 
-func _add_distant_reefs() -> void:
-	_distant = Node3D.new()
-	_distant.name = "DistantRockRelief"
-	world_root.add_child(_distant)
-	var source_path := "res://resources/models/reef-rock.glb"
-	if not ResourceLoader.exists(source_path):
-		return
-	var rock_source := load(source_path) as PackedScene
-	var anchors: Array[Vector2] = []
-	for entry in GameState.world.get("terrain", []):
-		var rect := Rect2(float(entry[0]), float(entry[1]), float(entry[2]), float(entry[3]))
-		if rect.position.y < 400:
-			continue
-		var count := clampi(ceili(rect.size.x / 650.0), 1, 4)
-		for slot in range(count):
-			anchors.append(Vector2(rect.position.x + (slot + 0.5) * rect.size.x / count, rect.position.y))
-	for index in range(mini(20, anchors.size())):
-		var seed_value := index
-		var stone := Node3D.new()
-		_distant.add_child(stone)
-		var model := rock_source.instantiate() as Node3D
-		stone.add_child(model)
-		var geometry := model.find_children("*", "MeshInstance3D", true, false)
-		if model is MeshInstance3D:
-			geometry.append(model)
-		var bounds := AABB()
-		var first := true
-		for leaf in geometry:
-			var local: Transform3D = model.global_transform.affine_inverse() * leaf.global_transform
-			var extent: AABB = local * leaf.get_aabb()
-			bounds = extent if first else bounds.merge(extent)
-			first = false
-			var material := StandardMaterial3D.new()
-			material.albedo_color = Color("356675") if index % 2 == 0 else Color("3d7180")
-			material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-			material.vertex_color_use_as_albedo = false
-			material.roughness = 1.0
-			leaf.material_override = material
-			leaf.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		if first:
-			stone.queue_free()
-			continue
-		model.position -= bounds.get_center()
-		var width := float(130 + posmod(seed_value * 37, 130))
-		var height := width * (0.48 + float(posmod(seed_value * 43, 12)) / 100.0)
-		stone.scale = Vector3(width / maxf(bounds.size.x, 0.01), height / maxf(bounds.size.y, 0.01), 80 / maxf(bounds.size.z, 0.01))
-		var point: Vector2 = anchors[index]
-		point.y += height * 0.2
-		stone.position = _depth_point(point, -420.0 if index % 2 == 0 else -720.0)
-		stone.rotation_degrees.z = sin(seed_value * 3.1) * 18
-
 func _process(delta: float) -> void:
 	if not is_instance_valid(main) or not is_instance_valid(viewport_3d):
 		return
@@ -265,10 +191,6 @@ func _process(delta: float) -> void:
 		return
 	_camera_center = main.camera.get_screen_center_position()
 	var center := Vector3(_camera_center.x, -_camera_center.y / cos(TILT), 0)
-	if is_instance_valid(_backdrop):
-		_backdrop.position = _backdrop_home + Vector3((_camera_center.x - 3072.0) * 0.055, -(_camera_center.y - 1792.0) * 0.055, 0)
-	if is_instance_valid(_distant):
-		_distant.position = Vector3((_camera_center.x - 3072.0) * 0.04, -(_camera_center.y - 1792.0) * 0.04, 0)
 	camera_3d.position = center + Vector3(0, sin(TILT) * CAMERA_DISTANCE, cos(TILT) * CAMERA_DISTANCE)
 	camera_3d.look_at(center, Vector3.UP)
 	camera_3d.size = 540.0 / maxf(0.1, main.camera.zoom.y)
@@ -276,6 +198,8 @@ func _process(delta: float) -> void:
 	var facing := float(main.nala.direction)
 	_update_headlamp(at, facing)
 	_depth = maxf(0, (at.y - float(GameState.world.get("surface", 400))) / 28.0)
+	if is_instance_valid(backdrop):
+		backdrop.update_camera(_camera_center, EnvironmentState.snapshot(), _depth)
 	_lighting_clock += delta
 	if _lighting_clock >= 0.25:
 		_lighting_clock = 0.0
@@ -331,5 +255,6 @@ func debug_status() -> Dictionary:
 		"camera_center": [_camera_center.x, _camera_center.y], "depth_m": _depth,
 		"spot_shadow": is_instance_valid(headlamp) and headlamp.shadow_enabled,
 		"flashlight": _flashlight_status(),
+		"backdrop": backdrop.debug_status() if is_instance_valid(backdrop) else {},
 		"water": living_water.debug_status() if is_instance_valid(living_water) else {},
 	}

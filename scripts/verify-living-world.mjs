@@ -32,6 +32,7 @@ const scripts = [
   "scripts/tests/living-water.gd",
   "scripts/tests/world-foley.gd",
   "scripts/tests/terrain-layers.gd",
+  "scripts/tests/ocean-backdrop.gd",
 ];
 const results = [];
 try {
