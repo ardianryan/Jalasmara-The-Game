@@ -44,3 +44,5 @@ Sumber metadata berada pada `WORLD.atlas` di modul dunia bersama. `regions` memu
 API menghitung status `story` menjadi `open` setelah hari pemain mencapai `requiresDay`. Status `coming_soon` tetap terkunci. Status atlas tidak menggantikan validasi perjalanan, jarak interaksi, syarat boss, atau batas penyelaman pada server.
 
 Penemuan hutan memberi catatan permanen tentang fotosintesis, serasah dan akar, serta daerah aliran sungai. Temuan ini memperluas alasan pemain menjelajah tanpa menjadikan setiap interaksi sebagai kuis.
+
+Jalur berjalan hutan ditetapkan sebagai gabungan koridor dengan jarak maksimum 130 unit dari garis jalur (`walkablePaths`, `walkableHalfWidth`). Tiga titik pembelajaran dan peti berada pada koridor tersebut. Collider batang, batu, bangunan, dan batas jalur bekerja bersama lapisan tajuk; pemain tidak dapat menembus vegetasi padat dengan mengirim posisi dari klien.

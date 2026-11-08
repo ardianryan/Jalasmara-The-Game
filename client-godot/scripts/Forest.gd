@@ -29,6 +29,9 @@ var animation_clock := 0.0
 var touch_direction := Vector2.ZERO
 var last_facing := Vector2.DOWN
 var character_sheet: Texture2D
+var walkable_paths: Array = []
+var walkable_half_width := 130.0
+var path_notice_cooldown := 0.0
 var blocked_exits: Array = []
 var background: Texture2D
 var atlas_path := ""
@@ -121,6 +124,11 @@ class ForestAvatar extends CharacterBody2D:
 func _ready() -> void:
 	_register_input()
 	var config: Dictionary = GameState.world.get("forest",{})
+	walkable_paths = config.get("walkablePaths",[
+		[[200,1320],[350,1250],[480,1210],[650,1050],[930,950],[1200,730],[1530,650],[1830,470],[2230,400]],
+		[[1200,730],[1600,1000],[2130,1050],[2260,1250]],
+		[[1200,730],[1200,200]]])
+	walkable_half_width = float(config.get("walkableHalfWidth",130))
 	landmarks = config.get("landmarks",[
 		{"id":"forest_canopy","x":650,"y":1050,"name":"Celah Cahaya Tajuk","title":"Cahaya di sela daun","text":"Amati daun yang mendapat cahaya di sela tajuk."},
 		{"id":"forest_roots","x":1200,"y":730,"name":"Akar dan Serasah","title":"Tanah yang hidup","text":"Akar menjaga tanah; pengurai mendaur ulang unsur hara."},
@@ -170,6 +178,9 @@ func _ready() -> void:
 	camera.limit_bottom = int(EXTENT.y)
 	avatar.add_child(camera)
 	_build_ui()
+	if get_tree().has_meta("surface_change_notice"):
+		game_hud.message(str(get_tree().get_meta("surface_change_notice")))
+		get_tree().remove_meta("surface_change_notice")
 	var environment = get_node_or_null("/root/EnvironmentState")
 	if environment != null:
 		var progress: Dictionary = GameState.player.get("progress",{})
@@ -339,7 +350,15 @@ func _physics_process(delta: float) -> void:
 	avatar.velocity = avatar.velocity.move_toward(direction*WALK_SPEED,delta*1250)
 	if direction == Vector2.ZERO:
 		avatar.velocity = avatar.velocity.move_toward(Vector2.ZERO,delta*1700)
+	var previous_position := avatar.position
 	avatar.move_and_slide()
+	path_notice_cooldown = maxf(0.0,path_notice_cooldown-delta)
+	if not _is_walkable(avatar.position):
+		avatar.position = previous_position
+		avatar.velocity = Vector2.ZERO
+		if path_notice_cooldown <= 0.0:
+			game_hud.message("Vegetasi lebat menutup jalur. Ikuti jalan tanah atau telusuri cabangnya.")
+			path_notice_cooldown = 4.0
 	avatar.position = avatar.position.clamp(Vector2(40,120),Vector2(2360,1500))
 	avatar.walking = avatar.velocity.length() > 8
 	avatar.clock += delta
@@ -391,11 +410,38 @@ func _sync_position() -> bool:
 	if syncing:
 		return false
 	syncing = true
-	var result: Dictionary = await ApiClient.call_api("/adventure/surface-position",{"area":"forest","x":snappedf(avatar.position.x,0.1),"y":snappedf(avatar.position.y,0.1)})
+	var result: Dictionary = await ApiClient.call_api("/adventure/surface-position",{"area":"forest","x":snappedf(avatar.position.x,0.1),"y":snappedf(avatar.position.y,0.1),"version":int(GameState.player.get("version",0))})
 	syncing = false
 	if not result.get("ok",false):
+		if str(result.get("code","")) in ["SESSION_CHANGED","AREA_CHANGED"]:
+			syncing = true
+			busy = true
+			avatar.velocity = Vector2.ZERO
+			touch_direction = Vector2.ZERO
+			var refreshed: Dictionary = await GameState.refresh()
+			syncing = false
+			if refreshed.get("ok",false):
+				_close_dialog()
+				var message := "Data permainan diubah oleh admin atau sesi lain. Posisi dan progres terbaru telah dimuat."
+				if str(GameState.surface.get("area","hub")) != "forest":
+					get_tree().set_meta("surface_change_notice",message)
+					get_tree().change_scene_to_file("res://scenes/main.tscn")
+				else:
+					avatar.position = Vector2(float(GameState.surface.get("x",ENTRY.x)),float(GameState.surface.get("y",ENTRY.y)))
+					last_position = avatar.position
+					avatar.variant = str(GameState.player.get("appearance","male_default"))
+					var path := "res://resources/art/%s.png" % avatar.variant.replace("_","-")
+					avatar.sheet = load(path) if ResourceLoader.exists(path) else null
+					game_hud.message(message)
+					busy = false
+			else:
+				busy = false
+				game_hud.message(str(refreshed.get("error","Perubahan data belum dapat dimuat. Coba sambungkan kembali.")))
+			return false
 		game_hud.message(str(result.get("error","Posisi belum tersimpan. Periksa koneksi.")))
 		return false
+	if result.has("surface"):
+		GameState.surface = result.surface
 	last_position = avatar.position
 	if result.has("adventure"):
 		GameState.adventure = result.adventure
@@ -592,3 +638,14 @@ func _show_map() -> void:
 	atlas.close_requested.connect(_close_dialog)
 	atlas_panel.add_child(atlas)
 	ui.add_child(atlas_panel)
+
+func _is_walkable(point: Vector2) -> bool:
+	for path in walkable_paths:
+		for index in range(path.size()-1):
+			var first: Variant = path[index]
+			var second: Variant = path[index+1]
+			var start := Vector2(float(first[0]),float(first[1]))
+			var end := Vector2(float(second[0]),float(second[1]))
+			if point.distance_to(Geometry2D.get_closest_point_to_segment(point,start,end)) <= walkable_half_width:
+				return true
+	return false

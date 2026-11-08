@@ -8,16 +8,21 @@ Nala berjalan pada peta darat tiga perempat di Bandar Hujung dan hutan pesisir, 
 
 Akun lokal, undangan, reset oleh owner, kontrol pemain, editor konten versi, audit transaksi, dan penolakan hasil sesi lama tersedia. OIDC tambahan diuji terhadap issuer lokal tiruan; layanan ZITADEL eksternal belum diaktifkan.
 
+Peta hutan memisahkan gambar dasar, bentuk padat, dan tajuk yang menutupi pemain melalui Y-sort. Koridor yang dapat dilalui dipetakan pada data dunia; wilayah vegetasi rapat di luar koridor ditolak oleh klien dan server.
+
 ## Bukti pemeriksaan
 
-- 33 pengujian backend lulus, termasuk autentikasi, izin, versi konten, hadiah idempoten, eksplorasi, tiga siklus, dan boss.
+- 35 pengujian backend lulus, termasuk autentikasi, izin, versi konten, hadiah idempoten, eksplorasi, tiga siklus, dan boss.
 - Game diuji di Chromium dan Firefox desktop: berjalan, menyelam, berenang, menjala tanpa kuis, mengamati, dan membuka peta. Tidak ada error browser pada alur tersebut.
+- Delapan pemeriksaan hutan lulus di Chromium: pilihan karakter awal, perjalanan melalui gerbang, gerak dua sumbu, penemuan dan hadiah server, jurnal, ganti tampilan, atlas, serta pemulihan posisi setelah refresh.
 - Alur yang sama lulus pada HTTPS staging. Cookie produksi memakai prefiks `__Host-`, `Secure`, `HttpOnly`, dan `SameSite=Lax`.
 - Emulasi Chromium lanskap menguji input sentuh D-pad, Aksi, dan Jala. Ini bukan pengujian perangkat Android/iOS fisik.
 - Admin diuji pada Chromium, Firefox, dan WebKit, termasuk perubahan koin, audit, salinan/edit/publikasi konten, serta lebar 1440, 768, dan 390 piksel tanpa overflow dokumen.
 - Build Godot Web, web, API, pemeriksaan dependensi, dan CodeQL dijalankan oleh GitLab CI. Status aktual dan laporan berada pada tautan pipeline repository; GitHub Actions nonaktif.
 
 Bukti browser lokal disimpan di `artifacts/` yang diabaikan Git. Gambar di `docs/screenshots/` adalah tangkapan prototipe Jalasmara sendiri, bukan referensi Dave the Diver.
+
+Rincian implementasi dan batas efek dijelaskan dalam [waktu, cuaca, dan efek lingkungan](world/environment.md).
 
 ## Yang memerlukan tindak lanjut
 
@@ -26,3 +31,5 @@ Owner pertama harus dibuat lewat perintah interaktif pada [panduan operasi](oper
 ![Prototipe dermaga Bandar Hujung](screenshots/bandar-hujung.png)
 
 ![Prototipe eksplorasi Dangkalan Segaran](screenshots/segaran.png)
+
+![Eksplorasi hutan pesisir tiga perempat](screenshots/hutan-muara.png)

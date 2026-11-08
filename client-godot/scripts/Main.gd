@@ -94,6 +94,10 @@ func _ready() -> void:
 		if GameState.dive.has("challenge"):
 			_show_quiz()
 	_update_hud()
+	if get_tree().has_meta("surface_change_notice"):
+		status.text = str(get_tree().get_meta("surface_change_notice"))
+		hud.message(status.text)
+		get_tree().remove_meta("surface_change_notice")
 	if not GameState.player.has("appearance") and GameState.dive.is_empty() and GameState.shift.is_empty():
 		_show_character(true)
 	elif not GameState.player.progress.get("tutorial",false):
@@ -103,7 +107,7 @@ func _ready() -> void:
 		window.jalasmaraReady = true
 		window.parent.postMessage(JavaScriptBridge.get_interface("JSON").parse('{"type":"jalasmara:ready"}'),str(window.location.origin))
 func _setup_input() -> void:
-	var bindings = {"left":[KEY_A,KEY_LEFT],"right":[KEY_D,KEY_RIGHT],"up":[KEY_W,KEY_UP],"down":[KEY_S,KEY_DOWN],"interact":[KEY_E],"net":[KEY_SPACE],"map":[KEY_M],"journal":[KEY_J],"inventory":[KEY_I]}
+	var bindings = {"left":[KEY_A,KEY_LEFT],"right":[KEY_D,KEY_RIGHT],"up":[KEY_W,KEY_UP],"down":[KEY_S,KEY_DOWN],"interact":[KEY_E],"net":[KEY_SPACE],"map":[KEY_M],"journal":[KEY_J],"inventory":[KEY_I],"character":[KEY_C]}
 	for action in bindings:
 		if not InputMap.has_action(action):
 			InputMap.add_action(action)
@@ -264,6 +268,8 @@ func _process(delta: float) -> void:
 			_show_journal()
 		if Input.is_action_just_pressed("inventory"):
 			_show_inventory()
+		if Input.is_action_just_pressed("character"):
+			_show_character(false)
 	if net_started:
 		net_time += delta
 		if net_released and net_time>.3 and not network_busy:
@@ -773,15 +779,40 @@ func _sync_surface() -> bool:
 	if syncing or not GameState.dive.is_empty():
 		return false
 	syncing = true
-	var r: Dictionary = await ApiClient.call_api("/adventure/surface-position",{"area":"hub","x":nala.position.x,"y":clampf(nala.position.y,80,610)})
+	var r: Dictionary = await ApiClient.call_api("/adventure/surface-position",{"area":"hub","x":nala.position.x,"y":clampf(nala.position.y,80,610),"version":int(GameState.player.get("version",0))})
 	syncing = false
 	if r.get("ok",false):
 		GameState.surface = r.surface
 		return true
+	if str(r.get("code","")) in ["SESSION_CHANGED","AREA_CHANGED"]:
+		syncing = true
+		nala.frozen = true
+		nala.velocity = Vector2.ZERO
+		nala.touch = Vector2.ZERO
+		var refreshed: Dictionary = await GameState.refresh()
+		syncing = false
+		if refreshed.get("ok",false):
+			chain_lines.clear()
+			chain_end = Callable()
+			_close()
+			var message := "Data permainan diubah oleh admin atau sesi lain. Posisi dan progres terbaru telah dimuat."
+			if str(GameState.surface.get("area","hub")) == "forest":
+				get_tree().set_meta("surface_change_notice",message)
+				get_tree().change_scene_to_file("res://scenes/forest.tscn")
+			else:
+				nala.position = Vector2(float(GameState.surface.get("x",1030)),float(GameState.surface.get("y",295)))
+				_update_hud()
+				status.text = message
+				hud.message(message)
+		else:
+			status.text = str(refreshed.get("error","Perubahan data belum dapat dimuat. Coba sambungkan kembali."))
+		return false
 	status.text = str(r.get("error","Koneksi jalur darat terganggu."))
 	return false
 func _enter_forest() -> void:
 	network_busy = true
+	while syncing:
+		await get_tree().process_frame
 	if not await _sync_surface():
 		network_busy = false
 		return

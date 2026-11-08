@@ -61,7 +61,7 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	position.x = clampf(position.x,20,3050 if GameState.dive.is_empty() else 6100)
 	if GameState.dive.is_empty():
-		position.y = clampf(position.y,100,590)
+		position.y = clampf(position.y,300,530)
 	position.y = clampf(position.y,80,3470)
 	if swim_sprite:
 		swim_sprite.set_appearance(str(GameState.player.get("appearance","male_default")))

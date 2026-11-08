@@ -4,7 +4,7 @@ import { WORLD } from "../../../packages/shared/src/world.js";
 import { type Store, type User, fail, lock, once, publicUser } from "./db.js";
 import type { Guards } from "./auth.js";
 import { operationKey } from "./game.js";
-import { uuid } from "./schemas.js";
+import { uuid, version } from "./schemas.js";
 export const publicWorld = (day = 1) => ({
   ...WORLD,
   atlas: {
@@ -122,6 +122,7 @@ export async function adventureRoutes(
       const b = z
         .object({
           area: z.enum(["hub", "forest"]).default("hub"),
+          version: version.optional(),
           x: z.number().finite(),
           y: z.number().finite(),
         })
@@ -130,6 +131,12 @@ export async function adventureRoutes(
       return lock(s, req.user!.id, async () => {
         const p = await surfacePlayer(req.user!.id),
           point = await surfacePosition(p);
+        if (b.version !== undefined && b.version !== p.version)
+          return fail(
+            "Data pemain berubah. Muat ulang permainan.",
+            409,
+            "SESSION_CHANGED",
+          );
         if (b.area !== point.area)
           return fail(
             "Gunakan jalur perjalanan untuk berpindah wilayah.",
@@ -158,6 +165,33 @@ export async function adventureRoutes(
               Math.abs(b.y - exit.y) <= exit.height / 2,
           );
           if (blocked) return fail(blocked.reason, 409, "BLOCKED_EXIT");
+          const onPath = WORLD.forest.walkablePaths.some((path) =>
+            path.slice(1).some((end, index) => {
+              const start = path[index],
+                dx = end[0] - start[0],
+                dy = end[1] - start[1],
+                projection = Math.max(
+                  0,
+                  Math.min(
+                    1,
+                    ((b.x - start[0]) * dx + (b.y - start[1]) * dy) /
+                      (dx * dx + dy * dy),
+                  ),
+                );
+              return (
+                Math.hypot(
+                  b.x - start[0] - projection * dx,
+                  b.y - start[1] - projection * dy,
+                ) <= WORLD.forest.walkableHalfWidth
+              );
+            }),
+          );
+          if (!onPath)
+            return fail(
+              "Rumpun terlalu rapat, ikuti jalur hutan.",
+              409,
+              "PATH_BLOCKED",
+            );
         }
         const now = Date.now(),
           elapsed = Math.max(0, Math.min(10, (now - point.positionAt) / 1000));

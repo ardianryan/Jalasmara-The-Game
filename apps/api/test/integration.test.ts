@@ -1367,3 +1367,63 @@ test("posisi awal dan reset versi disimpan agar waktu berjalan antarsinkronisasi
   });
   assert.equal(afterReset.status, 200, JSON.stringify(afterReset.data));
 });
+
+test("gerakan hutan mengikuti koridor jalur dan menolak rumpun di luar jalur", async () => {
+  const u = await account(),
+    b = await new Browser().login(u);
+  await fixtureSurface(u, "forest", { x: 80, y: 180 });
+  const blocked = await b.request("/adventure/surface-position", {
+    area: "forest",
+    x: 80,
+    y: 120,
+  });
+  assert.equal(blocked.status, 409);
+  assert.equal(blocked.data.code, "PATH_BLOCKED");
+  await fixtureSurface(u, "forest", WORLD.forest.entry);
+  const waypoint = WORLD.forest.walkablePaths[0][1];
+  const allowed = await b.request("/adventure/surface-position", {
+    area: "forest",
+    x: waypoint[0],
+    y: waypoint[1],
+  });
+  assert.equal(allowed.status, 200, JSON.stringify(allowed.data));
+});
+
+test("sinkronisasi daratan mendeteksi perubahan admin melalui versi klien dan mereset posisi lama", async () => {
+  const u = await account(),
+    b = await new Browser().login(u),
+    ownerBrowser = await manager(),
+    point = WORLD.forest.landmarks[0];
+  await fixtureSurface(u, "forest", point);
+  const oldState = await b.request("/adventure/state"),
+    previous = oldState.data.player.version;
+  const changed = await ownerBrowser.request(`/admin/players/${u.id}/change`, {
+    version: previous,
+    action: "coins",
+    mode: "add",
+    amount: 75,
+    reason: "Penyesuaian saldo saat pemain menjelajah hutan",
+  });
+  assert.equal(changed.status, 200, JSON.stringify(changed.data));
+  const stale = await b.request("/adventure/surface-position", {
+    area: "forest",
+    x: point.x,
+    y: point.y,
+    version: previous,
+  });
+  assert.equal(stale.status, 409);
+  assert.equal(stale.data.code, "SESSION_CHANGED");
+  const persisted = JSON.parse((await s.redis.get(`surface:${u.id}`))!);
+  assert.equal(persisted.area, "hub");
+  assert.equal(persisted.x, WORLD.surfaceSpawn.x);
+  assert.equal(persisted.playerVersion, previous + 1);
+  const refreshed = await b.request("/adventure/state");
+  assert.equal(refreshed.data.player.coins, 75);
+  assert.equal(refreshed.data.player.version, previous + 1);
+  const synced = await b.request("/adventure/surface-position", {
+    area: "hub",
+    ...WORLD.surfaceSpawn,
+    version: refreshed.data.player.version,
+  });
+  assert.equal(synced.status, 200, JSON.stringify(synced.data));
+});

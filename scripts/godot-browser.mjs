@@ -80,6 +80,7 @@ try {
     await page.keyboard.press("e");
     await frame.waitForFunction(
       () => window.jalasmaraSnapshot?.diving === true,
+      null,{polling:200,timeout:30000}
     );
   }
   await page.screenshot({
@@ -157,7 +158,7 @@ try {
   });
   writeFileSync(
     "artifacts/godot/errors.json",
-    JSON.stringify({ error: e.message, errors }, null, 2),
+    JSON.stringify({ error: e.message, errors, snapshot:await page.locator("iframe").evaluate(el=>el.contentWindow.jalasmaraSnapshot) }, null, 2),
   );
   console.error(e.stack);
   process.exitCode = 1;

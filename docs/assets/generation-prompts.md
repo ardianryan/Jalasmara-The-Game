@@ -22,3 +22,7 @@ Empat berkas `male-default.png`, `male-nusantara.png`, `female-default.png`, `fe
 `item-atlas.png`: delapan ikon asli dalam kisi 4 × 2 tanpa teks: Ubur-Ubur Klorofil, ikan ekosistem, Keong Rasio, ikan lentera alkalin, peti kayu berikat anyaman, prasasti memori tembaga dengan garis sirkuit fiksi, tabung oksigen, dan jala rakitan. Sudut tiga perempat untuk alat, tampak samping untuk biota, palet sian–tembaga–teal. Iterasi kedua membersihkan derau alfa latar; versi yang ditolak disimpan lokal dan tidak didistribusikan.
 
 Generasi AI belum menggantikan tinjauan budaya atau animasi oleh manusia. Motif hanya terinspirasi tekstil sehari-hari secara umum dan tidak diklaim sebagai motif tradisional tertentu yang autentik.
+
+## Pemeran dermaga
+
+`npc-atlas.png`: atlas transparan 2 × 2, empat pemeran seluruh tubuh dengan kaki sejajar, sudut tiga perempat dari atas dan pixel cluster yang terbaca pada 64 piksel. Urutan Mbah Wira (blangkon, lurik, celemek, janggut putih), Beno (kupluk merah, kacamata las, wearpack biru), Bu Darmi (pakaian kebun, caping di punggung, bibit tanaman), Inspektur Raka (mantel putih, visor merah, koper). Busana keseharian pesisir yang distilisasi, tanpa simbol sakral, teks, latar, atau karakter karya lain. Dibuat menggunakan mode built-in image generation dan disalin ke aset proyek.

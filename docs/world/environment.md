@@ -1,25 +1,55 @@
-# Waktu dan cuaca Jalasmara
+# Waktu, cuaca, dan efek lingkungan
 
-Jam dan cuaca bersifat kosmetik. Server tetap menentukan siklus cerita, oksigen, misi, serta pergantian siang–kedai. Menunggu malam pada jam visual tidak melewati misi atau membuka kedai.
+Status berikut berdasarkan implementasi sumber dan pengujian browser pada 8 November 2026. Jam serta cuaca merupakan presentasi klien; server tetap menentukan hari cerita, oksigen, misi, hadiah, dan pergantian penyelaman–kedai. Menunggu jam visual berubah tidak melewati misi atau membuka kedai.
 
-`EnvironmentState` adalah autoload yang mempertahankan jam saat berganti scene. `update_story(day, stage)` menyelaraskan konteks; perubahan hari atau pergantian siang/malam mengatur ulang segmen visual. Setiap tiga detik nyata memajukan satu menit: siang dimulai 08:00 dan berhenti 17:50, sedangkan tahap `night` dimulai 18:30 dan berhenti 23:50. Perubahan tahap siang seperti `dive` ke `boss` tidak mengulang jam.
+## Yang sudah tersedia
 
-`snapshot()` menyediakan `clock`, `weather`, `rain`, `clouds`, `daylight`, `night`, dan `day`. Cuaca mengikuti kurva kosinus 90 detik: cerah, berawan, hujan ringan, lalu kembali cerah. Intensitas hujan maksimum 0,6; perubahan warna dan intensitas bertahap. Ini belum merupakan simulasi meteorologi atau cuaca yang disimpan di server.
+| Unsur                  | Perilaku saat ini                                                                                                                                                                                                |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Jam visual             | Autoload `EnvironmentState` mempertahankan waktu saat berganti scene dalam tab yang sama. HUD menampilkan jam dan nama cuaca.                                                                                    |
+| Siang dan malam        | Warna dunia berubah bertahap melalui `CanvasModulate`. Tahap cerita `night` mengaktifkan segmen malam; bukan pergantian bebas berdasarkan jam dunia.                                                             |
+| Cuaca                  | Siklus lokal 90 detik: cerah → berawan → hujan ringan → cerah. Kerapatan hujan dan peredupan awan berubah halus.                                                                                                 |
+| Hujan                  | Garis hujan dan ring dampak kecil pada bagian bawah layar; tidak digambar di bawah laut. Dampak belum mengikuti geometri atap/tanah.                                                                             |
+| Air permukaan          | Garis gelombang bergerak melalui gambar native dunia. Belum ada simulasi permukaan air atau perpindahan volume air.                                                                                              |
+| Pembiasan bawah laut   | Screen shader dengan dua pergeseran UV kecil dan filter nearest untuk menjaga tepi pixel art.                                                                                                                    |
+| Caustic dan cahaya air | Pola cahaya prosedural memudar dari kedalaman 20 hingga 110 meter. Ada berkas cahaya dan partikel ambient.                                                                                                       |
+| Percikan               | Masuk laut memanggil percikan/ripple singkat dan tiga tetes lensa di tepi layar. Pemanggilan masuk laut saat ini memakai pusat layar, bukan simulasi kontak air pada setiap titik dunia.                         |
+| Gelembung penyelam     | `Player.gd` mengeluarkan gelembung saat menyelam; lebih sering ketika bergerak atau oksigen rendah. Ini indikator visual, bukan konsumsi oksigen tambahan.                                                       |
+| Basah setelah naik     | Pemain di hub menetes selama lima detik dan meninggalkan tanda basah sementara. Tanda belum membedakan material lantai atau mengikuti langkah kaki yang sebenarnya; actor hutan memakai implementasi tersendiri. |
+| Angin hutan            | Shader menggeser kanopi secara lembut, dengan pangkal lokal tetap. Collision tidak bergoyang.                                                                                                                    |
+| Lampu                  | Cahaya radial mengikuti penyelam. Empat lampu dermaga menyala pada tahap malam. Belum ada kerucut senter, bayangan occluder, atau sistem lampu malam hutan yang lengkap.                                         |
 
-`EnvironmentEffects.configure("hub" | "forest" | "sea")` memberi setiap scene modulasi warna dunia dan overlay efek pada CanvasLayer 5. HUD berada di layer 10 dan dialog di atasnya, sehingga teks tidak diredupkan oleh cuaca. Scene laut memperlihatkan tiga berkas cahaya dan partikel air; hujan tidak digambar di bawah air.
+## Aturan waktu dan integrasi
 
-Efek memakai satu Node2D gambar, bukan GPU particles. Batasnya 56 garis hujan, 16 partikel ambient, tiga berkas cahaya, serta 24 entri percikan/ripple yang berumur maksimal 0,7 detik. `splash(screenPoint)` menerima posisi layar logis dan dibatasi jeda 0,12 detik. Scene memanggilnya saat masuk air atau tindakan yang menyentuh permukaan. Tidak ada collider, node, atau alokasi partikel baru per frame.
+`EnvironmentState.update_story(day, stage)` menyelaraskan konteks. Perubahan hari atau pergantian segmen siang/malam mengatur ulang waktu visual. Setiap tiga detik nyata memajukan satu menit: siang mulai 08:00 dan berhenti 17:50; tahap `night` mulai 18:30 dan berhenti 23:50. Perubahan tahap siang seperti `dive` ke `boss` tidak mengulang jam. Tidak ada siklus 24 jam bebas.
 
-Cuaca dan jam boleh terus bergerak saat dialog dibuka; keduanya tidak menjalankan bahaya, timer kuis, maupun kemajuan permainan. Gerakan air dan pemanggilan percikan diintegrasikan oleh scene dunia. Kualitas visual dan kinerja tetap memerlukan pengujian pada perangkat HP nyata.
+`snapshot()` menyediakan `clock`, `weather`, `rain`, `clouds`, `daylight`, `night`, dan `day`. Cuaca mengikuti kurva kosinus 90 detik; intensitas hujan maksimum 0,6. Jam dan cuaca tidak disimpan ke database atau penyimpanan browser. Refresh memulai kembali segmen visual sesuai progres cerita, dan perangkat berbeda tidak dijamin menampilkan jam/cuaca yang sama.
 
-## Pembiasan, cahaya, dan angin
+`EnvironmentEffects.configure("hub" | "forest" | "sea")` memilih suasana scene. Modulasi warna berlaku pada dunia, pembiasan memakai CanvasLayer 3, efek cuaca memakai layer 5, HUD layer 10, dan dialog berada di atasnya. Cuaca tidak meredupkan teks HUD. Jam dan efek tetap boleh bergerak selama dialog; keduanya tidak menjalankan timer kuis, bahaya, atau kemajuan cerita.
 
-`shaders/water.gdshader` memakai screen texture Godot 4 dengan sampler `hint_screen_texture, filter_nearest`, dua gelombang UV kecil (kekuatan 0,0015), dan garis caustic prosedural berintensitas maksimum 0,025. Overlay berada pada CanvasLayer 3, di bawah cuaca (5), HUD (10), dan dialog. Hanya aktif pada `configure("sea")`; `update_depth(meter)` mengurangi caustic bertahap dari 20 sampai 110 meter. Filter nearest mempertahankan tepi pixel art. Tidak ada perubahan fisika, visibilitas server, atau posisi objek karena efek ini.
+`shaders/water.gdshader` memakai sampler Godot 4 `hint_screen_texture, filter_nearest`, kekuatan pembiasan 0,0015, dan caustic maksimum 0,025. `update_depth(meter)` mengatur pemudaran cahaya. Efek hanya aktif pada area `sea`; posisi, collision, dan jangkauan interaksi tidak ikut bergeser.
 
-`shaders/foliage.gdshader` menggeser vertex kanopi secara lembut. Titik kaki lokal `y=0` tetap diam, sedangkan vertex di atasnya bergerak maksimal 2,5 piksel secara bawaan. Uniform `strength`, `wind_speed`, dan `wind_phase` memungkinkan tiap pohon mempunyai ritme berbeda. Collision tidak bergerak; bangunan tidak menerima material ini.
+`shaders/foliage.gdshader` menyediakan `strength`, `wind_speed`, dan `wind_phase`. Dengan koordinat pangkal lokal `y=0`, vertex di atas pangkal bergerak maksimal 2,5 piksel secara bawaan. Material diterapkan pada kanopi, bukan bangunan; shader tidak memindahkan collider.
 
-Hujan menambahkan maksimal 12 ring dampak kecil pada bagian bawah layar; ring digambar langsung tanpa alokasi partikel. Percikan juga menampilkan tiga tetes lensa pada tepi layar selama 1,5 detik. Tetes tidak menutupi pusat penglihatan. Efek petir dan kedipan kuat belum diaktifkan.
+## Batas biaya gambar dan pengujian
 
-## Batas kewenangan klien
+Efek lingkungan memakai satu Node2D gambar dan satu screen shader ketika menyelam. Tidak menggunakan GPU particles atau collider per partikel.
 
-Saat ini jam, hujan, pembiasan, angin, dan tetes lensa merupakan presentasi klien. Bila kelak badai memengaruhi oksigen, arus, akses wilayah, atau hadiah, kondisi cuaca dan pergantian waktunya harus berasal dari server melalui state sesi yang diberi versi. Klien hanya menginterpolasi tampilan; perubahan clock lokal atau scene tidak boleh menghasilkan keuntungan permainan. Protokol cuaca server tersebut belum diterapkan pada versi ini.
+- Modul lingkungan: maksimal 56 garis hujan, 12 kandidat ring dampak hujan, 16 partikel ambient, dan tiga berkas cahaya.
+- `splash(screenPoint)`: maksimal 24 entri percikan/ripple, umur 0,7 detik, jeda pemanggilan 0,12 detik. Tiga tetes lensa hanya berada di tepi layar selama 1,5 detik.
+- Pemain: maksimal 24 gelembung berumur 2,2 detik dan 24 tanda basah berumur lima detik. Interval gelembung 1,5 detik ketika diam, 0,28 ketika bergerak, dan 0,16 ketika oksigen di bawah 25.
+- Batas tersebut berlaku per modul; bukan batas total gambar seluruh permainan. Dunia juga menggambar biota, gelembung latar yang disaring menurut kamera, lamun, gelombang, dan cahaya.
+
+Impor Godot headless dan pemeriksaan script lulus. Pembiasan/caustic aktif pada pengujian Chromium lanskap 844×390 melalui WebGL Compatibility tanpa error console/shader. Alur hutan dan HUD juga diuji terpisah. Bukti lokal berada pada `artifacts/godot/` dan diabaikan Git. Belum ada pengukuran FPS/baterai lintas perangkat atau pengujian HP fisik, sehingga tidak ada klaim anggaran frame tertentu.
+
+## Yang belum diterapkan
+
+- Cuaca yang memengaruhi arus, berenang, oksigen, spawn, akses wilayah, atau hadiah.
+- Waktu/cuaca otoritatif dan persisten di server, prakiraan, musim, pasang-surut, serta sinkronisasi antar pemain/perangkat.
+- Petir, kilat, badai, dan perubahan terang mendadak.
+- Audio hujan, guntur, angin, langkah, tetesan, gelembung, atau audio lingkungan yang berubah mengikuti scene/cuaca.
+- Simulasi air, dampak hujan sesuai geometri, genangan persisten, basah pada seluruh permukaan, dan pengeringan menurut bahan/angin.
+- Bayangan dinamis atau pengaruh pencahayaan terhadap deteksi musuh dan gameplay.
+- Pengaturan kualitas efek serta preferensi terpisah untuk mengurangi gerakan efek lingkungan.
+
+Jika cuaca kelak menjadi mekanik permainan, server harus menerbitkan kondisi dan waktu transisinya sebagai bagian state sesi yang diberi versi. Perhitungan arus, oksigen, akses, spawn, serta hadiah harus memakai kondisi server. Klien hanya menginterpolasi tampilan dan tidak boleh memperoleh keuntungan melalui perubahan jam lokal, reload, atau pergantian scene. Protokol tersebut merupakan pekerjaan lanjutan, belum menjadi perilaku versi ini.

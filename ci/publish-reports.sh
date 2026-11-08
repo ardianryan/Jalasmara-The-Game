@@ -18,7 +18,7 @@ cleanup() {
 trap cleanup EXIT
 mkdir -p "$HOME/.ssh" reports
 printf '%s' "$GITHUB_DEPLOY_KEY_B64" | base64 -d > "$HOME/.ssh/jalasmara"
-curl -fsSL https://api.github.com/meta | python3 -c 'import json,sys; print("\n".join("github.com "+k for k in json.load(sys.stdin)["ssh_keys"]))' > "$HOME/.ssh/known_hosts"
+cp ci/github_known_hosts "$HOME/.ssh/known_hosts"
 export GIT_SSH_COMMAND="ssh -i $HOME/.ssh/jalasmara -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes"
 repo=git@github.com:ardianryan/Jalasmara-The-Game.git
 git push "$repo" "$CI_COMMIT_SHA:refs/heads/main"

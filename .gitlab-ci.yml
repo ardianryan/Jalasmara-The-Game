@@ -69,7 +69,7 @@ codeql:
   stage: analyze
   needs: [verify]
   cache:
-    key: codeql-linux64-v1
+    key: codeql-linux64-archive-v2
     paths: [.cache/codeql/]
   script:
     - apt-get update -qq && apt-get install -y -qq curl git gzip
