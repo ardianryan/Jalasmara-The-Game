@@ -18,3 +18,5 @@ fi
 cp "$cache_dir/web_nothreads_release.zip" "$HOME/.local/share/godot/export_templates/$godot_version.stable/"
 GODOT_BIN="$cache_dir/godot" node scripts/export-game.mjs
 GODOT_BIN="$cache_dir/godot" WORLD_REPORT_DIR=reports/world node scripts/verify-living-world.mjs
+
+python3 scripts/verify_audio.py | tee reports/audio-synthesis.txt

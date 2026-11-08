@@ -1,6 +1,22 @@
-# Pelapisan kota dan hutan
+# Daratan modular: Bandar Hujung dan Wringin
 
-Kota Bandar Hujung dan Hutan Pesisir Wringin tetap memakai renderer 2D. Pilot geometri 3D berlaku pada laut; pohon darat tidak diklaim sebagai model 3D.
+## Status layout 4
+
+Hub dan hutan kini dibangun dari komponen 3D, bukan bitmap peta yang disamarkan dengan mask. `WORLD.landMaps` menjadi sumber tunggal untuk poligon lantai, footprint bangunan/tanaman/batu, material, elevasi dan konektor. `LandWorld3D` merender floor/prop tersebut dengan kamera ortografis pada elevasi pandang 35°. Karakter tetap berupa billboard sprite pada koordinat gerak dua sumbu; proyeksi kakinya dikalibrasi ke physics/server.
+
+Hub mempunyai pelataran lebar, empat konektor, rumah berfootprint empat sisi miring, kebun, 19 pohon fisik dan dock. Dasar coast organik hanya visual: tanah di belakang tebing tidak otomatis menjadi area yang dapat dipanjat. Delapan patch rumput tepi memiliki `walkable: false`, sehingga menghias lantai tanpa mengubah navigasi. Hutan mempunyai dua daratan rumput luas, celah sungai dan dua jembatan, serta 35 pohon fisik. Pemain dapat menjelajah lantai di luar jalur tanah; jalan dekoratif tidak dapat menutup sungai.
+
+Server menerima lantai dari union poligon dengan clearance badan 12 piksel dan menolak footprint prop beserta marginnya. Steering klien memakai margin konservatif 13 piksel pada footprint yang sama untuk mengurangi ruas breadcrumb yang memotong sudut sangat tipis. Angka ini sengaja berbeda; bukan klaim parity radius yang persis sama. Seluruh rute authored diuji pada margin 13 piksel. Breadcrumb maksimal 64, basis timestamp, setiap ruas dan total jaraknya diperiksa server.
+
+Upgrade atau perubahan versi permainan biasa mempertahankan koordinat sah, area dan timestamp posisi. Aksi admin yang tercatat atomik pada audit tetap membatalkan posisi lama. Migrasi layout hanya memindahkan koordinat yang menjadi tidak sah; akun, koin, inventori dan progres tidak direset.
+
+Bukti komponen dan native lokal berada di `artifacts/godot/land-3d/` serta laporan runner. Tiga belas pemeriksaan dunia headless mencakup geometri, jalur, renderer komponen, air, traversal dan jam. Pemeriksaan native mengukur proyeksi kaki dan cahaya lokal; ini tidak membuktikan bahwa hasil akhir sudah menyamai referensi seni atau nyaman pada HP. Build modular masih menjalani finishing dan pengujian browser/deployment final. Hasil staging pada arsip berikut berasal dari build bitmap sebelumnya dan tidak boleh dianggap sebagai penerimaan rebuild ini.
+
+Jam lokal berputar 24 jam visual dalam 36 menit nyata. Jam tersebut kosmetik; server tetap memutuskan hari cerita, kedai, hadiah dan akses. Lihat [lingkungan](environment.md).
+
+## Arsip pemeriksaan sebelum layout 4
+
+Bagian berikut menyimpan diagnosis dan bukti migrasi bitmap sebelumnya. Koordinat, jumlah collider, dan klaim renderer 2D di sini bersifat historis; implementasi aktif dijelaskan di atas.
 
 ## Temuan awal, 8 November 2026
 

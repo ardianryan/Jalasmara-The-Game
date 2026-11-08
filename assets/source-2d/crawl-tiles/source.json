@@ -1,0 +1,33 @@
+{
+  "repository": "https://github.com/crawl/tiles",
+  "revision": "a6ea1655db5c044829d9eea19a232fa6fcac87b0",
+  "license": "CC0-1.0",
+  "release": "Nov-2015",
+  "license_evidence": "Official curated CC0 release; upstream README and approved artists list are preserved. This subset excludes unlicensed tiles, symbols, characters and all GPL engine code.",
+  "tiles": [
+    {
+      "material": "dirt",
+      "file": "dirt.png",
+      "source_path": "releases/Nov-2015/dngn/floor/dirt0.png",
+      "sha256": "731ad7eae36914ee42a212975432c10a4ae22fc3627b0fe00d71881cb28ff2b6"
+    },
+    {
+      "material": "grass",
+      "file": "grass.png",
+      "source_path": "releases/Nov-2015/dngn/floor/grass/grass0.png",
+      "sha256": "b4226e1cc007756eaaf40e02cc1b31fda61420d9d45b98ce6a22723d295e4b1d"
+    },
+    {
+      "material": "sand",
+      "file": "sand.png",
+      "source_path": "releases/Nov-2015/dngn/floor/sand1.png",
+      "sha256": "a389a7de30fbb27370c3ea09b57cb8525b8607013fd02821523f1c52477c1d57"
+    },
+    {
+      "material": "limestone",
+      "file": "limestone.png",
+      "source_path": "releases/Nov-2015/dngn/floor/limestone0.png",
+      "sha256": "60c6c108c687fd295ac89914f8ee942da54be7a17983da4cd8d0bb4a3bafaf6c"
+    }
+  ]
+}

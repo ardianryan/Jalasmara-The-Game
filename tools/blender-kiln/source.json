@@ -1,0 +1,10 @@
+{
+  "repository": "https://github.com/elithril/blender-kiln",
+  "revision": "e9a421467dd95d0de71d45b3d331f8efa4b80f26",
+  "license": "MIT",
+  "purpose": "Read-only offline GLB health inspection using the actual Kiln Studio standard-library checker; no Blender/Claude plugin installed.",
+  "files": {
+    "checks.py": {"path": "plugin/studio/checks.py", "sha256": "a0a7ae86d42359288a82a47cd478a1940a80d374a00a5d824aa4589fc87b4eb8"},
+    "studiolib.py": {"path": "plugin/studio/studiolib.py", "sha256": "0fee92fbe09da8b80767f4edd9e481f71a60c6c3e706918c0d4b07e6a4c0d666"}
+  }
+}

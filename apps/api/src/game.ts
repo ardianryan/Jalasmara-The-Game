@@ -1,3 +1,4 @@
+import { surfaceInvalidatedByAdmin } from "./surface-version.js";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import type { ClientSession } from "mongodb";
 import { randomInt, randomUUID } from "node:crypto";
@@ -99,7 +100,10 @@ export async function gameRoutes(app: FastifyInstance, s: Store, g: Guards) {
     const raw = await s.redis.get(`surface:${p.id}`);
     if (!raw) return;
     const surface = JSON.parse(raw);
-    if (surface.playerVersion === p.version && surface.area === "forest")
+    if (
+      surface.area === "forest" &&
+      !(await surfaceInvalidatedByAdmin(s, p, surface.playerVersion))
+    )
       return fail(
         "Kembali melalui gerbang Bandar Hujung untuk menggunakan fasilitas dermaga.",
         409,

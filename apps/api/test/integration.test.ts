@@ -24,6 +24,10 @@ import {
 } from "../../../packages/shared/src/index.js";
 import type { FastifyInstance } from "fastify";
 import { WORLD } from "../../../packages/shared/src/world.js";
+import {
+  isLandWalkable,
+  nearestSafeLandPoint,
+} from "../../../packages/shared/src/land.js";
 import { hubRoute } from "../../../scripts/game-navigation.mjs";
 import { distanceToEdge } from "../src/geometry.js";
 process.env.NODE_ENV = "test";
@@ -1017,7 +1021,7 @@ test("perjalanan hutan memerlukan gerbang dan gerakan daratan divalidasi server"
     (
       await b.request("/adventure/surface-position", {
         x: WORLD.surfaceSpawn.x,
-        y: WORLD.hub.height,
+        y: WORLD.hub.height + 1,
       })
     ).status,
     400,
@@ -1075,7 +1079,7 @@ test("perjalanan hutan memerlukan gerbang dan gerakan daratan divalidasi server"
     (
       await b.request("/adventure/surface-position", {
         area: "forest",
-        x: 2400,
+        x: WORLD.forest.width + 1,
         y: 1320,
       })
     ).status,
@@ -1175,12 +1179,21 @@ test("penemuan hutan memerlukan kedekatan dan hadiah hanya tersimpan sekali", as
   );
 });
 
-test("perubahan versi pemain membatalkan posisi hutan lama", async () => {
+test("perubahan admin membatalkan posisi hutan lama", async () => {
   const u = await account(),
     b = await new Browser().login(u),
     point = WORLD.forest.landmarks[1];
   await fixtureSurface(u, "forest", point);
-  await s.users.updateOne({ id: u.id }, { $inc: { version: 1 } });
+  const ownerBrowser = await manager();
+  const changed = await ownerBrowser.request(`/admin/players/${u.id}/change`, {
+    version: u.version,
+    action: "coins",
+    mode: "set",
+    amount: 0,
+    reason: "Menguji pembatalan posisi darat melalui aksi admin",
+  });
+  assert.equal(changed.status, 200);
+
   const result = await b.request("/adventure/surface-interact", {
     id: point.id,
   });
@@ -1365,7 +1378,7 @@ test("posisi awal dan reset versi disimpan agar waktu berjalan antarsinkronisasi
   const reset = await b.request("/adventure/state");
   assert.equal(reset.status, 200);
   const resetPoint = JSON.parse((await s.redis.get(`surface:${u.id}`))!);
-  assert.equal(resetPoint.x, WORLD.surfaceSpawn.x);
+  assert.equal(resetPoint.x, WORLD.hub.divePoint.x);
   assert.equal(resetPoint.playerVersion, 1);
   assert.equal(resetPoint.positionAt, reset.data.surface.positionAt);
   resetPoint.positionAt -= 2000;
@@ -1473,8 +1486,10 @@ test("migrasi tata letak desa hanya mereset posisi lama tanpa mengubah progres a
   const migrated = await b.request("/adventure/state");
   assert.equal(migrated.status, 200, JSON.stringify(migrated.data));
   assert.equal(migrated.data.surface.layoutVersion, WORLD.hub.layoutVersion);
-  assert.equal(migrated.data.surface.x, WORLD.surfaceSpawn.x);
-  assert.equal(migrated.data.surface.y, WORLD.surfaceSpawn.y);
+  assert.deepEqual(
+    { x: migrated.data.surface.x, y: migrated.data.surface.y },
+    nearestSafeLandPoint(WORLD.landMaps.hub, { x: 1030, y: 295 }),
+  );
   assert.equal(migrated.data.player.coins, 1234);
   assert.equal(migrated.data.player.version, 7);
   assert.deepEqual(await s.users.findOne({ id: u.id }), before);
@@ -1491,8 +1506,10 @@ test("migrasi tata letak desa hanya mereset posisi lama tanpa mengubah progres a
   await s.redis.set(`surface:${u.id}`, JSON.stringify(persisted), "EX", 1800);
   const unversioned = await b.request("/adventure/state");
   assert.equal(unversioned.data.surface.layoutVersion, WORLD.hub.layoutVersion);
-  assert.equal(unversioned.data.surface.x, WORLD.surfaceSpawn.x);
-  assert.equal(unversioned.data.surface.y, WORLD.surfaceSpawn.y);
+  assert.deepEqual(
+    { x: unversioned.data.surface.x, y: unversioned.data.surface.y },
+    nearestSafeLandPoint(WORLD.landMaps.hub, { x: 1030, y: 295 }),
+  );
   assert.deepEqual(await s.users.findOne({ id: u.id }), before);
   await fixtureSurface(u, "forest", WORLD.forest.landmarks[0]);
   const forest = await b.request("/adventure/state");
@@ -1739,12 +1756,12 @@ test("batang pohon desa menghalangi kaki tanpa menutup seluruh tajuk", async () 
   assert.equal(besideCanopy.status, 200, JSON.stringify(besideCanopy.data));
   const rockMound = await b.request("/adventure/surface-position", {
     area: "hub",
-    x: 870,
-    y: 704,
+    x: 800,
+    y: 860,
   });
   assert.equal(rockMound.status, 409, JSON.stringify(rockMound.data));
   assert.equal(rockMound.data.code, "PATH_BLOCKED");
-  assert.equal(WORLD.hub.layoutVersion, 3);
+  assert.equal(WORLD.hub.layoutVersion, 4);
   assert.equal((await s.users.findOne({ id: u.id }))!.version, u.version);
 });
 
@@ -1768,7 +1785,7 @@ test("pelataran desa dapat dijelajahi di luar koridor tanpa menembus batang, ban
   assert.equal(free.status, 200, JSON.stringify(free.data));
   for (const point of [
     WORLD.hub.treeTrunks[0],
-    { x: 1050, y: 840 },
+    { x: 560, y: 500 },
     { x: 60, y: 1480 },
   ]) {
     const blocked = await b.request("/adventure/surface-position", {
@@ -1779,6 +1796,223 @@ test("pelataran desa dapat dijelajahi di luar koridor tanpa menembus batang, ban
     assert.equal(blocked.status, 409, JSON.stringify(blocked.data));
     assert.equal(blocked.data.code, "PATH_BLOCKED");
   }
-  assert.equal(WORLD.hub.layoutVersion, 3);
+  assert.equal(WORLD.hub.layoutVersion, 4);
   assert.equal((await s.users.findOne({ id: u.id }))!.version, u.version);
+});
+
+test("layout empat mempertahankan posisi aman dan memindahkan posisi air lama tanpa mengubah akun", async () => {
+  const u = await account(),
+    b = await new Browser().login(u);
+  const before = await s.users.findOne({ id: u.id });
+  const safe = { x: 595, y: 650 };
+  await fixtureSurface(u, "hub", safe);
+  const old = JSON.parse((await s.redis.get(`surface:${u.id}`))!);
+  old.layoutVersion = 3;
+  await s.redis.set(`surface:${u.id}`, JSON.stringify(old), "EX", 1800);
+  const kept = await b.request("/adventure/state");
+  assert.equal(kept.status, 200);
+  assert.equal(kept.data.surface.layoutVersion, 4);
+  assert.equal(kept.data.surface.x, safe.x);
+  assert.equal(kept.data.surface.y, safe.y);
+  await fixtureSurface(u, "forest", { x: 1450, y: 450 });
+  const invalid = JSON.parse((await s.redis.get(`surface:${u.id}`))!);
+  invalid.layoutVersion = 3;
+  await s.redis.set(`surface:${u.id}`, JSON.stringify(invalid), "EX", 1800);
+  const moved = await b.request("/adventure/state");
+  assert.equal(moved.status, 200);
+  assert.equal(moved.data.surface.area, "forest");
+  assert.ok(isLandWalkable(WORLD.landMaps.forest, moved.data.surface));
+  assert.notDeepEqual(
+    { x: moved.data.surface.x, y: moved.data.surface.y },
+    { x: 1450, y: 450 },
+  );
+  assert.deepEqual(await s.users.findOne({ id: u.id }), before);
+});
+
+test("sinkronisasi menolak lintasan menembus rumah dan tebing walau kedua ujung berada di lantai", async () => {
+  const u = await account(),
+    b = await new Browser().login(u);
+  for (const [from, to] of [
+    [
+      { x: 1350, y: 600 },
+      { x: 1350, y: 365 },
+    ],
+    [
+      { x: 900, y: 700 },
+      { x: 900, y: 850 },
+    ],
+  ]) {
+    assert.ok(isLandWalkable(WORLD.landMaps.hub, from));
+    assert.ok(isLandWalkable(WORLD.landMaps.hub, to));
+    await fixtureSurface(u, "hub", from, 10000);
+    const blocked = await b.request("/adventure/surface-position", {
+      area: "hub",
+      ...to,
+    });
+    assert.equal(blocked.status, 409, JSON.stringify(blocked.data));
+    assert.equal(blocked.data.code, "PATH_BLOCKED");
+    const kept = JSON.parse((await s.redis.get(`surface:${u.id}`))!);
+    assert.deepEqual({ x: kept.x, y: kept.y }, from);
+  }
+});
+
+test("server memakai footprint modular sama pada taman, atap, air dermaga dan sungai serta menerima jembatan", async () => {
+  const u = await account(),
+    b = await new Browser().login(u);
+  for (const [area, point] of [
+    ["hub", { x: 560, y: 500 }],
+    ["hub", { x: 1950, y: 560 }],
+    ["hub", { x: 800, y: 860 }],
+    ["hub", { x: 1560, y: 1330 }],
+    ["forest", { x: 1450, y: 450 }],
+  ] as const) {
+    await fixtureSurface(u, area, WORLD.landMaps[area].spawn, 10000);
+    const blocked = await b.request("/adventure/surface-position", {
+      area,
+      ...point,
+    });
+    assert.equal(blocked.status, 409, JSON.stringify(blocked.data));
+    assert.equal(blocked.data.code, "PATH_BLOCKED");
+  }
+  await fixtureSurface(u, "forest", { x: 1280, y: 710 }, 10000);
+  const crossed = await b.request("/adventure/surface-position", {
+    area: "forest",
+    x: 1620,
+    y: 620,
+  });
+  assert.equal(crossed.status, 200, JSON.stringify(crossed.data));
+  await fixtureSurface(u, "forest", { x: 310, y: 700 });
+  const glade = await b.request("/adventure/surface-position", {
+    area: "forest",
+    x: 300,
+    y: 700,
+  });
+  assert.equal(glade.status, 200, JSON.stringify(glade.data));
+});
+
+test("lintasan belokan sah diterima tanpa meratakan jalan mengitari rumah menjadi pintasan", async () => {
+  const u = await account(),
+    b = await new Browser().login(u),
+    from = { x: 1350, y: 600 },
+    to = { x: 1350, y: 365 };
+  await fixtureSurface(u, "hub", from, 10000);
+  const base = JSON.parse((await s.redis.get(`surface:${u.id}`))!);
+  const request = {
+    area: "hub",
+    ...to,
+    fromPositionAt: base.positionAt,
+    path: [
+      { x: 1550, y: 600 },
+      { x: 1550, y: 365 },
+    ],
+  };
+  const walked = await b.request("/adventure/surface-position", request);
+  assert.equal(walked.status, 200, JSON.stringify(walked.data));
+  assert.equal(walked.data.surface.x, to.x);
+  assert.ok(walked.data.surface.positionAt > base.positionAt);
+  const replay = await b.request("/adventure/surface-position", request);
+  assert.equal(replay.status, 409);
+  assert.equal(replay.data.code, "POSITION_CHANGED");
+  assert.deepEqual(
+    JSON.parse((await s.redis.get(`surface:${u.id}`))!),
+    walked.data.surface,
+  );
+  await fixtureSurface(u, "hub", from, 10000);
+  const fresh = JSON.parse((await s.redis.get(`surface:${u.id}`))!);
+  const roof = await b.request("/adventure/surface-position", {
+    ...request,
+    fromPositionAt: fresh.positionAt,
+    path: [{ x: 1350, y: 500 }],
+  });
+  assert.equal(roof.status, 409);
+  assert.equal(roof.data.code, "PATH_BLOCKED");
+  assert.equal((await s.users.findOne({ id: u.id }))!.version, u.version);
+});
+
+test("batas breadcrumb dan total jarak mencegah lintasan berlebihan, replay serta lintasan tanpa basis", async () => {
+  const u = await account(),
+    b = await new Browser().login(u);
+  await fixtureSurface(u, "hub", WORLD.surfaceSpawn, 10000);
+  const base = JSON.parse((await s.redis.get(`surface:${u.id}`))!);
+  const common = {
+    area: "hub",
+    ...WORLD.surfaceSpawn,
+    fromPositionAt: base.positionAt,
+  };
+  const tooMany = await b.request("/adventure/surface-position", {
+    ...common,
+    path: Array.from({ length: 65 }, () => WORLD.surfaceSpawn),
+  });
+  assert.equal(tooMany.status, 400);
+  const noBase = await b.request("/adventure/surface-position", {
+    area: "hub",
+    ...WORLD.surfaceSpawn,
+    path: [],
+  });
+  assert.equal(noBase.status, 400);
+  assert.equal(noBase.data.code, "POSITION_BASE");
+  const loop = Array.from({ length: 16 }, (_, i) => ({
+    x: i % 2 ? 1120 : 1300,
+    y: 1230,
+  }));
+  const tooFar = await b.request("/adventure/surface-position", {
+    ...common,
+    path: loop,
+  });
+  assert.equal(tooFar.status, 409);
+  assert.equal(tooFar.data.code, "POSITION");
+  assert.equal(
+    JSON.parse((await s.redis.get(`surface:${u.id}`))!).positionAt,
+    base.positionAt,
+  );
+});
+
+test("upgrade dan penampilan mempertahankan posisi hub sah beserta basis breadcrumb", async () => {
+  const u = await account(),
+    b = await new Browser().login(u);
+  await s.users.updateOne({ id: u.id }, { $set: { coins: 2000 } });
+  await fixtureSurface(u, "hub", { x: 1350, y: 635 });
+  const before = JSON.parse((await s.redis.get(`surface:${u.id}`))!);
+  const upgrade = await b.request("/game/upgrade", { ability: "oxygen" });
+  assert.equal(upgrade.status, 200, JSON.stringify(upgrade.data));
+  const state = await b.request("/adventure/state");
+  assert.equal(state.status, 200);
+  assert.deepEqual(
+    { x: state.data.surface.x, y: state.data.surface.y },
+    { x: before.x, y: before.y },
+  );
+  assert.equal(state.data.surface.area, "hub");
+  assert.equal(state.data.surface.positionAt, before.positionAt);
+  assert.equal(state.data.surface.playerVersion, upgrade.data.player.version);
+  const appearance = await b.request("/game/appearance", {
+    appearance: "female_nusantara",
+  });
+  assert.equal(appearance.status, 200);
+  const moved = await b.request("/adventure/surface-position", {
+    area: "hub",
+    x: 1350,
+    y: 640,
+    version: appearance.data.player.version,
+    fromPositionAt: before.positionAt,
+    path: [],
+  });
+  assert.equal(moved.status, 200, JSON.stringify(moved.data));
+});
+
+test("versi permainan normal mempertahankan wilayah hutan dan tidak melewati larangan fasilitas hub", async () => {
+  const u = await account(),
+    b = await new Browser().login(u);
+  await fixtureSurface(u, "forest", WORLD.forest.landmarks[0]);
+  const before = JSON.parse((await s.redis.get(`surface:${u.id}`))!);
+  const updated = await b.request("/game/tutorial", {});
+  assert.equal(updated.status, 200);
+  const blocked = await b.request("/dive/start", { mode: "dive" });
+  assert.equal(blocked.status, 409);
+  assert.equal(blocked.data.code, "HUB_REQUIRED");
+  const state = await b.request("/adventure/state");
+  assert.equal(state.data.surface.area, "forest");
+  assert.equal(state.data.surface.x, before.x);
+  assert.equal(state.data.surface.y, before.y);
+  assert.equal(state.data.surface.positionAt, before.positionAt);
+  assert.equal(state.data.surface.playerVersion, updated.data.player.version);
 });

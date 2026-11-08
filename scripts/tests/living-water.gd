@@ -18,7 +18,7 @@ func _run() -> void:
 	conditions.update_story(2,"dive")
 	conditions.elapsed_seconds = 0
 	var clear: Dictionary = conditions.snapshot()
-	conditions.elapsed_seconds = 45
+	conditions.elapsed_seconds = conditions.weather_cycle_seconds/2.0
 	var rain: Dictionary = conditions.snapshot()
 	assert(clear.rain<0.01 and rain.rain>0.5)
 	assert(float(rain.wind_x)>float(clear.wind_x))
@@ -28,7 +28,7 @@ func _run() -> void:
 	assert(conditions.snapshot().night)
 	assert(float(conditions.snapshot().daylight)<0.3)
 	conditions.update_story(2,"dive")
-	conditions.elapsed_seconds = 45
+	conditions.elapsed_seconds = conditions.weather_cycle_seconds/2.0
 	state.world = {"surface":400,"terrainContours":[[[250,410],[290,410],[290,1000],[250,1000]],[[0,740],[1000,740],[1000,900],[0,900]]],"hub":{"paths":[[[100,450],[500,450]]]},"forest":{}}
 	state.player = {"id":"visual-unit-fixture","coins":700,"progress":{"day":2,"stage":"dive"}}
 	state.dive = {"id":"visual-unit-fixture","oxygen":77,"loot":[]}

@@ -2,6 +2,7 @@ extends Node2D
 const PlayerScript = preload("res://scripts/Player.gd")
 const WorldScript = preload("res://scripts/World.gd")
 const EntitiesScript = preload("res://scripts/Entities.gd")
+var land_renderer: Node2D
 var nala: CharacterBody2D
 var terrain: Node2D
 var entities: Node2D
@@ -79,7 +80,7 @@ func _ready() -> void:
 		return
 	add_child(terrain)
 	move_child(terrain,0)
-	nala.surface_traversal.configure(GameState.world.get("hub",{}))
+	nala.surface_traversal.configure(GameState.world.get("landMaps",{}).get("hub",{}))
 	nala.land_mask = Callable(terrain,"is_walkable")
 	terrain.add_foreground_to(self)
 	hybrid = load("res://scripts/hybrid/HybridOcean.gd").new()
@@ -100,6 +101,10 @@ func _ready() -> void:
 	if str(GameState.surface.get("area","hub"))=="forest" and GameState.dive.is_empty():
 		get_tree().change_scene_to_file("res://scenes/forest.tscn")
 		return
+	nala.land_path.reset(nala.position)
+	land_renderer = preload("res://scripts/land/LandWorld3D.gd").new()
+	add_child(land_renderer)
+	land_renderer.setup(self,nala,camera,"hub")
 	if not GameState.dive.is_empty():
 		await ApiClient.call_api("/dive/reading",{"diveId":GameState.dive.id,"paused":false})
 		_enter_water(GameState.dive)
@@ -234,6 +239,7 @@ func _story_intro() -> void:
 		_update_hud()
 	)
 func _process(delta: float) -> void:
+	EnvironmentState.clock_paused = modal_open or GameState.dive.has("challenge")
 	if not nala:
 		return
 	terrain.camera_point = nala.position
@@ -241,7 +247,7 @@ func _process(delta: float) -> void:
 		EnvironmentState.update_story(int(GameState.player.progress.day),str(GameState.player.progress.stage))
 	var submerged := not GameState.dive.is_empty()
 	var hybrid_active: bool = is_instance_valid(hybrid) and hybrid.is_active()
-	nala.hybrid_visual = hybrid_active
+	nala.hybrid_visual = hybrid_active or (is_instance_valid(land_renderer) and land_renderer.active)
 	entities.visible = not hybrid_active
 	if is_instance_valid(terrain.scenery):
 		terrain.scenery.visible = not hybrid_active
@@ -269,7 +275,8 @@ func _process(delta: float) -> void:
 	camera.limit_right = int(GameState.world.get("hub",{}).get("width",2400)) if not submerged else int(GameState.world.get("width",6144))
 	camera.limit_bottom = int(GameState.world.get("hub",{}).get("height",1600)) if not submerged else int(GameState.world.get("height",3584))
 	for actor in surface_actors:
-		actor.visible = not submerged
+		actor.set_meta("land_hidden",is_instance_valid(land_renderer) and land_renderer.active)
+		actor.visible = not submerged and not bool(actor.get_meta("land_hidden",false))
 	terrain.gardens_restored = GameState.player.get("progress",{}).get("day",1)>=3
 	terrain.solved = GameState.adventure.get("puzzles",[])
 	flash = maxf(0,flash-delta)
@@ -284,7 +291,7 @@ func _process(delta: float) -> void:
 		hud.message(last_status)
 	if GameState.dive.is_empty() and not modal_open:
 		surface_clock += delta
-		if surface_clock>2 and not network_busy and not syncing:
+		if (surface_clock>1.3 or (nala.land_path.needs_flush() and surface_clock>1.0)) and not network_busy and not syncing:
 			surface_clock = 0
 			_sync_surface()
 	entities.nearest = str(nearby.get("id",""))
@@ -294,6 +301,7 @@ func _process(delta: float) -> void:
 		snapshot["audio"] = AudioManager.debug_status()
 		snapshot["flashlight2d"] = _flashlight_status_2d()
 		snapshot["weather"] = EnvironmentState.snapshot()
+		snapshot["land"] = land_renderer.debug_status() if is_instance_valid(land_renderer) else {}
 		snapshot["traversal"] = nala.traversal_state
 		snapshot["occlusion"] = terrain.scenery.debug_status() if is_instance_valid(terrain) and is_instance_valid(terrain.scenery) and terrain.scenery.has_method("debug_status") else {}
 		snapshot["foley"] = world_foley.debug_status() if is_instance_valid(world_foley) else {}
@@ -364,7 +372,7 @@ func _draw() -> void:
 	if flash>0 and nala:
 		draw_circle(nala.position,28,Color(0.9,0.4,0.3,.25))
 func _unhandled_key_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_F6 and is_instance_valid(hybrid):
+	if OS.is_debug_build() and event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_F6 and is_instance_valid(hybrid):
 		hybrid.enabled = not hybrid.enabled
 	if event.is_action_pressed("ui_cancel") and modal_open and chain_lines.is_empty() and not GameState.dive.has("challenge"):
 		_close()
@@ -453,6 +461,7 @@ func _sync_position() -> bool:
 		snapshot["audio"] = AudioManager.debug_status()
 		snapshot["flashlight2d"] = _flashlight_status_2d()
 		snapshot["weather"] = EnvironmentState.snapshot()
+		snapshot["land"] = land_renderer.debug_status() if is_instance_valid(land_renderer) else {}
 		snapshot["traversal"] = nala.traversal_state
 		snapshot["occlusion"] = terrain.scenery.debug_status() if is_instance_valid(terrain) and is_instance_valid(terrain.scenery) and terrain.scenery.has_method("debug_status") else {}
 		snapshot["foley"] = world_foley.debug_status() if is_instance_valid(world_foley) else {}
@@ -515,6 +524,10 @@ func _begin_dive() -> void:
 		return
 	var mode := "boss" if GameState.player.progress.stage=="boss" else "dive"
 	network_busy = true
+	while syncing: await get_tree().process_frame
+	if not await _sync_surface():
+		network_busy = false
+		return
 	var r: Dictionary = await ApiClient.call_api("/dive/start",{"mode":mode})
 	network_busy = false
 	if r.get("ok",false):
@@ -540,6 +553,7 @@ func _extract(fainted := false) -> void:
 	nala.velocity = Vector2.ZERO
 	await GameState.refresh()
 	nala.position = _surface_point()
+	nala.land_path.reset(nala.position)
 	camera.reset_smoothing()
 	_update_hud()
 	if r.get("victory",false):
@@ -588,6 +602,7 @@ func _show_puzzle(obj: Dictionary) -> void:
 		await ApiClient.call_api("/dive/reading",{"diveId":GameState.dive.id,"paused":false})
 		var r: Dictionary = await ApiClient.call_api("/adventure/interact",{"diveId":GameState.dive.id,"id":obj.id,"settings":settings})
 		if r.get("ok",false):
+			if not str(obj.id) in GameState.adventure.get("puzzles",[]): AudioManager.play_sfx("path_reveal_chime",1.0,-12.0)
 			GameState.player = r.player
 			GameState.adventure = r.adventure
 			_show_message("Instalasi kembali bekerja",str(obj.explanation)+"\n\n+%d koin" % int(r.reward))
@@ -673,6 +688,11 @@ func _show_quiz() -> void:
 			)
 		_label(box,"Serangan berhenti selama resonansi. Jawab dengan pemahaman, lalu lanjutkan menghindari serangan.",13)
 func _npc_interact(name_text: String) -> void:
+	network_busy = true
+	while syncing: await get_tree().process_frame
+	var saved := await _sync_surface()
+	network_busy = false
+	if not saved: return
 	if name_text=="Mbah Wira":
 		if GameState.player.progress.stage=="night":
 			_open_kedai()
@@ -857,12 +877,14 @@ func _sync_surface() -> bool:
 	if syncing or not GameState.dive.is_empty():
 		return false
 	syncing = true
-	var r: Dictionary = await ApiClient.call_api("/adventure/surface-position",{"area":"hub","x":nala.position.x,"y":nala.position.y,"version":int(GameState.player.get("version",0))})
+	var route: Dictionary = nala.land_path.snapshot(nala.position)
+	var r: Dictionary = await ApiClient.call_api("/adventure/surface-position",{"area":"hub","x":nala.position.x,"y":nala.position.y,"path":route.path,"fromPositionAt":int(GameState.surface.get("positionAt",0)),"version":int(GameState.player.get("version",0))})
 	syncing = false
 	if r.get("ok",false):
 		GameState.surface = r.surface
+		nala.land_path.acknowledge(int(route.ticket))
 		return true
-	if str(r.get("code","")) in ["SESSION_CHANGED","AREA_CHANGED"]:
+	if str(r.get("code","")) in ["SESSION_CHANGED","AREA_CHANGED","POSITION_CHANGED"]:
 		syncing = true
 		nala.frozen = true
 		nala.velocity = Vector2.ZERO
@@ -879,9 +901,11 @@ func _sync_surface() -> bool:
 				get_tree().change_scene_to_file("res://scenes/forest.tscn")
 			else:
 				nala.position = _surface_point()
+				nala.land_path.reset(nala.position)
 				_update_hud()
 				status.text = message
 				hud.message(message)
+			nala.frozen = false
 		else:
 			status.text = str(refreshed.get("error","Perubahan data belum dapat dimuat. Coba sambungkan kembali."))
 		return false

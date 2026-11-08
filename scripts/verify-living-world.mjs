@@ -33,9 +33,12 @@ const scripts = [
   "scripts/tests/world-foley.gd",
   "scripts/tests/terrain-layers.gd",
   "scripts/tests/ocean-backdrop.gd",
-  "scripts/tests/land-occlusion.gd",
-  "scripts/tests/surface-water.gd",
+  "scripts/tests/component-land.gd",
+  "scripts/tests/land-water-3d.gd",
+  "scripts/tests/land-renderer.gd",
   "scripts/tests/surface-traversal.gd",
+  "scripts/tests/land-path.gd",
+  "scripts/tests/world-clock.gd",
 ];
 const results = [];
 try {

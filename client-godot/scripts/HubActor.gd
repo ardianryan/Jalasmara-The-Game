@@ -9,7 +9,7 @@ var _attention := 0.0
 var _facing := 1.0
 
 func _process(delta: float) -> void:
-	visible = GameState.dive.is_empty()
+	visible = GameState.dive.is_empty() and not bool(get_meta("land_hidden",false))
 	_elapsed += delta
 	var nearby := is_instance_valid(player) and player.position.distance_to(position)<155
 	_attention = move_toward(_attention,1.0 if nearby else 0.0,delta*2)

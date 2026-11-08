@@ -21,7 +21,7 @@ Gunakan Godot 4.7.2 dengan tampilan grafis; `--headless` ditolak karena renderer
 PNG pakis dan bambu sudah dipakai sebagai dekorasi kecil pada hutan dan pelataran Bandar Hujung, dengan filter nearest serta skala yang mengikuti lingkungan. Render batu karang masih berupa prototipe dan belum dipakai. Salinan runtime identik byte dengan PNG sumber; kredit CC BY 4.0 serta keterangan perubahan tersedia di `client-godot/resources/art/polyfork/ATTRIBUTION.txt` dan ikut ekspor game. Pada pilot 2.5D, GLB Small Reef Rock juga dipakai langsung sebagai prop 3D melalui Godot. Salinan sumber tanpa perubahan serta kreditnya berada di `client-godot/resources/models/`; skala dan material render disesuaikan saat instancing. Tidak ada dependensi Three.js.
 
 
-## Batu darat terpilih
+## Arsip batu darat perantara (sebelum layout 4)
 
 `LandRockVisual.gd` menggunakan GLB Small Reef Rock yang sama; tidak ada model atau unduhan sumber baru. Mesh dirender langsung dalam SubViewport transparan 128 × 128 dan ditampilkan melalui ViewportTexture dalam Y-sort daratan. Material runtime memakai shader batu orisinal: grain berpetak, variasi mineral, pori kecil, serta lumut terbatas pada permukaan menghadap atas. Warna abu kecokelatan dan roughness tinggi menggantikan warna hijau rata; specular dinonaktifkan. Sumber GLB tetap tidak diubah. Cahaya siang/malam berasal dari state lingkungan. Skala serta pivot dikalibrasi dari batas alpha hasil render agar tetap di dalam footprint solid lama, tanpa collider tambahan. Kredit CC BY 4.0 yang telah disertakan berlaku juga untuk penggunaan ini.
 
@@ -29,3 +29,8 @@ Uji native `scripts/tests/land-rock-render.gd` membuktikan mesh serta viewport n
 
 
 Penempatan hub terpilih berada di (790, 850) dengan ukuran 65 × 46 piksel, di dalam area solid lama (740, 675, 250, 205). Dua bayangan kontak pendek digambar dekat kaki batu. Sprite hasil proyeksi disembunyikan sampai kalibrasi alpha selesai agar bingkai awal tidak tampil pada posisi/skala yang salah. Tangkapan komposit native siang/malam pada `artifacts/godot/land-rock-3d/composite-*.png` dipakai untuk meninjau pertemuan model dengan bitmap peta; kelulusan helper terisolasi tidak dianggap otomatis sebagai kelulusan kualitas penempatan.
+
+
+## Renderer modular layout 4
+
+Renderer `LandWorld3D` kini memuat model batu pada scene komponen darat bersama floor, rumah dan pohon. Bukti per-rock SubViewport di atas adalah tahap migrasi sebelumnya; tampilan aktif tidak memakai bitmap peta sebagai floor atau collision. Model sumber dan kredit CC BY 4.0 tidak berubah. Finishing material, pencahayaan dan komposisi komponen tetap ditinjau pada native lokal serta browser; keberadaan GLB bukan jaminan kualitas visual akhir.

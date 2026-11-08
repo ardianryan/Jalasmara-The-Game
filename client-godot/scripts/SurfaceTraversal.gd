@@ -17,7 +17,7 @@ func set_reduced_motion(value: bool) -> void:
 
 func sample(feet: Vector2, velocity := Vector2.ZERO, _delta := 0.0) -> Dictionary:
 	if _elevation < 0 or (_previous.is_finite() and feet.distance_to(_previous)>240):
-		_elevation = _floor_at(feet.y)
+		_elevation = _floor_at_point(feet)
 	_previous = feet
 	var closest: Dictionary = {}
 	var nearest := INF
@@ -56,9 +56,9 @@ func sample(feet: Vector2, velocity := Vector2.ZERO, _delta := 0.0) -> Dictionar
 			pace = (0.80 if direction=="up" else 0.88) if on_stairs else 0.96
 			if on_stairs and not _reduced_motion:
 				foot_bob = -absf(sin(progress*float(count)*PI))*1.6
-	elif not _last.is_empty() and bool(_last.get("onConnector",false)):
-		_elevation = roundf(_elevation)
-	var material := str(closest.get("material","stone")) if not closest.is_empty() else "wood" if feet.y>1090 else "grass"
+	else:
+		_elevation = _floor_at_point(feet)
+	var material := str(closest.get("material","stone")) if not closest.is_empty() else str(_surface_at(feet).get("material","grass"))
 	_last = {
 		"onStairs":on_stairs,"onConnector":not closest.is_empty(),
 		"connectorId":str(closest.get("id","")),"type":str(closest.get("type","ground")),
@@ -68,6 +68,18 @@ func sample(feet: Vector2, velocity := Vector2.ZERO, _delta := 0.0) -> Dictionar
 		"direction":direction,"steps":int(closest.get("steps",0)),"stepIndex":step_index,
 	}
 	return _last.duplicate()
+
+func _surface_at(point: Vector2) -> Dictionary:
+	var selected: Dictionary = {}
+	for surface in _hub.get("surfaces",[]):
+		var polygon := PackedVector2Array()
+		for vertex in surface.get("polygon",[]): polygon.append(Vector2(float(vertex[0]),float(vertex[1])))
+		if Geometry2D.is_point_in_polygon(point,polygon) and (selected.is_empty() or int(surface.get("priority",0))>=int(selected.get("priority",0))): selected = surface
+	return selected
+
+func _floor_at_point(point: Vector2) -> float:
+	var surface := _surface_at(point)
+	return float(surface.get("elevation",0)) if not surface.is_empty() else _floor_at(point.y)
 
 func _floor_at(y: float) -> float:
 	for terrace in _hub.get("terraces",[]):

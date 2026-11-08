@@ -1,0 +1,171 @@
+extends Node3D
+
+var renderer: Node
+var source: Node2D
+var actor: Node2D
+var sprites: Dictionary={}
+var _frames: Dictionary={}
+var _npcs: Array[Node2D]=[]
+var _creatures: Array[Node2D]=[]
+var _scan_clock:=0.0
+var counts: Dictionary={}
+var _alpha_bottom: Dictionary={}
+var _shadows: Dictionary={}
+var _shadow_material: ShaderMaterial
+var max_foot_error:=0.0
+
+func configure(owner_renderer: Node, scene: Node2D, player: Node2D) -> void:
+	renderer=owner_renderer
+	source=scene
+	actor=player
+	_scan()
+
+func _scan() -> void:
+	_npcs.clear()
+	_creatures.clear()
+	for child in source.find_children("*","Node2D",true,false):
+		var script: Script=child.get_script()
+		if script!=null and script.resource_path.ends_with("HubActor.gd"):
+			_npcs.append(child)
+		elif "species" in child and "elapsed" in child and "width" in child:
+			_creatures.append(child)
+
+func _frame(texture: Texture2D, rect: Rect2) -> AtlasTexture:
+	var key:=str(texture.get_instance_id())+str(rect)
+	if not _frames.has(key):
+		var frame:=AtlasTexture.new()
+		frame.atlas=texture
+		frame.region=rect
+		frame.filter_clip=true
+		_frames[key]=frame
+	return _frames[key]
+
+func _sprite(key: String, texture: Texture2D, feet: Vector2, dimensions: Vector2, rise: float, flip:=false) -> Sprite3D:
+	var sprite: Sprite3D=sprites.get(key)
+	if sprite==null:
+		sprite=Sprite3D.new()
+		sprite.name=key.validate_node_name()
+		sprite.billboard=BaseMaterial3D.BILLBOARD_ENABLED
+		sprite.shaded=false
+		sprite.alpha_cut=SpriteBase3D.ALPHA_CUT_DISCARD
+		sprite.alpha_scissor_threshold=.5
+		sprite.texture_filter=BaseMaterial3D.TEXTURE_FILTER_NEAREST
+		sprite.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		add_child(sprite)
+		sprites[key]=sprite
+	sprite.texture=texture
+	sprite.pixel_size=1
+	sprite.scale=Vector3(dimensions.x/texture.get_width(),dimensions.y/texture.get_height(),1)
+	if not _alpha_bottom.has(texture.get_instance_id()):
+		var image:=texture.get_image()
+		var bottom:=texture.get_height()
+		if image!=null and not image.is_empty():
+			if image.is_compressed(): image.decompress()
+			var found:=false
+			for y in range(image.get_height()-1,-1,-1):
+				for x in range(image.get_width()):
+					if image.get_pixel(x,y).a>.5:
+						bottom=y+1
+						found=true
+						break
+				if found: break
+		_alpha_bottom[texture.get_instance_id()]=float(bottom)/texture.get_height()
+	rise=(float(_alpha_bottom[texture.get_instance_id()])-.5)*dimensions.y
+	var height: float=renderer.ground_height(feet)
+	var up: Vector3=renderer.camera_up()
+	var forward: Vector3=renderer.camera_forward()
+	sprite.position=renderer.map_point(feet,height)+up*rise-forward*8
+	var projected: Vector2=renderer.ground_projection(sprite.position-up*rise)
+	max_foot_error=maxf(max_foot_error,projected.distance_to(feet))
+	_shadow(key,feet,height,dimensions.x*.18)
+	sprite.modulate=_readable_tint(feet,height)
+	sprite.flip_h=flip
+	sprite.visible=true
+	return sprite
+
+func _shadow(key: String,feet: Vector2,height: float,radius: float) -> void:
+	var mesh: MeshInstance3D=_shadows.get(key)
+	if mesh==null:
+		if _shadow_material==null:
+			var shader:=Shader.new()
+			shader.code="shader_type spatial; render_mode unshaded,cull_disabled,depth_draw_never; void fragment(){ALBEDO=vec3(.08,.07,.05);ALPHA=.17;}"
+			_shadow_material=ShaderMaterial.new()
+			_shadow_material.shader=shader
+		var tool:=SurfaceTool.new()
+		tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+		for index in range(16):
+			for angle in [null,float(index)*TAU/16.0,float(index+1)*TAU/16.0]:
+				var vertex: Vector3=Vector3.ZERO if angle==null else renderer.map_point(Vector2(cos(float(angle))*radius,sin(float(angle))*radius*.3),0)
+				tool.set_normal(Vector3(0,0,1))
+				tool.add_vertex(vertex)
+		tool.index()
+		mesh=MeshInstance3D.new()
+		mesh.mesh=tool.commit()
+		mesh.material_override=_shadow_material
+		mesh.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		add_child(mesh)
+		_shadows[key]=mesh
+	mesh.position=renderer.map_point(feet,height+.35)
+
+func update_actors(delta: float) -> void:
+	if not is_instance_valid(actor): return
+	_scan_clock+=delta
+	if _scan_clock>2:
+		_scan_clock=0
+		_scan()
+	max_foot_error=0
+	counts={"player":0,"npcs":0,"creatures":0}
+	if "swim_sprite" in actor:
+		var visual: Sprite2D=actor.get("swim_sprite")
+		if visual!=null and visual.texture!=null:
+			var cell:=visual.texture.get_size()/Vector2(visual.hframes,visual.vframes)
+			var rect:=Rect2(Vector2(visual.frame%visual.hframes,floori(float(visual.frame)/visual.hframes))*cell,cell)
+			_sprite("Nala",_frame(visual.texture,rect),actor.position,cell*visual.scale.abs(),-visual.position.y,visual.flip_h)
+			counts.player=1
+	elif "sheet" in actor:
+		var sheet: Texture2D=actor.get("sheet")
+		if sheet:
+			var moving: bool=actor.get("walking")
+			var clock: float=actor.get("clock")
+			var frame:=1+int(clock*8)%2 if moving else 0
+			var cell:=sheet.get_size()/3.0
+			var facing: Vector2=actor.get("facing")
+			_sprite("Nala",_frame(sheet,Rect2(Vector2(frame*cell.x,0),cell)),actor.position,Vector2(100,100),50,facing.x<0)
+			counts.player=1
+	for npc in _npcs:
+		if not is_instance_valid(npc): continue
+		var key: String=str(npc.actor_name)
+		var sheet: Texture2D
+		var frame: Texture2D
+		if bool(npc.crate):
+			frame=preload("res://scripts/ItemIcons.gd").texture("cache")
+		else:
+			sheet=preload("res://resources/art/npc-atlas.png")
+			var index: int={"Mbah Wira":0,"Beno":1,"Bu Darmi":2,"Inspektur Raka":3}.get(key,0)
+			var cell:=sheet.get_size()/2.0
+			frame=_frame(sheet,Rect2(Vector2(index%2,index/2)*cell,cell))
+		_sprite("NPC_"+key,frame,npc.position,Vector2(70,70) if bool(npc.crate) else Vector2(100,100),30 if bool(npc.crate) else 36)
+		counts.npcs=int(counts.npcs)+1
+
+	for creature in _creatures:
+		if not is_instance_valid(creature): continue
+		var species: String=str(creature.get("species"))
+		var elapsed: float=float(creature.get("elapsed"))
+		var width: float=float(creature.get("width"))
+		var data: Dictionary=preload("res://scripts/CreatureAnimator.gd").frame_data(species,elapsed,cos(elapsed*.38),"walk")
+		if data.is_empty(): continue
+		var size: Vector2=data.size
+		_sprite("Animal_"+str(creature.get_instance_id()),_frame(data.texture,data.source),creature.position,Vector2(width,width*size.y/maxf(1,size.x)),0)
+		counts.creatures=int(counts.creatures)+1
+
+func _readable_tint(feet: Vector2,height: float) -> Color:
+	var weather: Dictionary=EnvironmentState.snapshot()
+	var daylight:=clampf((float(weather.get("daylight",.8))-.24)/.76,0,1)
+	var tint:=Color(.74,.82,.86).lerp(Color(1,1,.98),daylight)
+	var at: Vector3=renderer.map_point(feet,height+30)
+	var warmth:=0.0
+	for lamp in renderer.get("_lanterns"):
+		var reach: float=lamp.omni_range
+		var proximity:=clampf(1.0-at.distance_to(lamp.global_position)/reach,0,1)
+		warmth=maxf(warmth,proximity*proximity*(1-daylight)*.42)
+	return tint.lerp(Color(1,.89,.73),warmth)

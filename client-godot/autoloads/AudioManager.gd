@@ -98,11 +98,16 @@ func _load_audio_resources() -> void:
 		"heartbeat", "menu_click", "boss_roar",
 		# Gerakan & Desau (Swoosh, Whoosh, Swish, Swesh)
 		"swoosh_light", "swoosh_heavy", "swoosh_water", "dodge_swish", "net_throw",
-		# Hantaman & Pertarungan
+		# Hantaman & Pertarungan (Pukulan, Senjata, Tebasan)
 		"hit_heavy", "hit_flesh", "hit_critical", "hit_shield",
 		"knife_slash", "monster_bite", "rock_smash",
-		# Langkah Lingkungan & Misi
-		"footstep_grass", "footstep_wood", "quest_complete",
+		"punch_swing", "punch_hit", "hit_wood", "hit_stone",
+		# Langkah Kaki Berbagai Permukaan (Dermaga, Jembatan, Pasir, Batu, Air Dangkal, Tanah, Rumput)
+		"footstep_grass", "footstep_wood", "footstep_dock", "footstep_bridge",
+		"footstep_sand", "footstep_stone", "footstep_water_shallow", "footstep_dirt",
+		"quest_complete",
+		# Membuka Jalan & Rintangan
+		"machete_cut_bush", "wood_break_barricade", "boulder_push_slide", "path_reveal_chime",
 		# Ledakan & Dentuman (Boom, Shockwave)
 		"explosion_heavy", "underwater_boom",
 		# Pintu & Peti Harta
@@ -169,7 +174,8 @@ func play_sfx(sound_name: String,pitch_scale: float=1.0,volume_db: float=0.0) ->
 	var is_ui: bool = sound_name in [
 		"menu_click", "wooden_click_light", "wooden_click_heavy",
 		"wooden_toggle", "page_turn", "recipe_cooked",
-		"coin_collect", "item_pickup", "quest_complete", "bell_ding"
+		"coin_collect", "item_pickup", "quest_complete", "bell_ding",
+		"path_reveal_chime"
 	]
 	sound.bus = UI_BUS if is_ui else ENVIRONMENT_BUS
 	sound.playback_type = AudioServer.PLAYBACK_TYPE_SAMPLE if is_ui else AudioServer.PLAYBACK_TYPE_STREAM

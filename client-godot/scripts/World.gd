@@ -1,6 +1,6 @@
 extends Node2D
 const OceanScript = preload("res://scripts/OceanScenery.gd")
-const HubScript = preload("res://scripts/HubScenery.gd")
+const HubScript = preload("res://scripts/land/LandCollision.gd")
 var camera_point := Vector2(1000,220)
 var gardens_restored := false
 var solved: Array = []
@@ -26,7 +26,7 @@ func set_mode(diving: bool) -> void:
 		scenery.configure(GameState.world,rocks)
 	else:
 		scenery = HubScript.new()
-		scenery.configure(GameState.world.get("hub",{}))
+		scenery.configure(GameState.world.get("landMaps",{}).get("hub",{}))
 	add_child(scenery)
 	if diving:
 		solid_polygons.assign(scenery.solid_polygons)

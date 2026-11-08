@@ -9,7 +9,7 @@ func run() -> void:
 	var state := root.get_node("GameState")
 	var account_before := JSON.stringify({"player":state.player,"dive":state.dive})
 	var traversal = load("res://scripts/SurfaceTraversal.gd").new()
-	traversal.configure(world.hub)
+	traversal.configure(world.landMaps.hub)
 	var profiles := {}
 	for terrace in world.hub.terraces: profiles[str(terrace.id)] = float(terrace.elevation)
 	var samples := 0

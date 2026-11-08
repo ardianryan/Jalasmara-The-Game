@@ -150,253 +150,328 @@ try {
     if (process.env.VERIFY_LAND === "1") {
       const output = "artifacts/godot/land";
       mkdirSync(output, { recursive: true });
-      const trunk = world.hub.treeTrunks?.[0];
-      assert(trunk, "Surface test requires authored trunk collision metadata");
-      const frontPoint = { x: trunk.x + 35, y: trunk.y + 60 };
-      const behindPoint = { x: 780, y: 637 };
-      const physicalTrunk = world.hub.treeTrunks[1];
-      const treeAt = (state) =>
-        state.occlusion?.trees?.find(
-          (tree) =>
-            Math.hypot(tree.base[0] - trunk.x, tree.base[1] - trunk.y) < 1,
-        );
-      for (const [x, y] of hubRoute(world, await snapshot(frame), frontPoint))
-        await walkTo(frame, x, y);
-      await page.waitForTimeout(350);
-      const front = await snapshot(frame),
-        frontTree = treeAt(front);
+      const maps = world.landMaps;
       assert(
-        front.occlusion?.sortByFeet,
-        "Tree sorting must use the feet plane",
+        maps?.hub?.surfaces?.length && maps?.forest?.surfaces?.length,
+        "Both modular land manifests are required",
       );
-      assert(
-        front.occlusion.landRock?.ready &&
-          front.occlusion.landRock.meshCount === 1 &&
-          front.occlusion.landRock.contained,
-        "Actual 3D land rock must be ready and contained in the solid footprint",
-      );
-      assert(frontTree?.leafMasked && frontTree.woodLayer);
-      assert.equal(frontTree.behind, false);
-      assert.equal(frontTree.fadeActive, false);
-      assert(
-        front.occlusion.water?.active &&
-          front.occlusion.water.regionCells > 1000,
-      );
-      assert.equal(front.occlusion.water.geometryChanged, false);
-      await page.screenshot({ path: `${output}/01-front.png`, fullPage: true });
-      for (const [x, y] of hubRoute(world, front, {
-        x: physicalTrunk.x - 85,
-        y: physicalTrunk.y,
-      }))
-        await walkTo(frame, x, y);
-      await walkTo(frame, physicalTrunk.x - 85, physicalTrunk.y, 12);
-      await page.waitForTimeout(300);
-      const approach = await snapshot(frame);
-      assert(
-        Math.abs(approach.y - physicalTrunk.y) < 12,
-        "Physical trunk test must approach its center line: " +
-          JSON.stringify({
-            position: [approach.x, approach.y],
-            trunk: physicalTrunk,
-          }),
-      );
-      await page.keyboard.down("d");
-      await page.waitForTimeout(650);
-      await page.keyboard.up("d");
-      await page.waitForTimeout(200);
-      const blocked = await snapshot(frame);
-      assert(
-        Math.hypot(blocked.x - physicalTrunk.x, blocked.y - physicalTrunk.y) >=
-          physicalTrunk.radius + 8,
-        "Nala must collide with the physical trunk",
-      );
-      assert(
-        blocked.x > physicalTrunk.x - 75 && blocked.x < physicalTrunk.x,
-        "Trunk test must walk toward the trunk from its west side",
-      );
-      for (const [x, y] of hubRoute(world, blocked, behindPoint))
-        await walkTo(frame, x, y);
-      const raster = await page.evaluateHandle(
-        async (png) => {
-          const image = new Image();
-          image.src = png;
-          await image.decode();
-          const canvas = document.createElement("canvas");
-          canvas.width = image.width;
-          canvas.height = image.height;
-          canvas.getContext("2d").drawImage(image, 0, 0);
-          return canvas;
-        },
-        "data:image/png;base64," +
-          readFileSync(
-            "client-godot/resources/art/coastal-village-map.png",
-          ).toString("base64"),
-      );
-      const footColor = async (state) =>
-        raster.evaluate(
-          (canvas, { point, extent }) =>
-            Array.from(
-              canvas
-                .getContext("2d")
-                .getImageData(
-                  Math.floor((point[0] / extent[0]) * canvas.width),
-                  Math.floor((point[1] / extent[1]) * canvas.height),
-                  1,
-                  1,
-                ).data,
-            ).slice(0, 3),
-          {
-            point: [state.x, state.y],
-            extent: [world.hub.width, world.hub.height],
-          },
-        );
-      const onBrownSoil = (rgb) =>
-        rgb[0] > rgb[1] * 1.1 && rgb[0] > rgb[2] * 1.4;
-      const strictBrownSoil = process.env.VERIFY_BROWN_SOIL === "1";
-      const outsideSolids = (state) => {
+      const distanceToSegment = (p, a, b) => {
+        const dx = b[0] - a[0],
+          dy = b[1] - a[1],
+          denominator = dx * dx + dy * dy;
+        const t = denominator
+          ? Math.max(
+              0,
+              Math.min(
+                1,
+                ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / denominator,
+              ),
+            )
+          : 0;
+        return Math.hypot(p[0] - a[0] - t * dx, p[1] - a[1] - t * dy);
+      };
+      const inside = (point, polygon) => {
+        let result = false;
+        for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+          const a = polygon[j],
+            b = polygon[i];
+          if (distanceToSegment(point, a, b) < 0.02) return true;
+          if (
+            a[1] > point[1] !== b[1] > point[1] &&
+            point[0] <
+              ((b[0] - a[0]) * (point[1] - a[1])) / (b[1] - a[1]) + a[0]
+          )
+            result = !result;
+        }
+        return result;
+      };
+      const validFeet = (map, state) => {
+        const point = [state.x, state.y];
         if (
-          world.hub.obstacles.some(
-            ([x, y, width, height]) =>
-              state.x >= x - 12 &&
-              state.x <= x + width + 12 &&
-              state.y >= y - 12 &&
-              state.y <= y + height + 12,
+          map.obstacles.some(
+            (item) =>
+              inside(point, item.footprint) ||
+              item.footprint.some(
+                (a, i) =>
+                  distanceToSegment(
+                    point,
+                    a,
+                    item.footprint[(i + 1) % item.footprint.length],
+                  ) < 11.5,
+              ),
           )
         )
           return false;
-        return !world.hub.treeTrunks.some(
-          (root) =>
-            Math.hypot(state.x - root.x, state.y - root.y) < root.radius + 12,
-        );
+        const floors = map.surfaces.filter((item) => item.walkable !== false);
+        return [
+          point,
+          ...Array.from({ length: 8 }, (_, i) => [
+            point[0] + Math.cos((i * Math.PI) / 4) * 11.5,
+            point[1] + Math.sin((i * Math.PI) / 4) * 11.5,
+          ]),
+        ].every((p) => floors.some((item) => inside(p, item.polygon)));
       };
-      const validBehind = async (state) => {
-        const tree = treeAt(state);
-        return (
-          tree?.behind &&
-          tree.headCovered &&
-          tree.fadeActive &&
-          outsideSolids(state) &&
-          (!strictBrownSoil || onBrownSoil(await footColor(state)))
-        );
-      };
-      let behind, behindTree, behindFootRGB;
-      for (const [x, y] of [
-        [780, 637],
-        [758, 666],
-        [780, 637],
-        [766, 659],
-        [748, 659],
-        [780, 659],
-      ]) {
-        await walkTo(frame, x, y, 18, validBehind);
-        await page.waitForTimeout(250);
-        behind = await snapshot(frame);
-        behindTree = treeAt(behind);
-        behindFootRGB = await footColor(behind);
-        if (await validBehind(behind)) break;
-      }
-      assert(
-        behindTree?.behind && behindTree.headCovered && behindTree.fadeActive,
-        "Passing behind the actual crown must reveal Nala's head",
-      );
-      assert(
-        outsideSolids(behind),
-        "Actual feet must remain outside all authoritative solid rectangles and trunk circles",
-      );
-      if (strictBrownSoil)
+      const rendered = (state, area) => {
+        const land = state.land,
+          map = maps[area];
         assert(
-          onBrownSoil(behindFootRGB),
-          "Strict raster brown-soil diagnostic failed: " +
-            JSON.stringify({
-              position: [behind.x, behind.y],
-              rgb: behindFootRGB,
-            }),
+          land?.active &&
+            land.area === area &&
+            land.renderer === "LandSubViewport3D",
         );
-      let serverSurface;
-      for (let attempt = 0; attempt < 10; attempt++) {
-        const response = await context.request.get(
-          origin + "/api/adventure/state",
+        assert.equal(
+          land.bitmapGround,
+          false,
+          "The modular world must not use a painted ground map",
+        );
+        assert.deepEqual(land.viewport, [480, 270]);
+        assert.equal(land.elevationDegrees, 35);
+        assert(land.meshes > 0 && land.trees > 0 && land.glbModels > 0);
+        assert.equal(land.surfaces, map.surfaces.length);
+        assert.equal(land.obstacles, map.obstacles.length);
+        assert.equal(land.actors.player, 1);
+        assert(
+          land.maxFootError < 1,
+          "3D actor feet must match logical ground coordinates",
         );
         assert(
-          response.ok(),
-          "Authenticated server surface state must remain available",
+          land.water?.mesh &&
+            land.water.vertexWaves &&
+            land.water.shoreFoam &&
+            !land.water.walkable,
         );
-        serverSurface = (await response.json()).surface;
-        if (
-          serverSurface?.area === "hub" &&
-          Math.hypot(serverSurface.x - behind.x, serverSurface.y - behind.y) <=
-            2
-        )
-          break;
-        await page.waitForTimeout(600);
-      }
+        assert(
+          validFeet(map, state),
+          "Rendered player feet entered a solid or left the floor union",
+        );
+        return land;
+      };
+      const go = async (map, destination) => {
+        for (const [x, y] of hubRoute(
+          { hub: { paths: map.routes } },
+          await snapshot(frame),
+          destination,
+        ))
+          await walkTo(frame, x, y);
+      };
+      const serverPosition = async (area, state) => {
+        let surface;
+        for (let attempt = 0; attempt < 10; attempt++) {
+          const response = await context.request.get(
+            origin + "/api/adventure/state",
+          );
+          assert(response.ok());
+          surface = (await response.json()).surface;
+          if (
+            surface?.area === area &&
+            Math.hypot(surface.x - state.x, surface.y - state.y) < 2
+          )
+            return surface;
+          await page.waitForTimeout(600);
+        }
+        assert.fail(
+          "Logical and server land coordinates disagree: " +
+            JSON.stringify({ area, client: [state.x, state.y], surface }),
+        );
+      };
+      const views = [];
+      const capture = async (label, area) => {
+        await page.waitForTimeout(350);
+        const state = await snapshot(frame),
+          land = rendered(state, area);
+        const server = await serverPosition(area, state);
+        const screenshot = await page.screenshot({
+          path: `${output}/${label}.png`,
+          fullPage: true,
+        });
+        const raster = await page.evaluate(async (encoded) => {
+          const image = new Image();
+          image.src = "data:image/png;base64," + encoded;
+          await image.decode();
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.floor(image.width * 0.7);
+          canvas.height = Math.floor(image.height * 0.44);
+          const context = canvas.getContext("2d");
+          context.drawImage(image, -image.width * 0.15, -image.height * 0.28);
+          const pixels = context.getImageData(
+            0,
+            0,
+            canvas.width,
+            canvas.height,
+          ).data;
+          const colors = new Map();
+          for (let i = 0; i < pixels.length; i += 4) {
+            const key =
+              ((pixels[i] >> 4) << 8) |
+              ((pixels[i + 1] >> 4) << 4) |
+              (pixels[i + 2] >> 4);
+            colors.set(key, (colors.get(key) ?? 0) + 1);
+          }
+          return {
+            colors: colors.size,
+            dominantFraction:
+              Math.max(...colors.values()) / (pixels.length / 4),
+          };
+        }, screenshot.toString("base64"));
+        assert(
+          raster.colors > 60 && raster.dominantFraction < 0.8,
+          "Actual world screenshot is covered by a flat fallback despite renderer metadata: " +
+            JSON.stringify({ label, raster }),
+        );
+        views.push({
+          label,
+          area,
+          position: [state.x, state.y],
+          server: [server.x, server.y],
+          land,
+          foley: state.foley,
+          raster,
+        });
+        return state;
+      };
+      const dock = maps.hub.surfaces.find((item) => item.id === "dock_main");
+      assert(dock, "An authored dock floor is required for the shoreline test");
+      const shoreX = Math.max(...dock.polygon.map((p) => p[0]));
+      const shoreY =
+        dock.polygon.reduce((sum, p) => sum + p[1], 0) / dock.polygon.length;
+      await go(maps.hub, { x: shoreX - 60, y: shoreY });
+      await page.keyboard.down("d");
+      await page.waitForTimeout(900);
+      await page.keyboard.up("d");
+      await page.waitForTimeout(350);
+      const shore = await capture("01-dock-shore", "hub");
       assert(
-        serverSurface?.area === "hub" &&
-          Math.hypot(serverSurface.x - behind.x, serverSurface.y - behind.y) <=
-            2,
-        "Visible occlusion position must also be accepted by the server: " +
-          JSON.stringify({
-            client: [behind.x, behind.y],
-            server: serverSurface,
-          }),
+        shore.x <= shoreX - 11.5 && shore.x > shoreX - 55,
+        "Actual keyboard input must reach and stop at the dock/water boundary",
       );
-      await raster.dispose();
-      assert(behind.y < behindTree.footY - 100);
+      const house = maps.hub.obstacles.find(
+        (item) => item.id === "kedai_waras",
+      );
+      assert(house?.kind === "house");
+      const houseBottom = Math.max(...house.footprint.map((p) => p[1]));
+      const houseFront = { x: house.x + house.width / 2, y: houseBottom + 60 };
+      await go(maps.hub, houseFront);
+      const beforeHouse = await snapshot(frame);
+      await page.keyboard.down("w");
+      await page.waitForTimeout(850);
+      await page.keyboard.up("w");
+      await page.waitForTimeout(350);
+      const architecture = await capture("02-kedai-roof-boundary", "hub");
       assert(
-        behind.occlusion.water.phase > front.occlusion.water.phase + 1,
-        "Surface ripple phase must advance during actual exploration",
+        architecture.y < beforeHouse.y - 25,
+        "Building collision test must really approach the wall",
       );
-      await page.screenshot({
-        path: `${output}/02-behind.png`,
-        fullPage: true,
-      });
-      const climbed = stairEvidence.filter((step) => step.direction === "up");
+      assert(!inside([architecture.x, architecture.y], house.footprint));
+      assert(
+        architecture.land.houses >= 3 &&
+          architecture.land.components?.LimasRoof >= 3,
+        "Actual modular house roofs must be emitted, not only listed as obstacles",
+      );
+      const garden = maps.hub.obstacles.find((item) => item.kind === "garden");
+      assert(garden);
+      await go(maps.hub, { x: garden.x - 70, y: garden.y + garden.height / 2 });
+      const beforeGarden = await snapshot(frame);
+      await page.keyboard.down("d");
+      await page.waitForTimeout(800);
+      await page.keyboard.up("d");
+      await page.waitForTimeout(350);
+      const gardenView = await capture("03-garden-components", "hub");
+      assert(
+        gardenView.x > beforeGarden.x + 20 && gardenView.x < garden.x,
+        "Raised garden beds must block actual movement at their component footprint",
+      );
+      assert(
+        gardenView.land.components?.RaisedBed >= 1 &&
+          gardenView.land.components?.CropLeaves >= 3,
+      );
+      assert(
+        gardenView.land.water.elapsed > shore.land.water.elapsed + 1,
+        "Actual 3D shore-water time must advance during exploration",
+      );
+      const climbed = stairEvidence.filter((item) => item.direction === "up");
       assert(
         climbed.some(
-          (step) =>
-            step.footstepMaterial === "stone" &&
-            step.elevation > 1 &&
-            step.steps >= 3,
+          (item) =>
+            item.footstepMaterial === "stone" &&
+            item.elevation > 1 &&
+            item.steps >= 3,
         ),
-        "Real keyboard navigation must climb authored stone stairs with reduced pace",
+        "Actual keyboard navigation must traverse the authored stone stairs",
       );
+      assert(
+        gardenView.land.stairTreads >=
+          maps.hub.stairs
+            .filter((item) => item.type === "stairs")
+            .reduce((sum, item) => sum + item.steps, 0),
+      );
+      await go(maps.hub, world.forest.gate);
+      await page.keyboard.press("e");
+      await frame.waitForFunction(
+        () =>
+          window.jalasmaraSnapshot?.land?.area === "forest" &&
+          window.jalasmaraSnapshot.land.active,
+        null,
+        { polling: 200, timeout: 90000 },
+      );
+      const bridge = maps.forest.surfaces.find(
+        (item) => item.id === "bridge_upper",
+      );
+      assert(bridge?.material === "bridge");
+      const bridgeCenter = {
+        x:
+          bridge.polygon.reduce((sum, p) => sum + p[0], 0) /
+          bridge.polygon.length,
+        y:
+          bridge.polygon.reduce((sum, p) => sum + p[1], 0) /
+          bridge.polygon.length,
+      };
+      await go(maps.forest, bridgeCenter);
+      const forest = await capture("04-forest-bridge", "forest");
+      assert(
+        inside([forest.x, forest.y], bridge.polygon),
+        "Forest exploration must really cross onto the bridge component",
+      );
+      assert.equal(forest.foley.material, "bridge");
+      assert(
+        Math.hypot(
+          views[0].land.camera[0] - views[2].land.camera[0],
+          views[0].land.camera[1] - views[2].land.camera[1],
+        ) > 500,
+        "Component proof must include actual camera travel, not four unchanged screenshots",
+      );
+      await go(maps.forest, world.forest.entry);
+      await page.keyboard.press("e");
+      await frame.waitForFunction(
+        () =>
+          window.jalasmaraSnapshot?.land?.area === "hub" &&
+          window.jalasmaraSnapshot.land.active,
+        null,
+        { polling: 200, timeout: 90000 },
+      );
+      rendered(await snapshot(frame), "hub");
       writeFileSync(
         `${output}/results.json`,
         JSON.stringify(
           {
             origin,
             engine,
+            scope:
+              "Modular 3D geometry and authoritative footprint checks; no bitmap/RGB-ground inference.",
             checks: [
-              "feet-sorted-front-crown",
-              "leaf-mask-and-solid-wood",
-              "physical-trunk-blocks-player",
-              "head-reveal-behind-crown",
-              "surface-water-animation-advances",
-              "actual-3d-land-rock",
-              "keyboard-stair-climb",
-              "feet-outside-authoritative-solids",
-              "server-surface-position-synced",
-              ...(strictBrownSoil ? ["strict-raster-brown-soil"] : []),
+              "real-modular-land-renderer",
+              "shared-footprint-and-floor-union",
+              "dock-shore-blocks-walking-into-water",
+              "house-wall-and-three-dimensional-roofs",
+              "raised-garden-component-boundary",
+              "actual-stair-climb-and-treads",
+              "animated-3d-shore-water",
+              "hub-forest-roundtrip",
+              "forest-bridge-material-and-movement",
+              "four-camera-server-synced-captures",
+              "actor-feet-projection",
             ],
             stairs: climbed,
-            front: {
-              position: [front.x, front.y],
-              tree: frontTree,
-              water: front.occlusion.water,
-            },
-            blocked: {
-              approach: [approach.x, approach.y],
-              position: [blocked.x, blocked.y],
-              trunk: physicalTrunk,
-            },
-            behind: {
-              position: [behind.x, behind.y],
-              tree: behindTree,
-              footRGB: behindFootRGB,
-              footRGBDiagnosticOnly: !strictBrownSoil,
-              serverPosition: [serverSurface.x, serverSurface.y],
-              water: behind.occlusion.water,
-            },
+            views,
           },
           null,
           2,
@@ -532,21 +607,16 @@ try {
     assert(rendered.mesh_count >= 15 && rendered.sprite_count > 1);
     await page.screenshot({ path: `${output}/01-reef-3d.png`, fullPage: true });
     await page.keyboard.press("F6");
-    await frame.waitForFunction(
-      () => window.jalasmaraSnapshot?.hybrid?.active === false,
-      null,
-      { polling: 100 },
+    await page.waitForTimeout(500);
+    const afterToggle = (await snapshot(frame)).hybrid;
+    assert(
+      afterToggle.active && afterToggle.renderer === "SubViewport3D",
+      "Release builds must keep the production renderer when F6 is pressed",
     );
     await page.screenshot({
-      path: `${output}/02-reef-2d-comparison.png`,
+      path: `${output}/02-release-renderer.png`,
       fullPage: true,
     });
-    await page.keyboard.press("F6");
-    await frame.waitForFunction(
-      () => window.jalasmaraSnapshot?.hybrid?.active === true,
-      null,
-      { polling: 100 },
-    );
     for (const [key, facing] of [
       ["d", 1],
       ["a", -1],
@@ -566,32 +636,10 @@ try {
         (lamp.aim[0] - lamp.mount[0]) * facing > 400,
         "3D beam must point forward",
       );
-      await page.keyboard.press("F6");
-      await frame.waitForFunction(
-        () => window.jalasmaraSnapshot?.flashlight2d?.active === true,
-        null,
-        { polling: 100 },
-      );
-      const fallback = await snapshot(frame),
-        lamp2d = fallback.flashlight2d;
-      assert(
-        (lamp2d.mount[0] - fallback.x) * facing > 20,
-        "2D flashlight must mount in front of Nala",
-      );
-      assert(
-        (lamp2d.aim[0] - lamp2d.mount[0]) * facing > 400,
-        "2D beam must point forward",
-      );
       await page.screenshot({
-        path: `${output}/flashlight-2d-${facing}.png`,
+        path: `${output}/flashlight-3d-${facing}.png`,
         fullPage: true,
       });
-      await page.keyboard.press("F6");
-      await frame.waitForFunction(
-        () => window.jalasmaraSnapshot?.hybrid?.active === true,
-        null,
-        { polling: 100 },
-      );
     }
     await page.keyboard.press("i");
     await frame.waitForFunction(
@@ -625,10 +673,10 @@ try {
             "real-3d-meshes",
             "billboard-actors",
             "orthographic-pixel-viewport",
-            "F6-comparison-toggle",
+            "release-no-legacy-renderer-toggle",
             "swim-through-authoritative-cave-gap",
             "shadowed-headlamp",
-            "forward-flashlight-both-facings-both-renderers",
+            "3D-forward-flashlight-both-facings",
             "inventory-modal",
           ],
           reef: rendered,
@@ -784,6 +832,11 @@ try {
   );
   assert.equal((await snapshot(frame)).modal, true);
   await page.screenshot({ path: "artifacts/godot/map.png", fullPage: true });
+  assert.deepEqual(
+    diagnostics.filter((entry) => /WebGL: INVALID_OPERATION/.test(entry.text)),
+    [],
+    "The production renderer must not emit invalid WebGL operations",
+  );
   assert.deepEqual(errors, []);
   rmSync("artifacts/godot/errors.json", { force: true });
   rmSync("artifacts/godot/failure.png", { force: true });

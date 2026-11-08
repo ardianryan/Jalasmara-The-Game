@@ -117,6 +117,9 @@ func _near_road(point: Vector2) -> bool:
 	return false
 
 func _draw_land_geography() -> void:
+	if not world.get("landMaps",{}).is_empty():
+		_draw_component_geography()
+		return
 	var offset := _forest_offset()
 	var shore := _land_outline()
 	var edge := _outline_on_screen(shore)
@@ -171,6 +174,45 @@ func _draw_land_geography() -> void:
 		_map_caption("PALUNG SMARA",Vector2(2690,1050),Color("9bb5ac"))
 		draw_string(PIXEL_FONT,Vector2(size.x-19,20),"N",HORIZONTAL_ALIGNMENT_LEFT,-1,10,PAPER)
 		draw_line(Vector2(size.x-16,27),Vector2(size.x-16,39),PAPER,1)
+
+func _draw_component_geography() -> void:
+	var palette := {"grass":"83916d","dirt":"c7ad80","sand":"d1c298","stone":"96917d","dock":"9f8058","bridge":"a38b61","wood":"9f8058"}
+	for place in ["hub","forest"]:
+		var offset := Vector2.ZERO if place=="hub" else _forest_offset()
+		var data: Dictionary = world.get("landMaps",{}).get(place,{})
+		var surfaces: Array = data.get("surfaces",[]).duplicate()
+		surfaces.sort_custom(func(a: Dictionary,b: Dictionary)->bool:return int(a.get("priority",0))<int(b.get("priority",0)))
+		for surface in surfaces:
+			var local := PackedVector2Array()
+			for vertex in surface.get("polygon",[]): local.append(Vector2(float(vertex[0]),float(vertex[1])))
+			var pieces: Array[PackedVector2Array] = [local]
+			if not bool(surface.get("walkable",true)):
+				pieces.clear()
+				for ground in surfaces:
+					if not bool(ground.get("walkable",true)): continue
+					var boundary := PackedVector2Array()
+					for vertex in ground.get("polygon",[]): boundary.append(Vector2(float(vertex[0]),float(vertex[1])))
+					pieces.append_array(Geometry2D.intersect_polygons(local,boundary))
+			for piece in pieces:
+				var points := PackedVector2Array()
+				for point in piece: points.append(point+offset)
+				_draw_land_polygon(points,Color(palette.get(str(surface.get("material","grass")),"83916d")))
+				if bool(surface.get("walkable",true)) and points.size()>2:
+					var rim := _outline_on_screen(points)
+					rim.append(rim[0])
+					draw_polyline(rim,Color("637960") if place=="forest" else Color("8c805f"),1,false)
+		for obstacle in data.get("obstacles",[]):
+			var points := PackedVector2Array()
+			for vertex in obstacle.get("footprint",[]): points.append(Vector2(float(vertex[0]),float(vertex[1]))+offset)
+			var kind := str(obstacle.get("kind","rock"))
+			_draw_land_polygon(points,Color("4e7156") if kind=="tree" else Color("8d7457") if kind=="house" else Color("766f60"))
+			if kind=="tree":
+				var center := _screen(offset+Vector2(float(obstacle.x)+float(obstacle.width)*0.5,float(obstacle.y)+float(obstacle.height)*0.5))
+				draw_circle(center,3 if mini else 4,Color("5d7d5a"))
+	if not mini:
+		_map_caption("BANDAR HUJUNG",Vector2(1000,1050),Color("554e36"))
+		_map_caption("HUTAN WRINGIN",_forest_offset()+Vector2(750,550),Color("405a40"))
+		_map_caption("PALUNG SMARA",Vector2(2650,1050),Color("9bb5ac"))
 
 func _map_caption(title: String, point: Vector2, color: Color) -> void:
 	var at := _screen(point)

@@ -1,4 +1,5 @@
 extends CharacterBody2D
+var land_path := preload("res://scripts/land/LandPath.gd").new()
 var surface_traversal := preload("res://scripts/SurfaceTraversal.gd").new()
 var traversal_state: Dictionary = {}
 var speed := 160.0
@@ -52,7 +53,7 @@ func _physics_process(delta: float) -> void:
 		effect_clock = 0
 		if wet_marks.size()<24:
 			wet_marks.append({"at":position+Vector2(sin(walk_time*16)*12,12),"age":0.0})
-	if frozen:
+	if frozen or (not in_water and land_path.full()):
 		velocity = Vector2.ZERO
 	else:
 		var input := Input.get_vector("left","right","up","down")+touch
@@ -71,7 +72,7 @@ func _physics_process(delta: float) -> void:
 	else:
 		var hub: Dictionary = GameState.world.get("hub",{})
 		position.x = clampf(position.x,40,float(hub.get("width",2400))-40)
-		position.y = clampf(position.y,120,float(hub.get("height",1600))-80)
+		position.y = clampf(position.y,12,float(hub.get("height",1600))-80)
 		if land_mask.is_valid() and not land_mask.call(position):
 			var along_x := Vector2(position.x,previous.y)
 			var along_y := Vector2(previous.x,position.y)
@@ -87,6 +88,7 @@ func _physics_process(delta: float) -> void:
 	if not in_water:
 		surface_traversal.set_reduced_motion(EnvironmentState.reduced_motion)
 		traversal_state = surface_traversal.sample(position,velocity,delta)
+		land_path.record(position)
 	else:
 		traversal_state = {}
 	if swim_sprite:

@@ -5,6 +5,11 @@ const AtlasScript = preload("res://scripts/WorldAtlas.gd")
 const EXTENT := Vector2(2400, 1600)
 const ENTRY := Vector2(200, 1320)
 const WALK_SPEED := 175.0
+var land_renderer: Node2D
+var land_collision: Node2D
+var land_path := preload("res://scripts/land/LandPath.gd").new()
+var surface_traversal := preload("res://scripts/SurfaceTraversal.gd").new()
+var traversal_state: Dictionary = {}
 var avatar: CharacterBody2D
 var _snapshot_at := 0
 var camera: Camera2D
@@ -178,33 +183,20 @@ func _ready() -> void:
 	actors = Node2D.new()
 	actors.y_sort_enabled = true
 	add_child(actors)
-	if ResourceLoader.exists("res://resources/art/forest-muara.png"):
-		background = load("res://resources/art/forest-muara.png")
-	if ResourceLoader.exists("res://scripts/SurfaceWater.gd"):
-		surface_water = load("res://scripts/SurfaceWater.gd").new()
-		add_child(surface_water)
-		surface_water.configure("forest",EXTENT,background)
-		move_child(surface_water,0)
-	_build_props()
-	_add_polyfork_plant("fern-plant",Vector2(485,1160),Vector2(68,68))
-	_add_polyfork_plant("fern-plant",Vector2(1480,810),Vector2(60,60))
-	depth_planes = preload("res://scripts/DepthPlanes.gd").new()
-	depth_planes.configure("forest",EXTENT,walkable_paths,walkable_half_width)
-	add_child(depth_planes)
-	move_child(depth_planes,0)
-	_build_lighting()
-	var pixel_effects := preload("res://scripts/PixelEffects.gd").new()
-	pixel_effects.name = "PixelEffects"
-	add_child(pixel_effects)
-	pixel_effects.configure("forest")
+	land_collision = preload("res://scripts/land/LandCollision.gd").new()
+	land_collision.configure(GameState.world.get("landMaps",{}).get("forest",{}))
+	add_child(land_collision)
+	surface_traversal.configure(GameState.world.get("landMaps",{}).get("forest",{}))
 	avatar = ForestAvatar.new()
 	avatar.position = ENTRY
 	var saved_surface: Variant = GameState.get("surface")
 	var surface: Dictionary = saved_surface if saved_surface is Dictionary else GameState.adventure.get("surface",{})
 	if str(surface.get("area","")) == "forest":
 		avatar.position = Vector2(float(surface.get("x",ENTRY.x)),float(surface.get("y",ENTRY.y)))
-	avatar.position = avatar.position.clamp(Vector2(40,120),Vector2(2360,1500))
+	avatar.position = avatar.position.clamp(Vector2(12,12),Vector2(2388,1588))
+	avatar.position = land_collision.nearest_walkable(avatar.position)
 	last_position = avatar.position
+	land_path.reset(avatar.position)
 	var appearance: Variant = GameState.player.get("appearance","male_default")
 	var appearance_id := str(appearance.get("id","male_default")) if appearance is Dictionary else str(appearance)
 	var paths := {"male_default":"male-default","male_nusantara":"male-nusantara","female_default":"female-default","female_nusantara":"female-nusantara"}
@@ -215,9 +207,9 @@ func _ready() -> void:
 	avatar.variant = appearance_id
 	var collider := CollisionShape2D.new()
 	var shape := CircleShape2D.new()
-	shape.radius = 13
+	shape.radius = 12
 	collider.shape = shape
-	collider.position = Vector2(0,-6)
+	collider.position = Vector2.ZERO
 	avatar.add_child(collider)
 	actors.add_child(avatar)
 	for canopy in forest_canopies:
@@ -233,10 +225,6 @@ func _ready() -> void:
 		creature.width = item[2]
 		creature.walkable = _is_walkable
 		actors.add_child(creature)
-	var forest_life := ForestLife.new()
-	forest_life.focus = avatar
-	forest_life.z_index = 3
-	add_child(forest_life)
 	camera = Camera2D.new()
 	camera.zoom = Vector2(1.05,1.05)
 	camera.position_smoothing_enabled = true
@@ -247,6 +235,10 @@ func _ready() -> void:
 	camera.limit_bottom = int(EXTENT.y)
 	avatar.add_child(camera)
 	_build_ui()
+	land_renderer = preload("res://scripts/land/LandWorld3D.gd").new()
+	add_child(land_renderer)
+	land_renderer.setup(self,avatar,camera,"forest")
+	actors.visible = false
 	if get_tree().has_meta("surface_change_notice"):
 		game_hud.message(str(get_tree().get_meta("surface_change_notice")))
 		get_tree().remove_meta("surface_change_notice")
@@ -385,6 +377,7 @@ func _path_distance(at: Vector2, points: Array) -> float:
 	return distance
 
 func _draw() -> void:
+	if is_instance_valid(land_renderer): return
 	draw_rect(Rect2(Vector2.ZERO,EXTENT),Color("33523a"))
 	if background != null:
 		draw_texture_rect(background,Rect2(Vector2.ZERO,EXTENT),false)
@@ -402,18 +395,20 @@ func _draw() -> void:
 	draw_polyline(stream,Color(0.60,0.81,0.71,0.0 if background != null else 0.4),7,false)
 
 func _physics_process(delta: float) -> void:
+	EnvironmentState.clock_paused = modal_open
 	if avatar == null:
 		return
 	if is_instance_valid(depth_planes): depth_planes.update_camera(avatar.position)
 	var direction := Input.get_vector("left","right","up","down")
 	if touch_direction != Vector2.ZERO:
 		direction = touch_direction.normalized()
-	if modal_open or busy:
+	if modal_open or busy or land_path.full():
 		direction = Vector2.ZERO
-	avatar.velocity = avatar.velocity.move_toward(direction*WALK_SPEED,delta*1250)
+	avatar.velocity = avatar.velocity.move_toward(direction*WALK_SPEED*float(traversal_state.get("paceScale",1.0)),delta*1250)
 	if direction == Vector2.ZERO:
 		avatar.velocity = avatar.velocity.move_toward(Vector2.ZERO,delta*1700)
 	var previous_position := avatar.position
+	if land_path.full(): avatar.velocity = Vector2.ZERO
 	avatar.move_and_slide()
 	path_notice_cooldown = maxf(0.0,path_notice_cooldown-delta)
 	if not _is_walkable(avatar.position):
@@ -422,7 +417,10 @@ func _physics_process(delta: float) -> void:
 		if path_notice_cooldown <= 0.0:
 			game_hud.message("Vegetasi lebat menutup jalur. Ikuti jalan tanah atau telusuri cabangnya.")
 			path_notice_cooldown = 4.0
-	avatar.position = avatar.position.clamp(Vector2(40,120),Vector2(2360,1500))
+	avatar.position = avatar.position.clamp(Vector2(12,12),Vector2(2388,1588))
+	surface_traversal.set_reduced_motion(EnvironmentState.reduced_motion)
+	traversal_state = surface_traversal.sample(avatar.position,avatar.velocity,delta)
+	land_path.record(avatar.position)
 	avatar.walking = avatar.velocity.length() > 8
 	light_clock += delta
 	if Engine.get_physics_frames() % 6 == 0:
@@ -449,7 +447,7 @@ func _physics_process(delta: float) -> void:
 	if Input.is_key_pressed(KEY_ESCAPE) and modal_open:
 		_close_dialog()
 	sync_clock += delta
-	if sync_clock >= 2.0 and not syncing and not busy:
+	if (sync_clock >= 1.3 or (land_path.needs_flush() and sync_clock >= 1.0)) and not syncing and not busy:
 		sync_clock = 0.0
 		_sync_position()
 
@@ -478,10 +476,11 @@ func _sync_position() -> bool:
 	if syncing:
 		return false
 	syncing = true
-	var result: Dictionary = await ApiClient.call_api("/adventure/surface-position",{"area":"forest","x":snappedf(avatar.position.x,0.1),"y":snappedf(avatar.position.y,0.1),"version":int(GameState.player.get("version",0))})
+	var route: Dictionary = land_path.snapshot(avatar.position)
+	var result: Dictionary = await ApiClient.call_api("/adventure/surface-position",{"area":"forest","x":avatar.position.x,"y":avatar.position.y,"path":route.path,"fromPositionAt":int(GameState.surface.get("positionAt",0)),"version":int(GameState.player.get("version",0))})
 	syncing = false
 	if not result.get("ok",false):
-		if str(result.get("code","")) in ["SESSION_CHANGED","AREA_CHANGED"]:
+		if str(result.get("code","")) in ["SESSION_CHANGED","AREA_CHANGED","POSITION_CHANGED"]:
 			syncing = true
 			busy = true
 			avatar.velocity = Vector2.ZERO
@@ -497,6 +496,7 @@ func _sync_position() -> bool:
 				else:
 					avatar.position = Vector2(float(GameState.surface.get("x",ENTRY.x)),float(GameState.surface.get("y",ENTRY.y)))
 					last_position = avatar.position
+					land_path.reset(avatar.position)
 					avatar.variant = str(GameState.player.get("appearance","male_default"))
 					var path := "res://resources/art/%s.png" % avatar.variant.replace("_","-")
 					avatar.sheet = load(path) if ResourceLoader.exists(path) else null
@@ -510,6 +510,7 @@ func _sync_position() -> bool:
 		return false
 	if result.has("surface"):
 		GameState.surface = result.surface
+	land_path.acknowledge(int(route.ticket))
 	last_position = avatar.position
 	if result.has("adventure"):
 		GameState.adventure = result.adventure
@@ -684,6 +685,8 @@ func _publish_snapshot() -> void:
 	for canopy in forest_canopies:
 		trees.append(canopy.debug_status())
 	snapshot["occlusion"] = {"trees":trees,"sortByFeet":actors.y_sort_enabled}
+	snapshot["land"] = land_renderer.debug_status() if is_instance_valid(land_renderer) else {}
+	snapshot["traversal"] = traversal_state
 	snapshot["audio"] = AudioManager.debug_status()
 	snapshot["weather"] = EnvironmentState.snapshot()
 	snapshot["surfaceWater"] = surface_water.debug_status() if is_instance_valid(surface_water) else {}
@@ -724,15 +727,7 @@ func _show_map() -> void:
 	ui.add_child(atlas_panel)
 
 func _is_walkable(point: Vector2) -> bool:
-	for path in walkable_paths:
-		for index in range(path.size()-1):
-			var first: Variant = path[index]
-			var second: Variant = path[index+1]
-			var start := Vector2(float(first[0]),float(first[1]))
-			var end := Vector2(float(second[0]),float(second[1]))
-			if point.distance_to(Geometry2D.get_closest_point_to_segment(point,start,end)) <= walkable_half_width:
-				return true
-	return false
+	return is_instance_valid(land_collision) and land_collision.is_walkable(point)
 
 func _build_lighting() -> void:
 	_add_forest_light(Vector2(430,418),1.85,"lantern",true)

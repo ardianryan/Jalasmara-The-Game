@@ -5,6 +5,12 @@ import { type Store, type User, fail, lock, once, publicUser } from "./db.js";
 import type { Guards } from "./auth.js";
 import { operationKey } from "./game.js";
 import { uuid, version } from "./schemas.js";
+import {
+  isLandWalkable,
+  isLandSegmentWalkable,
+  nearestSafeLandPoint,
+} from "../../../packages/shared/src/land.js";
+import { surfaceInvalidatedByAdmin } from "./surface-version.js";
 import { blockedByContours } from "./geometry.js";
 export const publicWorld = (day = 1) => ({
   ...WORLD,
@@ -50,11 +56,42 @@ export async function adventureRoutes(
       if (raw) {
         const point = JSON.parse(raw) as SurfacePosition;
         if (
-          point.playerVersion === p.version &&
-          (point.area !== "hub" ||
-            point.layoutVersion === WORLD.hub.layoutVersion)
-        )
-          return point;
+          point.playerVersion <= p.version &&
+          !(await surfaceInvalidatedByAdmin(s, p, point.playerVersion))
+        ) {
+          const map = WORLD.landMaps[point.area];
+          if (
+            point.playerVersion === p.version &&
+            map &&
+            point.layoutVersion === map.layoutVersion &&
+            isLandWalkable(map, point)
+          )
+            return point;
+          const area = map ? point.area : "hub";
+          const safe = nearestSafeLandPoint(WORLD.landMaps[area], point);
+          const migrated: SurfacePosition = {
+            ...point,
+            ...safe,
+            area,
+            layoutVersion: WORLD.landMaps[area].layoutVersion,
+            playerVersion: p.version,
+            positionAt:
+              point.layoutVersion === WORLD.landMaps[area].layoutVersion &&
+              safe.x === point.x &&
+              safe.y === point.y
+                ? point.positionAt
+                : Date.now(),
+          };
+          const saved = await s.redis.eval(
+            "if redis.call('get',KEYS[1])==ARGV[1] then redis.call('set',KEYS[1],ARGV[2],'EX',1800); return 1 else return 0 end",
+            1,
+            key,
+            raw,
+            JSON.stringify(migrated),
+          );
+          if (saved) return migrated;
+          continue;
+        }
         if (point.playerVersion > p.version)
           return fail(
             "Data pemain berubah. Muat ulang permainan.",
@@ -131,6 +168,18 @@ export async function adventureRoutes(
         .object({
           area: z.enum(["hub", "forest"]).default("hub"),
           version: version.optional(),
+          fromPositionAt: z.number().int().nonnegative().optional(),
+          path: z
+            .array(
+              z
+                .object({
+                  x: z.number().finite().min(0).max(2400),
+                  y: z.number().finite().min(0).max(1600),
+                })
+                .strict(),
+            )
+            .max(64)
+            .optional(),
           x: z.number().finite(),
           y: z.number().finite(),
         })
@@ -151,15 +200,27 @@ export async function adventureRoutes(
             409,
             "AREA_CHANGED",
           );
-        const bounds =
-          b.area === "forest"
-            ? { minX: 40, maxX: WORLD.forest.width - 40, minY: 120, maxY: 1500 }
-            : {
-                minX: 40,
-                maxX: WORLD.hub.width - 40,
-                minY: 120,
-                maxY: WORLD.hub.height - 80,
-              };
+        if (b.path !== undefined && b.fromPositionAt === undefined)
+          return fail(
+            "Lintasan memerlukan posisi awal yang sudah diterima server.",
+            400,
+            "POSITION_BASE",
+          );
+        if (
+          b.fromPositionAt !== undefined &&
+          b.fromPositionAt !== point.positionAt
+        )
+          return fail(
+            "Posisi awal sudah berubah. Sinkronkan ulang lintasan.",
+            409,
+            "POSITION_CHANGED",
+          );
+        const bounds = {
+          minX: 0,
+          minY: 0,
+          maxX: WORLD.landMaps[b.area].width,
+          maxY: WORLD.landMaps[b.area].height,
+        };
         if (
           b.x < bounds.minX ||
           b.x > bounds.maxX ||
@@ -178,86 +239,42 @@ export async function adventureRoutes(
               Math.abs(b.y - exit.y) <= exit.height / 2,
           );
           if (blocked) return fail(blocked.reason, 409, "BLOCKED_EXIT");
-          const onPath = WORLD.forest.walkablePaths.some((path) =>
-            path.slice(1).some((end, index) => {
-              const start = path[index],
-                dx = end[0] - start[0],
-                dy = end[1] - start[1],
-                projection = Math.max(
-                  0,
-                  Math.min(
-                    1,
-                    ((b.x - start[0]) * dx + (b.y - start[1]) * dy) /
-                      (dx * dx + dy * dy),
-                  ),
-                );
-              return (
-                Math.hypot(
-                  b.x - start[0] - projection * dx,
-                  b.y - start[1] - projection * dy,
-                ) <= WORLD.forest.walkableHalfWidth
-              );
-            }),
-          );
-          if (!onPath)
-            return fail(
-              "Rumpun terlalu rapat, ikuti jalur hutan.",
-              409,
-              "PATH_BLOCKED",
-            );
         }
-        if (b.area === "hub") {
-          const blocked = WORLD.hub.obstacles.some(
-            ([x, y, w, h]) =>
-              b.x > x - 12 &&
-              b.x < x + w + 12 &&
-              b.y > y - 12 &&
-              b.y < y + h + 12,
+        const map = WORLD.landMaps[b.area];
+        if (!isLandWalkable(map, b))
+          return fail(
+            "Lantai tidak tersambung atau terhalang bangunan, batu, tanaman, maupun tepi air.",
+            409,
+            "PATH_BLOCKED",
           );
-          const hitsTrunk = WORLD.hub.treeTrunks.some(
-            (trunk) =>
-              Math.hypot(b.x - trunk.x, b.y - trunk.y) < trunk.radius + 12,
-          );
-          const onPath = WORLD.hub.paths.some((path) =>
-            path.slice(1).some((end, index) => {
-              const start = path[index],
-                dx = end[0] - start[0],
-                dy = end[1] - start[1];
-              const t = Math.max(
-                0,
-                Math.min(
-                  1,
-                  ((b.x - start[0]) * dx + (b.y - start[1]) * dy) /
-                    (dx * dx + dy * dy),
-                ),
-              );
-              return (
-                Math.hypot(b.x - start[0] - t * dx, b.y - start[1] - t * dy) <=
-                WORLD.hub.walkableHalfWidth
-              );
-            }),
-          );
-          const inCourtyard = blockedByContours(
-            { x: b.x, y: b.y },
-            WORLD.hub.walkableAreas,
-            0,
-          );
-          if (blocked || hitsTrunk || (!onPath && !inCourtyard))
-            return fail(
-              "Ikuti jalur desa; bangunan dan tepian air tidak dapat dilalui.",
-              409,
-              "PATH_BLOCKED",
-            );
-        }
         const now = Date.now(),
           elapsed = Math.max(0, Math.min(10, (now - point.positionAt) / 1000));
-        if (Math.hypot(b.x - point.x, b.y - point.y) > 175 * elapsed + 100)
+        const waypoints = [point, ...(b.path ?? []), { x: b.x, y: b.y }];
+        let distance = 0;
+        for (let i = 1; i < waypoints.length; i++)
+          distance += Math.hypot(
+            waypoints[i].x - waypoints[i - 1].x,
+            waypoints[i].y - waypoints[i - 1].y,
+          );
+        if (distance > 175 * elapsed + 100)
           return fail(
-            "Posisi terlalu jauh dari keadaan terakhir.",
+            "Lintasan terlalu jauh dari waktu berjalan yang tersedia.",
             409,
             "POSITION",
           );
-        const next = { ...point, x: b.x, y: b.y, positionAt: now };
+        for (let i = 1; i < waypoints.length; i++)
+          if (!isLandSegmentWalkable(map, waypoints[i - 1], waypoints[i]))
+            return fail(
+              "Jalur memotong bangunan, batas elevasi, atau air. Gunakan jalur penghubung.",
+              409,
+              "PATH_BLOCKED",
+            );
+        const next = {
+          ...point,
+          x: b.x,
+          y: b.y,
+          positionAt: Math.max(now, point.positionAt + 1),
+        };
         await saveSurface(p, next);
         return { surface: next };
       });

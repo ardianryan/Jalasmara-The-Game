@@ -6,7 +6,7 @@
 *Konteks Aset:* 100% Grafis & Piksel Dibuat oleh AI  
 *Prinsip Utama:* **Aset AI sebagai kanvas visual statis, Godot Engine sebagai motor dinamika prosedural.**
 
-> **Status:** dokumen ini adalah arah desain, bukan daftar fitur yang semuanya sudah aktif. Lihat [status implementasi lingkungan](world/environment.md) untuk perilaku build saat ini. Dampak cuaca pada ekonomi, siklus bebas 24 jam, audio, dan simulasi air masih merupakan sasaran lanjutan.
+> **Status:** dokumen ini tetap merupakan arah desain, bukan klaim semua fitur aktif. Build lokal kini memakai komponen darat modular 3D, jam kosmetik 24 jam visual per 36 menit nyata, air/cuaca/cahaya dinamis serta SFX eksplorasi yang sudah diintegrasikan. Dampak cuaca otoritatif pada ekonomi dan simulasi air penuh belum diklaim tersedia. Pengguna telah mengizinkan pemakaian aset pustaka yang ada; sumber serta lisensinya tetap dicatat, sehingga uraian “100% aset AI” di dalam panduan adalah konteks awal, bukan batas produksi saat ini. Lihat [status implementasi](world/environment.md); rebuild sedang difinishing dan belum dinyatakan lulus deployment final.
 
 ---
 

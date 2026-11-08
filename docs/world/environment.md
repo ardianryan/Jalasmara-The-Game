@@ -6,8 +6,8 @@ Implementasi ini menghubungkan waktu visual, cuaca, vegetasi, lampu, dan medium 
 
 | Unsur | Implementasi |
 | --- | --- |
-| Waktu dan cuaca | `EnvironmentState` mempertahankan jam dalam satu tab dan menghasilkan siklus lokal 90 detik: cerah, berawan, hujan ringan, lalu cerah. Awan, hujan, angin, dan arus visual berasal dari kondisi yang sama. |
-| Siang dan malam | Tahap cerita `night` memilih segmen malam. Warna dunia 2D memakai `CanvasModulate`; laut hybrid memakai cahaya dan kabut 3D. Lampu lokal mengikuti cahaya sekitar dan awan. |
+| Waktu dan cuaca | `EnvironmentState` mempertahankan jam dalam satu tab dan menghasilkan siklus cuaca lokal 360 detik: cerah, berawan, hujan ringan, lalu cerah. Awan, hujan, angin, dan arus visual berasal dari kondisi yang sama. |
+| Siang dan malam | Tahap cerita `night` memilih awal segmen malam, lalu jam kosmetik berputar bebas. Darat modular dan laut hybrid memakai cahaya 3D; UI terpisah tetap terbaca. Lampu lokal mengikuti cahaya sekitar dan awan. |
 | Hujan di darat | Maksimal 56 garis miring mengikuti angin. Percikan Pixelbolt ditempatkan pada titik jalur hub atau hutan yang terlihat kamera. Titik ini mengikuti data jalan; belum ada deteksi benturan atap atau genangan. Hujan tidak digambar di bawah laut. |
 | Vegetasi | Kekuatan shader kanopi mengikuti angin. Pangkal dan collider tetap. Api lentera miring sedikit, sedangkan uap bergeser perlahan dan lebih terlihat saat hujan. |
 | Air permukaan | Garis gelombang bergerak pada permukaan. Masuk laut memicu percikan singkat; ini efek visual, bukan perpindahan volume air. |
@@ -19,9 +19,9 @@ Implementasi ini menghubungkan waktu visual, cuaca, vegetasi, lampu, dan medium 
 
 ## Waktu dan data bersama
 
-`EnvironmentState.update_story(day, stage)` mengatur konteks. Pergantian hari atau segmen siang/malam mengulang jam visual; perpindahan tahap siang seperti `dive` ke `boss` tidak mengulangnya. Tiga detik nyata memajukan satu menit: siang mulai 08:00 dan berhenti 17:50; malam mulai 18:30 dan berhenti 23:50. Tidak ada siklus 24 jam bebas.
+`EnvironmentState.update_story(day, stage)` mengatur konteks. Pergantian hari atau segmen siang/malam mengulang jam visual; perpindahan tahap siang seperti `dive` ke `boss` tidak mengulangnya. Satu putaran 24 jam visual berlangsung 36 menit nyata secara lokal, tanpa berhenti pada batas sore/malam. Jam dapat dijeda melalui state visual dan tetap terpisah dari hari/misi otoritatif server. Segmen cerita awal memilih 08:00 atau 18:30 saat konteks berubah.
 
-`snapshot()` menyediakan `clock`, `weather`, `rain`, `clouds`, `daylight`, `night`, `day`, `phase`, `wind_x`, `wind_y`, `current_x`, `current_y`, `sea_state`, dan `reduced_motion`. Intensitas hujan maksimum 0,6. Arus ini adalah parameter visual; bukan instruksi untuk menggeser pemain atau menghitung oksigen.
+`snapshot()` menyediakan `clock`, `weather`, `rain`, `clouds`, `daylight`, `night`, `day`, `phase`, `wind_x`, `wind_y`, `current_x`, `current_y`, `sea_state`, `reduced_motion`, `dayLengthMinutes`, dan `clockPaused`. Intensitas hujan maksimum 0,6. Arus ini adalah parameter visual; bukan instruksi untuk menggeser pemain atau menghitung oksigen.
 
 Jam dan cuaca tidak disimpan ke server. Refresh memulai segmen visual sesuai progres; perangkat berbeda tidak dijamin memiliki cuaca yang sama. Preferensi pengurangan gerak mengikuti `prefers-reduced-motion` ketika tersedia, dapat diatur melalui `EnvironmentState.set_reduced_motion(bool)`, dan disimpan di `user://environment.cfg`. Belum ada panel kualitas efek khusus. Pengurangan gerak membatasi partikel, jejak, pembiasan, dan goyangan; jam serta progres cerita tetap berjalan.
 
@@ -29,7 +29,7 @@ Jam dan cuaca tidak disimpan ke server. Refresh memulai segmen visual sesuai pro
 
 `EnvironmentEffects.configure("hub" | "forest" | "sea")` memilih suasana. Pembiasan berada pada CanvasLayer 3, `LivingWater` pada layer 4, cuaca pada layer 5, HUD pada layer 10, dan dialog di atasnya. Efek dunia tidak meredupkan teks HUD.
 
-`HybridOcean.setup(main)` memasang `LivingWater`, yang membaca posisi penyelam dan kamera 2D otoritatif. Efek tetap tersedia saat perbandingan F6 memakai renderer laut 2D. Parallax diterapkan pada partikel dan bidang latar dekoratif `OceanBackdrop`; terrain batu yang dapat bertabrakan, target tangkapan, dan collider tidak digeser.
+`HybridOcean.setup(main)` memasang `LivingWater`, yang membaca posisi penyelam dan kamera 2D otoritatif. Perbandingan F6 dibatasi pada build debug native; web release tetap memakai renderer 3D. Parallax diterapkan pada partikel dan bidang latar dekoratif `OceanBackdrop`; terrain batu yang dapat bertabrakan, target tangkapan, dan collider tidak digeser.
 
 Prinsip cahaya yang terhalang dinding mengacu pada [penjelasan shadowcasting SpriteCook](https://www.spritecook.ai/blog/2d-shadowcasting-torchlight-fog-of-war). Implementasi proyek memakai perpotongan segmen pada `terrainContours`, sesuai bentuk peta yang tidak berupa kisi. Kode artikel tidak disalin. Pemotongan ini berlaku pada berkas cahaya dekoratif; belum menjadi fog of war, deteksi musuh, atau aturan pengetahuan pemain. Senter dan bayangan pada mesh tetap ditangani renderer 3D, sedangkan renderer 2D memakai occluder native.
 

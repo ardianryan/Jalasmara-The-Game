@@ -1,4 +1,6 @@
 extends SceneTree
+class Walker extends Node2D:
+	var traversal_state: Dictionary = {}
 
 func _initialize() -> void:
 	call_deferred("run")
@@ -11,21 +13,32 @@ func run() -> void:
 	audio.muted = false
 	audio._focused = true
 	state.dive = {}
-	var actor := Node2D.new()
-	actor.position = Vector2(1120,1230)
+	for name in ["footstep_dock","footstep_bridge","footstep_sand","footstep_stone","footstep_water_shallow","footstep_dirt","punch_swing","punch_hit","hit_wood","hit_stone","machete_cut_bush","wood_break_barricade","boulder_push_slide","path_reveal_chime"]:
+		assert(audio.sfx_streams.has(name), "Supplied SFX was not imported/loaded: "+name)
+		var stream: AudioStreamWAV = audio.sfx_streams[name]
+		assert(stream.mix_rate==44100 and stream.get_length()>0.08 and stream.get_length()<1.2, "Godot must load playable supplied SFX at the authored rate/duration")
+	var actor := Walker.new()
 	root.add_child(actor)
+	var surfaces := [{"id":"base","material":"grass","priority":0,"elevation":0,"polygon":[[0,0],[1200,0],[1200,900],[0,900]]}]
+	var materials := ["dock","bridge","sand","stone","dirt","grass","wood","water_shallow"]
+	for index in range(materials.size()):
+		var x := 100+index*100
+		surfaces.append({"id":materials[index],"material":materials[index],"priority":10,"elevation":0,"polygon":[[x,480],[x+90,480],[x+90,560],[x,560]]})
+	state.world = {"landMaps":{"hub":{"surfaces":surfaces,"stairs":[]},"forest":{"surfaces":surfaces,"stairs":[]}}}
 	var foley = load("res://scripts/WorldFoley.gd").new()
 	root.add_child(foley)
 	foley.set_process(false)
-	foley.configure(actor,"hub")
-	foley._process(0.1)
-	var before := int(audio.debug_status().sfxPlayed)
-	for tick in range(4):
-		actor.position.x += 10
+	for index in range(materials.size()):
+		actor.position = Vector2(120+index*100,500)
+		foley.configure(actor,"hub")
 		foley._process(0.1)
-	assert(int(audio.debug_status().sfxPlayed)==before+1, "Actual walking distance must produce one footstep")
-	assert(audio.debug_status().lastSfx=="footstep_wood")
-	before = int(audio.debug_status().sfxPlayed)
+		var before_step := int(audio.debug_status().sfxPlayed)
+		for tick in range(4):
+			actor.position.x += 10
+			foley._process(0.1)
+		assert(int(audio.debug_status().sfxPlayed)==before_step+1, "Actual walking distance must produce one footstep")
+		assert(audio.debug_status().lastSfx=="footstep_"+materials[index], "Surface polygon must choose the sound, not world Y")
+	var before := int(audio.debug_status().sfxPlayed)
 	for tick in range(30): foley._process(0.1)
 	assert(int(audio.debug_status().sfxPlayed)==before, "Stationary or blocked movement must not produce steps")
 	audio.muted = true
@@ -34,11 +47,24 @@ func run() -> void:
 		foley._process(0.1)
 	assert(int(audio.debug_status().sfxPlayed)==before, "Mute must suppress motion audio")
 	audio.muted = false
-	foley.area = "forest"
+	foley._process(0.1)
+	assert(int(audio.debug_status().sfxPlayed)==before, "Muted travel must not queue steps after unmute")
+	actor.position = Vector2(120,500)
+	foley.configure(actor,"forest")
+	foley._process(0.1)
 	for tick in range(4):
 		actor.position.x += 10
 		foley._process(0.1)
-	assert(audio.debug_status().lastSfx=="footstep_grass")
+	assert(audio.debug_status().lastSfx=="footstep_dock", "Area must read its own manifest")
+	actor.traversal_state = {"onConnector":true,"footstepMaterial":"stone"}
+	assert(foley.material_at(actor.position)=="stone", "Actual stair traversal must override floor material")
+	actor.traversal_state = {}
+	state.world.landMaps.forest.stairs = [{"path":[[100,500],[200,500]],"width":30,"material":"bridge"}]
+	assert(foley.material_at(actor.position)=="bridge", "Authored bridge connector must override floor without traversal state")
+	state.world.landMaps.forest.stairs = []
+	state.world.landMaps.forest.surfaces.append({"id":"raised","material":"stone","priority":10,"elevation":2,"polygon":[[100,480],[190,480],[190,560],[100,560]]})
+	assert(foley.material_at(actor.position)=="stone", "Equal priority must prefer the higher floor")
+	assert(foley.material_at(Vector2(-10,-10)).is_empty(), "No footstep material outside authored surfaces")
 	state.dive = {"id":"foley-check","oxygen":83}
 	actor.position.y = 600
 	foley._process(0.1)
@@ -73,5 +99,5 @@ func run() -> void:
 	await process_frame
 	await process_frame
 	await create_timer(0.35).timeout
-	print("PASS world foley: distance-based wood/grass steps, stationary silence, mute, breathing, unchanged oxygen")
+	print("PASS world foley: 8 explicit floor materials at identical Y, surface priority/elevation, connector override, distance cadence, stationary/mute silence, breathing, unchanged oxygen")
 	quit()
