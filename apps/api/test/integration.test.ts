@@ -25,6 +25,7 @@ import {
 import type { FastifyInstance } from "fastify";
 import { WORLD } from "../../../packages/shared/src/world.js";
 import { hubRoute } from "../../../scripts/game-navigation.mjs";
+import { distanceToEdge } from "../src/geometry.js";
 process.env.NODE_ENV = "test";
 process.env.APP_ORIGIN = "http://localhost:5173";
 process.env.MONGO_URL =
@@ -1520,27 +1521,30 @@ test("jalur desa menghubungkan gerbang dan menolak bangunan serta tepian air", a
   assert.equal(water.status, 409);
   assert.equal(water.data.code, "PATH_BLOCKED");
   let previous: { x: number; y: number } = { ...WORLD.surfaceSpawn };
-  for (const [x, y] of hubRoute(WORLD, WORLD.surfaceSpawn, WORLD.forest.gate)) {
-    const from = previous,
-      count = Math.ceil(Math.hypot(x - from.x, y - from.y) / 80);
-    for (let step = 1; step <= count; step++) {
-      const stored = JSON.parse((await s.redis.get(`surface:${u.id}`))!);
-      stored.positionAt -= 1000;
-      await s.redis.set(`surface:${u.id}`, JSON.stringify(stored), "KEEPTTL");
-      const position = {
-        x: from.x + ((x - from.x) * step) / count,
-        y: from.y + ((y - from.y) * step) / count,
-      };
-      const moved = await b.request("/adventure/surface-position", {
-        area: "hub",
-        ...position,
-      });
-      assert.equal(
-        moved.status,
-        200,
-        `${JSON.stringify(position)}: ${JSON.stringify(moved.data)}`,
-      );
-      previous = position;
+  const destinations = [{ x: 595, y: 650 }, WORLD.forest.gate];
+  for (const destination of destinations) {
+    for (const [x, y] of hubRoute(WORLD, previous, destination)) {
+      const from = previous,
+        count = Math.ceil(Math.hypot(x - from.x, y - from.y) / 80);
+      for (let step = 1; step <= count; step++) {
+        const stored = JSON.parse((await s.redis.get(`surface:${u.id}`))!);
+        stored.positionAt -= 1000;
+        await s.redis.set(`surface:${u.id}`, JSON.stringify(stored), "KEEPTTL");
+        const position = {
+          x: from.x + ((x - from.x) * step) / count,
+          y: from.y + ((y - from.y) * step) / count,
+        };
+        const moved = await b.request("/adventure/surface-position", {
+          area: "hub",
+          ...position,
+        });
+        assert.equal(
+          moved.status,
+          200,
+          `${JSON.stringify(position)}: ${JSON.stringify(moved.data)}`,
+        );
+        previous = position;
+      }
     }
   }
   assert.equal(
@@ -1708,4 +1712,73 @@ test("posisi laut mengikuti kontur alami, menolak inti dan jarak dinding, serta 
   });
   assert.equal(gap.status, 200, JSON.stringify(gap.data));
   assert.deepEqual(gap.data.position, { x: 1920, y: 970 });
+});
+
+test("batang pohon desa menghalangi kaki tanpa menutup seluruh tajuk", async () => {
+  const u = await account(),
+    b = await new Browser().login(u),
+    trunk = WORLD.hub.treeTrunks[1];
+  await fixtureSurface(u, "hub", { x: trunk.x - 45, y: trunk.y + 17 });
+  for (const point of [
+    { x: trunk.x, y: trunk.y },
+    { x: trunk.x - 16, y: trunk.y + 17 },
+  ]) {
+    const blocked = await b.request("/adventure/surface-position", {
+      area: "hub",
+      ...point,
+    });
+    assert.equal(blocked.status, 409, JSON.stringify(blocked.data));
+    assert.equal(blocked.data.code, "PATH_BLOCKED");
+  }
+  await fixtureSurface(u, "hub", { x: 870, y: 650 });
+  const besideCanopy = await b.request("/adventure/surface-position", {
+    area: "hub",
+    x: 870,
+    y: 650,
+  });
+  assert.equal(besideCanopy.status, 200, JSON.stringify(besideCanopy.data));
+  const rockMound = await b.request("/adventure/surface-position", {
+    area: "hub",
+    x: 870,
+    y: 704,
+  });
+  assert.equal(rockMound.status, 409, JSON.stringify(rockMound.data));
+  assert.equal(rockMound.data.code, "PATH_BLOCKED");
+  assert.equal(WORLD.hub.layoutVersion, 3);
+  assert.equal((await s.users.findOne({ id: u.id }))!.version, u.version);
+});
+
+test("pelataran desa dapat dijelajahi di luar koridor tanpa menembus batang, bangunan, atau pantai", async () => {
+  const u = await account(),
+    b = await new Browser().login(u),
+    plaza = { x: 850, y: 1080 };
+  const corridorDistance = Math.min(
+    ...WORLD.hub.paths.flatMap((path) =>
+      path
+        .slice(1)
+        .map((end, index) => distanceToEdge(plaza, path[index], end)),
+    ),
+  );
+  assert.ok(corridorDistance > WORLD.hub.walkableHalfWidth);
+  await fixtureSurface(u, "hub", { x: 900, y: 1080 });
+  const free = await b.request("/adventure/surface-position", {
+    area: "hub",
+    ...plaza,
+  });
+  assert.equal(free.status, 200, JSON.stringify(free.data));
+  for (const point of [
+    WORLD.hub.treeTrunks[0],
+    { x: 1050, y: 840 },
+    { x: 60, y: 1480 },
+  ]) {
+    const blocked = await b.request("/adventure/surface-position", {
+      area: "hub",
+      x: point.x,
+      y: point.y,
+    });
+    assert.equal(blocked.status, 409, JSON.stringify(blocked.data));
+    assert.equal(blocked.data.code, "PATH_BLOCKED");
+  }
+  assert.equal(WORLD.hub.layoutVersion, 3);
+  assert.equal((await s.users.findOne({ id: u.id }))!.version, u.version);
 });

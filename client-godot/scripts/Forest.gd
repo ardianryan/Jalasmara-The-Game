@@ -41,7 +41,9 @@ var light_clock := 0.0
 var discovered: Array = []
 var last_position := ENTRY
 var world_foley: Node
+var surface_water: Node2D
 var depth_planes: Node2D
+var forest_canopies: Array[Node2D] = []
 
 class ForestProp extends Node2D:
 	var kind := "canopy"
@@ -178,6 +180,11 @@ func _ready() -> void:
 	add_child(actors)
 	if ResourceLoader.exists("res://resources/art/forest-muara.png"):
 		background = load("res://resources/art/forest-muara.png")
+	if ResourceLoader.exists("res://scripts/SurfaceWater.gd"):
+		surface_water = load("res://scripts/SurfaceWater.gd").new()
+		add_child(surface_water)
+		surface_water.configure("forest",EXTENT,background)
+		move_child(surface_water,0)
 	_build_props()
 	_add_polyfork_plant("fern-plant",Vector2(485,1160),Vector2(68,68))
 	_add_polyfork_plant("fern-plant",Vector2(1480,810),Vector2(60,60))
@@ -213,6 +220,8 @@ func _ready() -> void:
 	collider.position = Vector2(0,-6)
 	avatar.add_child(collider)
 	actors.add_child(avatar)
+	for canopy in forest_canopies:
+		canopy.set_focus(avatar)
 	world_foley = preload("res://scripts/WorldFoley.gd").new()
 	add_child(world_foley)
 	world_foley.configure(avatar,"forest")
@@ -269,11 +278,13 @@ func _register_input() -> void:
 func _build_props() -> void:
 	if background != null:
 		# Polygon memakai UV peta asli; titik urut berada pada kaki batang.
-		_add_foreground(Vector2(70,709),[Vector2(0,337),Vector2(72,324),Vector2(154,360),Vector2(222,417),Vector2(197,520),Vector2(103,505),Vector2(73,710),Vector2(35,709),Vector2(42,499),Vector2(0,535)],22)
-		_add_foreground(Vector2(454,610),[Vector2(338,449),Vector2(395,407),Vector2(467,430),Vector2(528,480),Vector2(553,558),Vector2(483,549),Vector2(475,609),Vector2(434,620),Vector2(411,537),Vector2(335,530)],22)
-		_add_foreground(Vector2(690,399),[Vector2(470,186),Vector2(541,122),Vector2(653,105),Vector2(747,139),Vector2(824,196),Vector2(859,278),Vector2(795,340),Vector2(730,356),Vector2(721,405),Vector2(657,416),Vector2(624,357),Vector2(550,343),Vector2(483,290)],28)
-		_add_foreground(Vector2(1428,618),[Vector2(1314,414),Vector2(1392,347),Vector2(1481,360),Vector2(1536,402),Vector2(1536,530),Vector2(1480,528),Vector2(1455,628),Vector2(1409,634),Vector2(1391,530),Vector2(1315,528)],22)
-		_add_foreground(Vector2(720,1010),[Vector2(420,818),Vector2(444,763),Vector2(509,703),Vector2(590,672),Vector2(673,705),Vector2(724,651),Vector2(787,644),Vector2(849,672),Vector2(870,720),Vector2(954,724),Vector2(992,793),Vector2(1068,879),Vector2(1040,1024),Vector2(441,1024)],0,false)
+		_add_foreground(Vector2(70,709),[Vector2(0,337),Vector2(72,324),Vector2(154,360),Vector2(222,417),Vector2(197,520),Vector2(103,505),Vector2(73,710),Vector2(35,709),Vector2(42,499),Vector2(0,535)],22,true,[Vector2(42,499),Vector2(73,505),Vector2(73,710),Vector2(35,709)])
+		_add_foreground(Vector2(454,610),[Vector2(338,449),Vector2(395,407),Vector2(467,430),Vector2(528,480),Vector2(553,558),Vector2(483,549),Vector2(475,609),Vector2(434,620),Vector2(411,537),Vector2(335,530)],22,true,[Vector2(438,535),Vector2(474,530),Vector2(477,610),Vector2(434,620)])
+		_add_foreground(Vector2(690,399),[Vector2(470,186),Vector2(541,122),Vector2(653,105),Vector2(747,139),Vector2(824,196),Vector2(859,278),Vector2(795,340),Vector2(730,356),Vector2(721,405),Vector2(657,416),Vector2(624,357),Vector2(550,343),Vector2(483,290)],28,true,[Vector2(672,290),Vector2(707,288),Vector2(721,405),Vector2(657,416),Vector2(675,359)])
+		_add_foreground(Vector2(1428,618),[Vector2(1314,414),Vector2(1392,347),Vector2(1481,360),Vector2(1536,402),Vector2(1536,530),Vector2(1480,528),Vector2(1455,628),Vector2(1409,634),Vector2(1391,530),Vector2(1315,528)],22,true,[Vector2(1403,526),Vector2(1437,523),Vector2(1455,628),Vector2(1409,634)])
+		_add_foreground(Vector2(565,548),[Vector2(444,318),Vector2(486,271),Vector2(550,250),Vector2(612,277),Vector2(660,325),Vector2(655,383),Vector2(614,424),Vector2(581,465),Vector2(539,454),Vector2(487,414),Vector2(445,375)],0,true)
+		_add_foreground(Vector2(1030,410),[Vector2(908,211),Vector2(942,163),Vector2(1017,145),Vector2(1089,177),Vector2(1129,230),Vector2(1101,295),Vector2(1066,338),Vector2(1020,353),Vector2(962,316),Vector2(913,273)],0,true)
+		_add_foreground(Vector2(720,1010),[Vector2(420,818),Vector2(444,763),Vector2(509,703),Vector2(590,672),Vector2(673,705),Vector2(724,651),Vector2(787,644),Vector2(849,672),Vector2(870,720),Vector2(954,724),Vector2(992,793),Vector2(1068,879),Vector2(1040,1024),Vector2(441,1024)],0,true)
 		_add_foreground(Vector2(286,285),[Vector2(169,153),Vector2(250,89),Vector2(370,127),Vector2(427,173),Vector2(395,204),Vector2(363,204),Vector2(367,270),Vector2(327,286),Vector2(242,278),Vector2(221,239),Vector2(180,232)],0,false)
 		_add_rect_obstacle(Rect2(347,308,218,101))
 		_add_rect_occluder(Rect2(347,308,218,101))
@@ -308,25 +319,24 @@ func _add_polyfork_plant(id: String, at: Vector2, dimensions: Vector2) -> void:
 	plant.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	actors.add_child(plant)
 
-func _add_foreground(base_pixel: Vector2, polygon_pixels: Array, trunk_radius: float, foliage := true) -> void:
-	var foreground := Polygon2D.new()
-	foreground.position = base_pixel * 1.5625
-	var polygon := PackedVector2Array()
-	var uv := PackedVector2Array()
-	for point in polygon_pixels:
-		polygon.append((point-base_pixel)*1.5625)
-		uv.append(point)
-	foreground.polygon = polygon
-	foreground.uv = uv
-	foreground.texture = background
+func _add_foreground(base_pixel: Vector2, polygon_pixels: Array, trunk_radius: float, foliage := true, trunk_polygon_pixels: Array = []) -> void:
 	if foliage:
-		var leaves := ShaderMaterial.new()
-		leaves.shader = preload("res://shaders/foliage.gdshader")
-		leaves.set_shader_parameter("strength",2.5)
-		leaves.set_shader_parameter("wind_speed",1.2)
-		leaves.set_shader_parameter("wind_phase",fmod(base_pixel.x*0.031,TAU))
-		foreground.material = leaves
-	actors.add_child(foreground)
+		var canopy := preload("res://scripts/ForestOcclusion.gd").new()
+		canopy.configure(background,base_pixel,polygon_pixels,trunk_radius,1.5625,trunk_polygon_pixels)
+		actors.add_child(canopy)
+		forest_canopies.append(canopy)
+	else:
+		var foreground := Polygon2D.new()
+		foreground.position = base_pixel * 1.5625
+		var polygon := PackedVector2Array()
+		var uv := PackedVector2Array()
+		for point in polygon_pixels:
+			polygon.append((point-base_pixel)*1.5625)
+			uv.append(point)
+		foreground.polygon = polygon
+		foreground.uv = uv
+		foreground.texture = background
+		actors.add_child(foreground)
 	if trunk_radius > 0:
 		_add_circle_obstacle(base_pixel*1.5625,trunk_radius*1.5625)
 		_add_trunk_occluder(base_pixel*1.5625,trunk_radius*1.5625)
@@ -670,8 +680,13 @@ func _select_character(id: String) -> void:
 
 func _publish_snapshot() -> void:
 	var snapshot := {"area":"forest","x":avatar.position.x,"y":avatar.position.y,"modal":modal_open,"nearby":str(nearest.get("id","")),"appearance":avatar.variant,"diving":false}
+	var trees: Array[Dictionary] = []
+	for canopy in forest_canopies:
+		trees.append(canopy.debug_status())
+	snapshot["occlusion"] = {"trees":trees,"sortByFeet":actors.y_sort_enabled}
 	snapshot["audio"] = AudioManager.debug_status()
 	snapshot["weather"] = EnvironmentState.snapshot()
+	snapshot["surfaceWater"] = surface_water.debug_status() if is_instance_valid(surface_water) else {}
 	snapshot["foley"] = world_foley.debug_status() if is_instance_valid(world_foley) else {}
 	if game_hud.has_method("debug_layout"):
 		snapshot["hud"] = game_hud.debug_layout()

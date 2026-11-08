@@ -79,6 +79,7 @@ func _ready() -> void:
 		return
 	add_child(terrain)
 	move_child(terrain,0)
+	nala.surface_traversal.configure(GameState.world.get("hub",{}))
 	nala.land_mask = Callable(terrain,"is_walkable")
 	terrain.add_foreground_to(self)
 	hybrid = load("res://scripts/hybrid/HybridOcean.gd").new()
@@ -94,6 +95,8 @@ func _ready() -> void:
 		surface_actors.append(actor)
 	nala.position = _surface_point()
 	nala.frozen = false
+	if GameState.dive.is_empty() and is_instance_valid(terrain.scenery) and terrain.scenery.has_method("nearest_walkable"):
+		nala.position = terrain.scenery.nearest_walkable(nala.position)
 	if str(GameState.surface.get("area","hub"))=="forest" and GameState.dive.is_empty():
 		get_tree().change_scene_to_file("res://scenes/forest.tscn")
 		return
@@ -291,6 +294,8 @@ func _process(delta: float) -> void:
 		snapshot["audio"] = AudioManager.debug_status()
 		snapshot["flashlight2d"] = _flashlight_status_2d()
 		snapshot["weather"] = EnvironmentState.snapshot()
+		snapshot["traversal"] = nala.traversal_state
+		snapshot["occlusion"] = terrain.scenery.debug_status() if is_instance_valid(terrain) and is_instance_valid(terrain.scenery) and terrain.scenery.has_method("debug_status") else {}
 		snapshot["foley"] = world_foley.debug_status() if is_instance_valid(world_foley) else {}
 		snapshot["life"] = entities.wildlife.debug_status() if is_instance_valid(entities.wildlife) and entities.wildlife.has_method("debug_status") else {}
 		snapshot["hybrid"] = hybrid.debug_status() if is_instance_valid(hybrid) else {"active":false}
@@ -448,6 +453,8 @@ func _sync_position() -> bool:
 		snapshot["audio"] = AudioManager.debug_status()
 		snapshot["flashlight2d"] = _flashlight_status_2d()
 		snapshot["weather"] = EnvironmentState.snapshot()
+		snapshot["traversal"] = nala.traversal_state
+		snapshot["occlusion"] = terrain.scenery.debug_status() if is_instance_valid(terrain) and is_instance_valid(terrain.scenery) and terrain.scenery.has_method("debug_status") else {}
 		snapshot["foley"] = world_foley.debug_status() if is_instance_valid(world_foley) else {}
 		snapshot["life"] = entities.wildlife.debug_status() if is_instance_valid(entities.wildlife) and entities.wildlife.has_method("debug_status") else {}
 		snapshot["hybrid"] = hybrid.debug_status() if is_instance_valid(hybrid) else {"active":false}

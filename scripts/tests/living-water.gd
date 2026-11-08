@@ -14,6 +14,7 @@ func _run() -> void:
 	var state = root.get_node("GameState")
 	var conditions = root.get_node("EnvironmentState")
 	conditions.set_process(false)
+	conditions.reduced_motion = false
 	conditions.update_story(2,"dive")
 	conditions.elapsed_seconds = 0
 	var clear: Dictionary = conditions.snapshot()

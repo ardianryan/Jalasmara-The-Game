@@ -1,4 +1,6 @@
 extends CharacterBody2D
+var surface_traversal := preload("res://scripts/SurfaceTraversal.gd").new()
+var traversal_state: Dictionary = {}
 var speed := 160.0
 var in_water := false
 var frozen := false
@@ -58,7 +60,7 @@ func _physics_process(delta: float) -> void:
 		if in_water:
 			velocity = velocity.move_toward(input*speed,delta*500)
 		else:
-			velocity = velocity.move_toward(input*175,delta*850)
+			velocity = velocity.move_toward(input*175*float(traversal_state.get("paceScale",1.0)),delta*850)
 		if absf(velocity.x)>3:
 			direction = 1 if velocity.x>0 else -1
 	var previous := position
@@ -82,9 +84,15 @@ func _physics_process(delta: float) -> void:
 			else:
 				position = previous
 				velocity = Vector2.ZERO
+	if not in_water:
+		surface_traversal.set_reduced_motion(EnvironmentState.reduced_motion)
+		traversal_state = surface_traversal.sample(position,velocity,delta)
+	else:
+		traversal_state = {}
 	if swim_sprite:
 		swim_sprite.set_appearance(str(GameState.player.get("appearance","male_default")))
 		swim_sprite.animate(velocity.length()>10,in_water,direction,walk_time)
+		if not in_water: swim_sprite.position.y += float(traversal_state.get("footBob",0.0))
 		swim_sprite.visible = not hybrid_visual
 	queue_redraw()
 func _draw() -> void:

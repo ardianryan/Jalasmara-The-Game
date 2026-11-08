@@ -214,6 +214,10 @@ export async function adventureRoutes(
               b.y > y - 12 &&
               b.y < y + h + 12,
           );
+          const hitsTrunk = WORLD.hub.treeTrunks.some(
+            (trunk) =>
+              Math.hypot(b.x - trunk.x, b.y - trunk.y) < trunk.radius + 12,
+          );
           const onPath = WORLD.hub.paths.some((path) =>
             path.slice(1).some((end, index) => {
               const start = path[index],
@@ -233,7 +237,12 @@ export async function adventureRoutes(
               );
             }),
           );
-          if (blocked || !onPath)
+          const inCourtyard = blockedByContours(
+            { x: b.x, y: b.y },
+            WORLD.hub.walkableAreas,
+            0,
+          );
+          if (blocked || hitsTrunk || (!onPath && !inCourtyard))
             return fail(
               "Ikuti jalur desa; bangunan dan tepian air tidak dapat dilalui.",
               409,

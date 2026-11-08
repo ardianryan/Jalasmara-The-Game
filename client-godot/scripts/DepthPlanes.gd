@@ -54,17 +54,9 @@ func _clear_of_paths(point: Vector2, clearance: float) -> bool:
 func _add_canopy(parent: Node2D, at: Vector2, variant: int, size_scale: float, far: bool) -> void:
 	var source := [Vector2(0,0),Vector2(280,0),Vector2(265,50),Vector2(228,87),Vector2(180,115),Vector2(145,152),Vector2(85,185),Vector2(0,205)] if variant==0 else [Vector2(1240,850),Vector2(1320,780),Vector2(1430,775),Vector2(1510,835),Vector2(1535,900),Vector2(1535,1023),Vector2(1280,1023),Vector2(1225,960)]
 	var center := Vector2(125,95) if variant==0 else Vector2(1380,905)
-	var polygon := Polygon2D.new()
-	var vertices := PackedVector2Array()
-	var uv := PackedVector2Array()
-	for point in source:
-		vertices.append((point-center)*size_scale)
-		uv.append(point/Vector2(1536,1024)*_texture.get_size())
-	polygon.polygon = vertices
-	polygon.uv = uv
-	polygon.texture = _texture
+	var polygon := preload("res://scripts/ForestOcclusion.gd").new()
+	polygon.configure(_texture,center,source,0,size_scale)
 	polygon.position = at
-	polygon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	polygon.modulate = Color(0.48,0.65,0.67,0.35) if far else Color(1.0,0.97,0.87,0.96)
 	parent.add_child(polygon)
 	_decor.append({"node":polygon,"at":at,"far":far})
@@ -76,8 +68,9 @@ func update_camera(point: Vector2) -> void:
 	if is_instance_valid(_near): _near.position = (difference*-0.035).clamp(Vector2(-30,-22),Vector2(30,22)).round()
 	var view := Rect2(point-Vector2(720,460),Vector2(1440,920))
 	for entry in _decor:
-		var node: Polygon2D = entry.node
+		var node: Node2D = entry.node
 		node.visible = view.has_point(entry.at)
+		if node.visible: node.update_player(point)
 	queue_redraw()
 
 func _draw() -> void:
