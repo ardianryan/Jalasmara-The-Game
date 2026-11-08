@@ -1,19 +1,24 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { WORLD } from "../../../packages/shared/src/world.js";
-import {
-  type Store,
-  fail,
-  lock,
-  once,
-  currentContent,
-  publicUser,
-} from "./db.js";
+import { type Store, type User, fail, lock, once, publicUser } from "./db.js";
 import type { Guards } from "./auth.js";
 import { operationKey } from "./game.js";
 import { uuid } from "./schemas.js";
-export const publicWorld = () => ({
+export const publicWorld = (day = 1) => ({
   ...WORLD,
+  atlas: {
+    ...WORLD.atlas,
+    regions: WORLD.atlas.regions.map((region) => ({
+      ...region,
+      status:
+        region.status === "story" &&
+        "requiresDay" in region &&
+        day >= region.requiresDay
+          ? "open"
+          : region.status,
+    })),
+  },
   puzzles: WORLD.puzzles.map(({ correct, ...p }) => p),
 });
 export async function adventureRoutes(
@@ -21,6 +26,68 @@ export async function adventureRoutes(
   s: Store,
   g: Guards,
 ) {
+  type SurfaceArea = "hub" | "forest";
+  type SurfacePosition = {
+    area: SurfaceArea;
+    x: number;
+    y: number;
+    positionAt: number;
+    playerVersion: number;
+  };
+  const initialSurface = (p: User): SurfacePosition => ({
+    area: "hub",
+    ...WORLD.surfaceSpawn,
+    positionAt: Date.now(),
+    playerVersion: p.version,
+  });
+  const surfacePosition = async (p: User): Promise<SurfacePosition> => {
+    const key = `surface:${p.id}`;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const raw = await s.redis.get(key);
+      if (raw) {
+        const point = JSON.parse(raw) as SurfacePosition;
+        if (point.playerVersion === p.version) return point;
+        if (point.playerVersion > p.version)
+          return fail(
+            "Data pemain berubah. Muat ulang permainan.",
+            409,
+            "SESSION_CHANGED",
+          );
+      }
+      const initial = initialSurface(p);
+      const stored = raw
+        ? await s.redis.eval(
+            "if redis.call('get',KEYS[1])==ARGV[1] then redis.call('set',KEYS[1],ARGV[2],'EX',1800); return 1 else return 0 end",
+            1,
+            key,
+            raw,
+            JSON.stringify(initial),
+          )
+        : await s.redis.set(key, JSON.stringify(initial), "EX", 1800, "NX");
+      if (stored) return initial;
+    }
+    return fail("Posisi sedang diperbarui. Coba lagi.", 409, "BUSY");
+  };
+  const saveSurface = (p: User, point: SurfacePosition) =>
+    s.redis.set(`surface:${p.id}`, JSON.stringify(point), "EX", 1800);
+  const surfacePlayer = async (id: string) => {
+    const p = await s.users.findOne({ id });
+    if (!p || p.status !== "active") return fail("Akun tidak aktif.", 403);
+    const raw = await s.redis.get(`dive:${id}`);
+    if (raw) {
+      const dive = JSON.parse(raw);
+      if (dive.playerVersion === p.version && dive.expiresAt > Date.now())
+        return fail("Kembali dari penyelaman sebelum menjelajah daratan.", 409);
+    }
+    const shift = await s.db.collection("shifts").findOne({
+      userId: id,
+      active: true,
+      playerVersion: p.version,
+    });
+    if (shift)
+      return fail("Tutup giliran kedai sebelum menjelajah daratan.", 409);
+    return p;
+  };
   const state = (p: any) =>
     p.adventure ?? { discoveries: [], puzzles: [], keyItems: [] };
   app.get(
@@ -38,7 +105,196 @@ export async function adventureRoutes(
         return fail(data.error, injected.statusCode, data.code);
       }
       const game = injected.json();
-      return { ...game, world: publicWorld(), adventure: state(game.player) };
+      const p = await s.users.findOne({ id: req.user!.id });
+      if (!p) return fail("Pemain tidak ditemukan.", 404);
+      return {
+        ...game,
+        world: publicWorld(p.progress.day),
+        adventure: state(game.player),
+        surface: await surfacePosition(p),
+      };
+    },
+  );
+  app.post(
+    "/api/adventure/surface-position",
+    { preHandler: g.authenticated },
+    async (req) => {
+      const b = z
+        .object({
+          area: z.enum(["hub", "forest"]).default("hub"),
+          x: z.number().finite(),
+          y: z.number().finite(),
+        })
+        .strict()
+        .parse(req.body);
+      return lock(s, req.user!.id, async () => {
+        const p = await surfacePlayer(req.user!.id),
+          point = await surfacePosition(p);
+        if (b.area !== point.area)
+          return fail(
+            "Gunakan jalur perjalanan untuk berpindah wilayah.",
+            409,
+            "AREA_CHANGED",
+          );
+        const bounds =
+          b.area === "forest"
+            ? { minX: 40, maxX: WORLD.forest.width - 40, minY: 120, maxY: 1500 }
+            : { minX: 20, maxX: 3080, minY: 80, maxY: 610 };
+        if (
+          b.x < bounds.minX ||
+          b.x > bounds.maxX ||
+          b.y < bounds.minY ||
+          b.y > bounds.maxY
+        )
+          return fail(
+            "Posisi berada di luar wilayah daratan.",
+            400,
+            "POSITION",
+          );
+        if (b.area === "forest") {
+          const blocked = WORLD.forest.blockedExits.find(
+            (exit) =>
+              Math.abs(b.x - exit.x) <= exit.width / 2 &&
+              Math.abs(b.y - exit.y) <= exit.height / 2,
+          );
+          if (blocked) return fail(blocked.reason, 409, "BLOCKED_EXIT");
+        }
+        const now = Date.now(),
+          elapsed = Math.max(0, Math.min(10, (now - point.positionAt) / 1000));
+        if (Math.hypot(b.x - point.x, b.y - point.y) > 175 * elapsed + 100)
+          return fail(
+            "Posisi terlalu jauh dari keadaan terakhir.",
+            409,
+            "POSITION",
+          );
+        const next = { ...point, x: b.x, y: b.y, positionAt: now };
+        await saveSurface(p, next);
+        return { surface: next };
+      });
+    },
+  );
+  app.post(
+    "/api/adventure/travel",
+    { preHandler: g.authenticated },
+    async (req) => {
+      const b = z
+        .object({ destination: z.enum(["hub", "forest"]) })
+        .strict()
+        .parse(req.body);
+      return lock(s, req.user!.id, async () => {
+        const p = await surfacePlayer(req.user!.id),
+          point = await surfacePosition(p);
+        if (point.area === b.destination) return { surface: point };
+        const departure =
+          point.area === "hub" ? WORLD.forest.gate : WORLD.forest.entry;
+        if (Math.hypot(point.x - departure.x, point.y - departure.y) > 220)
+          return fail(
+            "Dekati gerbang hutan untuk berpindah wilayah.",
+            409,
+            "POSITION",
+          );
+        const arrival =
+          b.destination === "forest" ? WORLD.forest.entry : WORLD.forest.gate;
+        const next: SurfacePosition = {
+          area: b.destination,
+          ...arrival,
+          positionAt: Date.now(),
+          playerVersion: p.version,
+        };
+        await saveSurface(p, next);
+        return { surface: next };
+      });
+    },
+  );
+  app.post(
+    "/api/adventure/surface-interact",
+    { preHandler: g.authenticated },
+    async (req) => {
+      const b = z
+        .object({ id: z.string().min(1).max(64) })
+        .strict()
+        .parse(req.body);
+      return lock(s, req.user!.id, async () => {
+        const key = operationKey(req),
+          fingerprint = { route: "surface-interact", ...b };
+        if (await s.receipts.findOne({ _id: `${req.user!.id}:${key}` }))
+          return once(s, req.user!.id, key, fingerprint, async () =>
+            fail("Penemuan tidak tersedia."),
+          );
+        const p = await surfacePlayer(req.user!.id),
+          point = await surfacePosition(p),
+          obj = [...WORLD.forest.landmarks, ...WORLD.forest.caches].find(
+            (x) => x.id === b.id,
+          );
+        if (!obj) return fail("Penemuan hutan tidak tersedia.", 404);
+        const knowledge =
+          "text" in obj ? { title: obj.title, text: obj.text } : null;
+        if (
+          point.area !== "forest" ||
+          Math.hypot(obj.x - point.x, obj.y - point.y) > 180
+        )
+          return fail(
+            "Dekati objek hutan untuk mengamatinya.",
+            409,
+            "POSITION",
+          );
+        const result = await once(
+          s,
+          p.id,
+          key,
+          fingerprint,
+          async (session) => {
+            const current = await s.users.findOne({ id: p.id }, { session });
+            if (
+              !current ||
+              current.status !== "active" ||
+              current.version !== p.version
+            )
+              return fail("Sesi permainan berubah.", 409, "SESSION_CHANGED");
+            const a = state(current);
+            if (a.discoveries.includes(b.id))
+              return {
+                player: publicUser(current),
+                adventure: a,
+                reward: 0,
+                alreadyFound: true,
+                knowledge,
+              };
+            a.discoveries.push(b.id);
+            current.adventure = a;
+            current.coins += obj.reward;
+            current.version++;
+            current.updatedAt = new Date().toISOString();
+            const saved = await s.users.updateOne(
+              { id: current.id, version: p.version },
+              {
+                $set: {
+                  adventure: a,
+                  coins: current.coins,
+                  version: current.version,
+                  updatedAt: current.updatedAt,
+                },
+              },
+              { session },
+            );
+            if (saved.modifiedCount !== 1)
+              return fail("Sesi permainan berubah.", 409, "SESSION_CHANGED");
+            return {
+              player: publicUser(current),
+              adventure: a,
+              reward: obj.reward,
+              alreadyFound: false,
+              knowledge,
+            };
+          },
+        );
+        await saveSurface(p, {
+          ...point,
+          playerVersion: result.player.version,
+          positionAt: Date.now(),
+        });
+        return result;
+      });
     },
   );
   app.post(
@@ -58,8 +314,16 @@ export async function adventureRoutes(
         const raw = await s.redis.get(`dive:${req.user!.id}`);
         if (!p || !raw) return fail("Penyelaman tidak tersedia.", 410);
         const d = JSON.parse(raw);
-        if (d.id !== b.diveId || d.playerVersion !== p.version)
+        if (d.playerVersion !== p.version) {
+          await s.redis.del(`dive:${p.id}`);
           return fail("Sesi permainan telah berubah.", 409, "SESSION_CHANGED");
+        }
+        if (d.id !== b.diveId)
+          return fail(
+            "Sesi penyelaman sudah berganti.",
+            409,
+            "SESSION_CHANGED",
+          );
         const old = d.position ?? WORLD.spawn,
           now = Date.now(),
           elapsed = Math.min(10, (now - (d.positionAt ?? d.updatedAt)) / 1000),

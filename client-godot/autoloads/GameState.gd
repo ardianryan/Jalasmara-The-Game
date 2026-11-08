@@ -6,6 +6,7 @@ var world: Dictionary = {}
 var dive: Dictionary = {}
 var shift: Dictionary = {}
 var adventure: Dictionary = {}
+var surface: Dictionary = {}
 func refresh() -> Dictionary:
 	var result: Dictionary = await ApiClient.get_api("/adventure/state")
 	if result.get("ok", false):
@@ -15,6 +16,7 @@ func refresh() -> Dictionary:
 		dive = result.get("dive", {}) if result.get("dive") != null else {}
 		shift = result.get("shift", {}) if result.get("shift") != null else {}
 		adventure = result.get("adventure", {})
+		surface = result.get("surface",{})
 		changed.emit()
 	return result
 func fragment_name(id: String) -> String:

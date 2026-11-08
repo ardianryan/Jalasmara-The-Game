@@ -33,7 +33,13 @@ var attack_clock := 0.0
 var attacks: Array = []
 var touch_enabled := false
 var flash := 0.0
+var last_status := ""
+var surface_clock := 0.0
+var environment: Node
+var dive_lamp: PointLight2D
+var port_lamps: Array[PointLight2D] = []
 func _ready() -> void:
+	y_sort_enabled = true
 	_setup_input()
 	terrain = WorldScript.new()
 	nala = PlayerScript.new()
@@ -53,6 +59,10 @@ func _ready() -> void:
 	entities.player = nala
 	add_child(entities)
 	_build_ui()
+	environment = preload("res://scripts/EnvironmentEffects.gd").new()
+	add_child(environment)
+	environment.configure("hub")
+	_add_lights()
 	var auth: Dictionary = await ApiClient.get_api("/auth/session")
 	if auth.get("user") == null:
 		_show_message("Silakan masuk", "Buka Jalasmara melalui halaman login terlebih dahulu.")
@@ -63,15 +73,30 @@ func _ready() -> void:
 		return
 	add_child(terrain)
 	move_child(terrain,0)
-	nala.position = Vector2(1030,295)
+	for district in GameState.world.surface_hub.districts:
+		var actor = preload("res://scripts/HubActor.gd").new()
+		actor.actor_name = str(district.npc)
+		actor.position = Vector2(float(district.x),306)
+		add_child(actor)
+	for at in [Vector2(795,482),Vector2(2190,515)]:
+		var prop = preload("res://scripts/HubActor.gd").new()
+		prop.crate = true
+		prop.position = at
+		add_child(prop)
+	nala.position = Vector2(float(GameState.surface.get("x",1030)),float(GameState.surface.get("y",295)))
 	nala.frozen = false
+	if str(GameState.surface.get("area","hub"))=="forest" and GameState.dive.is_empty():
+		get_tree().change_scene_to_file("res://scenes/forest.tscn")
+		return
 	if not GameState.dive.is_empty():
 		await ApiClient.call_api("/dive/reading",{"diveId":GameState.dive.id,"paused":false})
 		_enter_water(GameState.dive)
 		if GameState.dive.has("challenge"):
 			_show_quiz()
 	_update_hud()
-	if not GameState.player.progress.get("tutorial",false):
+	if not GameState.player.has("appearance") and GameState.dive.is_empty() and GameState.shift.is_empty():
+		_show_character(true)
+	elif not GameState.player.progress.get("tutorial",false):
 		_story_intro()
 	if OS.has_feature("web"):
 		var window = JavaScriptBridge.get_interface("window")
@@ -87,110 +112,23 @@ func _setup_input() -> void:
 			event.physical_keycode = key
 			InputMap.action_add_event(action,event)
 func _build_ui() -> void:
-	hud = CanvasLayer.new()
+	hud = preload("res://scripts/GameHud.gd").new()
 	add_child(hud)
+	hud.interact_requested.connect(_interact)
+	hud.net_pressed.connect(_start_net)
+	hud.net_released.connect(func(): net_released = true)
+	hud.map_requested.connect(_show_map)
+	hud.journal_requested.connect(_show_journal)
+	hud.inventory_requested.connect(_show_inventory)
+	hud.character_requested.connect(func(): _show_character(false))
+	hud.move_changed.connect(func(direction: Vector2): nala.touch = direction)
+	status = hud.status_label
+	hint = Label.new()
 	ui = Control.new()
 	ui.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	ui.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ui.theme = hud.root_control.theme
 	hud.add_child(ui)
-	var theme := Theme.new()
-	theme.default_font_size = 16
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color("123e45")
-	style.content_margin_left = 14
-	style.content_margin_right = 14
-	style.content_margin_top = 6
-	style.content_margin_bottom = 6
-	style.set_corner_radius_all(3)
-	theme.set_stylebox("normal","Button",style)
-	var hover := style.duplicate() as StyleBoxFlat
-	hover.bg_color = Color("28616a")
-	theme.set_stylebox("hover","Button",hover)
-	var pressed := style.duplicate() as StyleBoxFlat
-	pressed.bg_color = Color("397a78")
-	theme.set_stylebox("pressed","Button",pressed)
-	theme.set_color("font_color","Button",Color("f3e9cd"))
-	theme.set_color("font_color","Label",Color("eee7cd"))
-	theme.set_color("font_color","RichTextLabel",Color("eee7cd"))
-	ui.theme = theme
-	var bar := Panel.new()
-	bar.position = Vector2(0,0)
-	bar.size = Vector2(960,54)
-	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var bg := StyleBoxFlat.new()
-	bg.bg_color = Color(.025,.12,.16,.80)
-	bar.add_theme_stylebox_override("panel",bg)
-	ui.add_child(bar)
-	top_label = Label.new()
-	top_label.position = Vector2(20,7)
-	top_label.add_theme_font_size_override("font_size",16)
-	bar.add_child(top_label)
-	oxygen = ProgressBar.new()
-	oxygen.position = Vector2(20,36)
-	oxygen.size = Vector2(180,8)
-	oxygen.show_percentage = false
-	oxygen.add_theme_font_size_override("font_size",1)
-	var oxygen_bg := StyleBoxFlat.new()
-	oxygen_bg.bg_color = Color("294851")
-	var oxygen_fill := StyleBoxFlat.new()
-	oxygen_fill.bg_color = Color("91bca2")
-	oxygen.add_theme_stylebox_override("background",oxygen_bg)
-	oxygen.add_theme_stylebox_override("fill",oxygen_fill)
-	bar.add_child(oxygen)
-	money = Label.new()
-	money.position = Vector2(215,30)
-	money.add_theme_font_size_override("font_size",13)
-	bar.add_child(money)
-	var buttons := HBoxContainer.new()
-	buttons.position = Vector2(645,6)
-	bar.add_child(buttons)
-	_button(buttons,"Peta [M]",_show_map).custom_minimum_size.y = 34
-	_button(buttons,"Jurnal [J]",_show_journal).custom_minimum_size.y = 34
-	_button(buttons,"Tas [I]",_show_inventory).custom_minimum_size.y = 34
-	status = Label.new()
-	status.position = Vector2(20,66)
-	status.size = Vector2(650,55)
-	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	status.add_theme_font_size_override("font_size",14)
-	ui.add_child(status)
-	objective = Label.new()
-	objective.position = Vector2(20,474)
-	objective.size = Vector2(900,28)
-	objective.add_theme_font_size_override("font_size",14)
-	ui.add_child(objective)
-	hint = Label.new()
-	hint.position = Vector2(20,506)
-	hint.size = Vector2(900,28)
-	hint.add_theme_font_size_override("font_size",14)
-	ui.add_child(hint)
-	touch_enabled = DisplayServer.is_touchscreen_available()
-	if OS.has_feature("web"):
-		touch_enabled = bool(JavaScriptBridge.get_interface("window").matchMedia("(pointer:coarse)").matches)
-	if touch_enabled:
-		_touch_controls()
-func _touch_controls() -> void:
-	var directions = [["◀",Vector2(18,390),Vector2.LEFT],["▶",Vector2(130,390),Vector2.RIGHT],["▲",Vector2(74,336),Vector2.UP],["▼",Vector2(74,390),Vector2.DOWN]]
-	for item in directions:
-		var b := Button.new()
-		b.text = item[0]
-		b.position = item[1]
-		b.size = Vector2(52,48)
-		b.button_down.connect(func(): nala.touch = item[2])
-		b.button_up.connect(func(): nala.touch = Vector2.ZERO)
-		ui.add_child(b)
-	var interact := Button.new()
-	interact.text = "Aksi"
-	interact.position = Vector2(840,334)
-	interact.size = Vector2(95,48)
-	interact.pressed.connect(_interact)
-	ui.add_child(interact)
-	var net := Button.new()
-	net.text = "Jala"
-	net.position = Vector2(840,390)
-	net.size = Vector2(95,60)
-	net.button_down.connect(_start_net)
-	net.button_up.connect(func(): net_released = true)
-	ui.add_child(net)
 func _button(parent: Node, text: String, callback: Callable) -> Button:
 	var b := Button.new()
 	b.text = text
@@ -209,6 +147,7 @@ func _open(title: String, pause_reading := true) -> VBoxContainer:
 	if modal:
 		modal.queue_free()
 	modal_open = true
+	hud.set_modal(true)
 	nala.frozen = true
 	modal = PanelContainer.new()
 	modal.position = Vector2(155,84)
@@ -241,6 +180,7 @@ func _close() -> void:
 		modal.queue_free()
 		modal = null
 	modal_open = false
+	hud.set_modal(false)
 	nala.frozen = false
 	if not GameState.dive.is_empty():
 		ApiClient.call_api("/dive/reading",{"diveId":GameState.dive.id,"paused":false})
@@ -278,6 +218,18 @@ func _process(delta: float) -> void:
 	if not nala:
 		return
 	terrain.camera_point = nala.position
+	if not GameState.player.is_empty():
+		EnvironmentState.update_story(int(GameState.player.progress.day),str(GameState.player.progress.stage))
+	var submerged := not GameState.dive.is_empty()
+	environment.configure("sea" if submerged else "hub")
+	if environment.has_method("update_depth"):
+		environment.update_depth(maxf(0,(nala.position.y-400)/28))
+	if dive_lamp:
+		dive_lamp.visible = submerged
+	for lamp in port_lamps:
+		lamp.visible = not submerged and bool(EnvironmentState.snapshot().night)
+	camera.limit_right = 3080 if GameState.dive.is_empty() else 6144
+	camera.limit_bottom = 800 if GameState.dive.is_empty() else 3584
 	terrain.gardens_restored = GameState.player.get("progress",{}).get("day",1)>=3
 	terrain.solved = GameState.adventure.get("puzzles",[])
 	flash = maxf(0,flash-delta)
@@ -285,6 +237,16 @@ func _process(delta: float) -> void:
 	if GameState.player.is_empty():
 		return
 	_find_nearby()
+	if Engine.get_process_frames()%10==0:
+		_update_hud()
+	if status.text != last_status:
+		last_status = status.text
+		hud.message(last_status)
+	if GameState.dive.is_empty() and not modal_open:
+		surface_clock += delta
+		if surface_clock>2 and not network_busy and not syncing:
+			surface_clock = 0
+			_sync_surface()
 	entities.nearest = str(nearby.get("id",""))
 	if OS.has_feature("web") and Engine.get_process_frames()%30==0:
 		var snapshot := {"x":nala.position.x,"y":nala.position.y,"stage":GameState.player.get("progress",{}).get("stage",""),"modal":modal_open,"nearby":str(nearby.get("id","")),"diving":not GameState.dive.is_empty()}
@@ -348,7 +310,8 @@ func _find_nearby() -> void:
 	if GameState.dive.is_empty():
 		for district in GameState.world.get("surface_hub",{}).get("districts",[]):
 			objects.append({"id":district.id,"x":district.x,"y":306,"name":district.npc,"kind":"npc"})
-		objects.append({"id":"ladder","x":1280,"y":310,"name":"Tangga Palung Smara","kind":"dive"})
+		objects.append({"id":"forest_gate","x":2940,"y":295,"name":"Jalur ke Hutan Pesisir","kind":"forest"})
+		objects.append({"id":"ladder","x":1280,"y":520,"name":"Tangga Palung Smara","kind":"dive"})
 	else:
 		objects.append({"id":"boat","x":1120,"y":470,"name":"Tangga pulang ke Bandar Hujung","kind":"extract"})
 		for collection in ["landmarks","puzzles","caches"]:
@@ -360,7 +323,7 @@ func _find_nearby() -> void:
 				objects.append(obj)
 		var target_index := 0
 		for target in GameState.dive.get("targets",[]):
-			var available: bool = GameState.dive.get("mode","")!="boss" or ((target_index<3)==(int(GameState.dive.get("hits",0))<3))
+			var available: bool = GameState.dive.get("mode","")!="boss" or ((target_index<ceili(_required_hits()/2.0))==(int(GameState.dive.get("hits",0))<ceili(_required_hits()/2.0)))
 			target_index += 1
 			if not target.get("caught",false) and available:
 				var obj: Dictionary = target.duplicate()
@@ -383,19 +346,19 @@ func _update_hud() -> void:
 		return
 	var p: Dictionary = GameState.player
 	var depth := maxf(0,(nala.position.y-400)/28)
-	var name_text := "Bandar Hujung"
+	var region := "Bandar Hujung"
 	if not GameState.dive.is_empty():
-		name_text = "Dangkalan Segaran" if depth<25 else "Hutan Lamun Wringin" if depth<60 else "Rongga Kapur Jalatunda" if depth<95 else "Pelataran Kuno Tamansari"
-	top_label.text = "%s · %dm" % [name_text,int(depth)] if not GameState.dive.is_empty() else name_text
-	money.text = "%d koin · Siklus %d" % [int(p.coins),int(p.progress.day)]
-	oxygen.visible = not GameState.dive.is_empty()
-	if oxygen.visible:
-		oxygen.max_value = float(GameState.dive.get("maxOxygen",100))
-		oxygen.value = float(GameState.dive.get("oxygen",100))
-		money.text += " · O₂ %d/%d" % [int(oxygen.value),int(oxygen.max_value)]
+		for zone in GameState.world.get("zones",[]):
+			if depth>=float(zone.minDepth) and depth<float(zone.maxDepth):
+				region = str(zone.name)
 	var day := int(p.progress.day)
 	var stage := str(p.progress.stage)
-	objective.text = "Tujuan: layani warga di Kedai Waras." if stage=="night" else "Tujuan: pulihkan Gajah Mina di Tamansari." if stage=="boss" else "Fase 1 selesai · Prasasti Smara Kuno ditemukan." if stage=="done" else "Tujuan: jelajahi Segaran dan kumpulkan fragmen untuk kedai." if day==1 else "Tujuan: temukan Koral Nitrogen, Lentera Fotosintesis, dan Kerang Osmosis." if day==2 else "Tujuan: selidiki pipa korporasi dan pulihkan penyaring Jalatunda."
+	var goal := "Layani warga di Kedai Waras." if stage=="night" else "Pulihkan Gajah Mina di Tamansari." if stage=="boss" else "Prasasti Smara Kuno ditemukan. Fase 1 selesai." if stage=="done" else "Jelajahi Segaran dan jala bekal kedai. Hutan ada di timur dermaga." if day==1 else "Amati Nitrogen, Fotosintesis, dan Osmosis di Wringin." if day==2 else "Selidiki pipa dan pulihkan penyaring Jalatunda."
+	var d: Dictionary = GameState.dive
+	var state := {"area":region,"depth":depth,"diving":not d.is_empty(),"oxygen":d.get("oxygen",0),"maxOxygen":d.get("maxOxygen",100),"coins":p.coins,"weight":d.get("weight",0),"capacity":d.get("capacity",12),"objective":goal,"action":str(nearby.get("name","Dekati tempat atau tokoh")),"canInteract":not nearby.is_empty() and nearby.get("kind","")!="biota","canNet":nearby.get("kind","")=="biota" and not d.is_empty()}
+	state.merge(EnvironmentState.snapshot(),true)
+	hud.update_state(state)
+	hud.set_modal(modal_open)
 func _sync_position() -> bool:
 	if GameState.dive.is_empty() or syncing:
 		return true
@@ -406,6 +369,7 @@ func _sync_position() -> bool:
 		status.text = str(r.get("error","Koneksi posisi terganggu."))
 		if r.get("code","")=="SESSION_CHANGED":
 			GameState.dive = {}
+			_close()
 			nala.position = Vector2(1030,295)
 			await GameState.refresh()
 		return false
@@ -420,7 +384,9 @@ func _refresh_dive() -> void:
 		status.text = str(r.get("error","Koneksi terputus."))
 		if r.get("code","")=="SESSION_CHANGED":
 			GameState.dive = {}
+			_close()
 			nala.position = Vector2(1030,295)
+			await GameState.refresh()
 	elif GameState.dive.is_empty():
 		nala.position = Vector2(1030,295)
 	elif float(GameState.dive.get("oxygen",100))<=0:
@@ -433,6 +399,8 @@ func _interact() -> void:
 	match str(obj.kind):
 		"npc":
 			_npc_interact(str(obj.name))
+		"forest":
+			_enter_forest()
 		"dive":
 			_begin_dive()
 		"extract":
@@ -450,6 +418,9 @@ func _enter_water(dive: Dictionary) -> void:
 	nala.position = Vector2(float(pos.x),float(pos.y))
 	nala.speed = float(dive.get("speed",110))
 	nala.velocity = Vector2.ZERO
+	camera.reset_smoothing()
+	environment.configure("sea")
+	environment.splash(Vector2(480,270))
 	_update_hud()
 func _begin_dive() -> void:
 	if not GameState.shift.is_empty():
@@ -470,7 +441,7 @@ func _begin_dive() -> void:
 func _extract(fainted := false) -> void:
 	if network_busy or GameState.dive.is_empty():
 		return
-	if not fainted and nala.position.distance_to(Vector2(1120,470))>220 and not (GameState.dive.get("mode","")=="boss" and int(GameState.dive.get("hits",0))>=6):
+	if not fainted and nala.position.distance_to(Vector2(1120,470))>220 and not (GameState.dive.get("mode","")=="boss" and int(GameState.dive.get("hits",0))>=_required_hits()):
 		status.text = "Kembali ke tangga selam di Dangkalan Segaran."
 		return
 	network_busy = true
@@ -480,7 +451,7 @@ func _extract(fainted := false) -> void:
 		status.text = str(r.get("error","Belum dapat kembali."))
 		return
 	GameState.dive = {}
-	nala.position = Vector2(1280,290)
+	nala.position = Vector2(1280,490)
 	nala.velocity = Vector2.ZERO
 	await GameState.refresh()
 	_update_hud()
@@ -490,7 +461,9 @@ func _extract(fainted := false) -> void:
 		_show_message("Kembali ke Bandar Hujung", "Beno menolong Nala dan menyelamatkan satu tangkapan." if r.get("fainted",false) else "Fragmen tersimpan ke tas. Datangi Mbah Wira di Kedai Waras untuk membantu warga malam ini.")
 func _discover(obj: Dictionary) -> void:
 	network_busy = true
-	await _sync_position()
+	if not await _sync_position():
+		network_busy = false
+		return
 	var r: Dictionary = await ApiClient.call_api("/adventure/interact",{"diveId":GameState.dive.id,"id":obj.id})
 	network_busy = false
 	if r.get("ok",false):
@@ -501,7 +474,8 @@ func _discover(obj: Dictionary) -> void:
 	else:
 		status.text = str(r.get("error","Dekati objek terlebih dahulu."))
 func _show_puzzle(obj: Dictionary) -> void:
-	await _sync_position()
+	if not await _sync_position():
+		return
 	var box := _open(str(obj.title))
 	_label(box,str(obj.prompt))
 	var controls: Array = []
@@ -544,7 +518,9 @@ func _start_net() -> void:
 		return
 	network_busy = true
 	net_released = false
-	await _sync_position()
+	if not await _sync_position():
+		network_busy = false
+		return
 	var r: Dictionary = await ApiClient.call_api("/dive/net/start",{"diveId":GameState.dive.id})
 	network_busy = false
 	if r.get("ok",false):
@@ -556,7 +532,9 @@ func _start_net() -> void:
 func _finish_net() -> void:
 	net_started = false
 	network_busy = true
-	await _sync_position()
+	if not await _sync_position():
+		network_busy = false
+		return
 	var r: Dictionary = await ApiClient.call_api("/dive/collect",{"diveId":GameState.dive.id,"targetId":net_target.id})
 	network_busy = false
 	if r.get("ok",false):
@@ -566,7 +544,9 @@ func _finish_net() -> void:
 		status.text = str(r.get("error","Jala terlepas."))
 func _boss_challenge(target: Dictionary) -> void:
 	network_busy = true
-	await _sync_position()
+	if not await _sync_position():
+		network_busy = false
+		return
 	var r: Dictionary = await ApiClient.call_api("/dive/challenge",{"diveId":GameState.dive.id,"targetId":target.id})
 	network_busy = false
 	if r.get("ok",false):
@@ -587,7 +567,7 @@ func _show_quiz() -> void:
 			if r.get("ok",false):
 				GameState.dive = r.dive
 				_close()
-				if int(GameState.dive.get("hits",0))>=6:
+				if int(GameState.dive.get("hits",0))>=_required_hits():
 					_extract()
 		)
 	else:
@@ -702,7 +682,15 @@ func _show_inventory() -> void:
 	var box := _open("Tas Nala")
 	_label(box,"%d koin · Fragmen permanen" % int(GameState.player.get("coins",0)))
 	for item in GameState.player.get("inventory",[]):
-		_label(box,"%s · %d bintang × %d" % [GameState.fragment_name(str(item.fragmentId)),int(item.stars),int(item.quantity)],14)
+		var row := HBoxContainer.new()
+		box.add_child(row)
+		var icon := TextureRect.new()
+		icon.texture = preload("res://scripts/ItemIcons.gd").texture(str(item.fragmentId))
+		icon.custom_minimum_size = Vector2(48,48)
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		row.add_child(icon)
+		_label(row,"%s · %d bintang × %d" % [GameState.fragment_name(str(item.fragmentId)),int(item.stars),int(item.quantity)],14)
 	if GameState.player.get("inventory",[]).is_empty():
 		_label(box,"Belum ada fragmen yang dibawa pulang.",14)
 	if not GameState.dive.is_empty():
@@ -720,7 +708,7 @@ func _show_journal() -> void:
 	entries.add_theme_constant_override("separation",14)
 	scroll.add_child(entries)
 	var count := 0
-	for item in GameState.world.get("landmarks",[]):
+	for item in GameState.world.get("landmarks",[])+GameState.world.get("forest",{}).get("landmarks",[]):
 		if GameState.adventure.get("discoveries",[]).has(item.id):
 			count += 1
 			_label(entries,str(item.title),18)
@@ -730,26 +718,22 @@ func _show_journal() -> void:
 	_label(entries,"Catatan biologi: lamun adalah tumbuhan berbunga laut; kelp adalah alga cokelat. Hutan Wringin adalah ekosistem fantasi yang menggabungkan biota bercahaya.",13)
 	_button(box,"Tutup jurnal",_close)
 func _show_map() -> void:
-	var box := _open("Peta Palung Smara")
-	_label(box,"Bandar Hujung · Kedai Waras / Galangan Bubat / Tanggulangen / Pos Cakrawala",14)
-	var chart = load("res://scripts/Map.gd").new()
-	chart.custom_minimum_size = Vector2(590,220)
-	chart.rocks = terrain.rocks
-	chart.player_point = nala.position
-	box.add_child(chart)
-	var depth := maxf(0,(nala.position.y-400)/28)
-	for zone in GameState.world.get("zones",[]):
-		var unlocked: bool = int(GameState.player.progress.day)>=int(zone.cycle_unlocked)
-		_label(box,"%s  %s · %d–%d m" % [">" if depth>=float(zone.minDepth) and depth<float(zone.maxDepth) else "-",str(zone.name) if unlocked else "Jalur belum terbuka",int(zone.minDepth),int(zone.maxDepth)],14)
-	_label(box,"Dari Segaran, turun melalui celah timur terumbu. Di Wringin, jalur bercabang ke taman cahaya dan kerang. Di Jalatunda, cari lorong di antara batu kapur dan ikuti pipa menuju Tamansari.",14)
-	_label(box,"Posisi Nala: %dm · %d / 8 pengamatan · %d / 3 instalasi" % [int(depth),GameState.adventure.get("discoveries",[]).size(),GameState.adventure.get("puzzles",[]).size()],14)
-	_button(box,"Lanjut menjelajah",_close)
+	var box := _open("Atlas Jalasmara")
+	modal.position = Vector2(105,38)
+	modal.size = Vector2(750,480)
+	var scroll: ScrollContainer = modal.get_child(0)
+	scroll.custom_minimum_size = Vector2(690,430)
+	box.custom_minimum_size.x = 680
+	var atlas = preload("res://scripts/WorldAtlas.gd").new()
+	box.add_child(atlas)
+	atlas.configure(GameState.world,GameState.player,"harbor" if GameState.dive.is_empty() else "reef" if int(GameState.player.progress.day)==1 else "kelp" if int(GameState.player.progress.day)==2 else "cave")
+	atlas.close_requested.connect(_close)
 func _boss_tick(delta: float) -> void:
-	if int(GameState.dive.get("hits",0))>=6:
+	if int(GameState.dive.get("hits",0))>=_required_hits():
 		return
 	attack_clock += delta
-	var second_phase := int(GameState.dive.get("hits",0))>=3
-	status.text = "Gajah Mina · %d/300 vitalitas racun · %s" % [300-int(GameState.dive.get("hits",0))*50,"Tarik Inti Smara" if second_phase else "Lepaskan lapisan asam"]
+	var second_phase := int(GameState.dive.get("hits",0))>=ceili(_required_hits()/2.0)
+	status.text = "Gajah Mina · %d/300 vitalitas racun · %s" % [300-int(int(GameState.dive.get("hits",0))*300.0/_required_hits()),"Tarik Inti Smara" if second_phase else "Lepaskan lapisan asam"]
 	if attack_clock>(2.6 if second_phase else 3.5):
 		attack_clock = 0
 		var projectile := Polygon2D.new()
@@ -781,3 +765,101 @@ func _hazard_hit() -> void:
 		GameState.dive = r.dive
 		status.text = "Bahaya melukai perlengkapan. Hindari duri dan rembesan limbah."
 		_update_hud()
+
+func _required_hits() -> int:
+	return int(GameState.dive.get("requiredHits",6))
+
+func _sync_surface() -> bool:
+	if syncing or not GameState.dive.is_empty():
+		return false
+	syncing = true
+	var r: Dictionary = await ApiClient.call_api("/adventure/surface-position",{"area":"hub","x":nala.position.x,"y":clampf(nala.position.y,80,610)})
+	syncing = false
+	if r.get("ok",false):
+		GameState.surface = r.surface
+		return true
+	status.text = str(r.get("error","Koneksi jalur darat terganggu."))
+	return false
+func _enter_forest() -> void:
+	network_busy = true
+	if not await _sync_surface():
+		network_busy = false
+		return
+	var r: Dictionary = await ApiClient.call_api("/adventure/travel",{"destination":"forest"})
+	network_busy = false
+	if r.get("ok",false):
+		GameState.surface = r.surface
+		get_tree().change_scene_to_file("res://scenes/forest.tscn")
+	else:
+		status.text = str(r.get("error","Jalur hutan belum dapat dilewati."))
+func _show_character(first: bool) -> void:
+	if not GameState.dive.is_empty() or not GameState.shift.is_empty():
+		_show_message("Tampilan penjelajah","Kembali dan tutup kedai sebelum mengganti tampilan. Statistik semua tampilan sama.")
+		return
+	var box := _open("Pilih tampilan Nala")
+	_label(box,"Empat penjelajah, satu perjalanan. Pilihan ini tersimpan di akun; kemampuan semuanya sama.",14)
+	var grid := GridContainer.new()
+	grid.columns = 2
+	grid.add_theme_constant_override("h_separation",12)
+	grid.add_theme_constant_override("v_separation",12)
+	box.add_child(grid)
+	var choices := [["male_default","Laki-laki · Penyelam","Rompi oranye dan peralatan rakitan"],["male_nusantara","Laki-laki · Pesisir Nusantara","Sawo matang, lurik modern"],["female_default","Perempuan · Penyelam","Rompi oranye dan perlengkapan ringan"],["female_nusantara","Perempuan · Pesisir Nusantara","Kemben modern, perlengkapan pesisir"]]
+	for index in range(choices.size()):
+		var choice: Array = choices[index]
+		var id := str(choice[0])
+		var button := _button(grid,str(choice[1])+"\n"+str(choice[2]),func():
+			if network_busy:
+				return
+			network_busy = true
+			var r: Dictionary = await ApiClient.call_api("/game/appearance",{"appearance":id})
+			network_busy = false
+			if r.get("ok",false):
+				GameState.player = r.player
+				_close()
+				if first and not GameState.player.progress.get("tutorial",false):
+					_story_intro()
+			else:
+				status.text = str(r.get("error","Tampilan belum tersimpan."))
+		)
+		button.custom_minimum_size = Vector2(280,144)
+		button.add_theme_font_size_override("font_size",12)
+		var path := "res://resources/art/"+id.replace("_","-")+".png"
+		if ResourceLoader.exists(path):
+			var texture: Texture2D = load(path)
+			var atlas := AtlasTexture.new()
+			atlas.atlas = texture
+			atlas.region = Rect2(Vector2.ZERO,Vector2(texture.get_size())/3.0)
+			button.icon = atlas
+			button.expand_icon = true
+			button.add_theme_constant_override("icon_max_width",60)
+		if index==0:
+			button.grab_focus()
+	if not first:
+		_button(box,"Kembali",_close)
+
+func _add_lights() -> void:
+	var gradient := Gradient.new()
+	gradient.colors = PackedColorArray([Color(1,1,1,.85),Color(1,1,1,0)])
+	var texture := GradientTexture2D.new()
+	texture.gradient = gradient
+	texture.width = 128
+	texture.height = 128
+	texture.fill = GradientTexture2D.FILL_RADIAL
+	texture.fill_from = Vector2(.5,.5)
+	texture.fill_to = Vector2(1,.5)
+	dive_lamp = PointLight2D.new()
+	dive_lamp.texture = texture
+	dive_lamp.color = Color(.55,.85,.76)
+	dive_lamp.energy = .65
+	dive_lamp.texture_scale = 2.2
+	dive_lamp.position = Vector2(35,0)
+	nala.add_child(dive_lamp)
+	for at in [Vector2(480,230),Vector2(1100,260),Vector2(1900,260),Vector2(2550,250)]:
+		var lamp := PointLight2D.new()
+		lamp.texture = texture
+		lamp.position = at
+		lamp.texture_scale = 2.1
+		lamp.color = Color(1,.67,.34)
+		lamp.energy = 1.25
+		add_child(lamp)
+		port_lamps.append(lamp)

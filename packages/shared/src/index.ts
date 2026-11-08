@@ -1,3 +1,5 @@
+export type AppearanceId =
+  "male_default" | "male_nusantara" | "female_default" | "female_nusantara";
 export type Role = "player" | "admin" | "owner";
 export type Subject = "Biologi" | "Lingkungan" | "Matematika" | "Kimia";
 export type Ability = "oxygen" | "bag" | "speed" | "net";
@@ -28,6 +30,7 @@ export interface Player {
   authVersion: number;
   createdAt: string;
   updatedAt: string;
+  appearance?: AppearanceId;
   adventure?: { discoveries: string[]; puzzles: string[]; keyItems: string[] };
 }
 export interface Question {

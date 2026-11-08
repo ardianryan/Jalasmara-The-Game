@@ -6,6 +6,7 @@ config/features=PackedStringArray("4.7", "GL Compatibility")
 [autoload]
 ApiClient="*res://autoloads/ApiClient.gd"
 GameState="*res://autoloads/GameState.gd"
+EnvironmentState="*res://autoloads/EnvironmentState.gd"
 [display]
 window/size/viewport_width=960
 window/size/viewport_height=540

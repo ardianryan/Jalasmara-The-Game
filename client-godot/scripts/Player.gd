@@ -6,6 +6,11 @@ var direction := 1
 var walk_time := 0.0
 var touch := Vector2.ZERO
 var swim_sprite: Sprite2D
+var was_water := false
+var wet_remaining := 0.0
+var effect_clock := 0.0
+var bubbles: Array[Dictionary] = []
+var wet_marks: Array[Dictionary] = []
 func _ready() -> void:
 	var collision := CollisionShape2D.new()
 	var shape := CapsuleShape2D.new()
@@ -13,17 +18,35 @@ func _ready() -> void:
 	shape.height = 30
 	collision.shape = shape
 	add_child(collision)
-	if ResourceLoader.exists("res://resources/art/nala-swim.png"):
-		swim_sprite = Sprite2D.new()
-		swim_sprite.texture = load("res://resources/art/nala-swim.png")
-		swim_sprite.hframes = 3
-		swim_sprite.vframes = 2
-		var frame_size := Vector2(swim_sprite.texture.get_size())/Vector2(3,2)
-		swim_sprite.scale = Vector2(86.0/frame_size.x,86.0/frame_size.y)
-		add_child(swim_sprite)
+	swim_sprite = preload("res://scripts/CharacterVisual.gd").new()
+	add_child(swim_sprite)
+
 func _physics_process(delta: float) -> void:
 	walk_time += delta
-	in_water = position.y>400
+	in_water = not GameState.dive.is_empty()
+	if was_water and not in_water:
+		wet_remaining = 5
+	was_water = in_water
+	wet_remaining = maxf(0,wet_remaining-delta)
+	effect_clock += delta
+	for i in range(bubbles.size()-1,-1,-1):
+		bubbles[i].age += delta
+		if float(bubbles[i].age)>2.2:
+			bubbles.remove_at(i)
+	for i in range(wet_marks.size()-1,-1,-1):
+		wet_marks[i].age += delta
+		if float(wet_marks[i].age)>5:
+			wet_marks.remove_at(i)
+	var low_oxygen := float(GameState.dive.get("oxygen",100))<25
+	var interval := .16 if low_oxygen else .28 if velocity.length()>70 else 1.5
+	if in_water and not frozen and effect_clock>interval:
+		effect_clock = 0
+		if bubbles.size()<24:
+			bubbles.append({"at":position+Vector2(direction*24,-7),"age":0.0,"radius":2.0+fmod(walk_time*3,2)})
+	elif not in_water and wet_remaining>0 and effect_clock>.23:
+		effect_clock = 0
+		if wet_marks.size()<24:
+			wet_marks.append({"at":position+Vector2(sin(walk_time*16)*8,13),"age":0.0})
 	if frozen:
 		velocity = Vector2.ZERO
 	else:
@@ -32,22 +55,37 @@ func _physics_process(delta: float) -> void:
 		if in_water:
 			velocity = velocity.move_toward(input*speed,delta*500)
 		else:
-			velocity.x = move_toward(velocity.x,input.x*175,delta*850)
-			velocity.y += 700*delta
-			if Input.is_action_just_pressed("up") and is_on_floor():
-				velocity.y = -250
+			velocity = velocity.move_toward(input*175,delta*850)
 		if absf(velocity.x)>3:
 			direction = 1 if velocity.x>0 else -1
 	move_and_slide()
-	position.x = clampf(position.x,20,6100)
+	position.x = clampf(position.x,20,3050 if GameState.dive.is_empty() else 6100)
+	if GameState.dive.is_empty():
+		position.y = clampf(position.y,100,590)
 	position.y = clampf(position.y,80,3470)
 	if swim_sprite:
-		swim_sprite.visible = in_water
-		swim_sprite.flip_h = direction<0
-		swim_sprite.frame = int(walk_time*7)%6 if velocity.length()>10 else 2
+		swim_sprite.set_appearance(str(GameState.player.get("appearance","male_default")))
+		swim_sprite.visible = true
+		swim_sprite.animate(velocity.length()>10,in_water,direction,walk_time)
 	queue_redraw()
 func _draw() -> void:
-	if in_water and swim_sprite:
+	for mark in wet_marks:
+		var at: Vector2 = mark.at-position
+		draw_set_transform(at,0,Vector2(1,.35))
+		draw_circle(Vector2.ZERO,5,Color(.06,.23,.23,(1-float(mark.age)/5)*.45))
+		draw_set_transform(Vector2.ZERO)
+	for bubble in bubbles:
+		var age := float(bubble.age)
+		var at: Vector2 = bubble.at-position+Vector2(sin(age*4+float(bubble.radius))*8,-age*38)
+		draw_arc(at,float(bubble.radius),0,TAU,10,Color(.7,.93,.87,(1-age/2.2)*.65),1)
+	if not in_water and wet_remaining>0:
+		for i in range(3):
+			draw_line(Vector2(-12+i*12,fmod(walk_time*42+i*13,34)),Vector2(-12+i*12,fmod(walk_time*42+i*13,34)+3),Color(.6,.85,.86,.65),1)
+	if not in_water:
+		draw_set_transform(Vector2(0,12),0,Vector2(1,.35))
+		draw_circle(Vector2.ZERO,14,Color(.04,.13,.11,.3))
+		draw_set_transform(Vector2.ZERO)
+	if swim_sprite and swim_sprite.visible:
 		return
 	var step := sin(walk_time*9)*3 if absf(velocity.x)>5 else 0.0
 	draw_rect(Rect2(-8,-22,16,8),Color("232e32"))

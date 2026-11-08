@@ -1,0 +1,8 @@
+name: Jalasmara source
+paths-ignore:
+  - .cache/**
+  - .runtime/**
+  - node_modules/**
+  - apps/web/public/game/**
+  - apps/web/dist/**
+  - apps/api/dist/**

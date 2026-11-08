@@ -99,13 +99,17 @@ const provider = createServer(async (req, res) => {
   res.statusCode = 404;
   res.end("{}");
 });
+const runAddress = `fd01:${randomUUID().replaceAll("-", "").match(/.{4}/g)!.slice(0, 5).join(":")}`;
+let ip = 0;
 class Browser {
+  remoteAddress = `${runAddress}::${(++ip).toString(16)}`;
   cookies: Record<string, string> = {};
   csrf = "";
   async request(path: string, body?: unknown) {
     const r = await app.inject({
       method: body === undefined ? "GET" : "POST",
       url: `/api${path}`,
+      remoteAddress: this.remoteAddress,
       headers: {
         cookie: Object.entries(this.cookies)
           .map(([k, v]) => `${k}=${v}`)
@@ -158,8 +162,11 @@ before(async () => {
   process.env.APP_ORIGIN = "http://localhost:5173";
   process.env.OIDC_ISSUER = issuer;
   process.env.OIDC_CLIENT_ID = "jalasmara-test";
-  process.env.MONGO_URL = process.env.TEST_MONGO_URL ?? `mongodb://127.0.0.1:27018/jalasmara_oidc_test_${randomUUID().replaceAll("-", "")}?replicaSet=rs0`;
-  process.env.REDIS_URL = process.env.TEST_REDIS_URL ?? "redis://127.0.0.1:6380/13";
+  process.env.MONGO_URL =
+    process.env.TEST_MONGO_URL ??
+    `mongodb://127.0.0.1:27018/jalasmara_oidc_test_${randomUUID().replaceAll("-", "")}?replicaSet=rs0`;
+  process.env.REDIS_URL =
+    process.env.TEST_REDIS_URL ?? "redis://127.0.0.1:6380/13";
   s = await connect();
   await seed(s);
   const now = new Date().toISOString();

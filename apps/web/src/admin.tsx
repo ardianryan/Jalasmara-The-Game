@@ -9,7 +9,7 @@ import {
   freshProgress,
 } from "../../../packages/shared/src/index";
 import { api, fmt, type AuthState } from "./api";
-import { Dialog, Loading, Notice } from "./components";
+import { Dialog, Notice } from "./components";
 const actions: Record<string, string> = {
   coins: "Saldo koin",
   inventory: "Inventori fragmen",

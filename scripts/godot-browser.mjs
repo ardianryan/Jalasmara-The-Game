@@ -58,7 +58,13 @@ try {
   await frame.waitForFunction(() => window.jalasmaraReady === true, null, {
     timeout: 60000,
   });
-  await page.waitForTimeout(800);
+  await frame.waitForFunction(() => window.jalasmaraSnapshot != null);
+  if (origin.startsWith("https:")) {
+    const session = (await context.cookies()).find(
+      (c) => c.name === "__Host-jalasmara",
+    );
+    assert(session?.secure && session.httpOnly && session.sameSite === "Lax");
+  }
   assert.equal(
     (await snapshot(frame)).modal,
     false,
@@ -70,9 +76,7 @@ try {
   });
   await frame.locator("canvas").click();
   if (!(await snapshot(frame)).diving) {
-    await page.keyboard.down("d");
-    await page.waitForTimeout(1400);
-    await page.keyboard.up("d");
+    await walkTo(frame, 1280, 510);
     await page.keyboard.press("e");
     await frame.waitForFunction(
       () => window.jalasmaraSnapshot?.diving === true,

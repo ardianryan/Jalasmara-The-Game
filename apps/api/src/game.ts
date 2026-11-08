@@ -95,6 +95,17 @@ export async function gameRoutes(app: FastifyInstance, s: Store, g: Guards) {
     if (!p || p.status !== "active") return fail("Akun tidak aktif.", 403);
     return p;
   };
+  const requireHub = async (p: User) => {
+    const raw = await s.redis.get(`surface:${p.id}`);
+    if (!raw) return;
+    const surface = JSON.parse(raw);
+    if (surface.playerVersion === p.version && surface.area === "forest")
+      return fail(
+        "Kembali melalui gerbang Bandar Hujung untuk menggunakan fasilitas dermaga.",
+        409,
+        "HUB_REQUIRED",
+      );
+  };
   const content = async (id: string) => {
     const c = await s.contents.findOne({ id });
     if (!c) return fail("Versi konten tidak tersedia.", 503);
@@ -166,6 +177,64 @@ export async function gameRoutes(app: FastifyInstance, s: Store, g: Guards) {
       };
     }),
   );
+  app.post(
+    "/api/game/appearance",
+    { preHandler: g.authenticated },
+    async (req) => {
+      const body = z
+        .object({
+          appearance: z.enum([
+            "male_default",
+            "male_nusantara",
+            "female_default",
+            "female_nusantara",
+          ]),
+        })
+        .strict()
+        .parse(req.body);
+      return lock(s, req.user!.id, async () => {
+        const before = await user(req.user!.id),
+          surfaceRaw = await s.redis.get(`surface:${before.id}`);
+        const result = await once(
+          s,
+          req.user!.id,
+          operationKey(req),
+          { route: "appearance", ...body },
+          async (session) => {
+            const p = await user(req.user!.id, session);
+            if (await loadDive(p.id, p))
+              return fail(
+                "Ganti penampilan setelah kembali ke dermaga.",
+                409,
+                "ACTIVE_DIVE",
+              );
+            if (
+              await shifts.findOne({ userId: p.id, active: true }, { session })
+            )
+              return fail(
+                "Tutup giliran kedai sebelum mengganti penampilan.",
+                409,
+                "ACTIVE_SHIFT",
+              );
+            p.appearance = body.appearance;
+            return { player: await update(p, session) };
+          },
+        );
+        if (surfaceRaw && result.player.version === before.version + 1) {
+          const surface = JSON.parse(surfaceRaw);
+          if (surface.playerVersion === before.version) {
+            surface.playerVersion = result.player.version;
+            await s.redis.set(
+              `surface:${before.id}`,
+              JSON.stringify(surface),
+              "KEEPTTL",
+            );
+          }
+        }
+        return result;
+      });
+    },
+  );
   app.post("/api/game/tutorial", { preHandler: g.authenticated }, async (req) =>
     lock(s, req.user!.id, () =>
       once(
@@ -193,6 +262,7 @@ export async function gameRoutes(app: FastifyInstance, s: Store, g: Guards) {
         await saveDive(p.id, existing);
         return { dive: diveView(existing) };
       }
+      await requireHub(p);
       const shift = await shifts.findOne({
         userId: p.id,
         active: true,
@@ -218,7 +288,7 @@ export async function gameRoutes(app: FastifyInstance, s: Store, g: Guards) {
         now = Date.now();
       const subjects = c.catalog.fragments;
       const targets = Array.from(
-        { length: b.mode === "boss" ? 6 : 24 },
+        { length: b.mode === "boss" ? c.catalog.balance.bossHits : 24 },
         (_, i) => {
           const f = subjects[i % subjects.length];
           const bossSubjects: Subject[] = [
@@ -284,7 +354,7 @@ export async function gameRoutes(app: FastifyInstance, s: Store, g: Guards) {
         playerVersion: p.version,
         updatedAt: now,
         hits: 0,
-        requiredHits: 6,
+        requiredHits: c.catalog.balance.bossHits,
         questionIds: [],
         lastHazard: 0,
       };
@@ -313,7 +383,11 @@ export async function gameRoutes(app: FastifyInstance, s: Store, g: Guards) {
         if (d.oxygen <= 0) fail("Oksigen habis. Kembali ke perahu.", 409);
         const t = d.targets.find((x) => x.id === b.targetId && !x.caught);
         if (!t) fail("Fragmen tidak tersedia.", 409);
-        if (d.mode === "boss" && d.targets.indexOf(t!) < 3 !== d.hits < 3)
+        if (
+          d.mode === "boss" &&
+          d.targets.indexOf(t!) < Math.ceil(d.requiredHits / 2) !==
+            d.hits < Math.ceil(d.requiredHits / 2)
+        )
           fail("Titik resonansi ini terbuka pada fase berikutnya.", 409);
         const pos = d.position ?? WORLD.spawn;
         if (Math.hypot(pos.x - t!.x, pos.y - t!.y) > d.net + 110)
@@ -589,6 +663,7 @@ export async function gameRoutes(app: FastifyInstance, s: Store, g: Guards) {
   app.post("/api/kedai/start", { preHandler: g.authenticated }, async (req) =>
     lock(s, req.user!.id, async () => {
       const p = await user(req.user!.id);
+      await requireHub(p);
       if (await loadDive(p.id, p))
         fail("Kembali dari laut terlebih dahulu.", 409);
       if (p.progress.stage !== "night")
@@ -768,6 +843,7 @@ export async function gameRoutes(app: FastifyInstance, s: Store, g: Guards) {
       const b = z.object({ ability }).strict().parse(req.body);
       return lock(s, req.user!.id, async () => {
         const p = await user(req.user!.id);
+        await requireHub(p);
         if (await loadDive(p.id, p))
           fail("Peningkatan dilakukan di permukaan.", 409);
         const active = await shifts.findOne({

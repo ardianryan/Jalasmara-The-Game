@@ -11,6 +11,8 @@ Dibangun dengan **Godot 4.7.2** untuk permainan, **React + Vite** untuk akun dan
 - Mirror sumber dan laporan: [GitHub](https://github.com/ardianryan/Jalasmara-The-Game)
 - [Laporan CI GitLab yang dikirim ke GitHub](https://github.com/ardianryan/Jalasmara-The-Game/tree/ci-reports)
 
+Lihat [status pengembangan dan bukti pengujian](docs/development-status.md). Versi ini masih prototipe; pemolesan visual, uji bermain manusia, dan pengujian HP fisik belum selesai.
+
 ## Menjalankan lokal
 
 Prasyarat: Node.js 22.12+, npm, Docker Compose v2, Godot 4.7.2 dan template ekspor Web single-threaded. MongoDB harus berjalan sebagai replica set agar transaksi dan audit konsisten.

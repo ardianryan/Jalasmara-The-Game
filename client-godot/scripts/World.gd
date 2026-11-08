@@ -6,11 +6,21 @@ var solved: Array = []
 var rocks: Array[Rect2] = []
 var font: Font = ThemeDB.fallback_font
 var ocean_art: Texture2D
+var hub_art: Texture2D
+var underwater := false
 func _ready() -> void:
 	for rect in GameState.world.get("terrain",[]):
 		rocks.append(Rect2(float(rect[0]),float(rect[1]),float(rect[2]),float(rect[3])))
 	ocean_art = load("res://resources/art/muara-sungsang.png")
-	for r in rocks:
+	if ResourceLoader.exists("res://resources/art/bandar-hujung-map.png"):
+		hub_art = load("res://resources/art/bandar-hujung-map.png")
+	set_mode(not GameState.dive.is_empty())
+func set_mode(diving: bool) -> void:
+	underwater = diving
+	for child in get_children():
+		child.queue_free()
+	var solids: Array[Rect2] = rocks if diving else [Rect2(0,0,3080,90),Rect2(0,545,3080,400),Rect2(105,0,685,282),Rect2(790,0,840,285),Rect2(1635,65,540,225),Rect2(2180,0,570,285),Rect2(760,450,70,52),Rect2(2150,485,85,58)]
+	for r in solids:
 		var body := StaticBody2D.new()
 		var collision := CollisionShape2D.new()
 		var shape := RectangleShape2D.new()
@@ -21,8 +31,13 @@ func _ready() -> void:
 		add_child(body)
 func _process(delta: float) -> void:
 	elapsed += delta
+	if underwater != (not GameState.dive.is_empty()):
+		set_mode(not GameState.dive.is_empty())
 	queue_redraw()
 func _draw() -> void:
+	if not underwater:
+		_draw_hub()
+		return
 	var view := Rect2(camera_point-Vector2(560,340),Vector2(1120,680))
 	draw_rect(Rect2(0,-200,6144,600),Color("73b4b2"))
 	for i in range(20):
@@ -130,3 +145,27 @@ func _coral(at: Vector2, kind: int) -> void:
 	elif kind==1:
 		draw_rect(Rect2(at+Vector2(-5,-10),Vector2(28,10)),Color("6c9c91"))
 		draw_rect(Rect2(at+Vector2(0,-16),Vector2(18,7)),Color("a0bd9e"))
+
+func _draw_hub() -> void:
+	draw_rect(Rect2(0,0,3080,800),Color("2c6e70"))
+	if hub_art:
+		draw_texture_rect(hub_art,Rect2(0,0,3080,800),false)
+	else:
+		draw_rect(Rect2(0,90,3080,525),Color("ac9a68"))
+		_building(270,340,"Kedai Waras",0)
+		_building(900,310,"Galangan Bubat",1)
+		_building(1700,360,"Tanggulangen",2)
+		_building(2370,300,"Pos Cakrawala",3)
+	draw_rect(Rect2(1270,520,20,80),Color("ad9a69"))
+	for y in range(525,600,12):
+		draw_rect(Rect2(1264,y,32,4),Color("dbc797"))
+	draw_string(font,Vector2(1215,508),"Palung Smara",HORIZONTAL_ALIGNMENT_LEFT,-1,16,Color("f2e7c9"))
+	draw_rect(Rect2(2900,240,9,85),Color("785c3c"))
+	draw_rect(Rect2(2860,240,120,30),Color("214a3d"))
+	draw_string(font,Vector2(2868,260),"Hutan Wringin >",HORIZONTAL_ALIGNMENT_LEFT,-1,14,Color("f2e7c9"))
+
+	for row in range(7):
+		var yy := 555.0+row*32
+		for column in range(20):
+			var xx := column*170.0+sin(elapsed*.55+row)*12
+			draw_line(Vector2(xx,yy+sin(elapsed+column)*3),Vector2(xx+24+sin(elapsed*.7+column)*10,yy+sin(elapsed+column)*3),Color(.55,.9,.85,.16),1.5)

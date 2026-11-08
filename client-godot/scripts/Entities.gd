@@ -15,12 +15,8 @@ func _draw() -> void:
 		return
 	var state = GameState
 	var at: Vector2 = player.position
-	for district in state.world.get("surface_hub",{}).get("districts",[]):
-		var p := Vector2(float(district.x),306)
-		if p.distance_to(at)>850:
-			continue
-		_npc(p,str(district.npc))
-		_label(p+Vector2(-40,-45),str(district.npc),Color("f1e6c6"))
+	if state.dive.is_empty():
+		return
 	for item in state.world.get("landmarks",[]):
 		var p := Vector2(float(item.x),float(item.y))
 		if p.distance_to(at)>800:
@@ -46,9 +42,8 @@ func _draw() -> void:
 		if p.distance_to(at)>800:
 			continue
 		var opened: bool = state.adventure.get("discoveries",[]).has(item.id)
-		draw_rect(Rect2(p-Vector2(18,12),Vector2(36,24)),Color("755b41"))
-		draw_rect(Rect2(p-Vector2(19,14 if not opened else 26),Vector2(38,8)),Color("b19c6b"))
-		draw_rect(Rect2(p-Vector2(3,4),Vector2(6,7)),Color("d7c58f"))
+		var icon: Texture2D = preload("res://scripts/ItemIcons.gd").texture("cache")
+		draw_texture_rect(icon,Rect2(p-Vector2(26,26),Vector2(52,52)),false,Color(1,1,1,.45 if opened else 1))
 	for hazard in state.world.get("hazards",[]):
 		var hp := Vector2(float(hazard.x),float(hazard.y))
 		if hp.distance_to(at)>850:
@@ -64,7 +59,7 @@ func _draw() -> void:
 				draw_circle(hp+Vector2(sin(elapsed+i)*radius*.5,cos(elapsed*.7+i)*radius*.5),radius*.45,Color(.55,.28,.65,.18))
 	var target_index := 0
 	for target in state.dive.get("targets",[]):
-		var available: bool = state.dive.get("mode","")!="boss" or ((target_index<3)==(int(state.dive.get("hits",0))<3))
+		var available: bool = state.dive.get("mode","")!="boss" or ((target_index<ceili(float(state.dive.get("requiredHits",6))/2.0))==(int(state.dive.get("hits",0))<ceili(float(state.dive.get("requiredHits",6))/2.0)))
 		target_index += 1
 		if target.get("caught",false) or not available:
 			continue
@@ -73,20 +68,8 @@ func _draw() -> void:
 			continue
 		p.y += sin(elapsed*1.4+float(target.x)*.01)*6
 		var subject := str(target.subject)
-		var color := Color("90ceb1") if subject=="Biologi" else Color("80cdd3") if subject=="Lingkungan" else Color("e8c789") if subject=="Matematika" else Color("beaccc")
-		if subject=="Biologi":
-			draw_circle(p,13,color)
-			draw_rect(Rect2(p-Vector2(14,0),Vector2(28,8)),color)
-			for i in range(4):
-				draw_line(p+Vector2(-9+i*6,7),p+Vector2(-9+i*6+sin(elapsed*2+i)*3,22),color,2)
-		elif subject=="Matematika":
-			draw_circle(p,12,color)
-			draw_arc(p,7,0,TAU*1.5,16,Color("65766c"),2)
-			draw_rect(Rect2(p+Vector2(-18,5),Vector2(34,7)),color)
-		else:
-			draw_colored_polygon(PackedVector2Array([p+Vector2(-18,0),p+Vector2(-10,-8),p+Vector2(10,-8),p+Vector2(17,0),p+Vector2(8,8),p+Vector2(-10,8)]),color)
-			draw_colored_polygon(PackedVector2Array([p+Vector2(-16,0),p+Vector2(-25,-9),p+Vector2(-25,9)]),color)
-			draw_rect(Rect2(p+Vector2(8,-3),Vector2(3,3)),Color("173b44"))
+		var icon: Texture2D = preload("res://scripts/ItemIcons.gd").texture(str(target.fragmentId))
+		draw_texture_rect(icon,Rect2(p-Vector2(26,26),Vector2(52,52)),false)
 		if str(target.id)==nearest:
 			draw_arc(p,30,0,TAU,24,Color("f0d48a"),2)
 	if state.player.get("progress",{}).get("day",1)>=3:

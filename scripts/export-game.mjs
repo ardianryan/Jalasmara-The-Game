@@ -42,7 +42,7 @@ if (!existsSync("apps/web/public/game/index.wasm"))
 const htmlPath = "apps/web/public/game/index.html";
 let count = 0;
 const html = readFileSync(htmlPath, "utf8").replace(
-  /<script>([\s\S]*?)<\/script>/g,
+  /<script>([\s\S]*?)<\/script>/gi,
   (_, script) => {
     const name = `bootstrap-${++count}.js`;
     writeFileSync(`apps/web/public/game/${name}`, script);
