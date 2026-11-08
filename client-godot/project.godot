@@ -7,6 +7,7 @@ config/features=PackedStringArray("4.7", "GL Compatibility")
 ApiClient="*res://autoloads/ApiClient.gd"
 GameState="*res://autoloads/GameState.gd"
 EnvironmentState="*res://autoloads/EnvironmentState.gd"
+AudioManager="*res://autoloads/AudioManager.gd"
 [display]
 window/size/viewport_width=960
 window/size/viewport_height=540
@@ -14,6 +15,9 @@ window/size/window_width_override=1440
 window/size/window_height_override=810
 window/stretch/mode="canvas_items"
 window/stretch/scale_mode="fractional"
+[gui]
+theme/custom="res://resources/fonts/game-theme.tres"
+
 [rendering]
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"

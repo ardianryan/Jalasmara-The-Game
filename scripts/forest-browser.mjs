@@ -1,3 +1,4 @@
+import { fetchWorld, hubRoute } from "./game-navigation.mjs";
 import { chromium, request } from "@playwright/test";
 import assert from "node:assert/strict";
 import { readFileSync, mkdirSync, writeFileSync } from "node:fs";
@@ -163,7 +164,9 @@ try {
   await frame.waitForFunction(() => window.jalasmaraSnapshot?.modal === false);
   checks.push("new-player-first-appearance-keyboard");
   await frame.locator("canvas").click({ position: { x: 450, y: 350 } });
-  await walkTo(2940, 295);
+  const world = await fetchWorld(context.request, origin);
+  for (const [x, y] of hubRoute(world, await snapshot(), world.forest.gate))
+    await walkTo(x, y);
   const travel = page.waitForResponse((response) =>
     response.url().endsWith("/api/adventure/travel"),
   );

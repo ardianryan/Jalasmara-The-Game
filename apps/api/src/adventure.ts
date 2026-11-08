@@ -33,9 +33,11 @@ export async function adventureRoutes(
     y: number;
     positionAt: number;
     playerVersion: number;
+    layoutVersion?: number;
   };
   const initialSurface = (p: User): SurfacePosition => ({
     area: "hub",
+    layoutVersion: WORLD.hub.layoutVersion,
     ...WORLD.surfaceSpawn,
     positionAt: Date.now(),
     playerVersion: p.version,
@@ -46,7 +48,12 @@ export async function adventureRoutes(
       const raw = await s.redis.get(key);
       if (raw) {
         const point = JSON.parse(raw) as SurfacePosition;
-        if (point.playerVersion === p.version) return point;
+        if (
+          point.playerVersion === p.version &&
+          (point.area !== "hub" ||
+            point.layoutVersion === WORLD.hub.layoutVersion)
+        )
+          return point;
         if (point.playerVersion > p.version)
           return fail(
             "Data pemain berubah. Muat ulang permainan.",
@@ -146,7 +153,12 @@ export async function adventureRoutes(
         const bounds =
           b.area === "forest"
             ? { minX: 40, maxX: WORLD.forest.width - 40, minY: 120, maxY: 1500 }
-            : { minX: 20, maxX: 3080, minY: 80, maxY: 610 };
+            : {
+                minX: 40,
+                maxX: WORLD.hub.width - 40,
+                minY: 120,
+                maxY: WORLD.hub.height - 80,
+              };
         if (
           b.x < bounds.minX ||
           b.x > bounds.maxX ||
@@ -193,6 +205,40 @@ export async function adventureRoutes(
               "PATH_BLOCKED",
             );
         }
+        if (b.area === "hub") {
+          const blocked = WORLD.hub.obstacles.some(
+            ([x, y, w, h]) =>
+              b.x > x - 12 &&
+              b.x < x + w + 12 &&
+              b.y > y - 12 &&
+              b.y < y + h + 12,
+          );
+          const onPath = WORLD.hub.paths.some((path) =>
+            path.slice(1).some((end, index) => {
+              const start = path[index],
+                dx = end[0] - start[0],
+                dy = end[1] - start[1];
+              const t = Math.max(
+                0,
+                Math.min(
+                  1,
+                  ((b.x - start[0]) * dx + (b.y - start[1]) * dy) /
+                    (dx * dx + dy * dy),
+                ),
+              );
+              return (
+                Math.hypot(b.x - start[0] - t * dx, b.y - start[1] - t * dy) <=
+                WORLD.hub.walkableHalfWidth
+              );
+            }),
+          );
+          if (blocked || !onPath)
+            return fail(
+              "Ikuti jalur desa; bangunan dan tepian air tidak dapat dilalui.",
+              409,
+              "PATH_BLOCKED",
+            );
+        }
         const now = Date.now(),
           elapsed = Math.max(0, Math.min(10, (now - point.positionAt) / 1000));
         if (Math.hypot(b.x - point.x, b.y - point.y) > 175 * elapsed + 100)
@@ -231,6 +277,7 @@ export async function adventureRoutes(
           b.destination === "forest" ? WORLD.forest.entry : WORLD.forest.gate;
         const next: SurfacePosition = {
           area: b.destination,
+          layoutVersion: WORLD.hub.layoutVersion,
           ...arrival,
           positionAt: Date.now(),
           playerVersion: p.version,

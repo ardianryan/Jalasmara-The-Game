@@ -1,0 +1,11 @@
+config_version=5
+[application]
+config/name="Jalasmara offline sprite renderer"
+[display]
+window/size/viewport_width=192
+window/size/viewport_height=192
+window/size/window_width_override=192
+window/size/window_height_override=192
+[rendering]
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"

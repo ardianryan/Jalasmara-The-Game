@@ -647,13 +647,28 @@ export async function gameRoutes(app: FastifyInstance, s: Store, g: Guards) {
               u.adventure.keyItems.push(WORLD.boss.keyItem);
             } else if (d.mode === "dive" && u.progress.stage === "dive")
               u.progress.stage = "night";
+            const player = await update(u, session);
             return {
-              player: await update(u, session),
+              player,
               loot,
               fainted: d.oxygen <= 0,
               victory: u.progress.bossDefeated,
+              surface: {
+                area: "hub",
+                x: WORLD.hub.divePoint.x,
+                y: WORLD.hub.divePoint.y - 40,
+                playerVersion: player.version,
+                layoutVersion: WORLD.hub.layoutVersion,
+                positionAt: Date.now(),
+              },
             };
           },
+        );
+        await s.redis.set(
+          `surface:${p.id}`,
+          JSON.stringify(result.surface),
+          "EX",
+          1800,
         );
         await s.redis.del(`dive:${p.id}`);
         return result;

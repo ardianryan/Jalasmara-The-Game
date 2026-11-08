@@ -39,55 +39,80 @@ var forest_lights: Array[Dictionary] = []
 var light_clock := 0.0
 var discovered: Array = []
 var last_position := ENTRY
+var depth_planes: Node2D
 
 class ForestProp extends Node2D:
-	var kind := "tree"
+	var kind := "canopy"
 	var variant := 0
-	var tint := Color.WHITE
+	var display_size := Vector2(136,114)
+	var sheet: Texture2D
+	func _ready() -> void:
+		if ResourceLoader.exists("res://resources/art/forest-props-atlas.png"):
+			sheet = load("res://resources/art/forest-props-atlas.png")
 	func _draw() -> void:
-		if kind == "tree":
-			draw_ellipse_shape(Vector2(0, -2), Vector2(45, 15), Color(0.025, 0.09, 0.055, 0.35))
-			draw_colored_polygon(PackedVector2Array([Vector2(-8,0),Vector2(-5,-100),Vector2(8,-102),Vector2(11,0),Vector2(18,7),Vector2(3,4),Vector2(-18,8)]), Color("644b30"))
-			draw_line(Vector2(-1,-12),Vector2(1,-84),Color("a1814c"),4)
-			for leaf in [Vector3(-38,-117,44),Vector3(36,-125,43),Vector3(0,-155,49),Vector3(-14,-121,48)]:
-				draw_circle(Vector2(leaf.x,leaf.y),leaf.z,Color("163e2e") if variant % 2 == 0 else Color("204c31"))
-			for leaf in [Vector3(-26,-143,30),Vector3(18,-163,31),Vector3(37,-134,24)]:
-				draw_circle(Vector2(leaf.x,leaf.y),leaf.z,Color("3a663a"))
-			for i in range(8):
-				draw_rect(Rect2(-43 + i * 11,-143 + (i % 3) * 17,15,7),Color("62854a"))
-		elif kind == "rock":
-			draw_ellipse_shape(Vector2(4,3),Vector2(32,12),Color(0.04,0.08,0.04,0.35))
-			draw_colored_polygon(PackedVector2Array([Vector2(-31,0),Vector2(-29,-23),Vector2(-13,-39),Vector2(16,-35),Vector2(32,-13),Vector2(26,6)]),Color("667866"))
-			draw_colored_polygon(PackedVector2Array([Vector2(-29,-23),Vector2(-13,-39),Vector2(16,-35),Vector2(8,-21)]),Color("94a08a"))
-			draw_line(Vector2(8,-21),Vector2(26,6),Color("495c52"),3)
-		elif kind == "fern":
-			for i in range(7):
-				var tip := Vector2(-25 + i * 8,-25 - (3 - abs(i - 3)) * 5)
-				draw_line(Vector2.ZERO,tip,Color("568244"),3)
-				for j in range(2,5):
-					var at := tip * j / 5.0
-					draw_line(at,at+Vector2(-7,-2),Color("71994e"),3)
-					draw_line(at,at+Vector2(6,-5),Color("71994e"),3)
-		elif kind == "marker":
-			draw_rect(Rect2(-3,-32,6,32),Color("695233"))
-			draw_rect(Rect2(-21,-38,42,20),Color("9f8050"))
-			draw_rect(Rect2(-20,-37,40,3),Color("c2a56b"))
-			draw_line(Vector2(-16,-29),Vector2(15,-29),Color("77603e"),2)
-			draw_line(Vector2(-12,-23),Vector2(9,-23),Color("806743"),1)
-			draw_line(Vector2(15,-35),Vector2(28,-39),Color("654733"),3)
-			draw_rect(Rect2(23,-38,11,17),Color("463e30"))
-			draw_rect(Rect2(25,-35,7,11),Color("e4ba73"))
-			draw_rect(Rect2(25,-34,3,9),Color("f4dba0"))
-			for nail in [Vector2(-16,-33),Vector2(16,-33)]:
-				draw_rect(Rect2(nail,Vector2(2,2)),Color("453f31"))
-		elif kind == "cache":
+		if kind == "cache":
 			draw_texture_rect(preload("res://scripts/ItemIcons.gd").texture("cache"),Rect2(-28,-48,56,56),false)
-	func draw_ellipse_shape(center: Vector2, radius: Vector2, color: Color) -> void:
-		var polygon := PackedVector2Array()
-		for i in range(24):
-			var angle := TAU * i / 24.0
-			polygon.append(center + Vector2(cos(angle),sin(angle)) * radius)
-		draw_colored_polygon(polygon,color)
+		elif sheet != null:
+			var index: int = {"canopy":0,"roots":1,"stream":2,"landslide":3,"bridge":4,"gate":5}.get(kind,0)
+			var cell := sheet.get_size()/Vector2(3,2)
+			var source := Rect2(Vector2(index%3,floori(float(index)/3.0))*cell,cell)
+			draw_texture_rect_region(sheet,Rect2(Vector2(-display_size.x/2,-display_size.y),display_size),source)
+
+class ForestLife extends Node2D:
+	var focus: Node2D
+	var elapsed := 0.0
+	var frame := -1
+	func _process(delta: float) -> void:
+		elapsed += delta
+		var next_frame := int(elapsed*12)
+		if next_frame != frame:
+			frame = next_frame
+			queue_redraw()
+	func _draw() -> void:
+		var center := focus.position if is_instance_valid(focus) else Vector2(1200,800)
+		var view := Rect2(center-Vector2(650,420),Vector2(1300,840))
+		for i in range(18):
+			var phase := float(i)
+			var at := Vector2(250+fposmod(phase*173.0+elapsed*5.0+sin(elapsed*0.7+phase)*12.0,1950),180+fposmod(phase*113.0+elapsed*(9.0+fmod(phase,4.0)),1220))
+			if not view.has_point(at): continue
+			var color := Color("b49b53") if i%3==0 else Color("758b45")
+			at = at.round()
+			draw_rect(Rect2(at,Vector2(4,2)),color)
+			draw_rect(Rect2(at+Vector2(1,-1),Vector2(2,4)),color.darkened(0.15))
+		var state := get_node_or_null("/root/EnvironmentState")
+		var weather: Dictionary = state.snapshot() if state != null else {}
+		if float(weather.get("rain",0))>0.38: return
+		for i in range(5):
+			var phase := float(i)
+			var habitat := Vector2(610,1000) if i<3 else Vector2(1730,550)
+			var at := habitat+Vector2(sin(elapsed*0.65+phase*2.0)*55+phase*24,cos(elapsed*0.9+phase)*19-24)
+			if not view.has_point(at): continue
+			at = at.round()
+			var spread := 3 if (frame+i)%4<2 else 1
+			var wing := Color("d8c47b") if i%2==0 else Color("c5d5b2")
+			draw_rect(Rect2(at+Vector2(-spread,-2),Vector2(spread,3)),wing)
+			draw_rect(Rect2(at+Vector2(1,-2),Vector2(spread,3)),wing)
+			draw_rect(Rect2(at,Vector2(1,4)),Color("4a4731"))
+
+class ForestCreature extends Node2D:
+	var species := "ular_muara"
+	var origin := Vector2.ZERO
+	var elapsed := 0.0
+	var frame := -1
+	var width := 80.0
+	var walkable: Callable
+	func _process(delta: float) -> void:
+		elapsed += delta
+		var next_frame := int(elapsed*12)
+		if next_frame==frame: return
+		frame = next_frame
+		var pace := 0.19 if species=="kura_pesisir" else 0.38
+		var next_position := origin+Vector2(sin(elapsed*pace)*40,cos(elapsed*pace)*9)
+		if not walkable.is_valid() or walkable.call(next_position): position = next_position
+		queue_redraw()
+	func _draw() -> void:
+		var pace := 0.19 if species=="kura_pesisir" else 0.38
+		preload("res://scripts/CreatureAnimator.gd").draw_creature(self,species,Vector2.ZERO,width,elapsed,cos(elapsed*pace),Color.WHITE,false)
 
 class ForestAvatar extends CharacterBody2D:
 	var facing := Vector2.DOWN
@@ -152,7 +177,17 @@ func _ready() -> void:
 	if ResourceLoader.exists("res://resources/art/forest-muara.png"):
 		background = load("res://resources/art/forest-muara.png")
 	_build_props()
+	_add_polyfork_plant("fern-plant",Vector2(485,1160),Vector2(68,68))
+	_add_polyfork_plant("fern-plant",Vector2(1480,810),Vector2(60,60))
+	depth_planes = preload("res://scripts/DepthPlanes.gd").new()
+	depth_planes.configure("forest",EXTENT,walkable_paths,walkable_half_width)
+	add_child(depth_planes)
+	move_child(depth_planes,0)
 	_build_lighting()
+	var pixel_effects := preload("res://scripts/PixelEffects.gd").new()
+	pixel_effects.name = "PixelEffects"
+	add_child(pixel_effects)
+	pixel_effects.configure("forest")
 	avatar = ForestAvatar.new()
 	avatar.position = ENTRY
 	var saved_surface: Variant = GameState.get("surface")
@@ -176,6 +211,18 @@ func _ready() -> void:
 	collider.position = Vector2(0,-6)
 	avatar.add_child(collider)
 	actors.add_child(avatar)
+	for item in [["ular_muara",Vector2(960,900),90.0],["kura_pesisir",Vector2(1630,980),60.0]]:
+		var creature := ForestCreature.new()
+		creature.species = item[0]
+		creature.origin = item[1]
+		creature.position = item[1]
+		creature.width = item[2]
+		creature.walkable = _is_walkable
+		actors.add_child(creature)
+	var forest_life := ForestLife.new()
+	forest_life.focus = avatar
+	forest_life.z_index = 3
+	add_child(forest_life)
 	camera = Camera2D.new()
 	camera.zoom = Vector2(1.05,1.05)
 	camera.position_smoothing_enabled = true
@@ -233,12 +280,28 @@ func _build_props() -> void:
 			_add_prop("tree",at,0,true)
 	for item in landmarks:
 		var at := Vector2(item.x,item.y) + Vector2(24,8)
-		_add_prop("cache" if item.id == "forest_cache" else "marker",at,0,false)
-		_add_circle_obstacle(at,18 if item.id == "forest_cache" else 7)
+		var kind: String = {"forest_canopy":"canopy","forest_roots":"roots","forest_stream":"stream","forest_cache":"cache"}.get(str(item.id),"canopy")
+		_add_prop(kind,at,0,false)
+		_add_circle_obstacle(at,18 if kind=="cache" else 7)
 	for item in blocked_exits:
-		_add_rect_obstacle(Rect2(Vector2(item.x,item.y)-Vector2(item.width,item.height)/2,Vector2(item.width,item.height)))
+		var at := Vector2(item.x,item.y)
+		var kind: String = {"landslide_north":"landslide","bridge_east":"bridge","gate_east":"gate"}.get(str(item.id),"landslide")
+		_add_prop(kind,at+Vector2(0,float(item.height)/2),0,false)
+		_add_rect_obstacle(Rect2(at-Vector2(item.width,item.height)/2,Vector2(item.width,item.height)))
 	for edge in [Rect2(-40,80,2480,40),Rect2(-40,1500,2480,40),Rect2(0,120,40,1380),Rect2(2360,120,40,1380)]:
 		_add_rect_obstacle(edge)
+
+func _add_polyfork_plant(id: String, at: Vector2, dimensions: Vector2) -> void:
+	var path := "res://resources/art/polyfork/%s.png" % id
+	if not ResourceLoader.exists(path): return
+	var plant := Sprite2D.new()
+	plant.texture = load(path)
+	plant.position = at
+	plant.centered = false
+	plant.offset = Vector2(-plant.texture.get_width()/2.0,-plant.texture.get_height())
+	plant.scale = dimensions/plant.texture.get_size()
+	plant.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	actors.add_child(plant)
 
 func _add_foreground(base_pixel: Vector2, polygon_pixels: Array, trunk_radius: float, foliage := true) -> void:
 	var foreground := Polygon2D.new()
@@ -288,6 +351,7 @@ func _add_prop(kind: String, at: Vector2, variant: int, solid: bool) -> void:
 	prop.kind = kind
 	prop.variant = variant
 	prop.position = at
+	prop.display_size = {"canopy":Vector2(136,114),"roots":Vector2(170,145),"stream":Vector2(150,130),"landslide":Vector2(280,180),"bridge":Vector2(270,155),"gate":Vector2(180,245)}.get(kind,Vector2(136,114))
 	actors.add_child(prop)
 	if solid:
 		var body := StaticBody2D.new()
@@ -321,37 +385,11 @@ func _draw() -> void:
 	draw_polyline(stream,Color(0.34,0.48,0.40,0.0 if background != null else 1.0),100,false)
 	draw_polyline(stream,Color(0.32,0.55,0.53,0.0 if background != null else 1.0),67,false)
 	draw_polyline(stream,Color(0.60,0.81,0.71,0.0 if background != null else 0.4),7,false)
-	# Penemuan memiliki petunjuk lingkungan sebelum teks pengamatan.
-	for ray in [Vector2(560,870),Vector2(640,850),Vector2(710,875)]:
-		draw_colored_polygon(PackedVector2Array([ray,ray+Vector2(50,170),ray+Vector2(115,170)]),Color(0.94,0.91,0.58,0.12))
-	var rng := RandomNumberGenerator.new()
-	rng.seed = 739
-	for i in range(260):
-		var at := Vector2(rng.randf_range(50,2350),rng.randf_range(80,1550))
-		draw_rect(Rect2(at,Vector2(5,2)),Color(0.76,0.69,0.39,0.35))
-	for exit in blocked_exits:
-		var at := Vector2(exit.x,exit.y)
-		if str(exit.id) == "landslide_north":
-			for i in range(7):
-				var rock := at+Vector2(-95+i*30,(i%2)*17-14)
-				draw_colored_polygon(PackedVector2Array([rock+Vector2(-22,16),rock+Vector2(-26,-12),rock+Vector2(0,-30),rock+Vector2(24,-13),rock+Vector2(28,15)]),Color("687566"))
-		elif str(exit.id) == "bridge_east":
-			draw_line(at+Vector2(-85,-28),at+Vector2(80,28),Color("51452e"),13)
-			for i in range(6):
-				draw_line(at+Vector2(-77+i*29,-35),at+Vector2(-62+i*25,34-(i%3)*14),Color("b3945b"),12)
-		else:
-			for i in range(8):
-				draw_line(at+Vector2(-43,-99+i*27),at+Vector2(42,-99+i*27),Color("b09a60"),9)
-			draw_line(at+Vector2(-45,-110),at+Vector2(-45,110),Color("715d36"),14)
-			draw_line(at+Vector2(45,-110),at+Vector2(45,110),Color("715d36"),14)
-	for item in landmarks:
-		var at := Vector2(item.x,item.y)
-		draw_arc(at,28,0,TAU,28,Color(0.82,0.77,0.48,0.55),2)
-	draw_arc(ENTRY,42,0,TAU,32,Color("d9cf91"),3)
 
 func _physics_process(delta: float) -> void:
 	if avatar == null:
 		return
+	if is_instance_valid(depth_planes): depth_planes.update_camera(avatar.position)
 	var direction := Input.get_vector("left","right","up","down")
 	if touch_direction != Vector2.ZERO:
 		direction = touch_direction.normalized()
@@ -413,11 +451,12 @@ func _find_nearby() -> void:
 			nearest = {"id":exit.id,"name":exit.name,"blocked":true,"reason":exit.get("reason","Jalur ini belum terbuka.")}
 	if avatar.position.distance_to(ENTRY) < 110:
 		nearest = {"id":"return","name":"Kembali ke Bandar Hujung"}
-	var hud_state := {"area":"Hutan Pesisir Wringin","coins":GameState.player.get("coins",0),"weight":0,"capacity":GameState.player.get("bagCapacity",20),"objective":"Jelajahi jalan hutan dan amati tiga penanda pengetahuan.","action":str(nearest.get("name","Dekati penanda untuk mengamati")),"canInteract":not nearest.is_empty() and not busy,"canNet":false,"diving":false}
+	var hud_state := {"area":"Hutan Pesisir Wringin","coins":GameState.player.get("coins",0),"weight":0,"capacity":GameState.player.get("bagCapacity",20),"objective":"Amati celah tajuk, akar hidup, dan aliran hulu.","action":str(nearest.get("name","Dekati temuan alam untuk mengamati")),"canInteract":not nearest.is_empty() and not busy,"canNet":false,"diving":false}
 	var environment = get_node_or_null("/root/EnvironmentState")
 	if environment != null:
 		hud_state.merge(environment.snapshot())
 	game_hud.update_state(hud_state)
+	game_hud.set_navigation(GameState.world,"forest",avatar.position)
 
 func _sync_position() -> bool:
 	if syncing:
@@ -625,9 +664,13 @@ func _select_character(id: String) -> void:
 
 func _publish_snapshot() -> void:
 	var snapshot := {"area":"forest","x":avatar.position.x,"y":avatar.position.y,"modal":modal_open,"nearby":str(nearest.get("id","")),"appearance":avatar.variant,"diving":false}
+	snapshot["audio"] = AudioManager.debug_status()
 	JavaScriptBridge.get_interface("window").jalasmaraSnapshot = JavaScriptBridge.get_interface("JSON").parse(JSON.stringify(snapshot))
 
 func _show_map() -> void:
+	if modal_open and is_instance_valid(atlas_panel):
+		_close_dialog()
+		return
 	if busy:
 		return
 	modal_open = true
@@ -650,6 +693,7 @@ func _show_map() -> void:
 	atlas_panel.add_theme_stylebox_override("panel",style)
 	var atlas := AtlasScript.new()
 	atlas.configure(GameState.world,GameState.player,"forest_wringin")
+	atlas.set_player_position(avatar.position)
 	atlas.close_requested.connect(_close_dialog)
 	atlas_panel.add_child(atlas)
 	ui.add_child(atlas_panel)
@@ -667,9 +711,7 @@ func _is_walkable(point: Vector2) -> bool:
 
 func _build_lighting() -> void:
 	_add_forest_light(Vector2(430,418),1.85,"lantern",true)
-	for item in landmarks:
-		if str(item.id) != "forest_cache":
-			_add_forest_light(Vector2(item.x,item.y)+Vector2(52,-22),0.95,"lantern",str(item.id)=="forest_roots")
+	# Cahaya penemuan berasal dari celah tajuk, bukan lampu pada papan UI.
 	_add_forest_light(Vector2(670,985),2.8,"canopy",false)
 	_add_forest_light(Vector2(1350,620),2.35,"canopy",false)
 	_update_lighting()

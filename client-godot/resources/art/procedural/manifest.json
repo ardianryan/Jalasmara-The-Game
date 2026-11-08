@@ -1,0 +1,221 @@
+{
+  "format": "jalasmara.procedural-creatures",
+  "formatVersion": 1,
+  "upstream": "https://github.com/idlerunner00/procedural-pixel-creatures",
+  "revision": "a2207c4bd6f1be51d426684cf58f11668def7579",
+  "license": "MIT",
+  "generatorVersion": 2,
+  "fps": 12,
+  "species": [
+    {
+      "id": "reef_seruni",
+      "label": "Ikan Seruni",
+      "family": "aquatic",
+      "archetype": "reef",
+      "seed": 1518,
+      "habitat": "sea",
+      "metadata": "reef_seruni.json",
+      "genome": "reef_seruni.genome.json",
+      "frameWidth": 60,
+      "frameHeight": 36,
+      "frames": 56,
+      "pages": [
+        {
+          "file": "reef_seruni.png",
+          "width": 1440,
+          "height": 144,
+          "sha256": "dba2516125fc860c0beefde6b261d3177fa590e22be5dfb697bc13f99d961535"
+        }
+      ]
+    },
+    {
+      "id": "pari_lamun",
+      "label": "Pari Lamun",
+      "family": "aquatic",
+      "archetype": "ray",
+      "seed": 2903,
+      "habitat": "sea",
+      "metadata": "pari_lamun.json",
+      "genome": "pari_lamun.genome.json",
+      "frameWidth": 56,
+      "frameHeight": 40,
+      "frames": 60,
+      "pages": [
+        {
+          "file": "pari_lamun.png",
+          "width": 1344,
+          "height": 160,
+          "sha256": "beb7753c3849bbb5fc3f04e725132a9fd6e6e40650765e4c4f36b649b5b24041"
+        }
+      ]
+    },
+    {
+      "id": "sidat_smara",
+      "label": "Sidat Smara",
+      "family": "aquatic",
+      "archetype": "eel",
+      "seed": 3711,
+      "habitat": "sea",
+      "metadata": "sidat_smara.json",
+      "genome": "sidat_smara.genome.json",
+      "frameWidth": 88,
+      "frameHeight": 35,
+      "frames": 64,
+      "pages": [
+        {
+          "file": "sidat_smara.png",
+          "width": 2112,
+          "height": 140,
+          "sha256": "edbb444b576cd6c092471890e8b52e7371f0e8dbe20dee0515230f7072d56672"
+        }
+      ]
+    },
+    {
+      "id": "ubur_smaragd",
+      "label": "Ubur Smara",
+      "family": "amorphous",
+      "archetype": "jelly",
+      "seed": 4297,
+      "habitat": "sea",
+      "metadata": "ubur_smaragd.json",
+      "genome": "ubur_smaragd.genome.json",
+      "frameWidth": 36,
+      "frameHeight": 38,
+      "frames": 58,
+      "pages": [
+        {
+          "file": "ubur_smaragd.png",
+          "width": 864,
+          "height": 152,
+          "sha256": "1731d7898206ac070f060b2cc64b5f6d8c1a7db3a3ce3f0bef47ed693191d41a"
+        }
+      ]
+    },
+    {
+      "id": "sotong_karang",
+      "label": "Gurita Karang",
+      "family": "amorphous",
+      "archetype": "octopus",
+      "seed": 5113,
+      "habitat": "sea",
+      "metadata": "sotong_karang.json",
+      "genome": "sotong_karang.genome.json",
+      "frameWidth": 50,
+      "frameHeight": 38,
+      "frames": 68,
+      "pages": [
+        {
+          "file": "sotong_karang.png",
+          "width": 1200,
+          "height": 152,
+          "sha256": "796515a29ebaf3c62e96829fb66f47ac5d1fba90d609ae9a3520a6db0b32541e"
+        }
+      ]
+    },
+    {
+      "id": "ular_muara",
+      "label": "Ular Muara",
+      "family": "serpent",
+      "archetype": "snake",
+      "seed": 6121,
+      "habitat": "forest",
+      "metadata": "ular_muara.json",
+      "genome": "ular_muara.genome.json",
+      "frameWidth": 104,
+      "frameHeight": 59,
+      "frames": 124,
+      "pages": [
+        {
+          "file": "ular_muara.png",
+          "width": 2496,
+          "height": 472,
+          "sha256": "fcbe7a827ef05d096f1558fc6236e74644bef74a4edb63423eff782e7eaba5f2"
+        }
+      ]
+    },
+    {
+      "id": "kepiting_bandar",
+      "label": "Kepiting Bandar",
+      "family": "arthropod",
+      "archetype": "crab",
+      "seed": 7159,
+      "habitat": "sea",
+      "metadata": "kepiting_bandar.json",
+      "genome": "kepiting_bandar.genome.json",
+      "frameWidth": 38,
+      "frameHeight": 29,
+      "frames": 56,
+      "pages": [
+        {
+          "file": "kepiting_bandar.png",
+          "width": 912,
+          "height": 116,
+          "sha256": "d99237c9881f0e9661417c93575d9eda1eab908a65d0ed3c86c419e6b6a21561"
+        }
+      ]
+    },
+    {
+      "id": "buntal_pasir",
+      "label": "Buntal Pasir",
+      "family": "aquatic",
+      "archetype": "puffer",
+      "seed": 8231,
+      "habitat": "sea",
+      "metadata": "buntal_pasir.json",
+      "genome": "buntal_pasir.genome.json",
+      "frameWidth": 58,
+      "frameHeight": 37,
+      "frames": 58,
+      "pages": [
+        {
+          "file": "buntal_pasir.png",
+          "width": 1392,
+          "height": 148,
+          "sha256": "a8d1bf58efdd91912897ce6b7639e2f7d3a2d17971e28db26ff2996bfd450ba6"
+        }
+      ]
+    },
+    {
+      "id": "hiu_segaran",
+      "label": "Hiu Segaran",
+      "family": "aquatic",
+      "archetype": "shark",
+      "seed": 9391,
+      "habitat": "sea",
+      "metadata": "hiu_segaran.json",
+      "genome": "hiu_segaran.genome.json",
+      "frameWidth": 64,
+      "frameHeight": 28,
+      "frames": 58,
+      "pages": [
+        {
+          "file": "hiu_segaran.png",
+          "width": 1536,
+          "height": 112,
+          "sha256": "d9491374c107316c701eb7bd217d74257849911c536082f0227005cda03b9c07"
+        }
+      ]
+    },
+    {
+      "id": "kura_pesisir",
+      "label": "Kura-kura Pesisir",
+      "family": "reptile",
+      "archetype": "tortoise",
+      "seed": 10459,
+      "habitat": "forest",
+      "metadata": "kura_pesisir.json",
+      "genome": "kura_pesisir.genome.json",
+      "frameWidth": 54,
+      "frameHeight": 38,
+      "frames": 120,
+      "pages": [
+        {
+          "file": "kura_pesisir.png",
+          "width": 1296,
+          "height": 304,
+          "sha256": "0583f96e25a265aa4c4fb295e1f889a68b11e431cbda6875ebf4087afc34c2d3"
+        }
+      ]
+    }
+  ]
+}

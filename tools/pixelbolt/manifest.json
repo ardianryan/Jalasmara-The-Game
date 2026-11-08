@@ -1,0 +1,30 @@
+{
+  "generator": "pixelbolt@0.13.0",
+  "authorship": "Original Jalasmara recipes; no third-party artwork",
+  "assets": {
+    "lantern-flame": {
+      "frames": 4,
+      "width": 32,
+      "height": 32,
+      "sha256": "0c6e2f05d9a4d088d5de8359faee08a0eb679cfa616fbcfa1113294385d4be3f"
+    },
+    "bubble-splash": {
+      "frames": 8,
+      "width": 32,
+      "height": 32,
+      "sha256": "92249c4060bc4b06fd5c54b9079ba9591b48b9d46f31ef3ff0d746b3110a7985"
+    },
+    "pot-steam": {
+      "frames": 6,
+      "width": 32,
+      "height": 32,
+      "sha256": "169fb8abf01e9890d7c2db7d0224a4d3aa27b6e919c6178860c9b69084af59c2"
+    },
+    "memory-spark": {
+      "frames": 6,
+      "width": 32,
+      "height": 32,
+      "sha256": "5e28449d11c5f084f7a9a7581ff3a27c83b0703f1e81f4c98fab6d6a39240e32"
+    }
+  }
+}

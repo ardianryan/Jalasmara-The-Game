@@ -1,0 +1,12 @@
+Polyfork rendered sprites — CC BY 4.0
+
+Bamboo Stalk by Polyfork
+https://polyfork.dev/asset/bamboo-stalk-e4d362
+
+Fern Plant by Polyfork
+https://polyfork.dev/asset/fern-plant-1559b8
+
+License: Creative Commons Attribution 4.0 International
+https://creativecommons.org/licenses/by/4.0/
+
+Changes by Jalasmara: orthographic oblique rendering, unshaded vertex colors, PNG color conversion, 128px resolution; nearest-filtered and scaled as decorative sprites. Original free GLB meshes are unchanged. No endorsement by Polyfork is implied.

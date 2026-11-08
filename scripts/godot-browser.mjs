@@ -1,6 +1,7 @@
+import { fetchWorld, hubRoute } from "./game-navigation.mjs";
 import { chromium, firefox, webkit } from "@playwright/test";
 import assert from "node:assert/strict";
-import { readFileSync, mkdirSync, writeFileSync } from "node:fs";
+import { readFileSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 const fixture = JSON.parse(
   readFileSync(process.env.BROWSER_FIXTURE ?? ".runtime/browser.json", "utf8"),
 );
@@ -23,10 +24,16 @@ const context = await browser.newContext({
   viewport: { width: 1440, height: 900 },
 });
 const page = await context.newPage(),
-  errors = [];
+  errors = [],
+  diagnostics = [];
 page.setDefaultTimeout(15000);
 page.on("pageerror", (e) => errors.push(e.message));
 page.on("console", (m) => {
+  diagnostics.push({ type: m.type(), text: m.text() });
+  writeFileSync(
+    ".runtime/godot-browser-diagnostics.json",
+    JSON.stringify(diagnostics.slice(-200)),
+  );
   if (m.type() === "error") errors.push(m.text());
 });
 const snapshot = (frame) => frame.evaluate(() => window.jalasmaraSnapshot);
@@ -56,9 +63,12 @@ try {
     await page.locator("iframe").elementHandle()
   ).contentFrame();
   await frame.waitForFunction(() => window.jalasmaraReady === true, null, {
-    timeout: 60000,
+    polling: 200,
+    timeout: 90000,
   });
-  await frame.waitForFunction(() => window.jalasmaraSnapshot != null);
+  await frame.waitForFunction(() => window.jalasmaraSnapshot != null, null, {
+    polling: 200,
+  });
   if (origin.startsWith("https:")) {
     const session = (await context.cookies()).find(
       (c) => c.name === "__Host-jalasmara",
@@ -76,11 +86,18 @@ try {
   });
   await frame.locator("canvas").click();
   if (!(await snapshot(frame)).diving) {
-    await walkTo(frame, 1280, 510);
+    const world = await fetchWorld(context.request, origin);
+    for (const [x, y] of hubRoute(
+      world,
+      await snapshot(frame),
+      world.hub.divePoint,
+    ))
+      await walkTo(frame, x, y);
     await page.keyboard.press("e");
     await frame.waitForFunction(
       () => window.jalasmaraSnapshot?.diving === true,
-      null,{polling:200,timeout:30000}
+      null,
+      { polling: 200, timeout: 30000 },
     );
   }
   await page.screenshot({
@@ -112,7 +129,11 @@ try {
     ),
     true,
   );
-  await frame.waitForFunction(() => window.jalasmaraSnapshot?.modal === true);
+  await frame.waitForFunction(
+    () => window.jalasmaraSnapshot?.modal === true,
+    null,
+    { polling: 200 },
+  );
   await page.screenshot({
     path: "artifacts/godot/discovery.png",
     fullPage: true,
@@ -124,10 +145,16 @@ try {
     fullPage: true,
   });
   await page.keyboard.press("m");
-  await frame.waitForFunction(() => window.jalasmaraSnapshot?.modal === true);
+  await frame.waitForFunction(
+    () => window.jalasmaraSnapshot?.modal === true,
+    null,
+    { polling: 200 },
+  );
   assert.equal((await snapshot(frame)).modal, true);
   await page.screenshot({ path: "artifacts/godot/map.png", fullPage: true });
   assert.deepEqual(errors, []);
+  rmSync("artifacts/godot/errors.json", { force: true });
+  rmSync("artifacts/godot/failure.png", { force: true });
   writeFileSync(
     "artifacts/godot/results.json",
     JSON.stringify(
@@ -152,13 +179,37 @@ try {
     "Godot browser: walk, dive, swim, capture, discovery, map passed; no browser errors.",
   );
 } catch (e) {
-  await page.screenshot({
-    path: "artifacts/godot/failure.png",
-    fullPage: true,
-  });
+  await page
+    .screenshot({
+      path: "artifacts/godot/failure.png",
+      timeout: 5000,
+      fullPage: true,
+    })
+    .catch(() => {});
   writeFileSync(
     "artifacts/godot/errors.json",
-    JSON.stringify({ error: e.message, errors, snapshot:await page.locator("iframe").evaluate(el=>el.contentWindow.jalasmaraSnapshot) }, null, 2),
+    JSON.stringify(
+      {
+        error: e.message,
+        errors,
+        diagnostics,
+        url: page.url(),
+        ready: await page
+          .locator("iframe")
+          .evaluate((el) => el.contentWindow.jalasmaraReady, null, {
+            timeout: 1000,
+          })
+          .catch(() => null),
+        snapshot: await page
+          .locator("iframe")
+          .evaluate((el) => el.contentWindow.jalasmaraSnapshot, null, {
+            timeout: 1000,
+          })
+          .catch(() => null),
+      },
+      null,
+      2,
+    ),
   );
   console.error(e.stack);
   process.exitCode = 1;

@@ -1,0 +1,108 @@
+{
+  "assets": [
+    {
+      "id": "bamboo-stalk-e4d362",
+      "title": "Bamboo Stalk",
+      "triangles": 434,
+      "size_m": {
+        "x": 1.09,
+        "y": 3.01,
+        "z": 1.28
+      },
+      "credit": "Bamboo Stalk by Polyfork (https://polyfork.dev/asset/bamboo-stalk-e4d362), CC BY 4.0",
+      "page": "https://polyfork.dev/asset/bamboo-stalk-e4d362",
+      "source_api": "https://polyfork.dev/api/assets/bamboo-stalk-e4d362",
+      "download_url": "https://polyfork.dev/cdn/bamboo-stalk-e4d362.glb",
+      "retrieved_at": "2026-11-08T04:08:10.536091+00:00",
+      "selected_license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "publisher_license_url": "https://polyfork.dev/licensing",
+      "modifications": "None; original free low-poly GLB.",
+      "file": "bamboo-stalk-e4d362.glb",
+      "sha256": "33034968acff8ee93bafbaed952f88c253da4f769f05735ab4c6b83018135154",
+      "bytes": 56992,
+      "gltf_version": "2.0",
+      "meshes": 2,
+      "embedded_only": true
+    },
+    {
+      "id": "fern-plant-1559b8",
+      "title": "Fern Plant",
+      "triangles": 802,
+      "size_m": {
+        "x": 1.02,
+        "y": 0.72,
+        "z": 0.97
+      },
+      "credit": "Fern Plant by Polyfork (https://polyfork.dev/asset/fern-plant-1559b8), CC BY 4.0",
+      "page": "https://polyfork.dev/asset/fern-plant-1559b8",
+      "source_api": "https://polyfork.dev/api/assets/fern-plant-1559b8",
+      "download_url": "https://polyfork.dev/cdn/fern-plant-1559b8.glb",
+      "retrieved_at": "2026-11-08T04:08:11.771618+00:00",
+      "selected_license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "publisher_license_url": "https://polyfork.dev/licensing",
+      "modifications": "None; original free low-poly GLB.",
+      "file": "fern-plant-1559b8.glb",
+      "sha256": "578b2bf355756ae8b92248386a08dc92d867abe4f05a0d054aef66a3172f5aa5",
+      "bytes": 93172,
+      "gltf_version": "2.0",
+      "meshes": 1,
+      "embedded_only": true
+    },
+    {
+      "id": "small-reef-rock-99062d",
+      "title": "Small Reef Rock",
+      "triangles": 430,
+      "size_m": {
+        "x": 0.5,
+        "y": 0.39,
+        "z": 0.46
+      },
+      "credit": "Small Reef Rock by Polyfork (https://polyfork.dev/asset/small-reef-rock-99062d), CC BY 4.0",
+      "page": "https://polyfork.dev/asset/small-reef-rock-99062d",
+      "source_api": "https://polyfork.dev/api/assets/small-reef-rock-99062d",
+      "download_url": "https://polyfork.dev/cdn/small-reef-rock-99062d.glb",
+      "retrieved_at": "2026-11-08T04:08:12.880003+00:00",
+      "selected_license": "CC-BY-4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "publisher_license_url": "https://polyfork.dev/licensing",
+      "modifications": "None; original free low-poly GLB.",
+      "file": "small-reef-rock-99062d.glb",
+      "sha256": "b2a2c0537433ff1f60c50694114f835d0b7eb69b6d7dcc0f25624e5a3a50e1bd",
+      "bytes": 50752,
+      "gltf_version": "2.0",
+      "meshes": 1,
+      "embedded_only": true
+    }
+  ],
+  "purpose": "Offline orthographic sprite prototyping; no runtime 3D integration.",
+  "render_prototypes": [
+    {
+      "file": "renders/bamboo-stalk-e4d362.png",
+      "sha256": "ecce1210af9e1ea915aea0a2b45ea6007005de9fbf787c12a385aa956c73e596",
+      "width": 128,
+      "height": 128,
+      "derivative_changes": "Orthographic oblique render, unshaded vertex color, PNG color conversion, 128px resolution.",
+      "runtime_integration": true,
+      "runtime_file": "client-godot/resources/art/polyfork/bamboo-stalk.png"
+    },
+    {
+      "file": "renders/fern-plant-1559b8.png",
+      "sha256": "87c601ad65dbc4896a2e344d6e4ae0fc6bcef31a3663fee566dbc518f173708d",
+      "width": 128,
+      "height": 128,
+      "derivative_changes": "Orthographic oblique render, unshaded vertex color, PNG color conversion, 128px resolution.",
+      "runtime_integration": true,
+      "runtime_file": "client-godot/resources/art/polyfork/fern-plant.png"
+    },
+    {
+      "file": "renders/small-reef-rock-99062d.png",
+      "sha256": "c945a138c7bdfc09a8da491f6b409eec5da365989d89b12c75b480894fd829de",
+      "width": 128,
+      "height": 128,
+      "derivative_changes": "Orthographic oblique render, unshaded vertex color, PNG color conversion, 128px resolution.",
+      "runtime_integration": false
+    }
+  ]
+}

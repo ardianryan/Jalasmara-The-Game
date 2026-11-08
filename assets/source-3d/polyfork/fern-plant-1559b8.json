@@ -1,0 +1,25 @@
+{
+  "id": "fern-plant-1559b8",
+  "title": "Fern Plant",
+  "triangles": 802,
+  "size_m": {
+    "x": 1.02,
+    "y": 0.72,
+    "z": 0.97
+  },
+  "credit": "Fern Plant by Polyfork (https://polyfork.dev/asset/fern-plant-1559b8), CC BY 4.0",
+  "page": "https://polyfork.dev/asset/fern-plant-1559b8",
+  "source_api": "https://polyfork.dev/api/assets/fern-plant-1559b8",
+  "download_url": "https://polyfork.dev/cdn/fern-plant-1559b8.glb",
+  "retrieved_at": "2026-11-08T04:08:11.771618+00:00",
+  "selected_license": "CC-BY-4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "publisher_license_url": "https://polyfork.dev/licensing",
+  "modifications": "None; original free low-poly GLB.",
+  "file": "fern-plant-1559b8.glb",
+  "sha256": "578b2bf355756ae8b92248386a08dc92d867abe4f05a0d054aef66a3172f5aa5",
+  "bytes": 93172,
+  "gltf_version": "2.0",
+  "meshes": 1,
+  "embedded_only": true
+}

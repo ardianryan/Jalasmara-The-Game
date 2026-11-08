@@ -26,3 +26,16 @@ Generasi AI belum menggantikan tinjauan budaya atau animasi oleh manusia. Motif 
 ## Pemeran dermaga
 
 `npc-atlas.png`: atlas transparan 2 × 2, empat pemeran seluruh tubuh dengan kaki sejajar, sudut tiga perempat dari atas dan pixel cluster yang terbaca pada 64 piksel. Urutan Mbah Wira (blangkon, lurik, celemek, janggut putih), Beno (kupluk merah, kacamata las, wearpack biru), Bu Darmi (pakaian kebun, caping di punggung, bibit tanaman), Inspektur Raka (mantel putih, visor merah, koper). Busana keseharian pesisir yang distilisasi, tanpa simbol sakral, teks, latar, atau karakter karya lain. Dibuat menggunakan mode built-in image generation dan disalin ke aset proyek.
+
+## Perombakan lingkungan dan properti
+
+Dibuat melalui **built-in imagegen**, lalu diperiksa dan disalin ke `client-godot/resources/art/`:
+
+- `coastal-village-map.png`: desa pesisir Nusantara tiga perempat 2400 × 1600, dua pelataran, kedai bambu kiri, galangan kanvas tengah, rakit tani timur, pos pengawas timur laut, tangga selam di dermaga selatan, jalan hutan timur laut. Tanpa karakter, UI, tulisan atau lambang sakral. Jalur dan collision disesuaikan setelah inspeksi gambar.
+- `ocean-depth-background.png`: jurang bawah air jauh, siluet batu berlapis dan reruntuhan samar, kolom tengah kosong, toska menuju nila, tanpa fauna atau penghalang dekat. Engine menambahkan cahaya dan atmosfer.
+- `ocean-terrain-atlas.png`: kisi 3 × 2; tiga material batu di atas, coral garden, karang piringan, dan lamun berakar di bawah. Tidak ada UI. Putaran kedua membersihkan alpha latar bagian bawah; versi awal ditolak dan disimpan lokal.
+- `forest-props-atlas.png`: kisi 3 × 2 transparan, bibit/kayu lapuk, akar bakau, stasiun sampel air bambu, longsoran batu, jembatan patah, gerbang tertutup berlumut. Perspektif tiga perempat, palet tanah dan lumut, tanpa teks. Alpha ditinjau dan dibersihkan pada putaran kedua.
+- `ocean-props-atlas.png`: kisi 4 × 2 transparan; tablet memori di batu, katup pipa, filter air, kerangka lampu tanaman, bulu babi, pipa bocor, pilar roboh, peti berjala. Benda fisik bertekstur, tanpa panel UI atau tulisan.
+- `sea-life-atlas.png`: delapan fauna laut, dibuat dan dibersihkan alpha-nya untuk eksplorasi awal. Fauna runtime kemudian diganti dengan keluaran generator prosedural pilihan pengguna; atlas ini bukan sumber animasi generator tersebut.
+
+Konten referensi Dave the Diver tetap hanya pada `moodboard/` yang diabaikan Git dan tidak didistribusikan. Properti, arsitektur dan material dunia mempertahankan arah Nusantara keseharian yang telah disetujui.

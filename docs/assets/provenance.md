@@ -1,19 +1,29 @@
 # Asal aset
 
-| Aset | Asal | Pemakaian |
-|---|---|---|
-| Jala Muara dan wordmark | SVG asli proyek; outline Lora Medium untuk wordmark | Identitas Jalasmara |
-| `muara-sungsang.png` | Generasi gambar untuk proyek; nama berkas warisan sebelum Bandar Hujung ditetapkan | Halaman masuk dan latar laut jauh |
-| `nala-swim.png` | Generasi gambar untuk proyek, enam frame atlas | Animasi renang Nala |
-| `gajah-mina.png` | Generasi gambar untuk proyek dengan brief penjaga yang dipulihkan | Arena Tamansari |
-| Empat atlas karakter `male-*` / `female-*` | Generasi asli proyek, sembilan pose per atlas | Pilihan penjelajah dan animasi |
-| `forest-muara.png` / `bandar-hujung-map.png` | Generasi asli berdasarkan brief geografis dan komposisi | Peta darat, dilapisi collision dan occlusion native |
-| `item-atlas.png` | Generasi asli, dua putaran pemeriksaan/cleanup alfa | Biota, peti, ikon koleksi |
-| `npc-atlas.png` | Generasi asli proyek, empat pemeran dermaga | Mbah Wira, Beno, Bu Darmi, Inspektur Raka |
-| Instalasi, HUD, atlas wilayah, penghalang | Gambar native melalui kode Godot | Dunia interaktif dan tabrakan |
-| Lora / Nunito Sans | Paket Fontsource, SIL Open Font License | Judul dan UI web |
-| Font bawaan Godot | Distribusi Godot dan pemberitahuan lisensinya | Antarmuka game |
+| Aset                                               | Asal                                                                                                                          | Pemakaian                                                              |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Jala Muara dan wordmark                            | SVG asli proyek; outline Lora Medium untuk wordmark                                                                           | Identitas Jalasmara                                                    |
+| `muara-sungsang.png`                               | Generasi gambar untuk proyek; nama berkas warisan sebelum Bandar Hujung ditetapkan                                            | Halaman masuk dan latar laut jauh                                      |
+| `nala-swim.png`                                    | Generasi gambar untuk proyek, enam frame atlas                                                                                | Animasi renang Nala                                                    |
+| `gajah-mina.png`                                   | Generasi gambar untuk proyek dengan brief penjaga yang dipulihkan                                                             | Arena Tamansari                                                        |
+| Empat atlas karakter `male-*` / `female-*`         | Generasi asli proyek, sembilan pose per atlas                                                                                 | Pilihan penjelajah dan animasi                                         |
+| `forest-muara.png` / `coastal-village-map.png`       | Generasi asli berdasarkan brief geografis dan komposisi                                                                       | Peta darat, dilapisi collision dan occlusion native                    |
+| `item-atlas.png`                                   | Generasi asli, dua putaran pemeriksaan/cleanup alfa                                                                           | Peti dan ikon koleksi; fauna runtime memakai generator procedural                                              |
+| `npc-atlas.png`                                    | Generasi asli proyek, empat pemeran dermaga                                                                                   | Mbah Wira, Beno, Bu Darmi, Inspektur Raka                              |
+| Instalasi, HUD, atlas wilayah, penghalang          | Gambar native melalui kode Godot                                                                                              | Dunia interaktif dan tabrakan                                          |
+| `art/procedural/*.png` dan metadata                | Anatomi, rig, dan rasterisasi kode upstream Procedural Pixel Creatures (MIT), commit tersemat; adapter offline proyek         | Fauna procedural, 10 spesies / 722 frame; tanpa runtime C# di game web |
+| `art/polyfork/fern-plant.png` / `bamboo-stalk.png` | Render PNG dari model Polyfork yang tercatat pada `assets/source-3d/polyfork/ATTRIBUTION.md`; CC BY 4.0; salinan byte asli render proyek, kredit runtime dalam `art/polyfork/ATTRIBUTION.txt` | Dua pakis hutan dan pakis/bambu dekoratif tepi pelataran hub           |
+| `art/pixelbolt/*.png` / `.tres` / metadata | Resep piksel orisinal proyek, dikompilasi Pixelbolt 0.13.0 (MIT) tersemat; empat resep diperiksa melalui CLI dan render ulang identik SHA-256 | Api lentera, uap panci, splash air, kilau memori; integrasi hub dan hutan |
+| `audio/bgm/*` / `audio/sfx/*` | Berkas audio yang ditambahkan pengguna ke proyek; asal rekaman, pembuat, dan lisensi belum disertakan, sehingga tidak diklaim sebagai rekaman orisinal atau berlisensi tertentu | Musik konteks area dan efek permainan; sumber berkas dipertahankan tanpa modifikasi |
+| Lora / Nunito Sans                                 | Paket Fontsource, SIL Open Font License                                                                                       | Judul dan UI web                                                       |
+| Ark Pixel 12px proportional Latin                 | TakWolf/ark-pixel-font, rilis 2026.10.25, SIL OFL 1.1; berkas lisensi dan SHA-256 di `client-godot/resources/fonts`              | Tema game, HUD, dan label peta; rasterisasi tanpa antialias            |
 
 Gambar yang dihasilkan belum merupakan bukti keaslian historis ornamen atau busana. Pedoman budaya mengatur tinjauan lanjutan. Aset Dave the Diver, Steam, RPGFan, Fandom, dan YouTube hanya untuk referensi visual lokal; direktori `moodboard/` diabaikan Git dan tidak dimasukkan ke citra Docker maupun build game.
 
 [Brief generasi aset](generation-prompts.md) mencatat arah dan batas tiap bitmap.
+
+[Adapter dan verifikasi fauna procedural](../../tools/procedural-creatures/README.md) mencatat seed, pin sumber, lisensi, format animasi, dan pemeriksaan determinisme. Nama kura-kura ditetapkan sebagai satwa darat; tidak disamarkan sebagai penyu atau lumba-lumba.
+
+[Resep dan build FX Pixelbolt](../../tools/pixelbolt/README.md) mencatat versi alat, lisensi alat, resep proyek, serta uji determinisme. Lisensi MIT Pixelbolt tidak menentukan lisensi berkas audio pengguna.
+
+Berkas lisensi runtime: `resources/art/procedural/LICENSE.upstream.txt` (MIT), `resources/art/polyfork/ATTRIBUTION.txt` (kredit serta tautan CC BY 4.0), dan `resources/fonts/OFL.txt` (Ark Pixel). Preset ekspor menyertakan `*.json` dan `*.txt`, sehingga metadata sumber dan pemberitahuan tersebut ikut dalam distribusi game. Lisensi Lora dan Nunito Sans tersedia pada `docs/assets/LICENSE-*.txt`.

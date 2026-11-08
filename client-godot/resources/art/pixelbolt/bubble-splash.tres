@@ -1,0 +1,75 @@
+[gd_resource type="SpriteFrames" format=3]
+
+[ext_resource type="Texture2D" path="bubble-splash.png" id="1_sheet"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_bubble_splash_0"]
+atlas = ExtResource("1_sheet")
+region = Rect2(0, 0, 32, 32)
+filter_clip = true
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_bubble_splash_1"]
+atlas = ExtResource("1_sheet")
+region = Rect2(32, 0, 32, 32)
+filter_clip = true
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_bubble_splash_2"]
+atlas = ExtResource("1_sheet")
+region = Rect2(64, 0, 32, 32)
+filter_clip = true
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_bubble_splash_3"]
+atlas = ExtResource("1_sheet")
+region = Rect2(96, 0, 32, 32)
+filter_clip = true
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_bubble_splash_4"]
+atlas = ExtResource("1_sheet")
+region = Rect2(128, 0, 32, 32)
+filter_clip = true
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_bubble_splash_5"]
+atlas = ExtResource("1_sheet")
+region = Rect2(160, 0, 32, 32)
+filter_clip = true
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_bubble_splash_6"]
+atlas = ExtResource("1_sheet")
+region = Rect2(192, 0, 32, 32)
+filter_clip = true
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_bubble_splash_7"]
+atlas = ExtResource("1_sheet")
+region = Rect2(224, 0, 32, 32)
+filter_clip = true
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_bubble_splash_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_bubble_splash_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_bubble_splash_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_bubble_splash_3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_bubble_splash_4")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_bubble_splash_5")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_bubble_splash_6")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_bubble_splash_7")
+}],
+"loop": false,
+"name": &"idle",
+"speed": 11.11111111111111
+}]

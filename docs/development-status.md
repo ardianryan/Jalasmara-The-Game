@@ -8,11 +8,15 @@ Nala berjalan pada peta darat tiga perempat di Bandar Hujung dan hutan pesisir, 
 
 Akun lokal, undangan, reset oleh owner, kontrol pemain, editor konten versi, audit transaksi, dan penolakan hasil sesi lama tersedia. OIDC tambahan diuji terhadap issuer lokal tiruan; layanan ZITADEL eksternal belum diaktifkan.
 
-Peta hutan memisahkan gambar dasar, bentuk padat, dan tajuk yang menutupi pemain melalui Y-sort. Koridor yang dapat dilalui dipetakan pada data dunia; wilayah vegetasi rapat di luar koridor ditolak oleh klien dan server.
+Bandar Hujung memakai peta pesisir 2400 × 1600 dengan empat pelataran, tangga, delapan cabang jalur, serta mask darat layout versi 3. Spawn berada di dermaga (1120, 1230), tangga menyelam di (1485, 1330), dan pintu hutan di (2295, 125). Rumah, tembok, dan tepi air menjadi penghalang; koridor yang dapat dilalui dibaca klien dan server dari metadata yang sama. Peta hutan memisahkan gambar dasar, bentuk padat, dan tajuk yang menutupi pemain melalui Y-sort. Lapisan dekorasi jauh/dekat memakai parallax dan warna atmosfer; gambar dasar serta collision tetap diam.
+
+Sepuluh spesies fauna dihasilkan offline melalui Core Procedural Pixel Creatures pada seed tetap: 722 bingkai animasi dengan metadata arah dan pivot. Godot membaca PNG serta JSON melalui CreatureAnimator; runtime C# tidak disertakan ke web. Gerombolan ikan menghindari penyelam dan penghalang, sementara ular dan kura-kura pesisir menghuni hutan. Dua render pakis/bambu dari model Polyfork dipakai sebagai dekorasi kecil. Ark Pixel 12px proportional Latin menjadi font tema game, HUD, dan peta, dengan antialias dan subpixel dinonaktifkan. Kredit MIT, CC BY 4.0, dan OFL disertakan bersama sumber aset.
 
 ## Bukti pemeriksaan
 
-- 35 pengujian backend lulus, termasuk autentikasi, izin, versi konten, hadiah idempoten, eksplorasi, tiga siklus, dan boss.
+- 38 pengujian backend lulus, termasuk autentikasi, izin, versi konten, hadiah idempoten, eksplorasi, tiga siklus, boss, serta batas dan migrasi layout hub.
+- Sepuluh spritesheet procedural lulus pemeriksaan batas dan perubahan piksel; dua proses generasi terpisah menghasilkan PNG/JSON identik. Import Godot dan smoke test scene hutan lulus setelah pemasangan Ark Pixel; pengujian font memastikan cakupan huruf Latin, angka, tanda baca, diakritik, dan panah.
+- Setelah perombakan, alur berjalan–menyelam–menjala–penemuan–peta lulus di Firefox; tujuh pemeriksaan peta geografis dan enam pemeriksaan audio lulus di Chromium. Empat tangkapan siang/malam hub dan hutan menunjukkan dunia meredup sementara HUD tetap terbaca, tanpa error browser, shader, atau API. Pengujian audio memeriksa status pemutar, gesture, mute dan reload; kualitas suara melalui speaker tetap memerlukan pendengaran manusia.
 - Game diuji di Chromium dan Firefox desktop: berjalan, menyelam, berenang, menjala tanpa kuis, mengamati, dan membuka peta. Tidak ada error browser pada alur tersebut.
 - Delapan pemeriksaan hutan lulus di Chromium: pilihan karakter awal, perjalanan melalui gerbang, gerak dua sumbu, penemuan dan hadiah server, jurnal, ganti tampilan, atlas, serta pemulihan posisi setelah refresh.
 - Alur yang sama lulus pada HTTPS staging. Cookie produksi memakai prefiks `__Host-`, `Secure`, `HttpOnly`, dan `SameSite=Lax`.
@@ -20,7 +24,7 @@ Peta hutan memisahkan gambar dasar, bentuk padat, dan tajuk yang menutupi pemain
 - Admin diuji pada Chromium, Firefox, dan WebKit, termasuk perubahan koin, audit, salinan/edit/publikasi konten, serta lebar 1440, 768, dan 390 piksel tanpa overflow dokumen.
 - Build Godot Web, web, API, pemeriksaan dependensi, dan CodeQL dijalankan oleh GitLab CI. Status aktual dan laporan berada pada tautan pipeline repository; GitHub Actions nonaktif.
 
-Bukti browser lokal disimpan di `artifacts/` yang diabaikan Git. Gambar di `docs/screenshots/` adalah tangkapan prototipe Jalasmara sendiri, bukan referensi Dave the Diver.
+Bukti browser lokal disimpan di `artifacts/` yang diabaikan Git. Gambar di `docs/screenshots/` adalah tangkapan prototipe Jalasmara sendiri, bukan referensi Dave the Diver; sebagian mendahului perombakan peta terbaru.
 
 Senter kerucut mengikuti arah gerak penyelam. Lentera dermaga serta hutan mengikuti cahaya sekitar dan awan; dua lampu hutan menghasilkan bayangan sederhana. Rincian implementasi dan batas efek dijelaskan dalam [waktu, cuaca, dan efek lingkungan](world/environment.md).
 

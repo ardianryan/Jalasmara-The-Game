@@ -20,3 +20,5 @@ moodboard/
 references/private/
 
 .cache/
+
+tools/polyfork-render/.godot/

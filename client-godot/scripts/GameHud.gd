@@ -62,6 +62,8 @@ class HudIcon extends Control:
 				draw_line(Vector2(0,-4),Vector2(0,4),ink,1.8)
 		draw_set_transform(Vector2.ZERO)
 
+var _sound_button: Button
+var _navigation: GeoMap
 var root_control: Control
 var status_label: Label
 var touch_enabled := false
@@ -103,6 +105,7 @@ func _ready() -> void:
 	_build_objective()
 	_build_actions()
 	_build_dpad()
+	_build_sound()
 	_status_panel = _panel(Rect2(344,72,272,42),false)
 	status_label = _label(_status_panel,"",Vector2(9,7),Vector2(254,29),12)
 	status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -111,7 +114,8 @@ func _ready() -> void:
 
 func _theme() -> Theme:
 	var theme := Theme.new()
-	theme.default_font_size = 13
+	theme.default_font = preload("res://resources/fonts/ark-pixel-12px-proportional-latin.otf")
+	theme.default_font_size = 12
 	theme.set_color("font_color","Label",CREAM)
 	for kind in ["normal","hover","pressed","disabled","focus"]:
 		var style := StyleBoxFlat.new()
@@ -305,6 +309,7 @@ func update_state(state: Dictionary) -> void:
 
 func set_modal(open: bool) -> void:
 	_modal = open
+	if is_instance_valid(_navigation): _navigation.visible = not open
 	if open:
 		move_changed.emit(Vector2.ZERO)
 		_release_net()
@@ -326,3 +331,23 @@ func message(text: String) -> void:
 func _process(_delta: float) -> void:
 	if is_instance_valid(_status_panel) and _status_panel.visible and Time.get_ticks_msec()/1000.0>_message_until:
 		_status_panel.hide()
+
+func set_navigation(data: Dictionary, area: String, point: Vector2) -> void:
+	if not is_instance_valid(root_control): return
+	if not is_instance_valid(_navigation):
+		_navigation=GeoMap.new()
+		_navigation.mini=true
+		_navigation.position=Vector2(360,8) if touch_enabled else Vector2(16,410)
+		_navigation.size=Vector2(150,98) if touch_enabled else Vector2(146,112)
+		root_control.add_child(_navigation)
+	_navigation.configure(data,area,point)
+	_navigation.visible=not _modal
+
+func _build_sound() -> void:
+	_sound_button=_button("Suara",Rect2(868,86,72,60) if touch_enabled else Rect2(880,58,64,28),func():AudioManager.toggle_mute())
+	_sound_button.add_theme_font_size_override("font_size",15 if touch_enabled else 10)
+	var refresh: Callable=func(_muted:bool):
+		_sound_button.text="Sunyi" if AudioManager.muted else "Suara"
+		_sound_button.tooltip_text="Suara nonaktif [V]" if AudioManager.muted else "Suara aktif [V]"
+	AudioManager.mute_changed.connect(refresh)
+	refresh.call(AudioManager.muted)

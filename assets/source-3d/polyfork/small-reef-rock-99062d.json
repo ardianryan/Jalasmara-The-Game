@@ -1,0 +1,25 @@
+{
+  "id": "small-reef-rock-99062d",
+  "title": "Small Reef Rock",
+  "triangles": 430,
+  "size_m": {
+    "x": 0.5,
+    "y": 0.39,
+    "z": 0.46
+  },
+  "credit": "Small Reef Rock by Polyfork (https://polyfork.dev/asset/small-reef-rock-99062d), CC BY 4.0",
+  "page": "https://polyfork.dev/asset/small-reef-rock-99062d",
+  "source_api": "https://polyfork.dev/api/assets/small-reef-rock-99062d",
+  "download_url": "https://polyfork.dev/cdn/small-reef-rock-99062d.glb",
+  "retrieved_at": "2026-11-08T04:08:12.880003+00:00",
+  "selected_license": "CC-BY-4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "publisher_license_url": "https://polyfork.dev/licensing",
+  "modifications": "None; original free low-poly GLB.",
+  "file": "small-reef-rock-99062d.glb",
+  "sha256": "b2a2c0537433ff1f60c50694114f835d0b7eb69b6d7dcc0f25624e5a3a50e1bd",
+  "bytes": 50752,
+  "gltf_version": "2.0",
+  "meshes": 1,
+  "embedded_only": true
+}

@@ -177,7 +177,7 @@ function Auth({
         </div>
         <footer>
           <span>Jalasmara</span>
-          <span>Menjaring Ingatan</span>
+          <a href="/credits.html" target="_blank" rel="noreferrer">Kredit aset</a>
         </footer>
       </section>
     </main>

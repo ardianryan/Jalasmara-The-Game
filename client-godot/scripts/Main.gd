@@ -38,12 +38,13 @@ var surface_clock := 0.0
 var environment: Node
 var dive_lamp: PointLight2D
 var port_lamps: Array[PointLight2D] = []
+var surface_actors: Array[Node2D] = []
 func _ready() -> void:
 	y_sort_enabled = true
 	_setup_input()
 	terrain = WorldScript.new()
 	nala = PlayerScript.new()
-	nala.position = Vector2(1030,295)
+	nala.position = _surface_point()
 	nala.frozen = true
 	add_child(nala)
 	camera = Camera2D.new()
@@ -62,7 +63,6 @@ func _ready() -> void:
 	environment = preload("res://scripts/EnvironmentEffects.gd").new()
 	add_child(environment)
 	environment.configure("hub")
-	_add_lights()
 	var auth: Dictionary = await ApiClient.get_api("/auth/session")
 	if auth.get("user") == null:
 		_show_message("Silakan masuk", "Buka Jalasmara melalui halaman login terlebih dahulu.")
@@ -73,17 +73,16 @@ func _ready() -> void:
 		return
 	add_child(terrain)
 	move_child(terrain,0)
+	nala.land_mask = Callable(terrain,"is_walkable")
+	terrain.add_foreground_to(self)
+	_add_lights()
 	for district in GameState.world.surface_hub.districts:
 		var actor = preload("res://scripts/HubActor.gd").new()
 		actor.actor_name = str(district.npc)
-		actor.position = Vector2(float(district.x),306)
+		actor.position = Vector2(float(district.x),float(district.y))
 		add_child(actor)
-	for at in [Vector2(795,482),Vector2(2190,515)]:
-		var prop = preload("res://scripts/HubActor.gd").new()
-		prop.crate = true
-		prop.position = at
-		add_child(prop)
-	nala.position = Vector2(float(GameState.surface.get("x",1030)),float(GameState.surface.get("y",295)))
+		surface_actors.append(actor)
+	nala.position = _surface_point()
 	nala.frozen = false
 	if str(GameState.surface.get("area","hub"))=="forest" and GameState.dive.is_empty():
 		get_tree().change_scene_to_file("res://scenes/forest.tscn")
@@ -228,6 +227,10 @@ func _process(delta: float) -> void:
 	if not GameState.player.is_empty():
 		EnvironmentState.update_story(int(GameState.player.progress.day),str(GameState.player.progress.stage))
 	var submerged := not GameState.dive.is_empty()
+	if terrain.is_inside_tree() and terrain.underwater != submerged:
+		terrain.set_mode(submerged)
+		if not submerged:
+			terrain.add_foreground_to(self)
 	var light_state := EnvironmentState.snapshot()
 	var clouds := float(light_state.clouds)
 	var daylight := float(light_state.daylight)
@@ -244,8 +247,10 @@ func _process(delta: float) -> void:
 		lamp.visible = not submerged
 		var warmth := clampf((0.92-daylight)*1.3+clouds*0.13,0.035,0.9)
 		lamp.energy = warmth*(1.0+sin(Time.get_ticks_msec()*0.0023+i*1.7)*0.035)
-	camera.limit_right = 3080 if GameState.dive.is_empty() else 6144
-	camera.limit_bottom = 800 if GameState.dive.is_empty() else 3584
+	camera.limit_right = int(GameState.world.get("hub",{}).get("width",2400)) if not submerged else int(GameState.world.get("width",6144))
+	camera.limit_bottom = int(GameState.world.get("hub",{}).get("height",1600)) if not submerged else int(GameState.world.get("height",3584))
+	for actor in surface_actors:
+		actor.visible = not submerged
 	terrain.gardens_restored = GameState.player.get("progress",{}).get("day",1)>=3
 	terrain.solved = GameState.adventure.get("puzzles",[])
 	flash = maxf(0,flash-delta)
@@ -266,7 +271,11 @@ func _process(delta: float) -> void:
 	entities.nearest = str(nearby.get("id",""))
 	if OS.has_feature("web") and Engine.get_process_frames()%30==0:
 		var snapshot := {"x":nala.position.x,"y":nala.position.y,"stage":GameState.player.get("progress",{}).get("stage",""),"modal":modal_open,"nearby":str(nearby.get("id","")),"diving":not GameState.dive.is_empty()}
+		snapshot["audio"] = AudioManager.debug_status()
 		JavaScriptBridge.get_interface("window").jalasmaraSnapshot = JavaScriptBridge.get_interface("JSON").parse(JSON.stringify(snapshot))
+	if modal_open and is_instance_valid(modal) and modal.get_meta("world_map",false) and Input.is_action_just_pressed("map"):
+		_close()
+		return
 	if not modal_open:
 		if Input.is_action_just_pressed("interact"):
 			_interact()
@@ -327,9 +336,11 @@ func _find_nearby() -> void:
 	var objects: Array = []
 	if GameState.dive.is_empty():
 		for district in GameState.world.get("surface_hub",{}).get("districts",[]):
-			objects.append({"id":district.id,"x":district.x,"y":306,"name":district.npc,"kind":"npc"})
-		objects.append({"id":"forest_gate","x":2940,"y":295,"name":"Jalur ke Hutan Pesisir","kind":"forest"})
-		objects.append({"id":"ladder","x":1280,"y":520,"name":"Tangga Palung Smara","kind":"dive"})
+			objects.append({"id":district.id,"x":district.x,"y":district.y,"name":district.npc,"kind":"npc"})
+		var gate: Dictionary = GameState.world.get("forest",{}).get("gate",{})
+		objects.append({"id":"forest_gate","x":gate.get("x",0),"y":gate.get("y",0),"name":"Jalur ke Hutan Pesisir","kind":"forest"})
+		var ladder: Dictionary = GameState.world.get("hub",{}).get("divePoint",{})
+		objects.append({"id":"ladder","x":ladder.get("x",0),"y":ladder.get("y",0),"name":"Tangga Palung Smara","kind":"dive"})
 	else:
 		objects.append({"id":"boat","x":1120,"y":470,"name":"Tangga pulang ke Bandar Hujung","kind":"extract"})
 		for collection in ["landmarks","puzzles","caches"]:
@@ -346,6 +357,9 @@ func _find_nearby() -> void:
 			if not target.get("caught",false) and available:
 				var obj: Dictionary = target.duplicate()
 				obj.kind = "biota"
+				var point: Vector2 = entities.target_position(target)
+				obj.x = point.x
+				obj.y = point.y
 				obj.name = _biota_name(str(target.subject))
 				objects.append(obj)
 	for obj in objects:
@@ -376,6 +390,8 @@ func _update_hud() -> void:
 	var state := {"area":region,"depth":depth,"diving":not d.is_empty(),"oxygen":d.get("oxygen",0),"maxOxygen":d.get("maxOxygen",100),"coins":p.coins,"weight":d.get("weight",0),"capacity":d.get("capacity",12),"objective":goal,"action":str(nearby.get("name","Dekati tempat atau tokoh")),"canInteract":not nearby.is_empty() and nearby.get("kind","")!="biota","canNet":nearby.get("kind","")=="biota" and not d.is_empty()}
 	state.merge(EnvironmentState.snapshot(),true)
 	hud.update_state(state)
+	if hud.has_method("set_navigation"):
+		hud.set_navigation(GameState.world,"hub" if GameState.dive.is_empty() else "sea",nala.position)
 	hud.set_modal(modal_open)
 func _sync_position() -> bool:
 	if GameState.dive.is_empty() or syncing:
@@ -388,12 +404,13 @@ func _sync_position() -> bool:
 		if r.get("code","")=="SESSION_CHANGED":
 			GameState.dive = {}
 			_close()
-			nala.position = Vector2(1030,295)
 			await GameState.refresh()
+			nala.position = _surface_point()
 		return false
 	_update_hud()
 	if OS.has_feature("web"):
 		var snapshot := {"x":nala.position.x,"y":nala.position.y,"stage":GameState.player.get("progress",{}).get("stage",""),"modal":modal_open,"nearby":str(nearby.get("id","")),"diving":not GameState.dive.is_empty()}
+		snapshot["audio"] = AudioManager.debug_status()
 		JavaScriptBridge.get_interface("window").jalasmaraSnapshot = JavaScriptBridge.get_interface("JSON").parse(JSON.stringify(snapshot))
 	return true
 func _refresh_dive() -> void:
@@ -403,10 +420,10 @@ func _refresh_dive() -> void:
 		if r.get("code","")=="SESSION_CHANGED":
 			GameState.dive = {}
 			_close()
-			nala.position = Vector2(1030,295)
 			await GameState.refresh()
+			nala.position = _surface_point()
 	elif GameState.dive.is_empty():
-		nala.position = Vector2(1030,295)
+		nala.position = _surface_point()
 	elif float(GameState.dive.get("oxygen",100))<=0:
 		_extract(true)
 	_update_hud()
@@ -469,9 +486,12 @@ func _extract(fainted := false) -> void:
 		status.text = str(r.get("error","Belum dapat kembali."))
 		return
 	GameState.dive = {}
-	nala.position = Vector2(1280,490)
+	if r.has("surface"):
+		GameState.surface = r.surface
 	nala.velocity = Vector2.ZERO
 	await GameState.refresh()
+	nala.position = _surface_point()
+	camera.reset_smoothing()
 	_update_hud()
 	if r.get("victory",false):
 		_talk([{"name":"Babak 5 · Sang Penjaga Kembali Mengingat","text":"Pipa terakhir terlepas. Gajah Mina berhenti mengamuk; air di sekitar mahkotanya kembali jernih. Nala mengembalikan Inti Smara kepada sang penjaga."},{"name":"Saras","text":"Ini bukan reruntuhan biasa. Prasasti itu memetakan ruang penyimpanan ingatan di kedalaman 300 meter. Seseorang membangun seluruh palung ini."},{"name":"Bandar Hujung","text":"Kebun kembali hijau. Warga tidak lagi bergantung pada Kapsul Instan. Di bawah Tamansari, gerbang mekanik perlahan terbuka. Fase 1 selesai."}])
@@ -543,6 +563,7 @@ func _start_net() -> void:
 	network_busy = false
 	if r.get("ok",false):
 		net_started = true
+		AudioManager.play_sfx("harpoon_shoot",1.0,-12.0)
 		net_time = 0
 		status.text = "Lepaskan saat lingkaran jala terbuka. Tidak perlu kuis untuk menjala biota biasa."
 	else:
@@ -736,7 +757,11 @@ func _show_journal() -> void:
 	_label(entries,"Catatan biologi: lamun adalah tumbuhan berbunga laut; kelp adalah alga cokelat. Hutan Wringin adalah ekosistem fantasi yang menggabungkan biota bercahaya.",13)
 	_button(box,"Tutup jurnal",_close)
 func _show_map() -> void:
+	if modal_open and is_instance_valid(modal) and modal.get_meta("world_map",false):
+		_close()
+		return
 	var box := _open("Atlas Jalasmara")
+	modal.set_meta("world_map",true)
 	modal.position = Vector2(105,38)
 	modal.size = Vector2(750,480)
 	var scroll: ScrollContainer = modal.get_child(0)
@@ -745,6 +770,7 @@ func _show_map() -> void:
 	var atlas = preload("res://scripts/WorldAtlas.gd").new()
 	box.add_child(atlas)
 	atlas.configure(GameState.world,GameState.player,"harbor" if GameState.dive.is_empty() else "reef" if int(GameState.player.progress.day)==1 else "kelp" if int(GameState.player.progress.day)==2 else "cave")
+	atlas.set_player_position(nala.position)
 	atlas.close_requested.connect(_close)
 func _boss_tick(delta: float) -> void:
 	if int(GameState.dive.get("hits",0))>=_required_hits():
@@ -791,7 +817,7 @@ func _sync_surface() -> bool:
 	if syncing or not GameState.dive.is_empty():
 		return false
 	syncing = true
-	var r: Dictionary = await ApiClient.call_api("/adventure/surface-position",{"area":"hub","x":nala.position.x,"y":clampf(nala.position.y,80,610),"version":int(GameState.player.get("version",0))})
+	var r: Dictionary = await ApiClient.call_api("/adventure/surface-position",{"area":"hub","x":nala.position.x,"y":nala.position.y,"version":int(GameState.player.get("version",0))})
 	syncing = false
 	if r.get("ok",false):
 		GameState.surface = r.surface
@@ -812,7 +838,7 @@ func _sync_surface() -> bool:
 				get_tree().set_meta("surface_change_notice",message)
 				get_tree().change_scene_to_file("res://scenes/forest.tscn")
 			else:
-				nala.position = Vector2(float(GameState.surface.get("x",1030)),float(GameState.surface.get("y",295)))
+				nala.position = _surface_point()
 				_update_hud()
 				status.text = message
 				hud.message(message)
@@ -897,8 +923,12 @@ func _add_lights() -> void:
 	dive_lamp.texture_scale = 3.0
 	dive_lamp.position = Vector2(0,-8)
 	dive_lamp.texture_offset = Vector2(70,0)
+	dive_lamp.shadow_enabled = true
+	dive_lamp.shadow_filter = Light2D.SHADOW_FILTER_PCF5
+	dive_lamp.shadow_color = Color(0.04,0.09,0.13,0.65)
 	nala.add_child(dive_lamp)
-	for at in [Vector2(480,230),Vector2(1100,260),Vector2(1900,260),Vector2(2550,250)]:
+	for district in GameState.world.get("surface_hub",{}).get("districts",[]):
+		var at := Vector2(float(district.x),float(district.y)) + Vector2(-28,-80)
 		var lamp := PointLight2D.new()
 		lamp.texture = texture
 		lamp.position = at
@@ -919,3 +949,7 @@ func _torch_texture() -> Texture2D:
 			var reach := (1.0-smoothstep(0.4,1.0,along))*smoothstep(0.0,0.12,along)
 			image.set_pixel(x,y,Color(1,1,1,edge*reach*0.72))
 	return ImageTexture.create_from_image(image)
+
+func _surface_point() -> Vector2:
+	var spawn: Dictionary = GameState.world.get("surfaceSpawn",{})
+	return Vector2(float(GameState.surface.get("x",spawn.get("x",0))),float(GameState.surface.get("y",spawn.get("y",0))))

@@ -1,6 +1,7 @@
+import { fetchWorld, hubRoute } from "./game-navigation.mjs";
 import { chromium } from "@playwright/test";
 import assert from "node:assert/strict";
-import { readFileSync, mkdirSync, writeFileSync } from "node:fs";
+import { readFileSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 const fixture = JSON.parse(
   readFileSync(
     process.env.BROWSER_FIXTURE ?? ".runtime/touch-browser.json",
@@ -88,10 +89,10 @@ try {
       const dx = x - at.x,
         dy = y - at.y;
       if (Math.hypot(dx, dy) < targetRadius) return;
-      if (Math.abs(dy) > 22)
-        await touch(132, dy > 0 ? 480 : 404, Math.min(420, Math.abs(dy) * 4));
+      if (Math.abs(dy) >= Math.abs(dx) && Math.abs(dy) > 18)
+        await touch(132, dy > 0 ? 480 : 404, Math.min(300, Math.abs(dy) * 4));
       else if (Math.abs(dx) > 18)
-        await touch(dx > 0 ? 208 : 56, 480, Math.min(420, Math.abs(dx) * 4));
+        await touch(dx > 0 ? 208 : 56, 480, Math.min(300, Math.abs(dx) * 4));
       await frame
         .waitForFunction(
           (old) => {
@@ -107,10 +108,28 @@ try {
       `Touch movement could not reach (${x}, ${y}): ${JSON.stringify(await snapshot())}`,
     );
   }
-  await moveTo(1280, 520);
+  const world = await fetchWorld(context.request, origin);
+  for (const [x, y] of hubRoute(world, before, world.hub.divePoint))
+    await moveTo(x, y);
   const moved = await snapshot();
-  assert(moved.x > before.x + 80, "D-pad horizontal movement failed");
-  assert(moved.y > before.y + 80, "D-pad vertical movement failed");
+  assert(
+    Math.hypot(
+      moved.x - world.hub.divePoint.x,
+      moved.y - world.hub.divePoint.y,
+    ) < 30,
+    "Touch navigation must reach the actual dive point",
+  );
+  for (const [axis, label] of [
+    ["x", "horizontal"],
+    ["y", "vertical"],
+  ]) {
+    const expected = world.hub.divePoint[axis] - before[axis];
+    const progress = (moved[axis] - before[axis]) * Math.sign(expected);
+    assert(
+      progress >= Math.max(20, Math.abs(expected) - 30),
+      `D-pad ${label} movement failed: ${JSON.stringify({ before, moved, destination: world.hub.divePoint })}`,
+    );
+  }
   await touch(904, 484);
   await frame.waitForFunction(() => window.jalasmaraSnapshot?.diving === true);
   await moveTo(1250, 530, 40);
@@ -127,6 +146,8 @@ try {
   );
   await page.screenshot({ path: "artifacts/godot/touch.png", fullPage: true });
   assert.deepEqual(errors, []);
+  rmSync("artifacts/godot/touch-errors.json", { force: true });
+  rmSync("artifacts/godot/touch-failure.png", { force: true });
   writeFileSync(
     "artifacts/godot/touch-results.json",
     JSON.stringify(
@@ -160,7 +181,18 @@ try {
   });
   writeFileSync(
     "artifacts/godot/touch-errors.json",
-    JSON.stringify({ error: e.message, errors }, null, 2),
+    JSON.stringify(
+      {
+        error: e.message,
+        errors,
+        snapshot: await page
+          .locator("iframe")
+          .evaluate((el) => el.contentWindow.jalasmaraSnapshot)
+          .catch(() => null),
+      },
+      null,
+      2,
+    ),
   );
   console.error(e.stack);
   process.exitCode = 1;

@@ -1,0 +1,25 @@
+{
+  "id": "bamboo-stalk-e4d362",
+  "title": "Bamboo Stalk",
+  "triangles": 434,
+  "size_m": {
+    "x": 1.09,
+    "y": 3.01,
+    "z": 1.28
+  },
+  "credit": "Bamboo Stalk by Polyfork (https://polyfork.dev/asset/bamboo-stalk-e4d362), CC BY 4.0",
+  "page": "https://polyfork.dev/asset/bamboo-stalk-e4d362",
+  "source_api": "https://polyfork.dev/api/assets/bamboo-stalk-e4d362",
+  "download_url": "https://polyfork.dev/cdn/bamboo-stalk-e4d362.glb",
+  "retrieved_at": "2026-11-08T04:08:10.536091+00:00",
+  "selected_license": "CC-BY-4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "publisher_license_url": "https://polyfork.dev/licensing",
+  "modifications": "None; original free low-poly GLB.",
+  "file": "bamboo-stalk-e4d362.glb",
+  "sha256": "33034968acff8ee93bafbaed952f88c253da4f769f05735ab4c6b83018135154",
+  "bytes": 56992,
+  "gltf_version": "2.0",
+  "meshes": 2,
+  "embedded_only": true
+}

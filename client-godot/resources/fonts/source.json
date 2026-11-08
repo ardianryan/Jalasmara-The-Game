@@ -1,0 +1,11 @@
+{
+  "family": "Ark Pixel",
+  "variant": "12px proportional Latin",
+  "version": "2026.10.25",
+  "source": "https://github.com/TakWolf/ark-pixel-font",
+  "release": "https://github.com/TakWolf/ark-pixel-font/releases/tag/2026.10.25",
+  "asset": "ark-pixel-font-12px-proportional-otf-v2026.10.25.zip",
+  "license": "OFL-1.1",
+  "sha256": "470d2f9868853e0d6b410264f1c255a92996eeef4f6ad16b1658cd8ad6e97d80",
+  "rendering": "No antialiasing, no mipmaps, no subpixel positioning, nearest canvas texture filtering. Existing text sizes retained; theme defaults to native 12 px."
+}

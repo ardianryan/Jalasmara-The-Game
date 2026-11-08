@@ -1,0 +1,11 @@
+{
+  "name": "jalasmara-pixelbolt-tools",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "pixelbolt": "0.13.0"
+  }
+}

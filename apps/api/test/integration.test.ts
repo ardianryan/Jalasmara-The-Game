@@ -19,6 +19,7 @@ import {
 } from "../../../packages/shared/src/index.js";
 import type { FastifyInstance } from "fastify";
 import { WORLD } from "../../../packages/shared/src/world.js";
+import { hubRoute } from "../../../scripts/game-navigation.mjs";
 process.env.NODE_ENV = "test";
 process.env.APP_ORIGIN = "http://localhost:5173";
 process.env.MONGO_URL =
@@ -993,6 +994,7 @@ async function fixtureSurface(
       ...point,
       positionAt: Date.now() - agoMs,
       playerVersion: current.version,
+      layoutVersion: WORLD.hub.layoutVersion,
     }),
     "EX",
     1800,
@@ -1009,17 +1011,20 @@ test("perjalanan hutan memerlukan gerbang dan gerakan daratan divalidasi server"
     (
       await b.request("/adventure/surface-position", {
         x: WORLD.surfaceSpawn.x,
-        y: 611,
+        y: WORLD.hub.height,
       })
     ).status,
     400,
   );
-  await fixtureSurface(u, "hub", { x: 1030, y: 450 });
+  await fixtureSurface(u, "hub", {
+    x: WORLD.surfaceSpawn.x,
+    y: WORLD.surfaceSpawn.y,
+  });
   assert.equal(
     (
       await b.request("/adventure/surface-position", {
-        x: 1030,
-        y: 520,
+        x: WORLD.surfaceSpawn.x,
+        y: WORLD.surfaceSpawn.y + 70,
       })
     ).status,
     200,
@@ -1045,7 +1050,7 @@ test("perjalanan hutan memerlukan gerbang dan gerakan daratan divalidasi server"
     400,
   );
   assert.equal(
-    (await b.request("/adventure/surface-position", { x: 2800, y: 295 }))
+    (await b.request("/adventure/surface-position", { x: 2100, y: 1230 }))
       .status,
     409,
   );
@@ -1338,19 +1343,17 @@ test("posisi awal dan reset versi disimpan agar waktu berjalan antarsinkronisasi
   initial.positionAt -= 2200;
   await s.redis.set(`surface:${u.id}`, JSON.stringify(initial), "KEEPTTL");
   const moved = await b.request("/adventure/surface-position", {
-    x: WORLD.surfaceSpawn.x + 300,
-    y: WORLD.surfaceSpawn.y,
+    ...WORLD.hub.divePoint,
   });
   assert.equal(moved.status, 200, JSON.stringify(moved.data));
   const teleport = await b.request("/adventure/surface-position", {
-    x: WORLD.surfaceSpawn.x + 900,
-    y: WORLD.surfaceSpawn.y,
+    ...WORLD.forest.gate,
   });
   assert.equal(teleport.status, 409);
   assert.equal(teleport.data.code, "POSITION");
   assert.equal(
     JSON.parse((await s.redis.get(`surface:${u.id}`))!).x,
-    WORLD.surfaceSpawn.x + 300,
+    WORLD.hub.divePoint.x,
   );
   await s.users.updateOne({ id: u.id }, { $inc: { version: 1 } });
   const reset = await b.request("/adventure/state");
@@ -1362,8 +1365,7 @@ test("posisi awal dan reset versi disimpan agar waktu berjalan antarsinkronisasi
   resetPoint.positionAt -= 2000;
   await s.redis.set(`surface:${u.id}`, JSON.stringify(resetPoint), "KEEPTTL");
   const afterReset = await b.request("/adventure/surface-position", {
-    x: WORLD.surfaceSpawn.x + 270,
-    y: WORLD.surfaceSpawn.y,
+    ...WORLD.hub.divePoint,
   });
   assert.equal(afterReset.status, 200, JSON.stringify(afterReset.data));
 });
@@ -1426,4 +1428,157 @@ test("sinkronisasi daratan mendeteksi perubahan admin melalui versi klien dan me
     version: refreshed.data.player.version,
   });
   assert.equal(synced.status, 200, JSON.stringify(synced.data));
+});
+
+test("migrasi tata letak desa hanya mereset posisi lama tanpa mengubah progres atau inventori", async () => {
+  const u = await account(),
+    b = await new Browser().login(u);
+  await s.users.updateOne(
+    { id: u.id },
+    {
+      $set: {
+        coins: 1234,
+        version: 7,
+        appearance: "female_nusantara",
+        inventory: [{ fragmentId: "klorofil", stars: 3, quantity: 2 }],
+        progress: { ...u.progress, day: 2, missions: ["malam_1"] },
+        adventure: {
+          discoveries: ["forest_canopy"],
+          puzzles: [],
+          keyItems: [],
+        },
+      },
+    },
+  );
+  const before = await s.users.findOne({ id: u.id });
+  await s.redis.set(
+    `surface:${u.id}`,
+    JSON.stringify({
+      area: "hub",
+      x: 1030,
+      y: 295,
+      playerVersion: 7,
+      positionAt: Date.now() - 5000,
+      layoutVersion: WORLD.hub.layoutVersion - 1,
+    }),
+    "EX",
+    1800,
+  );
+  const migrated = await b.request("/adventure/state");
+  assert.equal(migrated.status, 200, JSON.stringify(migrated.data));
+  assert.equal(migrated.data.surface.layoutVersion, WORLD.hub.layoutVersion);
+  assert.equal(migrated.data.surface.x, WORLD.surfaceSpawn.x);
+  assert.equal(migrated.data.surface.y, WORLD.surfaceSpawn.y);
+  assert.equal(migrated.data.player.coins, 1234);
+  assert.equal(migrated.data.player.version, 7);
+  assert.deepEqual(await s.users.findOne({ id: u.id }), before);
+  const persisted = JSON.parse((await s.redis.get(`surface:${u.id}`))!);
+  assert.deepEqual(persisted, migrated.data.surface);
+  assert.ok((await s.redis.ttl(`surface:${u.id}`)) > 1700);
+  assert.equal(
+    (await b.request("/adventure/state")).data.surface.positionAt,
+    persisted.positionAt,
+  );
+  delete persisted.layoutVersion;
+  persisted.x = 1030;
+  persisted.y = 295;
+  await s.redis.set(`surface:${u.id}`, JSON.stringify(persisted), "EX", 1800);
+  const unversioned = await b.request("/adventure/state");
+  assert.equal(unversioned.data.surface.layoutVersion, WORLD.hub.layoutVersion);
+  assert.equal(unversioned.data.surface.x, WORLD.surfaceSpawn.x);
+  assert.equal(unversioned.data.surface.y, WORLD.surfaceSpawn.y);
+  assert.deepEqual(await s.users.findOne({ id: u.id }), before);
+  await fixtureSurface(u, "forest", WORLD.forest.landmarks[0]);
+  const forest = await b.request("/adventure/state");
+  assert.equal(forest.data.surface.area, "forest");
+  assert.equal(forest.data.surface.x, WORLD.forest.landmarks[0].x);
+});
+
+test("jalur desa menghubungkan gerbang dan menolak bangunan serta tepian air", async () => {
+  const u = await account(),
+    b = await new Browser().login(u);
+  await b.request("/adventure/state");
+  for (const [x, y, width, height] of WORLD.hub.obstacles) {
+    const blocked = await b.request("/adventure/surface-position", {
+      area: "hub",
+      x: x + width / 2,
+      y: y + height / 2,
+    });
+    assert.equal(blocked.status, 409);
+    assert.equal(blocked.data.code, "PATH_BLOCKED");
+  }
+  const water = await b.request("/adventure/surface-position", {
+    area: "hub",
+    x: 60,
+    y: 1480,
+  });
+  assert.equal(water.status, 409);
+  assert.equal(water.data.code, "PATH_BLOCKED");
+  let previous: { x: number; y: number } = { ...WORLD.surfaceSpawn };
+  for (const [x, y] of hubRoute(WORLD, WORLD.surfaceSpawn, WORLD.forest.gate)) {
+    const from = previous,
+      count = Math.ceil(Math.hypot(x - from.x, y - from.y) / 80);
+    for (let step = 1; step <= count; step++) {
+      const stored = JSON.parse((await s.redis.get(`surface:${u.id}`))!);
+      stored.positionAt -= 1000;
+      await s.redis.set(`surface:${u.id}`, JSON.stringify(stored), "KEEPTTL");
+      const position = {
+        x: from.x + ((x - from.x) * step) / count,
+        y: from.y + ((y - from.y) * step) / count,
+      };
+      const moved = await b.request("/adventure/surface-position", {
+        area: "hub",
+        ...position,
+      });
+      assert.equal(
+        moved.status,
+        200,
+        `${JSON.stringify(position)}: ${JSON.stringify(moved.data)}`,
+      );
+      previous = position;
+    }
+  }
+  assert.equal(
+    (await b.request("/adventure/travel", { destination: "forest" })).status,
+    200,
+  );
+});
+
+test("ekstraksi mendarat di dermaga baru dan retry tidak mengembalikan posisi setelah berjalan", async () => {
+  const u = await account(),
+    b = await new Browser().login(u),
+    dive = await start(b),
+    key = randomUUID();
+  const landed = await b.request(
+    "/dive/extract",
+    { diveId: dive.id },
+    "POST",
+    key,
+  );
+  assert.equal(landed.status, 200, JSON.stringify(landed.data));
+  const position = landed.data.surface;
+  assert.equal(position.x, WORLD.hub.divePoint.x);
+  assert.equal(position.y, WORLD.hub.divePoint.y - 40);
+  assert.equal(position.layoutVersion, WORLD.hub.layoutVersion);
+  assert.equal(position.playerVersion, landed.data.player.version);
+  const state = await b.request("/adventure/state");
+  assert.deepEqual(state.data.surface, position);
+  const moved = await b.request("/adventure/surface-position", {
+    area: "hub",
+    x: position.x,
+    y: position.y - 15,
+    version: landed.data.player.version,
+  });
+  assert.equal(moved.status, 200, JSON.stringify(moved.data));
+  const replay = await b.request(
+    "/dive/extract",
+    { diveId: dive.id },
+    "POST",
+    key,
+  );
+  assert.deepEqual(replay.data, landed.data);
+  assert.equal(
+    (await b.request("/adventure/state")).data.surface.y,
+    position.y - 15,
+  );
 });

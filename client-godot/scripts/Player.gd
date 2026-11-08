@@ -5,6 +5,7 @@ var frozen := false
 var direction := 1
 var walk_time := 0.0
 var touch := Vector2.ZERO
+var land_mask := Callable()
 var swim_sprite: Sprite2D
 var was_water := false
 var wet_remaining := 0.0
@@ -59,11 +60,27 @@ func _physics_process(delta: float) -> void:
 			velocity = velocity.move_toward(input*175,delta*850)
 		if absf(velocity.x)>3:
 			direction = 1 if velocity.x>0 else -1
+	var previous := position
 	move_and_slide()
-	position.x = clampf(position.x,20,3050 if GameState.dive.is_empty() else 6100)
-	if GameState.dive.is_empty():
-		position.y = clampf(position.y,300,530)
-	position.y = clampf(position.y,80,3470)
+	if in_water:
+		position.x = clampf(position.x,20,float(GameState.world.get("width",6144))-44)
+		position.y = clampf(position.y,400,float(GameState.world.get("height",3584))-114)
+	else:
+		var hub: Dictionary = GameState.world.get("hub",{})
+		position.x = clampf(position.x,40,float(hub.get("width",2400))-40)
+		position.y = clampf(position.y,120,float(hub.get("height",1600))-80)
+		if land_mask.is_valid() and not land_mask.call(position):
+			var along_x := Vector2(position.x,previous.y)
+			var along_y := Vector2(previous.x,position.y)
+			if land_mask.call(along_x):
+				position = along_x
+				velocity.y = 0
+			elif land_mask.call(along_y):
+				position = along_y
+				velocity.x = 0
+			else:
+				position = previous
+				velocity = Vector2.ZERO
 	if swim_sprite:
 		swim_sprite.set_appearance(str(GameState.player.get("appearance","male_default")))
 		swim_sprite.visible = true

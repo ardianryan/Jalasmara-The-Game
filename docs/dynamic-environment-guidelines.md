@@ -57,27 +57,102 @@ Cuaca tropis maritim Nusantara memiliki karakteristik muson yang kuat: dari sian
 
 ---
 
-## 3. Dynamic Time (Siklus Waktu & Pencahayaan 24 Jam)
+## 3. Dynamic Lighting & Time System (Sistem Pencahayaan Dinamis & Waktu Terpadu)
 
-Siklus waktu menghidupkan ritme permainan antara eksplorasi luar ruangan dan manajemen kedai malam hari.
+Siklus waktu dan pencahayaan dinamis adalah pengikat visual paling krusial ketika seluruh aset game dibuat 100% oleh AI. Tanpa sistem pencahayaan mesin (engine lighting), aset AI yang dihasilkan dari prompt berbeda akan terasa terpisah, berantakan, dan datar (*flat collage*). Pencahayaan dinamis 2D di Godot menyatukan palet warna, memberikan rasa kedalaman, serta menghidupkan atmosfer maritim Nusantara.
 
-### 3.1 Palet Warna Pesisir Nusantara (`CanvasModulate`)
-Alih-alih melukis ulang aset AI untuk tiap fase waktu, interpolasikan warna ambient global menggunakan palet maritim:
+### 3.1 Hierarki Pencahayaan Global (Ambient `CanvasModulate` & Siklus 24 Jam)
+Alih-alih melukis ulang aset AI untuk tiap fase waktu, interpolasikan warna ambient global menggunakan `CanvasModulate` dengan kurva palet pesisir Nusantara:
 
 ```
 [05:00] Fajar Pesisir     ──>  #fde68a (Kuning keemasan lembut, kabut tipis)
 [12:00] Siang Terik       ──>  #ffffff (Putih bersih, saturasi warna tinggi)
-[17:30] Senja / Maghrib   ──>  #d97706 (Jingga tembaga tua berbayang panjang)
-[18:45] Lembayung Malam   ──>  #4c1d95 (Ungu kemerahan mistis)
-[21:00] Malam Laut Dalam  ──>  #0c2229 (Toska-navy pekat, BUKAN hitam legam)
+[17:15] Senja Keemasan    ──>  #fb923c (Jingga madu hangat)
+[17:45] Maghrib / Senja   ──>  #b45309 (Tembaga tua kemerahan, bayangan memanjang)
+[18:45] Lembayung Malam   ──>  #4338ca (Ungu nila magis, batas darat & laut kabur)
+[21:00] Malam Laut Dalam  ──>  #082f49 (Navy-toska pekat berkedalaman, BUKAN hitam mati #000000)
 ```
 
-### 3.2 Pencahayaan Titik 2D (`PointLight2D`) Ramah Web
-* Pada malam hari, hidupkan sumber cahaya lokal untuk mempertegas kontur aset statis AI:
-  * **Lentera Minyak Galangan Bubat:** Cahaya kuning hangat berkedip lembut (*flickering noise*).
-  * **Tungku Rebusan Kedai Waras:** Cahaya oranye kemerahan berayun di lantai kayu.
-  * **Senter Selam Nala:** Kerucut cahaya 2D yang mengikuti arah hadap karakter di bawah air gelap.
-  * **Bioluminesensi Palung:** Titik-titik cahaya toska/ungu pada ubur-ubur klorofil dan dinding terumbu karang purba.
+* **Formula Modulasi Cuaca Terhadap Waktu:**
+  Warna ambient akhir merupakan hasil kali matriks antara siklus waktu dan status cuaca:
+  $$\text{Final Ambient} = \text{TimeColor}(t) \times \text{WeatherModulate}(w)$$
+  * *Saat Cerah Siang:* `WeatherModulate = Color(1.0, 1.0, 1.0)`.
+  * *Saat Mendung Tebal:* `WeatherModulate = Color(0.65, 0.70, 0.75)` (suasana meredup dingin keabuan).
+  * *Saat Badai Muson:* `WeatherModulate = Color(0.40, 0.45, 0.55)` (gelap dramatis di siang bolong, memicu lampu-lampu rumah menyala lebih awal).
+
+### 3.2 Interaksi Pencahayaan Cuaca: Kilat Petir & Overbright
+* **Kilatan Petir Prosedural (*Lightning Strike*):**
+  * Tidak menggunakan sprite animasi AI. Gunakan `CanvasModulate` yang disetel sekejap ke mode overbright:
+    $$\text{Flash Color} = \text{Color}(2.4, 2.4, 2.7) \quad (\text{durasi } 0.05 - 0.08\text{ detik})$$
+  * Diikuti pemudaran cepat (*lerp decay*) kembali ke ambient badai dalam 0.35 detik.
+  * *Delay Guntur Dinamis:* Pemicu audio guntur (`AudioStreamPlayer2D`) dihitung berdasarkan jarak fiktif pusat petir:
+    $$t_{\text{guntur}} = \text{randf\_range}(0.8, 2.5)\text{ detik}$$
+  * *Efek Siluet Sesaat:* Saat kilat menyala, pohon kelapa dan rumah panggung AI yang biasanya gelap seketika menjadi siluet tajam dengan kontras ekstrem, menciptakan ketegangan atmosferik instan.
+
+### 3.3 Pencahayaan Artifisial Darat (Bandar Hujung & Kedai Waras)
+Pada senja hingga malam hari (atau saat badai gelap), aktifkan titik-titik cahaya buatan (`PointLight2D`):
+
+1. **Cahaya Jendela Rumah Panggung Pesisir:**
+   * Di balik jendela anyaman bambu dan dinding kayu rumah panggung, pasang `PointLight2D` berona kuning hangat (`#fef08a`) dengan tekstur gradien radial halus.
+   * *State Logic:* Lampu jendela mati otomatis di siang hari terik dan mulai menyala perlahan (*fade-in*) ketika ambient cahaya turun di bawah threshold tertentu (pukul 17:30 atau saat badai lebat).
+2. **Lentera Minyak & Obor Dermaga Galangan Bubat:**
+   * Warna: Oranye kemerahan hangat (`#fb923c` ke `#ea580c`).
+   * *Flicker Prosedural (Gemetar Nyala Api):* Gunakan noise berfrekuensi rendah pada properti `energy` dan `texture_scale`:
+     ```gdscript
+     # Skrip ringan flicker tanpa membebani browser
+     var noise_val = sin(Time.get_ticks_msec() * 0.008) * 0.12 + cos(Time.get_ticks_msec() * 0.015) * 0.08
+     light.energy = 1.0 + noise_val
+     light.texture_scale = 1.0 + (noise_val * 0.05)
+     ```
+   * Menghasilkan ilusi nyala sumbu minyak yang ditiup angin laut tanpa memerlukan sprite sheet animasi frame berulang dari AI.
+3. **Tungku & Dapur Rebusan Kedai Waras:**
+   * Pendaran bara api merah membara (`#f87171` - `#ef4444`) berdenyut pelan di lantai dapur, memantulkan kehangatan ramuan jamu Mak Waras bagi pengunjung yang berteduh dari hujan.
+
+### 3.4 Pencahayaan Eksplorasi Bawah Air (Senter Selam & Visibilitas Palung)
+Di bawah permukaan air, pencahayaan menjadi mekanika navigasi inti:
+
+1. **Senter Helm Selam Nala (*Diver Flashlight Cone*):**
+   * Tipe Node: `PointLight2D` dengan tekstur kerucut sorot (*spot cone texture*, sudut bukaan $45^\circ$, jangkauan 240–300 piksel).
+   * *Rotasi Terarah:* Rotasi senter di-lerp mulus mengikuti arah hadap renang atau posisi bidikan jala Nala.
+   * *Spektrum Sorot:* Putih kebiruan terang di bagian tengah (`#e0f2fe`), dengan cincin falloff kekuningan tipis di pinggirnya, mensimulasikan refraksi lensa kaca helm selam kuno.
+2. **Penetrasi Cahaya & Atenuasi Kekeruhan Air (*Water Turbidity Attenuation*):**
+   * Di perairan jernih Segaran: Senter menembus jauh hingga 300px dengan pendaran caustics matahari tipis.
+   * Di dekat pipa limbah PT Cakrawala Sintetis (air keruh berminyak): Naikkan nilai `attenuation` cahaya secara drastis sehingga jangkauan senter menyusut menjadi hanya 80–100px. Hal ini menciptakan rasa klaustrofobik dan bahaya alami tanpa perlu memodifikasi aset sprite ikan/limbah AI.
+3. **Berkas Sinar Matahari Bawah Air (*God Rays / Crepuscular Rays*):**
+   * Shader pita cahaya 2D diagonal di perairan dangkal (0–20 meter).
+   * Pada siang hari cerah: Berkas sinar tampak tajam dan bergerak ritmis mengikuti gelombang permukaan.
+   * Saat matahari terbenam atau awan badai lewat: Berkas sinar meredup dan lenyap perlahan, meninggalkan pemain dalam kegelapan kolom air.
+
+### 3.5 Bioluminesensi Alami & Pendaran Polusi
+* **Biota Laut Bercahaya (Ubur-ubur Klorofil & Terumbu Karang Purba):**
+  * `PointLight2D` berskala kecil (32–64px) berwarna toska neon (`#22d3ee`) atau ungu berpendar (`#c084fc`).
+  * Denyut pernapasan: Skala cahaya membesar-mengecil seirama gerakan renang ubur-ubur.
+* **Pendaran Kontaminan Beracun:**
+  * Rembesan senyawa kimia industri di Palung Tamansari menggunakan pendaran hijau asam berpendar (`#4ade80` / `#a3e635`) yang kontras dengan biru laut, memberi tahu pemain secara visual bahwa area tersebut beracun untuk diselami tanpa perlengkapan memadai.
+
+### 3.6 Kaidah Kritis Menghasilkan Aset AI Khusus Pencahayaan (Prompting & Pipeline)
+Agar sistem pencahayaan dinamis Godot bekerja sempurna dengan aset 100% buatan AI, taati protokol produksi berikut:
+
+1. **Prinsip "Unlit / Flat Spritesheet":**
+   * *Larangan Keras:* JANGAN PERNAH meminta AI menggambar efek lampu yang sudah memancarkan halo cahaya menyala (*baked glow*), atau menggambar bayangan hitam pekat ke tanah (*baked directional shadow*).
+   * *Alasan:* Jika aset AI sudah memiliki gambar bayangan matahari siang terik yang digambar mati di sprite, saat malam tiba bayangan tersebut tetap terlihat aneh dan lampu malam tidak dapat menyinarinya dengan wajar.
+   * *Prompt AI yang Benar:* `"Stilt house front view, diffuse lighting, flat overcast lighting, clean edges, isolated transparent background, no cast shadow, unlit lantern"`.
+2. **Isolasi Layer Cahaya (*Light Cull Masks*):**
+   * Seluruh node UI, font dialog, ikon HUD, dan potret karakter harus dipasang pada `CanvasItem > Visibility > Light Mask = 2`.
+   * Seluruh sumber cahaya (`PointLight2D`, `DirectionalLight2D`) disetel hanya memengaruhi `Item Cull Mask = 1`.
+   * *Hasil:* Saat dunia permainan mengalami mati lampu total, malam pekat, atau kilatan petir berkedip liar, teks HUD dan menu tetap terbaca 100% jernih tanpa terdistorsi kecerahan lampu.
+3. **Normal Map 2D Prosedural untuk Kedalaman Ekstra:**
+   * Karena AI biasanya hanya menghasilkan tekstur warna datar (Albedo/Diffuse), buat normal map 2D sederhana menggunakan shader runtime deteksi tepi Sobel (Height-to-Normal). Dengan normal map ini, saat senter Nala menyapu batu karang atau dinding kayu panggung AI, permukaan tampak memiliki tekstur timbul 3D yang realistis.
+
+### 3.7 Optimalisasi Godot Web/WASM (Single-Threaded Performance)
+Rendering WebGL di peramban memiliki batas draw call dan fragment shader yang ketat:
+
+* **Batas Maksimal Lampu Aktif:** Jangan gunakan lebih dari 6–8 `PointLight2D` aktif di dalam satu layar secara bersamaan.
+* **Culling Otomatis:** Pasang `VisibleOnScreenNotifier2D` pada setiap lentera rumah/dermaga. Matikan node cahaya (`light.enabled = false`) segera setelah posisinya keluar dari viewport kamera.
+* **Pembatasan Shadow Occluder 2D:**
+  * Mengaktifkan bayangan (`shadows_enabled = true`) pada puluhan objek di web akan melipatgandakan draw call dan memicu penurunan frame rate (*lag spike*).
+  * *Solusi:* Hanya aktifkan bayangan dinamis pada 1–2 elemen struktur masif (misalnya lambung perahu utama atau pilar tebing besar). Objek kecil seperti tiang bambu, pagar, atau rumput laut CUKUP menerima penerangan tanpa menghitung bayangan oklusi.
+* **Ukuran Tekstur Gradien Cahaya:** Gunakan tekstur gradien radial kecil ($64 \times 64$ atau $128 \times 128$ piksel) dengan kompresi teroptimasi, bukan tekstur resolusi tinggi $1024 \times 1024$. Godot akan memfilternya dengan mulus tanpa membebani memori browser.
 
 ---
 
