@@ -14,9 +14,10 @@ var wet_marks: Array[Dictionary] = []
 func _ready() -> void:
 	var collision := CollisionShape2D.new()
 	var shape := CapsuleShape2D.new()
-	shape.radius = 9
-	shape.height = 30
+	shape.radius = 12
+	shape.height = 26
 	collision.shape = shape
+	collision.position.y = -1
 	add_child(collision)
 	swim_sprite = preload("res://scripts/CharacterVisual.gd").new()
 	add_child(swim_sprite)
@@ -42,11 +43,11 @@ func _physics_process(delta: float) -> void:
 	if in_water and not frozen and effect_clock>interval:
 		effect_clock = 0
 		if bubbles.size()<24:
-			bubbles.append({"at":position+Vector2(direction*24,-7),"age":0.0,"radius":2.0+fmod(walk_time*3,2)})
+			bubbles.append({"at":position+Vector2(direction*33,-9),"age":0.0,"radius":2.0+fmod(walk_time*3,2)})
 	elif not in_water and wet_remaining>0 and effect_clock>.23:
 		effect_clock = 0
 		if wet_marks.size()<24:
-			wet_marks.append({"at":position+Vector2(sin(walk_time*16)*8,13),"age":0.0})
+			wet_marks.append({"at":position+Vector2(sin(walk_time*16)*12,12),"age":0.0})
 	if frozen:
 		velocity = Vector2.ZERO
 	else:
@@ -83,7 +84,7 @@ func _draw() -> void:
 			draw_line(Vector2(-12+i*12,fmod(walk_time*42+i*13,34)),Vector2(-12+i*12,fmod(walk_time*42+i*13,34)+3),Color(.6,.85,.86,.65),1)
 	if not in_water:
 		draw_set_transform(Vector2(0,12),0,Vector2(1,.35))
-		draw_circle(Vector2.ZERO,14,Color(.04,.13,.11,.3))
+		draw_circle(Vector2.ZERO,19,Color(.04,.13,.11,.3))
 		draw_set_transform(Vector2.ZERO)
 	if swim_sprite and swim_sprite.visible:
 		return

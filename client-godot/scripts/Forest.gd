@@ -35,6 +35,8 @@ var path_notice_cooldown := 0.0
 var blocked_exits: Array = []
 var background: Texture2D
 var atlas_path := ""
+var forest_lights: Array[Dictionary] = []
+var light_clock := 0.0
 var discovered: Array = []
 var last_position := ENTRY
 
@@ -72,6 +74,10 @@ class ForestProp extends Node2D:
 			draw_rect(Rect2(-20,-37,40,3),Color("c2a56b"))
 			draw_line(Vector2(-16,-29),Vector2(15,-29),Color("77603e"),2)
 			draw_line(Vector2(-12,-23),Vector2(9,-23),Color("806743"),1)
+			draw_line(Vector2(15,-35),Vector2(28,-39),Color("654733"),3)
+			draw_rect(Rect2(23,-38,11,17),Color("463e30"))
+			draw_rect(Rect2(25,-35,7,11),Color("e4ba73"))
+			draw_rect(Rect2(25,-34,3,9),Color("f4dba0"))
 			for nail in [Vector2(-16,-33),Vector2(16,-33)]:
 				draw_rect(Rect2(nail,Vector2(2,2)),Color("453f31"))
 		elif kind == "cache":
@@ -91,18 +97,19 @@ class ForestAvatar extends CharacterBody2D:
 	var variant := "male_default"
 	func _draw() -> void:
 		draw_set_transform(Vector2(0,-1),0,Vector2(1,0.35))
-		draw_circle(Vector2.ZERO,17,Color(0.015,0.055,0.04,0.35))
+		draw_circle(Vector2.ZERO,21,Color(0.015,0.055,0.04,0.35))
 		draw_set_transform(Vector2.ZERO)
 		if sheet != null:
 			var cell := sheet.get_size() / 3.0
 			var frame := 1+int(clock * 8.0) % 2 if walking else 0
 			var source := Rect2(Vector2(frame * cell.x,0),cell)
-			var destination := Rect2(-28,-65,56,70)
+			var destination := Rect2(-50,-100,100,100)
 			if facing.x < -0.1:
-				destination.position.x = 28
-				destination.size.x = -56
+				destination.position.x = 50
+				destination.size.x = -100
 			draw_texture_rect_region(sheet,destination,source)
 			return
+		draw_set_transform(Vector2.ZERO,0,Vector2(1.4,1.4))
 		var step := sin(clock * 11.0) * 4 if walking else 0.0
 		draw_rect(Rect2(-11,-22,8,20+step),Color("30443d"))
 		draw_rect(Rect2(4,-22,8,20-step),Color("30443d"))
@@ -145,6 +152,7 @@ func _ready() -> void:
 	if ResourceLoader.exists("res://resources/art/forest-muara.png"):
 		background = load("res://resources/art/forest-muara.png")
 	_build_props()
+	_build_lighting()
 	avatar = ForestAvatar.new()
 	avatar.position = ENTRY
 	var saved_surface: Variant = GameState.get("surface")
@@ -216,6 +224,7 @@ func _build_props() -> void:
 		_add_foreground(Vector2(720,1010),[Vector2(420,818),Vector2(444,763),Vector2(509,703),Vector2(590,672),Vector2(673,705),Vector2(724,651),Vector2(787,644),Vector2(849,672),Vector2(870,720),Vector2(954,724),Vector2(992,793),Vector2(1068,879),Vector2(1040,1024),Vector2(441,1024)],0,false)
 		_add_foreground(Vector2(286,285),[Vector2(169,153),Vector2(250,89),Vector2(370,127),Vector2(427,173),Vector2(395,204),Vector2(363,204),Vector2(367,270),Vector2(327,286),Vector2(242,278),Vector2(221,239),Vector2(180,232)],0,false)
 		_add_rect_obstacle(Rect2(347,308,218,101))
+		_add_rect_occluder(Rect2(347,308,218,101))
 		# Pemain tidak dapat menembus batu besar yang tampak di tepi jalan.
 		for item in [Vector3(391,837,26),Vector3(292,920,35),Vector3(1076,377,24),Vector3(1114,589,29),Vector3(1271,771,32),Vector3(1450,855,35)]:
 			_add_circle_obstacle(Vector2(item.x,item.y)*1.5625,item.z*1.5625)
@@ -252,6 +261,7 @@ func _add_foreground(base_pixel: Vector2, polygon_pixels: Array, trunk_radius: f
 	actors.add_child(foreground)
 	if trunk_radius > 0:
 		_add_circle_obstacle(base_pixel*1.5625,trunk_radius*1.5625)
+		_add_trunk_occluder(base_pixel*1.5625,trunk_radius*1.5625)
 
 func _add_circle_obstacle(at: Vector2,radius: float) -> void:
 	var body := StaticBody2D.new()
@@ -361,6 +371,9 @@ func _physics_process(delta: float) -> void:
 			path_notice_cooldown = 4.0
 	avatar.position = avatar.position.clamp(Vector2(40,120),Vector2(2360,1500))
 	avatar.walking = avatar.velocity.length() > 8
+	light_clock += delta
+	if Engine.get_physics_frames() % 6 == 0:
+		_update_lighting()
 	avatar.clock += delta
 	if direction.length() > 0.1:
 		avatar.facing = direction
@@ -504,13 +517,15 @@ func _build_ui() -> void:
 	ui.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	ui.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(ui)
-	ui.theme = game_hud.root_control.theme
+	ui.theme = game_hud.root_control.theme.duplicate()
+	ui.theme.set_color("font_color","Label",Color("302D2A"))
+	ui.theme.set_color("default_color","RichTextLabel",Color("302D2A"))
 	dialog = PanelContainer.new()
 	dialog.position = Vector2(180,130)
 	dialog.size = Vector2(600,285)
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color("203d30")
-	style.border_color = Color("b7aa6e")
+	style.bg_color = Color("F1E1BC")
+	style.border_color = Color("654733")
 	style.set_border_width_all(2)
 	style.content_margin_left = 22
 	style.content_margin_right = 22
@@ -625,8 +640,8 @@ func _show_map() -> void:
 	atlas_panel.position = Vector2(139,52)
 	atlas_panel.size = Vector2(682,422)
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color("153d38")
-	style.border_color = Color("b7aa6e")
+	style.bg_color = Color("F1E1BC")
+	style.border_color = Color("654733")
 	style.set_border_width_all(2)
 	style.content_margin_left = 16
 	style.content_margin_right = 16
@@ -649,3 +664,69 @@ func _is_walkable(point: Vector2) -> bool:
 			if point.distance_to(Geometry2D.get_closest_point_to_segment(point,start,end)) <= walkable_half_width:
 				return true
 	return false
+
+func _build_lighting() -> void:
+	_add_forest_light(Vector2(430,418),1.85,"lantern",true)
+	for item in landmarks:
+		if str(item.id) != "forest_cache":
+			_add_forest_light(Vector2(item.x,item.y)+Vector2(52,-22),0.95,"lantern",str(item.id)=="forest_roots")
+	_add_forest_light(Vector2(670,985),2.8,"canopy",false)
+	_add_forest_light(Vector2(1350,620),2.35,"canopy",false)
+	_update_lighting()
+
+func _add_forest_light(at: Vector2, size_scale: float, kind: String, shadows: bool) -> void:
+	var gradient := Gradient.new()
+	gradient.offsets = PackedFloat32Array([0.0,0.25,0.65,1.0])
+	gradient.colors = PackedColorArray([Color(1,1,1,0.95),Color(1,1,1,0.55),Color(1,1,1,0.12),Color(1,1,1,0)])
+	var texture := GradientTexture2D.new()
+	texture.width = 256
+	texture.height = 256
+	texture.gradient = gradient
+	texture.fill = GradientTexture2D.FILL_RADIAL
+	texture.fill_from = Vector2(0.5,0.5)
+	texture.fill_to = Vector2(1,0.5)
+	var light := PointLight2D.new()
+	light.texture = texture
+	light.texture_scale = size_scale
+	light.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	light.color = Color("ffe0a3") if kind == "lantern" else Color("e9efc5")
+	light.position = at
+	light.shadow_enabled = shadows
+	light.shadow_filter = Light2D.SHADOW_FILTER_PCF5
+	light.shadow_color = Color(0.05,0.09,0.07,0.45)
+	light.energy = 0.15
+	add_child(light)
+	forest_lights.append({"node":light,"kind":kind,"phase":fmod(at.x*0.017,TAU)})
+
+func _update_lighting() -> void:
+	var environment = get_node_or_null("/root/EnvironmentState")
+	var data: Dictionary = environment.snapshot() if environment != null else {"daylight":0.9,"clouds":0.0}
+	var daylight := clampf(float(data.get("daylight",0.9)),0.0,1.0)
+	var clouds := clampf(float(data.get("clouds",0.0)),0.0,1.0)
+	for entry in forest_lights:
+		var light: PointLight2D = entry.node
+		var phase := float(entry.phase)
+		if str(entry.kind) == "lantern":
+			var dusk := clampf((0.85-daylight)/0.65,0.0,1.0)
+			light.energy = (0.10+dusk*0.56+clouds*0.05)*(1.0+sin(light_clock*2.7+phase)*0.025)
+		else:
+			light.energy = daylight*(1.0-clouds*0.80)*(0.055+sin(light_clock*0.22+phase)*0.008)
+
+func _add_trunk_occluder(at: Vector2,radius: float) -> void:
+	var polygon := PackedVector2Array()
+	for i in range(10):
+		var angle := TAU*i/10.0
+		polygon.append(Vector2(cos(angle),sin(angle))*Vector2(radius,radius*0.48))
+	var occluder := LightOccluder2D.new()
+	var shape := OccluderPolygon2D.new()
+	shape.polygon = polygon
+	occluder.occluder = shape
+	occluder.position = at
+	add_child(occluder)
+
+func _add_rect_occluder(rect: Rect2) -> void:
+	var occluder := LightOccluder2D.new()
+	var shape := OccluderPolygon2D.new()
+	shape.polygon = PackedVector2Array([rect.position,rect.position+Vector2(rect.size.x,0),rect.end,rect.position+Vector2(0,rect.size.y)])
+	occluder.occluder = shape
+	add_child(occluder)

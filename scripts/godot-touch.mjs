@@ -89,9 +89,9 @@ try {
         dy = y - at.y;
       if (Math.hypot(dx, dy) < targetRadius) return;
       if (Math.abs(dy) > 22)
-        await touch(100, dy > 0 ? 477 : 421, Math.min(420, Math.abs(dy) * 4));
+        await touch(132, dy > 0 ? 480 : 404, Math.min(420, Math.abs(dy) * 4));
       else if (Math.abs(dx) > 18)
-        await touch(dx > 0 ? 156 : 44, 477, Math.min(420, Math.abs(dx) * 4));
+        await touch(dx > 0 ? 208 : 56, 480, Math.min(420, Math.abs(dx) * 4));
       await frame
         .waitForFunction(
           (old) => {
@@ -111,13 +111,13 @@ try {
   const moved = await snapshot();
   assert(moved.x > before.x + 80, "D-pad horizontal movement failed");
   assert(moved.y > before.y + 80, "D-pad vertical movement failed");
-  await touch(840, 422);
+  await touch(904, 484);
   await frame.waitForFunction(() => window.jalasmaraSnapshot?.diving === true);
   await moveTo(1250, 530, 40);
   const captured = page.waitForResponse((r) =>
     r.url().endsWith("/api/dive/collect"),
   );
-  await touch(840, 490, 850);
+  await touch(816, 484, 850);
   const result = await (await captured).json();
   assert(result.dive?.loot.length > 0, "Touch net did not capture");
   assert.equal(

@@ -154,16 +154,19 @@ func _open(title: String, pause_reading := true) -> VBoxContainer:
 	hud.set_modal(true)
 	nala.frozen = true
 	modal = PanelContainer.new()
+	modal.theme = hud.root_control.theme.duplicate()
+	modal.theme.set_color("font_color","Label",Color("302d2a"))
+	modal.theme.set_color("default_color","RichTextLabel",Color("302d2a"))
 	modal.position = Vector2(155,84)
 	modal.size = Vector2(650,420)
 	var bg := StyleBoxFlat.new()
-	bg.bg_color = Color("102f39")
+	bg.bg_color = Color("f1e1bc")
 	bg.content_margin_left = 25
 	bg.content_margin_right = 25
 	bg.content_margin_top = 20
 	bg.content_margin_bottom = 20
-	bg.set_corner_radius_all(4)
-	bg.border_color = Color("648e87")
+	bg.set_corner_radius_all(2)
+	bg.border_color = Color("654733")
 	bg.set_border_width_all(2)
 	modal.add_theme_stylebox_override("panel",bg)
 	ui.add_child(modal)
@@ -225,13 +228,22 @@ func _process(delta: float) -> void:
 	if not GameState.player.is_empty():
 		EnvironmentState.update_story(int(GameState.player.progress.day),str(GameState.player.progress.stage))
 	var submerged := not GameState.dive.is_empty()
+	var light_state := EnvironmentState.snapshot()
+	var clouds := float(light_state.clouds)
+	var daylight := float(light_state.daylight)
 	environment.configure("sea" if submerged else "hub")
 	if environment.has_method("update_depth"):
 		environment.update_depth(maxf(0,(nala.position.y-400)/28))
 	if dive_lamp:
 		dive_lamp.visible = submerged
-	for lamp in port_lamps:
-		lamp.visible = not submerged and bool(EnvironmentState.snapshot().night)
+		var direction := nala.velocity.normalized() if nala.velocity.length()>8 else Vector2(float(nala.direction),0)
+		dive_lamp.rotation = lerp_angle(dive_lamp.rotation,direction.angle(),minf(1,delta*7))
+		dive_lamp.energy = lerpf(0.3,0.85,clampf((nala.position.y-400)/2300,0,1))
+	for i in port_lamps.size():
+		var lamp := port_lamps[i]
+		lamp.visible = not submerged
+		var warmth := clampf((0.92-daylight)*1.3+clouds*0.13,0.035,0.9)
+		lamp.energy = warmth*(1.0+sin(Time.get_ticks_msec()*0.0023+i*1.7)*0.035)
 	camera.limit_right = 3080 if GameState.dive.is_empty() else 6144
 	camera.limit_bottom = 800 if GameState.dive.is_empty() else 3584
 	terrain.gardens_restored = GameState.player.get("progress",{}).get("day",1)>=3
@@ -879,11 +891,12 @@ func _add_lights() -> void:
 	texture.fill_from = Vector2(.5,.5)
 	texture.fill_to = Vector2(1,.5)
 	dive_lamp = PointLight2D.new()
-	dive_lamp.texture = texture
+	dive_lamp.texture = _torch_texture()
 	dive_lamp.color = Color(.55,.85,.76)
 	dive_lamp.energy = .65
-	dive_lamp.texture_scale = 2.2
-	dive_lamp.position = Vector2(35,0)
+	dive_lamp.texture_scale = 3.0
+	dive_lamp.position = Vector2(0,-8)
+	dive_lamp.texture_offset = Vector2(70,0)
 	nala.add_child(dive_lamp)
 	for at in [Vector2(480,230),Vector2(1100,260),Vector2(1900,260),Vector2(2550,250)]:
 		var lamp := PointLight2D.new()
@@ -894,3 +907,15 @@ func _add_lights() -> void:
 		lamp.energy = 1.25
 		add_child(lamp)
 		port_lamps.append(lamp)
+
+func _torch_texture() -> Texture2D:
+	var image := Image.create(192,128,false,Image.FORMAT_RGBA8)
+	for y in 128:
+		for x in 192:
+			var along := float(x)/192.0
+			var across := absf(float(y)-64.0)/64.0
+			var width := 0.08+along*0.85
+			var edge := 1.0-smoothstep(width*0.55,width,across)
+			var reach := (1.0-smoothstep(0.4,1.0,along))*smoothstep(0.0,0.12,along)
+			image.set_pixel(x,y,Color(1,1,1,edge*reach*0.72))
+	return ImageTexture.create_from_image(image)

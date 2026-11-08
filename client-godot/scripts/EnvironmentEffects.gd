@@ -134,6 +134,8 @@ func _process(delta: float) -> void:
 	var clouds := float(data.get("clouds",0.0))
 	var tint := Color(0.64,0.77,0.82) if _area=="sea" else Color(0.53,0.64,0.71)
 	var target := tint.lerp(Color(1.0,0.99,0.94),daylight)
+	if bool(data.get("night",false)):
+		target = Color(0.31,0.43,0.54) if _area != "sea" else Color(0.24,0.40,0.49)
 	if _area != "sea":
 		target = target.darkened(clouds*0.075)
 	_tint = _tint.lerp(target,1.0-exp(-delta*1.8))

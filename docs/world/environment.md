@@ -17,7 +17,7 @@ Status berikut berdasarkan implementasi sumber dan pengujian browser pada 8 Nove
 | Gelembung penyelam     | `Player.gd` mengeluarkan gelembung saat menyelam; lebih sering ketika bergerak atau oksigen rendah. Ini indikator visual, bukan konsumsi oksigen tambahan.                                                       |
 | Basah setelah naik     | Pemain di hub menetes selama lima detik dan meninggalkan tanda basah sementara. Tanda belum membedakan material lantai atau mengikuti langkah kaki yang sebenarnya; actor hutan memakai implementasi tersendiri. |
 | Angin hutan            | Shader menggeser kanopi secara lembut, dengan pangkal lokal tetap. Collision tidak bergoyang.                                                                                                                    |
-| Lampu                  | Cahaya radial mengikuti penyelam. Empat lampu dermaga menyala pada tahap malam. Belum ada kerucut senter, bayangan occluder, atau sistem lampu malam hutan yang lengkap.                                         |
+| Lampu                  | Senter berbentuk kerucut mengikuti arah gerak penyelam dengan transisi halus. Empat lampu dermaga berubah energi menurut cahaya sekitar/awan dan variasi kecil. Hutan memiliki lampu pondok, tiga lentera penanda, dua cahaya kanopi, serta lima occluder sederhana; hanya dua lampu memakai bayangan.                                         |
 
 ## Aturan waktu dan integrasi
 
@@ -49,7 +49,7 @@ Impor Godot headless dan pemeriksaan script lulus. Pembiasan/caustic aktif pada 
 - Petir, kilat, badai, dan perubahan terang mendadak.
 - Audio hujan, guntur, angin, langkah, tetesan, gelembung, atau audio lingkungan yang berubah mengikuti scene/cuaca.
 - Simulasi air, dampak hujan sesuai geometri, genangan persisten, basah pada seluruh permukaan, dan pengeringan menurut bahan/angin.
-- Bayangan dinamis atau pengaruh pencahayaan terhadap deteksi musuh dan gameplay.
+- Bayangan pada seluruh objek atau pengaruh pencahayaan terhadap deteksi musuh dan gameplay.
 - Pengaturan kualitas efek serta preferensi terpisah untuk mengurangi gerakan efek lingkungan.
 
 Jika cuaca kelak menjadi mekanik permainan, server harus menerbitkan kondisi dan waktu transisinya sebagai bagian state sesi yang diberi versi. Perhitungan arus, oksigen, akses, spawn, serta hadiah harus memakai kondisi server. Klien hanya menginterpolasi tampilan dan tidak boleh memperoleh keuntungan melalui perubahan jam lokal, reload, atau pergantian scene. Protokol tersebut merupakan pekerjaan lanjutan, belum menjadi perilaku versi ini.

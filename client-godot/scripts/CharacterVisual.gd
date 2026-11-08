@@ -1,4 +1,7 @@
 extends Sprite2D
+const LAND_SIZE := 100.0
+const SWIM_SIZE := 112.0
+const FOOT_Y := 12.0
 var appearance := ""
 var atlas_ready := false
 func set_appearance(id: String) -> void:
@@ -16,8 +19,8 @@ func animate(moving: bool, in_water: bool, facing: int, elapsed: float) -> void:
 		return
 	flip_h = facing<0
 	var cell := Vector2(texture.get_size())/Vector2(hframes,vframes)
-	scale = Vector2(86.0/cell.x,86.0/cell.y) if in_water else Vector2(62.0/cell.x,62.0/cell.y)
-	position.y = 0 if in_water else -20
+	scale = Vector2(SWIM_SIZE/cell.x,SWIM_SIZE/cell.y) if in_water else Vector2(LAND_SIZE/cell.x,LAND_SIZE/cell.y)
+	position.y = 0 if in_water else FOOT_Y-LAND_SIZE/2.0
 	if atlas_ready:
 		frame = 3+int(elapsed*7)%6 if in_water else 1+int(elapsed*7)%2 if moving else 0
 	else:

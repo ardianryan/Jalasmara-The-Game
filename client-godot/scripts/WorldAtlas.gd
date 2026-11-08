@@ -47,8 +47,8 @@ func _rebuild() -> void:
 	panel.size = Vector2(212,334)
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color("123e45")
-	style.border_color = Color("54736d")
+	style.bg_color = Color("202d3a")
+	style.border_color = Color("654733")
 	style.border_width_left = 2
 	panel.add_theme_stylebox_override("panel",style)
 	add_child(panel)
@@ -67,7 +67,7 @@ func _rebuild() -> void:
 	close.pressed.connect(func(): close_requested.emit())
 	add_child(close)
 	var legend := _label(self,"o Terbuka    - Alur cerita    ... Coming soon",Vector2(8,344),Vector2(526,20),11)
-	legend.add_theme_color_override("font_color",Color("c5d5c8"))
+	legend.add_theme_color_override("font_color",Color("654733"))
 	_label(self,"Peta informasi. Datangi jalur penghubung untuk berpindah wilayah.",Vector2(8,368),Vector2(526,18),10)
 	_built = true
 	if not _regions.is_empty():
@@ -91,7 +91,7 @@ func _label(parent: Node, text: String, at: Vector2, dimensions: Vector2, font_s
 	label.position = at
 	label.size = dimensions
 	label.add_theme_font_size_override("font_size",font_size)
-	label.add_theme_color_override("font_color",CREAM)
+	label.add_theme_color_override("font_color",Color("302d2a") if parent==self else CREAM)
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	label.clip_text = true
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
