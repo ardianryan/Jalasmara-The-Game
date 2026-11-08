@@ -1651,3 +1651,61 @@ test("static game assets negotiate precompressed bytes and preserve uncompressed
     rmSync(directory, { recursive: true, force: true });
   }
 });
+
+test("posisi laut mengikuti kontur alami, menolak inti dan jarak dinding, serta menerima sudut terpotong dan celah", async () => {
+  const user = await account();
+  const browser = await new Browser().login(user);
+  const dive = await start(browser);
+  const key = `dive:${user.id}`;
+  const allowMovementTime = async () => {
+    const saved = JSON.parse((await s.redis.get(key))!);
+    saved.positionAt = Date.now() - 5000;
+    await s.redis.set(key, JSON.stringify(saved), "KEEPTTL");
+  };
+  await fixturePosition(browser, { x: 1740, y: 800 });
+  await allowMovementTime();
+  const core = await browser.request("/dive/position", {
+    diveId: dive.id,
+    x: 1920,
+    y: 870,
+  });
+  assert.equal(core.status, 409);
+  assert.equal(core.data.code, "POSITION");
+  assert.deepEqual(JSON.parse((await s.redis.get(key))!).position, {
+    x: 1740,
+    y: 800,
+  });
+
+  const contour = WORLD.terrainContours[14];
+  const top = contour.reduce((lowest, point) =>
+    point[1] < lowest[1] ? point : lowest,
+  );
+  const wall = await browser.request("/dive/position", {
+    diveId: dive.id,
+    x: top[0],
+    y: top[1] - 6,
+  });
+  assert.equal(
+    wall.status,
+    409,
+    "Player radius cannot overlap a wall even when its center is outside",
+  );
+  assert.equal(wall.data.code, "POSITION");
+
+  // This point lies inside the old 1780,820,280,100 bounding box, outside its cut corner.
+  const corner = await browser.request("/dive/position", {
+    diveId: dive.id,
+    x: 1783,
+    y: 823,
+  });
+  assert.equal(corner.status, 200, JSON.stringify(corner.data));
+  assert.deepEqual(corner.data.position, { x: 1783, y: 823 });
+  await allowMovementTime();
+  const gap = await browser.request("/dive/position", {
+    diveId: dive.id,
+    x: 1920,
+    y: 970,
+  });
+  assert.equal(gap.status, 200, JSON.stringify(gap.data));
+  assert.deepEqual(gap.data.position, { x: 1920, y: 970 });
+});

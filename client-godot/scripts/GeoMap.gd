@@ -97,10 +97,17 @@ func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO,size),SEA)
 	if area == "sea":
 		_image("ocean-depth-background",Rect2(0,0,6144,3584),Color(0.45,0.65,0.7,1))
-		for rect in world.get("terrain",[]):
-			var origin := _screen(Vector2(float(rect[0]),float(rect[1])))
-			var extent := Vector2(float(rect[2]),float(rect[3]))/_source().size*_fit().size
-			draw_rect(Rect2(origin,extent),Color("87978b"))
+		var contours: Array = world.get("terrainContours",[])
+		if not contours.is_empty():
+			for contour in contours:
+				var outline := PackedVector2Array()
+				for point in contour: outline.append(_screen(Vector2(float(point[0]),float(point[1]))))
+				draw_colored_polygon(outline,Color("87978b"))
+		else:
+			for rect in world.get("terrain",[]):
+				var origin := _screen(Vector2(float(rect[0]),float(rect[1])))
+				var extent := Vector2(float(rect[2]),float(rect[3]))/_source().size*_fit().size
+				draw_rect(Rect2(origin,extent),Color("87978b"))
 		if not mini:
 			for depth in [25,60,95]:
 				var y := _screen(Vector2(0,400+depth*28)).y

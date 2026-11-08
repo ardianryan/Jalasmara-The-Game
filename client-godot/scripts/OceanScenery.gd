@@ -16,7 +16,6 @@ var backdrop: Sprite2D
 var hub_art: Texture2D
 var decoration_count := 0
 var near_growth: Array[Dictionary] = []
-
 func configure(data: Dictionary, rectangles: Array[Rect2]) -> void:
 	world = data
 	terrain.assign(rectangles)
@@ -140,6 +139,11 @@ func _build_formation(rect: Rect2,index: int) -> void:
 	add_child(face)
 
 func outline_for(rect: Rect2,index: int) -> PackedVector2Array:
+	var contours: Array = world.get("terrainContours",[])
+	if index<contours.size():
+		var silhouette := PackedVector2Array()
+		for point in contours[index]: silhouette.append(Vector2(float(point[0]),float(point[1])))
+		return silhouette
 	# API rectangles remain solid cores; the visible scallops also define local collision.
 	if rect.position.y < WATERLINE and rect.size.x > 200:
 		return PackedVector2Array([rect.position,rect.position+Vector2(rect.size.x,0),rect.end,rect.position+Vector2(0,rect.size.y)])

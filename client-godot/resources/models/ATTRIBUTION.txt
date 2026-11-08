@@ -1,0 +1,6 @@
+Small Reef Rock by Polyfork
+https://polyfork.dev/asset/small-reef-rock-99062d
+License: CC BY 4.0 — https://creativecommons.org/licenses/by/4.0/
+
+The original free GLB is unchanged. Jalasmara instances it as a real-time 3D prop,
+adjusting scale, placement, and rendering materials for its pixel-style sea scene.

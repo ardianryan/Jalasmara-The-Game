@@ -6,7 +6,7 @@ Bandar Hujung memakai bidang 2400 × 1600 yang diselaraskan dengan gambar desa, 
 
 ## Laut dan darat
 
-Batu laut memakai polygon tidak beraturan dan tekstur batu asli proyek. Polygon visual dan collision sama; inti penghalang lama dipertahankan agar rute serta validasi server tetap konsisten. Coral garden dan lamun ditempatkan pada permukaan batu, dengan karang piringan pada dinding. Latar jurang mempunyai kontras lebih rendah; dekorasi depan lebih tajam. Parallax hanya menggerakkan dekorasi terpisah, bukan tanah atau collider.
+Batu laut memakai polygon tidak beraturan dan tekstur batu asli proyek. Kontur pada `WORLD.terrainContours` dipakai bersama oleh mesh, collision klien, dan pemeriksaan posisi server dengan jarak aman tubuh penyelam. Bounding box lama dipertahankan untuk penempatan konservatif biota. Coral garden dan lamun ditempatkan pada permukaan batu, dengan karang piringan pada dinding. Latar jurang mempunyai kontras lebih rendah; dekorasi depan lebih tajam. Parallax hanya menggerakkan dekorasi terpisah, bukan tanah atau collider.
 
 Hutan mempertahankan jalur yang divalidasi server, menambah properti raster, kupu-kupu, daun jatuh, serta fauna prosedural. Rumah, tajuk, dan props menggunakan urutan kaki dan potongan foreground. Jalur ke wilayah masa depan tetap ditutup longsor, gerbang atau jembatan putus.
 
@@ -22,4 +22,4 @@ Senter memakai `PointLight2D` dengan bayangan dari polygon batu. Lentera dan cah
 
 SFX dan BGM yang diberikan pengguna dihubungkan ke konteks dunia. Pemutaran menunggu interaksi pengguna, perpindahan track memakai crossfade, audio lingkungan mempunyai bus filter tersendiri, serta heartbeat berhenti saat membaca atau keluar dari penyelaman. Tombol Suara dan V mengatur mute yang tersimpan. Audio tidak menentukan timer kuis, oksigen, atau hadiah.
 
-Ini tetap permainan 2D dengan kedalaman melalui perspektif, overlap, atmosfer, animasi, dan cahaya. Bukan perpindahan ke terrain 3D penuh atau mesin Three.js.
+Pilot laut kini memakai terrain 3D dan Sprite3D melalui renderer hybrid Godot. Kontrol tetap pada bidang dua sumbu. Kota serta hutan masih memakai renderer 2D dengan overlap, atmosfer, dan parallax. Rincian cakupan ada pada [pilot hybrid](hybrid-terrain.md); tidak ada perpindahan ke Three.js.

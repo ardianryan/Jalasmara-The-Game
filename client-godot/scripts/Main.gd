@@ -40,6 +40,7 @@ var dive_lamp: PointLight2D
 var port_lamps: Array[PointLight2D] = []
 var snapshot_at := 0
 var surface_actors: Array[Node2D] = []
+var hybrid: Node2D
 func _ready() -> void:
 	y_sort_enabled = true
 	_setup_input()
@@ -76,6 +77,9 @@ func _ready() -> void:
 	move_child(terrain,0)
 	nala.land_mask = Callable(terrain,"is_walkable")
 	terrain.add_foreground_to(self)
+	hybrid = load("res://scripts/hybrid/HybridOcean.gd").new()
+	add_child(hybrid)
+	hybrid.setup(self)
 	_add_lights()
 	for district in GameState.world.surface_hub.districts:
 		var actor = preload("res://scripts/HubActor.gd").new()
@@ -228,6 +232,11 @@ func _process(delta: float) -> void:
 	if not GameState.player.is_empty():
 		EnvironmentState.update_story(int(GameState.player.progress.day),str(GameState.player.progress.stage))
 	var submerged := not GameState.dive.is_empty()
+	var hybrid_active: bool = is_instance_valid(hybrid) and hybrid.is_active()
+	nala.hybrid_visual = hybrid_active
+	entities.visible = not hybrid_active
+	if is_instance_valid(terrain.scenery):
+		terrain.scenery.visible = not hybrid_active
 	if terrain.is_inside_tree() and terrain.underwater != submerged:
 		terrain.set_mode(submerged)
 		if not submerged:
@@ -239,7 +248,7 @@ func _process(delta: float) -> void:
 	if environment.has_method("update_depth"):
 		environment.update_depth(maxf(0,(nala.position.y-400)/28))
 	if dive_lamp:
-		dive_lamp.visible = submerged
+		dive_lamp.visible = submerged and not hybrid_active
 		var direction := nala.velocity.normalized() if nala.velocity.length()>8 else Vector2(float(nala.direction),0)
 		dive_lamp.rotation = lerp_angle(dive_lamp.rotation,direction.angle(),minf(1,delta*7))
 		dive_lamp.energy = lerpf(0.3,0.85,clampf((nala.position.y-400)/2300,0,1))
@@ -274,6 +283,9 @@ func _process(delta: float) -> void:
 		snapshot_at = Time.get_ticks_msec()
 		var snapshot := {"x":nala.position.x,"y":nala.position.y,"stage":GameState.player.get("progress",{}).get("stage",""),"modal":modal_open,"nearby":str(nearby.get("id","")),"diving":not GameState.dive.is_empty()}
 		snapshot["audio"] = AudioManager.debug_status()
+		snapshot["hybrid"] = hybrid.debug_status() if is_instance_valid(hybrid) else {"active":false}
+		if hud.has_method("debug_layout"):
+			snapshot["hud"] = hud.debug_layout()
 		JavaScriptBridge.get_interface("window").jalasmaraSnapshot = JavaScriptBridge.get_interface("JSON").parse(JSON.stringify(snapshot))
 	if modal_open and is_instance_valid(modal) and modal.get_meta("world_map",false) and Input.is_action_just_pressed("map"):
 		_close()
@@ -324,12 +336,21 @@ func _process(delta: float) -> void:
 				shot.node.queue_free()
 			attacks.clear()
 func _draw() -> void:
+	if is_instance_valid(hybrid) and hybrid.is_active() and not modal_open and nearby.get("kind","")=="biota":
+		var target: Vector2 = entities.target_position(nearby)
+		for side in [-1,1]:
+			var edge := target+Vector2(side*39,-15)
+			draw_line(edge,edge+Vector2(0,30),Color("f0d48a"),2)
+			draw_line(edge,edge+Vector2(-side*9,0),Color("f0d48a"),2)
+			draw_line(edge+Vector2(0,30),edge+Vector2(-side*9,30),Color("f0d48a"),2)
 	if net_started and nala:
 		var radius := 20.0+minf(net_time,2)*40
 		draw_arc(nala.position,radius,-PI,PI,40,Color("e7cc8b"),2)
 	if flash>0 and nala:
 		draw_circle(nala.position,28,Color(0.9,0.4,0.3,.25))
 func _unhandled_key_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_F6 and is_instance_valid(hybrid):
+		hybrid.enabled = not hybrid.enabled
 	if event.is_action_pressed("ui_cancel") and modal_open and chain_lines.is_empty() and not GameState.dive.has("challenge"):
 		_close()
 func _find_nearby() -> void:
@@ -391,6 +412,8 @@ func _update_hud() -> void:
 	var d: Dictionary = GameState.dive
 	var state := {"area":region,"depth":depth,"diving":not d.is_empty(),"oxygen":d.get("oxygen",0),"maxOxygen":d.get("maxOxygen",100),"coins":p.coins,"weight":d.get("weight",0),"capacity":d.get("capacity",12),"objective":goal,"action":str(nearby.get("name","Dekati tempat atau tokoh")),"canInteract":not nearby.is_empty() and nearby.get("kind","")!="biota","canNet":nearby.get("kind","")=="biota" and not d.is_empty()}
 	state.merge(EnvironmentState.snapshot(),true)
+	state["netCharging"] = net_started
+	state["netProgress"] = clampf(net_time/0.3,0,1)
 	hud.update_state(state)
 	if hud.has_method("set_navigation"):
 		hud.set_navigation(GameState.world,"hub" if GameState.dive.is_empty() else "sea",nala.position)
@@ -413,6 +436,9 @@ func _sync_position() -> bool:
 	if OS.has_feature("web"):
 		var snapshot := {"x":nala.position.x,"y":nala.position.y,"stage":GameState.player.get("progress",{}).get("stage",""),"modal":modal_open,"nearby":str(nearby.get("id","")),"diving":not GameState.dive.is_empty()}
 		snapshot["audio"] = AudioManager.debug_status()
+		snapshot["hybrid"] = hybrid.debug_status() if is_instance_valid(hybrid) else {"active":false}
+		if hud.has_method("debug_layout"):
+			snapshot["hud"] = hud.debug_layout()
 		JavaScriptBridge.get_interface("window").jalasmaraSnapshot = JavaScriptBridge.get_interface("JSON").parse(JSON.stringify(snapshot))
 	return true
 func _refresh_dive() -> void:

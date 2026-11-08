@@ -1,3 +1,55 @@
+const TERRAIN = [
+  [-100, -100, 100, 3800],
+  [6144, -100, 100, 3800],
+  [0, 3500, 6144, 100],
+  [0, 330, 3080, 55],
+  [0, 1050, 1750, 300],
+  [3000, 900, 1100, 180],
+  [5500, 1000, 644, 2100],
+  [1800, 1870, 1500, 160],
+  [0, 2050, 2100, 100],
+  [3600, 1990, 1700, 140],
+  [3200, 2380, 650, 170],
+  [800, 2860, 1800, 140],
+  [4300, 2800, 1844, 160],
+  [540, 700, 340, 140],
+  [1780, 820, 280, 100],
+] as const;
+
+function coastalContour(
+  rect: readonly number[],
+  index: number,
+): [number, number][] {
+  const [x, y, width, height] = rect;
+  if (width <= 100 || y < 400 || y >= 3500)
+    return [
+      [x, y],
+      [x + width, y],
+      [x + width, y + height],
+      [x, y + height],
+    ];
+  const cx = Math.min(90, width * 0.16),
+    cy = Math.min(60, height * 0.24);
+  const rough = (step: number) =>
+    (Math.sin(index * 2.31 + step * 1.73) + 1) * 0.5;
+  const ridge = Math.min(30, height * 0.12);
+  return [
+    [x + cx, y + ridge * rough(0)],
+    [x + width * 0.32, y + ridge * rough(1)],
+    [x + width * 0.61, y + ridge * rough(2)],
+    [x + width - cx, y + ridge * rough(3)],
+    [x + width, y + cy],
+    [x + width - cx * 0.28 * rough(4), y + height * 0.55],
+    [x + width - cx * 0.6, y + height - cy * 0.65],
+    [x + width * 0.67, y + height - ridge * rough(5)],
+    [x + width * 0.34, y + height - ridge * rough(6)],
+    [x + cx, y + height],
+    [x, y + height - cy],
+    [x + cx * 0.3 * rough(7), y + height * 0.48],
+    [x, y + cy],
+  ].map(([px, py]) => [Math.round(px * 100) / 100, Math.round(py * 100) / 100]);
+}
+
 export const WORLD = {
   width: 6144,
   height: 3584,
@@ -18,9 +70,27 @@ export const WORLD = {
     },
     terraces: [
       { id: "dock", elevation: 0, name: "Dermaga", minY: 1160, maxY: 1400 },
-      { id: "lower_court", elevation: 1, name: "Pelataran pesisir", minY: 850, maxY: 1160 },
-      { id: "upper_court", elevation: 2, name: "Pelataran kedai dan galangan", minY: 400, maxY: 850 },
-      { id: "forest_ridge", elevation: 3, name: "Punggung bukit hutan", minY: 120, maxY: 400 },
+      {
+        id: "lower_court",
+        elevation: 1,
+        name: "Pelataran pesisir",
+        minY: 850,
+        maxY: 1160,
+      },
+      {
+        id: "upper_court",
+        elevation: 2,
+        name: "Pelataran kedai dan galangan",
+        minY: 400,
+        maxY: 850,
+      },
+      {
+        id: "forest_ridge",
+        elevation: 3,
+        name: "Punggung bukit hutan",
+        minY: 120,
+        maxY: 400,
+      },
     ],
     stairs: [
       { from: "dock", to: "lower_court", x: 1160, y: 1130 },
@@ -208,23 +278,8 @@ export const WORLD = {
       },
     ],
   } as const,
-  terrain: [
-    [-100, -100, 100, 3800],
-    [6144, -100, 100, 3800],
-    [0, 3500, 6144, 100],
-    [0, 330, 3080, 55],
-    [0, 1050, 1750, 300],
-    [3000, 900, 1100, 180],
-    [5500, 1000, 644, 2100],
-    [1800, 1870, 1500, 160],
-    [0, 2050, 2100, 100],
-    [3600, 1990, 1700, 140],
-    [3200, 2380, 650, 170],
-    [800, 2860, 1800, 140],
-    [4300, 2800, 1844, 160],
-    [540, 700, 340, 140],
-    [1780, 820, 280, 100],
-  ],
+  terrain: TERRAIN,
+  terrainContours: TERRAIN.map(coastalContour),
   hazards: [
     {
       id: "urchin_reef",

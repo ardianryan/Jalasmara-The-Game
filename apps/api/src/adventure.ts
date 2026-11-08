@@ -5,6 +5,7 @@ import { type Store, type User, fail, lock, once, publicUser } from "./db.js";
 import type { Guards } from "./auth.js";
 import { operationKey } from "./game.js";
 import { uuid, version } from "./schemas.js";
+import { blockedByContours } from "./geometry.js";
 export const publicWorld = (day = 1) => ({
   ...WORLD,
   atlas: {
@@ -429,6 +430,8 @@ export async function adventureRoutes(
             409,
             "POSITION",
           );
+        if (blockedByContours(b, WORLD.terrainContours, 12))
+          return fail("Jalur terhalang batu karang.", 409, "POSITION");
         d.position = { x: b.x, y: b.y };
         d.positionAt = now;
         await s.redis.set(`dive:${p.id}`, JSON.stringify(d), "KEEPTTL");

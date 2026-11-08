@@ -144,6 +144,66 @@ try {
     path: "artifacts/godot/swimming.png",
     fullPage: true,
   });
+  if (process.env.VERIFY_HYBRID === "1") {
+    const output = "artifacts/godot/hybrid";
+    mkdirSync(output, { recursive: true });
+    const rendered = (await snapshot(frame)).hybrid;
+    assert.equal(rendered.active, true);
+    assert.equal(rendered.renderer, "SubViewport3D");
+    assert.equal(rendered.orthographic, true);
+    assert(rendered.mesh_count >= 15 && rendered.sprite_count > 1);
+    await page.screenshot({ path: `${output}/01-reef-3d.png`, fullPage: true });
+    await page.keyboard.press("F6");
+    await frame.waitForFunction(
+      () => window.jalasmaraSnapshot?.hybrid?.active === false,
+      null,
+      { polling: 100 },
+    );
+    await page.screenshot({
+      path: `${output}/02-reef-2d-comparison.png`,
+      fullPage: true,
+    });
+    await page.keyboard.press("F6");
+    await frame.waitForFunction(
+      () => window.jalasmaraSnapshot?.hybrid?.active === true,
+      null,
+      { polling: 100 },
+    );
+    for (const [x, y] of [
+      [1000, 580],
+      [1000, 900],
+      [750, 900],
+    ])
+      await walkTo(frame, x, y);
+    const cave = await snapshot(frame);
+    assert(cave.hybrid.active && cave.hybrid.spot_shadow);
+    assert(cave.hud?.oxygen?.visible && cave.hud.oxygen.value > 0);
+    assert(Math.hypot(cave.x - 750, cave.y - 900) < 25);
+    await page.screenshot({
+      path: `${output}/03-cave-passage.png`,
+      fullPage: true,
+    });
+    writeFileSync(
+      `${output}/results.json`,
+      JSON.stringify(
+        {
+          origin,
+          checks: [
+            "real-3d-meshes",
+            "billboard-actors",
+            "orthographic-pixel-viewport",
+            "F6-comparison-toggle",
+            "swim-through-authoritative-cave-gap",
+            "shadowed-headlamp",
+          ],
+          reef: rendered,
+          cave: cave.hybrid,
+        },
+        null,
+        2,
+      ),
+    );
+  }
   await page.keyboard.press("m");
   await frame.waitForFunction(
     () => window.jalasmaraSnapshot?.modal === true,

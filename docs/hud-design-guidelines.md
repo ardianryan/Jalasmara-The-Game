@@ -1,6 +1,8 @@
 # Panduan Desain Antarmuka & HUD Jalasmara
 
 > Acuan desain dari referensi. Tidak semua fitur di dokumen ini sudah aktif. Lihat [status pengembangan](development-status.md) dan [dunia hidup](world/living-world.md) untuk implementasi serta batasnya.
+> Pembaruan implementasi: instrumen O2 bersegmen dengan angka besar, kedalaman/tas, kelompok aksi/jala dan strip utilitas sudah tersedia. Tata letak sentuh memisahkan instrumen dari D-pad. Indikator udara tipis dan tahan/lepas jala diuji pada renderer native; status pemeriksaan browser ada di dokumen pengembangan.
+
 *(Pelajaran & Rekomendasi Tata Letak Berdasarkan Dave the Diver)*
 
 **Dokumen Desain Antarmuka Pengguna (UI/HUD Architecture)**  

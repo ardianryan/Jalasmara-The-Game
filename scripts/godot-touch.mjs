@@ -78,6 +78,17 @@ try {
     await page.waitForTimeout(650);
   }
   const before = await snapshot();
+  async function touchControl(name, duration = 100) {
+    const center = (await snapshot()).hud?.[name];
+    assert(
+      Array.isArray(center) && center.length === 2,
+      `HUD control ${name} is missing`,
+    );
+    assert(
+      center[0] >= 0 && center[0] <= 960 && center[1] >= 0 && center[1] <= 540,
+    );
+    await touch(center[0], center[1], duration);
+  }
   assert.equal(
     before.modal,
     false,
@@ -90,9 +101,15 @@ try {
         dy = y - at.y;
       if (Math.hypot(dx, dy) < targetRadius) return;
       if (Math.abs(dy) >= Math.abs(dx) && Math.abs(dy) > 18)
-        await touch(132, dy > 0 ? 480 : 404, Math.min(300, Math.abs(dy) * 4));
+        await touchControl(
+          dy > 0 ? "dpadDown" : "dpadUp",
+          Math.min(300, Math.abs(dy) * 4),
+        );
       else if (Math.abs(dx) > 18)
-        await touch(dx > 0 ? 208 : 56, 480, Math.min(300, Math.abs(dx) * 4));
+        await touchControl(
+          dx > 0 ? "dpadRight" : "dpadLeft",
+          Math.min(300, Math.abs(dx) * 4),
+        );
       await frame
         .waitForFunction(
           (old) => {
@@ -130,13 +147,13 @@ try {
       `D-pad ${label} movement failed: ${JSON.stringify({ before, moved, destination: world.hub.divePoint })}`,
     );
   }
-  await touch(904, 484);
+  await touchControl("action");
   await frame.waitForFunction(() => window.jalasmaraSnapshot?.diving === true);
   await moveTo(1250, 530, 40);
   const captured = page.waitForResponse((r) =>
     r.url().endsWith("/api/dive/collect"),
   );
-  await touch(816, 484, 850);
+  await touchControl("net", 850);
   const result = await (await captured).json();
   assert(result.dive?.loot.length > 0, "Touch net did not capture");
   assert.equal(

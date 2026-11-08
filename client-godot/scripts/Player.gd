@@ -7,6 +7,7 @@ var walk_time := 0.0
 var touch := Vector2.ZERO
 var land_mask := Callable()
 var swim_sprite: Sprite2D
+var hybrid_visual := false
 var was_water := false
 var wet_remaining := 0.0
 var effect_clock := 0.0
@@ -83,8 +84,8 @@ func _physics_process(delta: float) -> void:
 				velocity = Vector2.ZERO
 	if swim_sprite:
 		swim_sprite.set_appearance(str(GameState.player.get("appearance","male_default")))
-		swim_sprite.visible = true
 		swim_sprite.animate(velocity.length()>10,in_water,direction,walk_time)
+		swim_sprite.visible = not hybrid_visual
 	queue_redraw()
 func _draw() -> void:
 	for mark in wet_marks:
@@ -103,7 +104,7 @@ func _draw() -> void:
 		draw_set_transform(Vector2(0,12),0,Vector2(1,.35))
 		draw_circle(Vector2.ZERO,19,Color(.04,.13,.11,.3))
 		draw_set_transform(Vector2.ZERO)
-	if swim_sprite and swim_sprite.visible:
+	if hybrid_visual or (swim_sprite and swim_sprite.visible):
 		return
 	var step := sin(walk_time*9)*3 if absf(velocity.x)>5 else 0.0
 	draw_rect(Rect2(-8,-22,16,8),Color("232e32"))

@@ -12,3 +12,5 @@ Publisher terms checked: https://polyfork.dev/licensing
 Only the free GLB mesh files are included. This directory does not contain Polyfork source modules, HD editions, store renders, or thumbnails.
 
 The PNG prototypes in `renders/` are derivatives of the same credited models: orthographic oblique rendering, unshaded vertex colors, PNG color conversion, and 128px resolution. The fern and bamboo PNGs are integrated as small decorative sprites in the forest and Bandar Hujung; the reef rock remains an unused prototype. Runtime attribution is retained in `client-godot/resources/art/polyfork/ATTRIBUTION.txt`.
+
+The Small Reef Rock GLB is also instanced directly in the Godot hybrid sea pilot. Its source bytes remain unchanged; runtime scale, placement, and rendering materials are adjusted. Attribution accompanies the runtime GLB in `client-godot/resources/models/ATTRIBUTION.txt`.

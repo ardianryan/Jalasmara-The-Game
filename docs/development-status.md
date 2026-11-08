@@ -4,7 +4,7 @@ Versi ini adalah prototipe petualangan Godot Fase 1 yang dapat dimainkan melalui
 
 ## Yang sudah berjalan
 
-Nala berjalan pada peta darat tiga perempat di Bandar Hujung dan hutan pesisir, memilih salah satu dari empat tampilan yang tersimpan di akun, berbicara dengan NPC, berenang dalam dunia 6144 × 3584 dengan tabrakan dan jalur bercabang, menjala biota biasa tanpa kuis, mengamati pengetahuan, memulihkan instalasi, dan membawa fragmen ke Kedai Waras. Tiga siklus membuka kedalaman berikutnya; peningkatan tabung dan jala mempersiapkan pemulihan Gajah Mina. Atlas menampilkan seluruh daerah dan wilayah rencana yang terkunci secara fisik dan melalui server. Jurnal menyimpan penemuan. Karakter dan NPC memakai skala yang diselaraskan dengan peta; HUD ringkas memakai palet kayu, krem, dan indigo. Cuaca, jam visual, angin kanopi, pembiasan air, caustic, percikan, gelembung, dan jejak basah berasal dari engine; dampak cuaca pada hadiah atau ekonomi belum diaktifkan.
+Nala berjalan pada peta darat tiga perempat di Bandar Hujung dan hutan pesisir, memilih salah satu dari empat tampilan yang tersimpan di akun, berbicara dengan NPC, berenang dalam dunia 6144 × 3584 dengan tabrakan dan jalur bercabang, menjala biota biasa tanpa kuis, mengamati pengetahuan, memulihkan instalasi, dan membawa fragmen ke Kedai Waras. Tiga siklus membuka kedalaman berikutnya; peningkatan tabung dan jala mempersiapkan pemulihan Gajah Mina. Atlas menampilkan seluruh daerah dan wilayah rencana yang terkunci secara fisik dan melalui server. Jurnal menyimpan penemuan. Karakter dan NPC memakai skala yang diselaraskan dengan peta; HUD memakai palet kayu, krem, tembaga, dan hijau lamun. Cuaca, jam visual, angin kanopi, pembiasan air, caustic, percikan, gelembung, dan jejak basah berasal dari engine; dampak cuaca pada hadiah atau ekonomi belum diaktifkan.
 
 Akun lokal, undangan, reset oleh owner, kontrol pemain, editor konten versi, audit transaksi, dan penolakan hasil sesi lama tersedia. OIDC tambahan diuji terhadap issuer lokal tiruan; layanan ZITADEL eksternal belum diaktifkan.
 
@@ -12,15 +12,20 @@ Bandar Hujung memakai peta pesisir 2400 × 1600 dengan empat pelataran, tangga, 
 
 Sepuluh spesies fauna dihasilkan offline melalui Core Procedural Pixel Creatures pada seed tetap: 722 bingkai animasi dengan metadata arah dan pivot. Godot membaca PNG serta JSON melalui CreatureAnimator; runtime C# tidak disertakan ke web. Gerombolan ikan menghindari penyelam dan penghalang, sementara ular dan kura-kura pesisir menghuni hutan. Dua render pakis/bambu dari model Polyfork dipakai sebagai dekorasi kecil. Ark Pixel 12px proportional Latin menjadi font tema game, HUD, dan peta, dengan antialias dan subpixel dinonaktifkan. Kredit MIT, CC BY 4.0, dan OFL disertakan bersama sumber aset.
 
+Pilot laut kini memakai geometri 3D dengan kamera ortografis miring, Sprite3D untuk penyelam dan biota, serta senter yang menghasilkan bayangan pada batu. Kontur bergerigi yang sama dipakai oleh mesh, collider klien, peta, dan validasi posisi server. Kota dan hutan tetap menggunakan renderer 2D. Rincian cakupan ada pada [pilot hybrid](world/hybrid-terrain.md).
+
+HUD memakai satu instrumen oksigen bersegmen dengan angka besar, kedalaman dan tas. Pada desktop instrumen berada di bawah kiri; pada mode sentuh di atas kiri agar tidak bertabrakan dengan D-pad. Tombol jala dan aksi disatukan, dengan indikator tahan/lepas. Peringatan udara tipis muncul pada 20% atau kurang. Peta, jurnal, tas, tampilan, dan suara berada dalam satu strip.
+
 ## Bukti pemeriksaan
 
-- 39 pengujian backend lulus, termasuk autentikasi, izin, versi konten, hadiah idempoten, eksplorasi, tiga siklus, boss, batas dan migrasi layout hub, serta pengiriman berkas terkompresi melalui HTTP.
+- 40 pengujian backend lulus, termasuk autentikasi, izin, versi konten, hadiah idempoten, eksplorasi, tiga siklus, boss, batas dan migrasi layout hub, serta pengiriman berkas terkompresi melalui HTTP.
+- Pilot hybrid diuji melalui browser: mesh dan sprite 3D aktif, kamera ortografis, perbandingan F6, serta berenang melalui celah gua dengan posisi yang diterima server. Pemeriksaan GPU native juga memeriksa sembilan titik proyeksi pada tiga tingkat zoom. Ini belum merupakan pengukuran FPS perangkat fisik.
 - Sepuluh spritesheet procedural lulus pemeriksaan batas dan perubahan piksel; dua proses generasi terpisah menghasilkan PNG/JSON identik. Import Godot dan smoke test scene hutan lulus setelah pemasangan Ark Pixel; pengujian font memastikan cakupan huruf Latin, angka, tanda baca, diakritik, dan panah.
 - Setelah perombakan, alur berjalan–menyelam–menjala–penemuan–peta lulus di Firefox; tujuh pemeriksaan peta geografis dan enam pemeriksaan audio lulus di Chromium. Empat tangkapan siang/malam hub dan hutan menunjukkan dunia meredup sementara HUD tetap terbaca, tanpa error browser, shader, atau API. Pengujian audio memeriksa status pemutar, gesture, mute dan reload; kualitas suara melalui speaker tetap memerlukan pendengaran manusia.
 - Game diuji di Chromium dan Firefox desktop: berjalan, menyelam, berenang, menjala tanpa kuis, mengamati, dan membuka peta. Tidak ada error browser pada alur tersebut.
 - Delapan pemeriksaan hutan lulus di Chromium: pilihan karakter awal, perjalanan melalui gerbang, gerak dua sumbu, penemuan dan hadiah server, jurnal, ganti tampilan, atlas, serta pemulihan posisi setelah refresh.
 - Alur yang sama lulus pada HTTPS staging. Cookie produksi memakai prefiks `__Host-`, `Secure`, `HttpOnly`, dan `SameSite=Lax`.
-- Emulasi Chromium lanskap menguji input sentuh D-pad, Aksi, dan Jala. Ini bukan pengujian perangkat Android/iOS fisik.
+- Emulasi Chromium lanskap menguji input sentuh D-pad, Aksi, dan Jala pada HUD baru, termasuk posisi tombol jala yang berubah sesuai konteks. Angka oksigen rendah, peringatan, dan suara detak juga diperiksa. Ini bukan pengujian perangkat Android/iOS fisik.
 - Admin diuji pada Chromium, Firefox, dan WebKit, termasuk perubahan koin, audit, salinan/edit/publikasi konten, serta lebar 1440, 768, dan 390 piksel tanpa overflow dokumen.
 - Build Godot Web, web, API, pemeriksaan dependensi, dan CodeQL dijalankan oleh GitLab CI. Status aktual dan laporan berada pada tautan pipeline repository; GitHub Actions nonaktif.
 
@@ -35,5 +40,7 @@ Pada instalasi baru, owner pertama dibuat lewat perintah interaktif pada [pandua
 ![Prototipe dermaga Bandar Hujung](screenshots/bandar-hujung.png)
 
 ![Prototipe eksplorasi Dangkalan Segaran](screenshots/segaran.png)
+
+![Pilot gua Segaran dengan batu 3D dan HUD baru](screenshots/gua-segaran.png)
 
 ![Eksplorasi hutan pesisir tiga perempat](screenshots/hutan-muara.png)

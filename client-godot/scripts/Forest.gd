@@ -667,6 +667,8 @@ func _select_character(id: String) -> void:
 func _publish_snapshot() -> void:
 	var snapshot := {"area":"forest","x":avatar.position.x,"y":avatar.position.y,"modal":modal_open,"nearby":str(nearest.get("id","")),"appearance":avatar.variant,"diving":false}
 	snapshot["audio"] = AudioManager.debug_status()
+	if game_hud.has_method("debug_layout"):
+		snapshot["hud"] = game_hud.debug_layout()
 	JavaScriptBridge.get_interface("window").jalasmaraSnapshot = JavaScriptBridge.get_interface("JSON").parse(JSON.stringify(snapshot))
 
 func _show_map() -> void:

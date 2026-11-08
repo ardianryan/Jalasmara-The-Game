@@ -5,7 +5,7 @@ Permainan tetap memakai Godot 2D dan GDScript pada browser. Alat produksi dapat 
 | Jalur | Kegunaan | Status di proyek |
 | --- | --- | --- |
 | Bitmap AI yang diarahkan | Karakter dan lingkungan Nusantara dengan sudut serta palet yang ditentukan | Dipakai; setiap hasil tetap perlu pemeriksaan budaya, siluet, transparansi, skala, dan collision |
-| GLB Polyfork → render ortografis → PNG | Prop alam sederhana dengan sudut yang dapat diulang | Tiga GLB gratis dirender lokal; PNG pakis dan bambu dipakai pada hutan/hub, render batu karang belum dipakai |
+| GLB Polyfork → render ortografis → PNG | Prop alam sederhana dengan sudut yang dapat diulang | Tiga GLB gratis dirender lokal; PNG pakis dan bambu dipakai pada hutan/hub; GLB batu karang dipakai langsung pada pilot laut 3D, sementara render PNG batunya belum dipakai |
 | img2threejs → model prosedural → GLB → PNG | Rekonstruksi satu prop dari referensi yang haknya jelas | Referensi proses telah diperiksa; belum diinstal atau dijalankan |
 | Metode Strata | Menata kepadatan piksel dan batas material pada medan | Rujukan desain; bukan plugin Godot yang terpasang |
 | Procedural Pixel Creatures | Variasi tubuh, warna, rig, dan animasi dari parameter | Sepuluh spesies diekspor offline; 722 bingkai, klip arah/locomotion, dan metadata pivot dipakai oleh animator Godot |
