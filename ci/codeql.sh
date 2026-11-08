@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-mkdir -p reports .cache/codeql
+mkdir -p reports .cache/codeql .runtime
 if [ ! -x .cache/codeql/codeql/codeql ]; then
   curl -fL --retry 2 https://github.com/github/codeql-action/releases/latest/download/codeql-bundle-linux64.tar.gz -o .cache/codeql/bundle.tar.gz
   tar -xzf .cache/codeql/bundle.tar.gz -C .cache/codeql

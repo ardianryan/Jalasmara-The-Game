@@ -99,8 +99,8 @@ func _build_ui() -> void:
 	style.bg_color = Color("123e45")
 	style.content_margin_left = 14
 	style.content_margin_right = 14
-	style.content_margin_top = 10
-	style.content_margin_bottom = 10
+	style.content_margin_top = 6
+	style.content_margin_bottom = 6
 	style.set_corner_radius_all(3)
 	theme.set_stylebox("normal","Button",style)
 	var hover := style.duplicate() as StyleBoxFlat
@@ -129,6 +129,7 @@ func _build_ui() -> void:
 	oxygen.position = Vector2(20,36)
 	oxygen.size = Vector2(180,8)
 	oxygen.show_percentage = false
+	oxygen.add_theme_font_size_override("font_size",1)
 	var oxygen_bg := StyleBoxFlat.new()
 	oxygen_bg.bg_color = Color("294851")
 	var oxygen_fill := StyleBoxFlat.new()
