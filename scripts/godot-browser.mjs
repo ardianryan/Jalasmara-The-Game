@@ -1,4 +1,4 @@
-import { chromium } from "@playwright/test";
+import { chromium, firefox, webkit } from "@playwright/test";
 import assert from "node:assert/strict";
 import { readFileSync, mkdirSync, writeFileSync } from "node:fs";
 const fixture = JSON.parse(
@@ -7,13 +7,17 @@ const fixture = JSON.parse(
 const user = fixture.accounts.find((x) => x.role === "player");
 const origin = process.env.APP_TEST_ORIGIN ?? "http://localhost:5173";
 mkdirSync("artifacts/godot", { recursive: true });
-const browser = await chromium.launch({
-  args: [
-    "--enable-webgl",
-    "--use-gl=angle",
-    "--use-angle=swiftshader",
-    "--enable-unsafe-swiftshader",
-  ],
+const engine = process.env.BROWSER_ENGINE ?? "chromium";
+const browser = await { chromium, firefox, webkit }[engine].launch({
+  args:
+    engine === "chromium"
+      ? [
+          "--enable-webgl",
+          "--use-gl=angle",
+          "--use-angle=swiftshader",
+          "--enable-unsafe-swiftshader",
+        ]
+      : [],
 });
 const context = await browser.newContext({
   viewport: { width: 1440, height: 900 },

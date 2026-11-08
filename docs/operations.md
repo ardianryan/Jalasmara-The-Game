@@ -56,6 +56,8 @@ Backup menyimpan MongoDB dan checksum dengan izin terbatas. Simpan salinan teren
 
 Untuk restore produksi, jadwalkan penghentian aplikasi, cek checksum, simpan backup keadaan terakhir, lalu jalankan `mongorestore` dengan namespace yang dipilih. Jangan menjalankan `--drop` pada database hidup tanpa keputusan pemulihan eksplisit. Redis berisi sesi sementara; kehilangan Redis membuat pemain login ulang dan menghapus penyelaman sementara. Simpan `.env` terpisah dari backup data dan repository.
 
+Godot menonaktifkan dekompresi ulang `HTTPRequest` pada ekspor Web karena browser sudah mendekompresi respons dari proxy. Konfigurasi ini menghindari kegagalan parsing respons gzip tanpa mengubah proxy. Lihat [properti accept_gzip pada dokumentasi Godot](https://docs.godotengine.org/en/stable/classes/class_httprequest.html#class-httprequest-property-accept-gzip).
+
 ## OIDC opsional
 
 Akun lokal tetap tersedia tanpa ZITADEL. Isi `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, dan `OIDC_LABEL` pada aplikasi setelah provider siap. Redirect URI aplikasi adalah:

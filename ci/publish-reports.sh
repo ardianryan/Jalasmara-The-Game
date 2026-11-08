@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
+latest_sha=$(git ls-remote origin "refs/heads/${CI_DEFAULT_BRANCH:-main}" | cut -f1)
+if [ "$latest_sha" != "$CI_COMMIT_SHA" ]; then
+  echo "Pipeline telah digantikan commit terbaru; mirror laporan dilewati."
+  exit 0
+fi
 if [ -z "${GITHUB_DEPLOY_KEY_B64:-}" ]; then
   echo 'GITHUB_DEPLOY_KEY_B64 belum dikonfigurasi.' >&2
   exit 1

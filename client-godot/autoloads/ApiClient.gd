@@ -11,6 +11,8 @@ func call_api(path: String, body: Variant = null, method := HTTPClient.METHOD_PO
 	serial += 1
 	var request_id := serial
 	var http := HTTPRequest.new()
+	# Fetch sudah mendekompresi respons proxy pada ekspor Web.
+	http.accept_gzip = not OS.has_feature("web")
 	add_child(http)
 	http.timeout = 15.0
 	var headers := PackedStringArray(["Content-Type: application/json", "X-CSRF-Token: " + csrf, "Idempotency-Key: " + _uuid()])
