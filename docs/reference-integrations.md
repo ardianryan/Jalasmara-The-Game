@@ -41,7 +41,7 @@ Fog of war penuh, dampak cuaca pada ekonomi, dan damage predator baru tidak dikl
 
 ## Pekerjaan baru: komposisi latar bawah air
 
-**Status: implementasi native dan uji semantik lulus; pemeriksaan browser gabungan masih berlangsung.** Tinjauan tangkapan privat `underwater-03-vertical-canyon-descent` dan `underwater-02-harpoon-cavern` memperlihatkan pemisahan batu dekat, formasi tengah, serta siluet jauh yang lebih dingin dan rendah kontras. Yang diadaptasi adalah hubungan skala, warna, dan ruang negatif; piksel maupun susunan level referensi tidak disalin.
+**Status: implementasi native, uji semantik, dan enam pemeriksaan browser Chromium lokal lulus.** Tinjauan tangkapan privat `underwater-03-vertical-canyon-descent` dan `underwater-02-harpoon-cavern` memperlihatkan pemisahan batu dekat, formasi tengah, serta siluet jauh yang lebih dingin dan rendah kontras. Yang diadaptasi adalah hubungan skala, warna, dan ruang negatif; piksel maupun susunan level referensi tidak disalin.
 
 | Kedalaman cerita | Komposisi latar orisinal yang dibutuhkan |
 | --- | --- |

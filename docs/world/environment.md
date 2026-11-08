@@ -62,7 +62,7 @@ Jika cuaca menjadi mekanik permainan, server harus menerbitkan kondisi serta ver
 
 ## Pekerjaan baru: perspektif atmosfer pada latar laut
 
-**Status: implementasi native dan uji semantik lulus; pemeriksaan browser gabungan masih berlangsung.** Latar laut sebelumnya masih terasa datar meskipun partikel dan mesh terrain sudah bergerak/bervolume. Pekerjaan berikutnya harus memperbaiki komposisi jarak, bukan sekadar menambah jumlah efek.
+**Status: implementasi native, uji semantik, dan enam pemeriksaan browser Chromium lokal lulus.** Latar laut sebelumnya masih terasa datar meskipun partikel dan mesh terrain sudah bergerak/bervolume. Pembaruan ini menambahkan komposisi jarak melalui tebing, reruntuhan, vegetasi, dan karang pada tiga bidang dengan respons kamera serta warna berbeda.
 
 Tiga kelompok kedalaman—Segaran, Wringin, dan Jalatunda/Tamansari—masing-masing memerlukan bidang jauh, tengah, dan dekat. Siluet jauh menggunakan biru air dengan kontras dan kejenuhan paling rendah; bidang tengah memberi bentuk lembah, sulur atau rusuk gua; tepian dekat memakai detail serta nilai warna yang lebih tegas. Pemain dan objek interaksi tetap lebih mudah dikenali daripada dekorasi. Gambar harus orisinal, memakai aset transparan yang tidak menimbulkan kartu persegi, dan menyisakan ruang kosong pada jalur berenang. Tidak ada detail latar yang menjadi petunjuk palsu bahwa area solid atau zona lanjutan dapat dimasuki.
 
