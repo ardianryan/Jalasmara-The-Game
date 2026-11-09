@@ -39,3 +39,25 @@ Focused `player-locomotion.gd` tetap terdaftar pada runner dunia dan sekarang me
 Ambil slot engine hanya sesudah integrator memberi grant. Import dan jalankan focused `player-locomotion`, `locomotion-collision-foley`, `land-left-gameplay`, `character-outfits`; scan seluruh log. Render sequence native, tinjau frame kaki/badan dan gear, lalu minta integrator menilai apakah pilot diterima. Jika fixture gagal, perbaiki source; jangan melonggarkan cadence/distance/sole tolerances atau menyebut frame statis sebagai naturalwalking.
 
 Tool aktual: Git/worktree, ripgrep, Python3+Pillow untuk artefak review, `view_image`. Tidak ada raster baru, API SpriteAI, image generation, library atau lisensi baru; seluruh atlas original tetap byte-for-byte seperti rilis. Release/handoff utama tetap milik integrator.
+
+## Hasil engine checkpoint 5d52aba
+
+Integrator memberi slot, kemudian agent karakter menjalankan import, focused dan native bergantian, lalu melepas slot dan memeriksa tidak ada proses Godot tersisa. Paket source berurutan: `375a7bb`, `b79a3a7`, `5d52aba`. Perbaikan tambahan memastikan pending turn selesai dari neutral pada seluruh12set, sedangkan lowering pilot tetap dua outfit MC.
+
+- `nala-focused-final.log`:144 stop/turn samples normal/reduced serta baseline12×8 PASS; owner/host/clock pause dan frame/gear agreement teruji.
+- `nala-collision.log`: controller100px/s mengenai bangunan solid, travel berhenti dan3 event langkah tetap; noextraSFX PASS.
+- `nala-left-gameplay.log`:60 actual Player/Forest controller/connector checks PASS, termasuk distance phase dan pause; ini regresi kontrol sebenarnya, berbeda dari native komponen.
+- `nala-outfits-final.log`:4identitas×3outfit dan equipment independen PASS.
+- `nala-native.log`: focused yang sama PASS pada Godot4.7.2 Compatibility/AppleM2;496 PNG berurutan beserta results.json. Bukan benchmark FPS atau perangkat Windows/S23.
+
+Semua path log di `.runtime/` worktree ini; bersama `nala-import-final.log`, scan6log penuh nol `SCRIPT ERROR`, `ERROR:` atau assertion. Collision fixture mengeluarkan warning4ObjectDB instance leak pada exit; warning identik juga ada pada log baseline integrasi `world-check/scripts-tests-locomotion-collision-foley.gd.log`. Tidak mengklaim leak baru diperbaiki oleh paket ini.
+
+Iterasi gagal tersimpan sebagai sejarah: import pertama kehilangan font-cache, lalu import ulang bersih; test awal perlu tipeint eksplisit untuk index arah; legacy row test hanya menerima14unit padahal kandidat worst-case180° memakai16unit, sehingga interval aktualtest dijadikan17.5unit; static preload CharacterVisual dalam outfit test belum mengenal autoload identifier, diperbaiki dengan lookup root-node. Gate akhir di atas dijalankan sesudah perbaikannya, bukan hanya membaca exitcode0 dari error Godot.
+
+### Bukti urutan native yang ditinjau
+
+Folder `artifacts/godot/nala-gait-transitions/` berisi `0000.png`…`0495.png`, `results.json`, dan `transition-contact-sheet.png` (32pose actual native terpilih). Contactsheet memperlihatkan kaki terangkat turun lewat passing/lowering sebelum neutral serta tubuh berputar memakai row antara; gambar dirender2× dan diberi garis referensi baseline. Ini gambar dari Sprite2D runtime komponen, tidak mengukur actualopaque sole terhadap triangle lantai3D. Tank/tas/net diuji state/row-nya, tidak digambar dalam fixture komponen ini.
+
+Daily normal:stop3 frame0012–0023,stop7 frame0040–0051,pause0069–0071,resume0074–0085,turn180 frame0106–0117,turn90 frame0118–0123. Explorer normal memakai index+248; blok reduced masing-masing+124 dan+372. Semua gambar dibaca dari file setelah engine berhenti; tidak ada browser/game render kedua bersamaan.
+
+CPU audit lanjutan mempertahankan dua batas nyata: restart neutral0023→walk0024 mengambil lagi raw phase3 sehingga knee pop belum ditutup; pada cadence175px/s/30Hz, loop facing berpotensi melewati dua octant pada satu update. Temuan stress-turn dikirim ke integrator untuk bounded followup sebelum penerimaan. Jangan menyebut checkpoint ini natural walk lengkap atau menganggap still membuktikan world-space footplant.
