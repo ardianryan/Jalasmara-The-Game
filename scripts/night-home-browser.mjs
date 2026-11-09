@@ -128,6 +128,61 @@ async function shot(name) {
   await page.screenshot({ path: `${artifacts}/${name}.png` });
 }
 
+async function compactNight(label, expectedModal) {
+  if (process.env.VERIFY_COMPACT_NIGHT !== "1") return;
+  const cdp = await context.newCDPSession(page);
+  for (const [width, height] of [[667, 375], [390, 844]]) {
+    await page.setViewportSize({width, height});
+    await page.evaluate(() => {
+      const probe = document.querySelector(".play-safe-area");
+      if (!probe) throw Error("Missing real host safe-area probe");
+      Object.assign(probe.style, {paddingLeft:"24px",paddingRight:"16px",paddingTop:"12px",paddingBottom:"18px"});
+      window.dispatchEvent(new Event("resize"));
+    });
+    await page.waitForTimeout(1400);
+    let current = await snapshot();
+    assert.equal(current.modal, expectedModal);
+    assert.equal(current.homePanel, false);
+    assert.equal(current.weather.night, true, "Compact capture must show actual night gameplay");
+    assert.equal(current.hud.touch, true);
+    const logical=current.hud.logicalSize;
+    assert(Math.abs(logical[0]/logical[1]-width/height)<.015);
+    if (!expectedModal) {
+      for (const control of ["bag","journal","map","character","sound"]) {
+        const center=current.hud[control];
+        const physical=[center[0]*width/logical[0],center[1]*height/logical[1]];
+        assert(physical[0]>=24 && physical[0]<=width-16, `${control} must respect emulated horizontal safe insets`);
+        assert(physical[1]>=12 && physical[1]<=height-18, `${control} must stay within the visible safe viewport`);
+      }
+    }
+    await shot(`${label}-${width}x${height}`);
+    if (!expectedModal) {
+      const canvas=await frame.locator("canvas").boundingBox();
+      const center=current.hud.bag;
+      const point={id:1,x:canvas.x+center[0]*canvas.width/logical[0],y:canvas.y+center[1]*canvas.height/logical[1],radiusX:4,radiusY:4,force:1};
+      await cdp.send("Input.dispatchTouchEvent",{type:"touchStart",touchPoints:[point]});
+      await page.waitForTimeout(120);
+      await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
+      await waitState(value=>value.modal && value.weather.clockPaused);
+      await shot(`bag-night-${width}x${height}`);
+      current=await snapshot();
+      assert.equal(current.hud.oxygen.visible,false,"Non-diving bag must not show the O2 instrument");
+      assert(Math.hypot(...current.hud.joystick.direction)<.001,"Opening a real bag must release movement input");
+      await page.keyboard.press("Escape");
+      await waitState(value=>!value.modal && !value.homePanel);
+    }
+    checks.push(`actual-night-${label}-${width}x${height}-safe-insets-and-${expectedModal?"dialogue":"bag-pause-release"}`);
+  }
+  await page.evaluate(() => {
+    document.querySelector(".play-safe-area").removeAttribute("style");
+    window.dispatchEvent(new Event("resize"));
+  });
+  await page.setViewportSize({width:1440,height:900});
+  await page.waitForTimeout(1200);
+  await frame.locator("canvas").focus();
+  await cdp.detach();
+}
+
 try {
   await mongo.connect();
   const content = await mongo
@@ -184,6 +239,9 @@ try {
   });
   context = await browser.newContext({
     viewport: { width: 1440, height: 900 },
+    hasTouch: process.env.VERIFY_COMPACT_NIGHT === "1",
+    isMobile: process.env.VERIFY_COMPACT_NIGHT === "1",
+    deviceScaleFactor: 1,
   });
   page = await context.newPage();
   page.setDefaultTimeout(60000);
@@ -255,6 +313,7 @@ try {
       recipes.reduce((sum, r) => sum + Math.round(r.reward * multiplier), 0),
   );
   await shot("02-shift-closed-pending-sleep");
+  await compactNight("02-night-result-dialogue", true);
   const conversation = (await snapshot()).dialogue;
   assert(conversation, "Shift completion must use the shared dialogue presenter");
   await page.keyboard.press("Enter");
@@ -265,6 +324,7 @@ try {
   }
   await waitState((s) => !s.modal && !s.homePanel);
   checks.push("all-day-one-customers-served-close-keeps-story-day-until-sleep");
+  await compactNight("02-night-clear-gameplay", false);
   await routeTo(world.homestead.door);
   await waitState((s) => s.nearby === "home_enter");
   await page.keyboard.press("e");
