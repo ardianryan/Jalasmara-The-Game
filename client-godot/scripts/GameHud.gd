@@ -342,7 +342,8 @@ func _layout() -> void:
 	if not is_instance_valid(_deck): return
 	var viewport := get_viewport().get_visible_rect().size
 	var ratio := viewport.x/maxf(1,Vector2(get_window().size).x)
-	var body := maxi(24 if touch_enabled else 18,ceili(16*ratio))
+	var body := maxi(24,ceili(16*ratio)) if touch_enabled else maxi(8,ceili(18*ratio))
+	var unit := 1.0 if touch_enabled else ratio
 	var line := ceilf(body*1.5)
 	var inset := ViewportLayout.insets()
 	var portrait := viewport.x<800
@@ -350,8 +351,8 @@ func _layout() -> void:
 	var margin := Vector2(16+inset.x,16+inset.y+(ceilf(60*ratio) if portrait else 0))
 	var right := viewport.x-16-inset.z
 	var bottom := viewport.y-16-inset.w
-	var cell := maxf(48,ceilf(48*ratio))
-	var identity_height := cell+12 if compact_dive else line*2+24
+	var cell := maxf(48,ceilf(48*ratio)) if touch_enabled else maxf(24,ceilf(48*ratio))
+	var identity_height := cell+12 if compact_dive else line*2+24*unit
 	var utilities_y := margin.y+identity_height+8 if portrait else margin.y
 	_utility_plate.position=Vector2(right-cell*5-4,utilities_y-4)
 	_utility_plate.size=Vector2(cell*5+8,cell+8)
@@ -364,13 +365,17 @@ func _layout() -> void:
 		button.visible=not _modal
 		for child in button.get_children():
 			if child is HudIcon:
-				child.position=Vector2.ONE*(cell-32)/2
-				child.size=Vector2(32,32)
+				child.position=Vector2.ONE*(cell-32)/2 if touch_enabled else Vector2((cell-24*ratio)/2,4*ratio)
+				child.size=Vector2.ONE*(32 if touch_enabled else 24*ratio)
+			elif child is Label and not touch_enabled:
+				child.position=Vector2(0,cell-14*ratio)
+				child.size=Vector2(cell,12*ratio)
+				child.add_theme_font_size_override("font_size",maxi(6,ceili(8*ratio)))
 	_sound_button.add_theme_font_size_override("font_size",body)
 	_sound_button.add_theme_font_override("font",preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2"))
 	_sound_button.text=""
-	HudArt.set_icon(_sound_button,"speaker-off" if AudioManager.muted else "speaker-on",32)
-	var width:=minf(410,viewport.x-margin.x-24) if portrait else minf(370,viewport.x-cell*5-48)
+	HudArt.set_icon(_sound_button,"speaker-off" if AudioManager.muted else "speaker-on",32 if touch_enabled else ceili(24*ratio))
+	var width:=minf(410,viewport.x-margin.x-24) if portrait else minf(370*unit,viewport.x-cell*5-48)
 	if not portrait:
 		var host_control:=ViewportLayout.host_control_bounds()
 		width=minf(width,host_control.position.x-margin.x-6-ceilf(8*ratio))
@@ -378,14 +383,14 @@ func _layout() -> void:
 	_identity_plate.size=Vector2(width+12,identity_height)
 	_identity_plate.visible=not _modal
 	_region.visible=not _modal
-	_identity_portrait.position=margin+Vector2(10,6)
-	_identity_portrait.size=Vector2(46,line)
+	_identity_portrait.position=margin+Vector2(10*unit,6*unit)
+	_identity_portrait.size=Vector2(46*unit,line if touch_enabled else 46*unit)
 	_identity_portrait.visible=not _modal
-	_region.position=margin+Vector2(64,6)
-	_region.size=Vector2(width-cell-8-64,line)
-	_region.add_theme_font_size_override("font_size",body if touch_enabled else body+2)
-	_resources.position=margin+Vector2(10,line+4)
-	_resources.size=Vector2(width-cell-18,line)
+	_region.position=margin+Vector2(64*unit,6*unit)
+	_region.size=Vector2(width-cell-8*unit-64*unit,line)
+	_region.add_theme_font_size_override("font_size",body)
+	_resources.position=margin+Vector2((10 if touch_enabled else 64)*unit,line+4*unit)
+	_resources.size=Vector2(width-cell-(18 if touch_enabled else 72)*unit,line)
 	_resources.add_theme_font_size_override("font_size",body)
 	_resources.add_theme_font_override("font",preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2"))
 	_resources.visible=not compact_dive and not _modal
@@ -397,7 +402,7 @@ func _layout() -> void:
 	_objective_toggle.position=margin+Vector2(width-cell,0)
 	_objective_toggle.size=Vector2(cell,cell)
 	_objective_toggle.text=""
-	HudArt.set_icon(_objective_toggle,"quest-scroll",32)
+	HudArt.set_icon(_objective_toggle,"quest-scroll",ceili(32*unit))
 	_objective_toggle.disabled=_modal
 	_objective_toggle.visible=not _modal
 	var weather_width:=minf(350,ceilf(_weather.get_theme_font("font").get_string_size(_weather.text,HORIZONTAL_ALIGNMENT_RIGHT,-1,body).x)+12)
@@ -411,7 +416,7 @@ func _layout() -> void:
 	_weather_plate.visible=not _modal and not _weather.text.is_empty()
 	_dpad.size=Vector2.ONE*maxf(144,ceilf(100*ratio))
 	_dpad.position=Vector2(margin.x,bottom-_dpad.size.y)
-	var action_side:=maxf(88 if touch_enabled else 76,ceilf(48*ratio))
+	var action_side:=maxf(88,ceilf(48*ratio)) if touch_enabled else maxf(28,ceilf(56*ratio))
 	var action_size:=Vector2.ONE*action_side
 	_action.size=action_size
 	_net.size=action_size
@@ -422,12 +427,24 @@ func _layout() -> void:
 			label.size=Vector2(action_side,42)
 			label.add_theme_font_override("font",preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2"))
 			label.add_theme_font_size_override("font_size",body)
+	else:
+		for button in [_action,_net]:
+			for child in button.get_children():
+				if child is HudIcon:
+					child.position=Vector2((action_side-24*ratio)/2,4*ratio)
+					child.size=Vector2.ONE*24*ratio
+				elif child is Label:
+					var title:bool=child==_action_title or child==_net_title
+					child.position=Vector2(0,(30 if title else 44)*ratio)
+					child.size=Vector2(action_side,(15 if title else 10)*ratio)
+					child.add_theme_font_size_override("font_size",maxi(6,ceili((11 if title else 8)*ratio)))
+		_net_charge.position=Vector2(4*ratio,action_side-3*ratio)
 	_action.position=Vector2(right-action_side,bottom-action_side)
 	_net.position=Vector2(right-action_side*(2 if _can_interact else 1)-(10 if _can_interact else 0),bottom-action_side)
 	_deck.position=Vector2(_net.position.x-6,bottom-action_side-6) if _net.visible else _action.position-Vector2(6,6)
 	_deck.size=Vector2(right-_deck.position.x+6,action_side+12)
-	_action_label.position=Vector2(right-minf(380,viewport.x-32),bottom-action_side-line*2-12)
-	_action_label.size=Vector2(minf(380,viewport.x-32),line*2)
+	_action_label.position=Vector2(right-minf(380*unit,viewport.x-32),bottom-action_side-line*2-12)
+	_action_label.size=Vector2(minf(380*unit,viewport.x-32),line*2)
 	_action_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	_action_label.add_theme_font_override("font",preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2"))
 	_action_label.add_theme_font_size_override("font_size",body)
@@ -437,7 +454,7 @@ func _layout() -> void:
 	_action_plate.position=_action_label.position-Vector2(6,3)
 	_action_plate.size=_action_label.size+Vector2(12,6)
 	_action_plate.visible=_action_label.visible
-	var instrument_scale:=1.25 if compact_dive else 1.4 if touch_enabled else 1.0
+	var instrument_scale:=1.25 if compact_dive else 1.4 if touch_enabled else ratio
 	_instrument.scale=Vector2.ONE*instrument_scale
 	_instrument.size=Vector2(296,140)
 	_instrument.tank_rect=Rect2(9,26,34,62)
@@ -469,7 +486,7 @@ func _layout() -> void:
 	_instrument.size.x=maxf(296,_bag.position.x+bag_width+12)
 	_depth_caption.text="Kedalaman"
 	var physical:=Vector2(get_window().size)
-	if physical.x<physical.y:
+	if physical.x<physical.y or not touch_enabled:
 		_layout_portrait_instrument(ratio,instrument_scale,viewport.x-margin.x-16-inset.z)
 	var instrument_y:=margin.y+identity_height+12
 	if portrait: instrument_y=_dpad.position.y-_instrument.size.y*instrument_scale-line-24
@@ -482,12 +499,13 @@ func _layout() -> void:
 	_warning_plate.size=_warning.size+Vector2(12,6)
 	_warning_plate.visible=_warning.visible
 	if is_instance_valid(_minimap_shell):
-		var mini_scale:=78*ratio/128 if touch_enabled else 1.0
+		var mini_scale:=78*ratio/128 if touch_enabled else ratio
 		_minimap_shell.scale=Vector2.ONE*mini_scale
 		_minimap_shell.position=Vector2(viewport.x/2-64*mini_scale,bottom-128*mini_scale)
-	_status_panel.position=Vector2(viewport.x/2-210,viewport.y/2-60)
-	_status_panel.size=Vector2(420,120)
-	status_label.size=Vector2(400,100)
+	_status_panel.position=viewport/2-Vector2(210,60)*unit
+	_status_panel.size=Vector2(420,120)*unit
+	status_label.position=Vector2(10,8)*unit
+	status_label.size=Vector2(400,100)*unit
 	status_label.add_theme_font_override("font",preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2"))
 	status_label.add_theme_font_size_override("font_size",body)
 
