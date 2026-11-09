@@ -1,5 +1,7 @@
 # Progres 06-B: paket inti lokal dan pekerjaan terbuka
 
+**Pembaruan berikutnya:** [laporan gabungan kamera kiri dan UI](06b-integrated-left-and-ui.md) menjadi status kandidat terbaru: source kiri61ff2d9, HUDportrait235a42c, PCK5f2aaa/64.304.668 byte, root82API/45world+9native PASS dan focusedHUD/analog PASS. Browser pin baru left4/ocean3 PASS0error/409 dengan fixture bersih. Bagian berikut menyimpan checkpoint sebelum kamera kiri digabung; angka paket/CI di dalamnya tetap berlaku untuk source yang disebut, bukan otomatis paket terbaru.
+
 9 November 2026. Laporan parsial untuk pengguna dan agent berikutnya. Kandidat `90e639b` mencakup extractionfix `a1add52` dan compact dialog `017b0b4`; 42/42 pemeriksaan dunia, export serta web build baru PASS. PCK baru `26b83efe7c3e0658a98f4c0a2603df179e30d1295bb8b4629aaa2d836b1cc4b2`, 64.290.960 byte, menunggu browser subset. **Staging belum diganti:** source rilis tetap `9ba21c6`, PCK `a9378a52`. Laporan ini tidak menyatakan seluruh Rencana06 selesai.
 
 ## Perubahan yang selesai dalam kandidat

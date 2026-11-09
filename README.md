@@ -17,6 +17,8 @@ Untuk melanjutkan pengembangan dengan agent AI, mulai dari [AGENTS.md](AGENTS.md
 
 [Progres paket06-B](docs/reviews/06b-progress.md) mencatat koreksi rumah–dermaga, kontak kaki/turn Ujang, perbaikan website serta port kamera Noxe yang terbatas; status kamera gameplay dan rilis dibedakan dari fixture/native.
 
+[Laporan integrasi kamera kiri dan UI](docs/reviews/06b-integrated-left-and-ui.md) mencatat adapter gameplay 3/4, perbaikan alat warga, dialog ringkas dan HUD portrait. Kandidat lokal, bukti browser dan rilis staging dibedakan.
+
 Nala dapat memasuki Griya Sasmita, menyimpan fragmen, merawat dua petak kangkung, membeli bibit, dan membawa panen ke kedai. Kalender akun memakai satu hari selama 36 menit aktif; tidur menyelesaikan pagi berikutnya tanpa melewati syarat cerita. Tiga warga memakai animasi tubuh berlapis dengan alat terpisah. Rincian serta batas implementasi ada di [Rencana 03](docs/plans/03-desa-hidup-dan-siklus-harian.md).
 
 ## Menjalankan lokal
