@@ -65,6 +65,15 @@ func note_body_facing_transition() -> void:
 func request_body_facing_handover() -> void:
 	if _physical_contract: _transition_next=true
 
+func legal_support(point:Vector2) -> bool:
+	return _legal(point)
+
+func commit_current_body_support(previous_height:float,target_height:float,distance:float,delta:float) -> Dictionary:
+	var allowance:float=(maxf(0,distance) if distance>.00001 else maxf(0,delta)*24.0)*maxf(_body_rate,_continuous_ground_rate)
+	_body_height=move_toward(previous_height,target_height,allowance)
+	_stair_transfer=true
+	return {"previousHeight":previous_height,"targetHeight":target_height,"bodyHeight":_body_height,"allowedDelta":allowance,"distance":distance,"zeroXYSettlement":distance<=.00001}
+
 func _polygon(points:Array) -> PackedVector2Array:
 	var result:=PackedVector2Array()
 	for point in points: result.append(Vector2(float(point[0]),float(point[1])))

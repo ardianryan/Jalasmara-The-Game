@@ -340,6 +340,31 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 		var view_held:=str(_foot_views[side])!=direction
 		entry["heldFootViewSeconds"]=float(prior_foot.get("heldFootViewSeconds",0.0))+maxf(0,delta) if view_held else 0.0
 		entry["heldFootViewDistance"]=float(prior_foot.get("heldFootViewDistance",0.0))+moved_distance if view_held else 0.0
+	var ramp_plan:=false
+	for entry in pose.feet.values(): ramp_plan=ramp_plan or bool(entry.get("fixedRampTarget",false))
+	if physical_plane and ramp_plan and not stored.feet.is_empty() and int(pose.discontinuityResets)==int(stored.get("discontinuityResets",0)):
+		var footprint_height:=INF
+		var current_ramp:=false
+		var footprints:Dictionary={}
+		for side in ["left","right"]:
+			var entry:Dictionary=pose.feet[side]
+			var foot_direction:=str(_foot_views[side])
+			var mask:Dictionary={"leg":_data.views[foot_direction].legs[side],"vertices":_opaque_vertices[foot_direction+"/"+side],"right":right,"vertical":vertical}
+			var support:=FootPlane.footprint_support(renderer,entry.logical,mask,entry.sole,_plane(side),Callable(_planner,"legal_support"))
+			if not bool(support.valid):
+				visible=false
+				proxy.visible=true
+				_last={"enabled":false,"rejected":true,"reason":"current original-foot body support has no legal ground inverse","contacts":pose,"reachValid":false,"rootMotion":false}
+				return _last.duplicate(true)
+			footprints[side]=support
+			footprint_height=minf(footprint_height,float(support.height))
+			current_ramp=current_ramp or not support.ramps.is_empty()
+		if current_ramp:
+			var transfer:Dictionary=_planner.commit_current_body_support(float(stored.get("bodyHeight",pose.bodyHeight)),footprint_height,moved_distance,delta)
+			pose.bodyHeight=transfer.bodyHeight
+			transfer["footprints"]=footprints
+			transfer["futureLandingUsed"]=false
+			pose["currentFootprintBodyTransfer"]=transfer
 	var ground:Vector3=renderer.ground_point(actor.position)
 	var support_body_offset:=float(pose.bodyHeight)-ground.z
 	var root_hip:=ground+Vector3(0,0,28.0/vertical+support_body_offset)

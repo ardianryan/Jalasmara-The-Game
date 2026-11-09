@@ -89,6 +89,28 @@ static func ankle_support(renderer:Node,logical:Vector2,geometry:Dictionary,ankl
 		height=maxf(height,Vector3(actual.ground).z-offset.z)
 	return {"valid":is_finite(height),"height":height,"points":points.size()}
 
+static func footprint_support(renderer:Node,logical:Vector2,geometry:Dictionary,world_sole:Vector3,rotation:Quaternion,legal:Callable) -> Dictionary:
+	var leg:Dictionary=geometry.leg
+	var sole:=Vector2(float(leg.solePixel[0]),float(leg.solePixel[1]))
+	var points:PackedVector2Array=geometry.vertices.duplicate()
+	for edge in leg.soleEdgePixels: points.append(Vector2(float(edge[0]),float(edge[1])))
+	var minimum:=INF
+	var lowest:Dictionary={}
+	var ramps:Array=[]
+	for pixel in points:
+		var offset:Vector3=geometry.right*(pixel.x-sole.x)+Vector3(0,0,(sole.y-pixel.y)/float(geometry.vertical))
+		var world:Vector3=world_sole+rotation*offset
+		var actual:=ground_below(renderer,logical,world)
+		if not bool(actual.valid) or not bool(legal.call(actual.logical)): return {"valid":false,"points":points.size()}
+		var ground:Vector3=actual.ground
+		if ground.z<minimum:
+			minimum=ground.z
+			lowest={"pixel":pixel,"world":world,"ground":ground,"logical":actual.logical}
+		for profile in renderer.get("_stair_queries"):
+			if str(profile.type)=="ramp" and not Traversal.connector_ground(profile,actual.logical).is_empty() and not ramps.has(str(profile.id)):
+				ramps.append(str(profile.id))
+	return {"valid":is_finite(minimum),"height":minimum,"points":points.size(),"ramps":ramps,"lowest":lowest}
+
 static func contact_rotation(renderer:Node,logical:Vector2,right:Vector3) -> Quaternion:
 	for profile in renderer.get("_stair_queries"):
 		if str(profile.type)!="ramp" or Traversal.connector_ground(profile,logical).is_empty(): continue

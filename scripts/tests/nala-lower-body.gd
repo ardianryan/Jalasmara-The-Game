@@ -180,6 +180,7 @@ func _measure(label:String) -> void:
 			length_max=maxf(length_max,error)
 			if not _check(error<.003,"Actual Sprite3D bone length changed "+label): return
 		var endpoints:Array[Vector3]=[]
+		var original_foot_ground_minimum:=INF
 		var exact_centroid:=_on_mesh(actual)
 		if entry.grounded:
 			if not _check(exact_centroid,"Actual sole misses rendered triangle "+label+" side="+side+" sole="+str(actual)+" highest="+str(_last_floor_height)): return
@@ -190,6 +191,7 @@ func _measure(label:String) -> void:
 			var endpoint:=foot.to_global(Vector3(float(pixel[0])-foot.texture.get_width()*.5,foot.texture.get_height()*.5-float(pixel[1]),0))
 			endpoints.append(endpoint)
 			var exact_endpoint:=_on_mesh(endpoint)
+			original_foot_ground_minimum=minf(original_foot_ground_minimum,_last_floor_height)
 			entry.measuredOpaqueVertices.append({"sourcePixel":pixel,"world":[endpoint.x,endpoint.y,endpoint.z],"actualTriangleHeight":_last_floor_height,"actualTriangleNormal":[_last_floor_normal.x,_last_floor_normal.y,_last_floor_normal.z],"actualTriangleVertices":_last_floor_triangle.duplicate(true)})
 			if entry.grounded:
 				if not _check(exact_endpoint,"Actual heel/toe source pixel misses tread "+label+" side="+side+" pixel="+str(pixel)+" highest="+str(_last_floor_height)): return
@@ -209,11 +211,21 @@ func _measure(label:String) -> void:
 		for pixel in source_foot_vertices[texture_id]:
 			var point:Vector3=foot.to_global(Vector3(float(pixel.x)-foot.texture.get_width()*.5,foot.texture.get_height()*.5-float(pixel.y),0))
 			var contact:=_on_mesh(point)
+			original_foot_ground_minimum=minf(original_foot_ground_minimum,_last_floor_height)
 			var valid:bool=is_finite(_last_floor_height) and point.z>=_last_floor_height-.3
 			if entry.grounded and absf(float(pixel.y)-float(sole[1]))<.0001: valid=contact
 			if not valid:
 				entry["failedOpaqueMaskVertex"]={"pixel":[pixel.x,pixel.y],"world":[point.x,point.y,point.z],"actualTriangleHeight":_last_floor_height,"actualTriangleNormal":[_last_floor_normal.x,_last_floor_normal.y,_last_floor_normal.z]}
 				if not _check(false,"Original opaque foot-mask vertex enters/misses actual surface "+label+" side="+side+" pixel="+str(pixel)): return
+		if pose.contacts.has("currentFootprintBodyTransfer"):
+			var transfer:Dictionary=pose.contacts.currentFootprintBodyTransfer
+			var support:Dictionary=transfer.footprints[side]
+			var lowest:Dictionary=support.lowest
+			var source_pixel:Vector2=lowest.pixel
+			var rendered:Vector3=foot.to_global(Vector3(source_pixel.x-foot.texture.get_width()*.5,foot.texture.get_height()*.5-source_pixel.y,0))
+			if not _check(rendered.distance_to(lowest.world)<.003,"Body support queried stale original-foot transform "+label+" side="+side): return
+			if not _check(absf(float(support.height)-original_foot_ground_minimum)<.3,"Body support disagrees with actual original-mask triangle heights "+label+" side="+side): return
+			if not _check(not bool(transfer.futureLandingUsed),"Body support must not report future landing as current contact "+label): return
 		if entry.grounded:
 			if previous.has(side) and previous[side].grounded and Vector3(previous[side].plant).distance_to(entry.plant)<.001:
 				var drift:=actual.distance_to(previous[side].actual)
