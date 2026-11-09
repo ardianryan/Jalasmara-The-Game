@@ -41,19 +41,19 @@ CPU checks after preparing this candidate: original lower-body source test passe
 
 `LandViewProjection.input_motion` inverts the projected ground-plane matrix, then normalizes that result in logical coordinates. It preserves the screen direction and the existing 100-logical-unit server budget. It does not normalize the actual ground-world velocity. On a flat floor, the Jacobian is `(dx,dy) → (dx,-dy/cos55°)`; arbitrary logical headings therefore span 100–174.345 world units per second. The camera then foreshortens that ground velocity rather than making screen speed constant.
 
-`python3 tools/player-gait/derive_production_units.py` derives the matrix independently from the actual camera/controller constants and records source hashes. This CPU calculation has passed its nondegenerate-matrix and direction-preservation assertions. It is not an engine measurement. At the current left camera (azimuth −45°, elevation35°), the eight screen-input headings yield:
+`python3 tools/player-gait/derive_production_units.py` derives the matrix independently from the actual camera/controller constants and records source hashes. This CPU calculation has passed its nondegenerate-matrix and direction-preservation assertions. It is not an engine measurement. At the current left camera (azimuth −45°, elevation 35°), the eight screen-input headings yield:
 
 | Screen headings | Ground-world speed | Projected view speed | Optional 18-world contacts/s |
 | --- | ---: | ---: | ---: |
-| 0 and4 | 122.674 | 122.674 | 6.815 |
-| 1 and5 | 163.322 | 114.919 | 9.073 |
-| 2 and6 | 122.674 | 70.363 | 6.815 |
-| 3 and7 | 102.377 | 72.036 | 5.688 |
+| 0 and 4 | 122.674 | 122.674 | 6.815 |
+| 1 and 5 | 163.322 | 114.919 | 9.073 |
+| 2 and 6 | 122.674 | 70.363 | 6.815 |
+| 3 and 7 | 102.377 | 72.036 | 5.688 |
 
 The earlier 5.56–9.69 range describes all possible logical headings; this table describes the eight actual screen inputs. The production fixture must record its observed accepted distance/time after acceleration, stopping and terrain pacing, so its short-window rates need not equal these steady-state numbers. Child gait has the same issue: 26 logical units/s with a 10.8-world contact distance would give 2.41–4.20 contacts/s across all logical headings. That is an illustrative distance choice, not a measured rate or a natural-gait acceptance of every child.
 
 For a future physical-speed contract, keep authoritative positions and path-validation budgets in logical coordinates, but define the desired movement speed in continuous surface-world units. Invert the screen ground-plane matrix to obtain the direction, then normalize that direction using the surface tangent's world length before applying speed and slope pacing. Do not subsequently normalize screen length: genuine ground-depth foreshortening should remain. The logical authority cap still applies, especially where connector XY compression would otherwise require greater logical velocity.
 
-For gait distance, use accepted continuous surface-path length; exact tread Z remains the sole-contact authority. Counting discrete 12- or16-world riser jumps as immediate traveled distance would introduce artificial contacts. If movement remains intentionally logical-speed based, derive contact placement from the measured world rate and actual fixed-leg reach rather than choosing a constant that only looks reasonable in one heading. A longer steady contact distance also needs an initial lead-establishing transition: a32-world step with16-world lead has steady support ranging +16to−16world, whereas starting both feet under the root and immediately taking32world leaves the first stance foot32world behind and exceeds the source legs. Those are geometric examples, not installed constants.
+For gait distance, use accepted continuous surface-path length; exact tread Z remains the sole-contact authority. Counting discrete 12- or 16-world riser jumps as immediate traveled distance would introduce artificial contacts. If movement remains intentionally logical-speed based, derive contact placement from the measured world rate and actual fixed-leg reach rather than choosing a constant that only looks reasonable in one heading. A longer steady contact distance also needs an initial lead-establishing transition: a 32-world step with 16-world lead has steady support ranging +16 to −16 world, whereas starting both feet under the root and immediately taking 32 world leaves the first stance foot 32 world behind and exceeds the source legs. Those are geometric examples, not installed constants.
 
 No speed/input/server/cadence constants were changed during this audit. Such a contract change requires separate gameplay-feel, server-path, route-duration, slope and native cadence review; it must not be hidden inside a foot-rendering patch.
