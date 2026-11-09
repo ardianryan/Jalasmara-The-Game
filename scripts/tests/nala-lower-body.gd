@@ -132,7 +132,11 @@ func _measure(label:String) -> void:
 			var plan:Dictionary=entry.get("treadPlan",entry.get("rampCurvePlan",{}))
 			if not plan.is_empty():
 				if not _check(bool(plan.valid) and is_finite(float(plan.curveSpeedBound)) and float(plan.curveSpeedBound)<=4.9,"Invalid terrain curve budget accepted "+label): return
-				if not _check(str(plan.curveType)==("ramp_support_profile" if bool(entry.get("fixedRampTarget",false)) else "stair_clearance"),"Terrain bound does not match actual path type "+label): return
+				var expected_type:="ramp_support_profile" if bool(entry.get("fixedRampTarget",false)) else "stair_clearance"
+				if bool(entry.get("fixedTreadTarget",false)) and str(plan.curveType)=="stair_swept_support":
+					expected_type="stair_swept_support"
+					if not _check(bool(plan.get("sweptSupportMode",{}).get("supported",false)) and plan.get("knots",[]).size()>=2,"Swept stair path lacks its original geometry "+label): return
+				if not _check(str(plan.curveType)==expected_type,"Terrain bound does not match actual path type "+label): return
 				if not _check(absf(float(plan.distance)-float(pose.contacts.landingDistance))<.00001 and Vector3(plan.fromWorld).distance_to(entry.fromWorld)<.003 and Vector3(plan.toWorld).distance_to(entry.toWorld)<.003,"Terrain curve budget is stale after reanchor/retarget "+label+" side="+side): return
 		if entry.has("viewLandingFit") and entry.has("viewRotationPivot"):
 			if not _check(bool(entry.viewLandingFit.supported) and str(entry.viewLandingFit.candidate)==str(entry.viewRotationPivot.nextDirection),"Source-view switch invalidates frozen original-foot landing "+label+" side="+side): return
