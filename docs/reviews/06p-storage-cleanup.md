@@ -4,49 +4,56 @@
 
 ## Hasil aktual lokal
 
-Sumber bukti final lokal: `/Users/ardianryan/Documents/Jalasmara/.runtime/cleanup-20261109-local.json`, SHA256 `451a0ce53309cd985de5a869cc0d5752d14bb806deb60a7f120b70391558419c`. Hitungan51 entri dan jumlah `allocatedBytes` dihitung ulang dari seluruh array `removed`, bukan disalin dari estimasi inventori. Pemeriksaan awal mencakup49 path; integrator kemudian menambahkan dua gzip obsolete ke manifest dan reviewer memeriksa keduanya sudah hilang.
+Manifest final lokal disimpan pada `.runtime/cleanup-20261109-local.json` dan salinan bukti `artifacts/maintenance/cleanup-20261109/local.json` di root main. SHA256: `9f9458ac1b097c6284a1da9b45f66b12563f9b8fe9acfc8e42ec09037cf6bb49`. Reviewer menghitung ulang 52 entri beserta totalnya dari array `removed`, bukan memakai estimasi inventori.
 
 | Jenis yang benar-benar dihapus | Jumlah path | Allocated bytes |
 | --- | ---: | ---: |
-|Cache import/editor Godot nonaktif, termasuk salinan cold/hero|19|1.162.543.104|
-|Build aplikasi/Vite nonaktif|6|134.373.376|
-|Ekspor game compiled lama|9|903.503.872|
-|Arsip tar/PCK/gzip lama|16|1.931.960.320|
-|Installer export templates yang sudah terpasang|1|1.281.351.680|
-|**Total aktual**|**51**|**5.413.732.352**|
+| Cache import/editor Godot nonaktif, termasuk salinan cold/hero | 19 | 1.162.543.104 |
+| Build aplikasi/Vite nonaktif | 6 | 134.373.376 |
+| Ekspor game compiled lama | 9 | 903.503.872 |
+| Arsip tar/PCK/gzip lama dan transfer yang selesai | 17 | 2.148.126.720 |
+| Installer export templates yang sudah terpasang | 1 | 1.281.351.680 |
+| **Total aktual** | **52** | **5.629.898.752** |
 
-Manifest final mencatat5.387.189.795 logical bytes. Allocated bytes yang dihapus sekitar5,04GiB atau5,414GB. Snapshot awal free space sebelum pembersihan3.964.059.648B dan sesudah49 path8.954.580.992B: saat itu teramati kenaikan4.990.521.344B. Sesudah dua gzip tambahan dibuang, manifest diperbarui dengan free snapshot7.585.648.640B sementara arsip baru/build/browser juga memakai disk. **Jangan menyamakan selisih free snapshot akhir dengan total bytes penghapusan51 path.** APFS dan aktivitas bersamaan juga dapat memengaruhi angka free space; logical dan allocated tidak dijumlahkan sebagai reklamasi tambahan.
+Total aktual sekitar 5,63 GB allocated dan 5.603.355.860 logical bytes. Pada penghapusan awal teramati kenaikan ruang bebas 4.990.521.344 B. Manifest terakhir mencatat ruang bebas 14.243.237.888 B, tetapi build/QA dan penggunaan swap juga berubah selama pekerjaan. **Jangan mengatribusikan seluruh perubahan ruang bebas itu kepada 52 path yang dihapus**, atau menjumlahkan logical dan allocated sebagai reklamasi tambahan.
 
-Pembacaan `df -k` read-only sesudahnya melaporkan7.157.572KiB tersedia atau7.329.353.728B. Itu snapshot lebih baru ketika pekerjaan build/QA telah berlanjut, bukan pengganti dua pengukuran sebelum/sesudah pada manifest. Tidak disimpulkan sebagai penghapusan gagal atau angka reklamasi baru.
-
-Daftar51 path exact dan bytes ada pada manifest. Folder source snapshot lama tetap; hanya cache/compiled export child serta arsip yang sudah dipilih integrator dibuang. Tidak ada penghapusan seluruh worktree atau parent `.runtime`.
+Daftar path dan byte exact ada pada manifest. Folder source snapshot lama tetap; hanya cache/compiled export child serta arsip yang dipilih integrator dibuang. Tidak ada penghapusan seluruh worktree atau parent `.runtime`.
 
 ## Perbedaan dengan inventori sebelumnya
 
-[Inventori read-only](06p-local-cache-cleanup-inventory.md) adalah daftar calon, bukan catatan penghapusan. Keputusan integrator lebih luas daripada subtotal generated1.411.207.168B: beberapa export/arsip bersyarat kemudian dinyatakan obsolete dan ikut dibersihkan.
+[Inventori read-only](06p-local-cache-cleanup-inventory.md) adalah daftar calon, bukan catatan penghapusan. Keputusan integrator lebih luas daripada subtotal generated 1.411.207.168 B: beberapa ekspor/arsip bersyarat kemudian dinyatakan obsolete dan ikut dibersihkan.
 
-`templates.tpz` semula ditahan pada inventori. Integrator memverifikasi Web templates sudah terpasang, lalu menghapus **arsip installer**1.281.351.680B, bukan installed templates. Reviewer memastikan `/Users/ardianryan/Library/Application Support/Godot/export_templates/4.7.2.stable/` masih memiliki delapan ZIP Web, termasuk `web_nothreads_release.zip`10.245.903B dan `web_nothreads_debug.zip`10.232.720B. Tidak ada Godot import/export baru yang dijalankan reviewer untuk memeriksanya.
+`templates.tpz` semula ditahan pada inventori. Setelah memverifikasi Web templates sudah terpasang, integrator menghapus **arsip installer** 1.281.351.680 B. Reviewer memastikan installed templates Godot `4.7.2.stable` masih memiliki delapan ZIP Web, termasuk `web_nothreads_release.zip` dan `web_nothreads_debug.zip`. Binary dan installed templates tetap ada; reviewer tidak menjalankan Godot untuk memeriksanya.
 
-Dua arsip lokal `06b-f319da9.tar.gz`216.114.566 logicalB dan `06b-11c7576.tar.gz`216.144.745 logicalB awalnya belum dihapus pada checkpoint49 path. Integrator kemudian menghapus keduanya, menambahkan432.263.168 allocatedB ke manifest final51 path, dan reviewer memastikan kedua path tidak ada. Ini perubahan aktual sesudah checkpoint awal, bukan kesimpulan dari inventori calon. `godot.zip` masih ada; arsip source/build f4 yang sedang dipakai juga dilindungi hingga integrator menyatakan sudah tidak perlu. Catatan penghapusan dua arsip f319/11c pada VPS adalah kejadian terpisah; status remote belum diverifikasi reviewer pada checkpoint ini.
+Arsip lokal f319/11c kemudian ikut dihapus. Transfer lokal `06b-f4fac83.tar.gz` juga dihapus setelah image/PCK di VPS diverifikasi; source serta ekspor aktif tetap. Keberadaan salinan transfer f4 di VPS dibedakan dari arsip lokal ini dan masih diperlukan sampai aktivasi staging.
 
 ## Pemeriksaan preservasi
 
-Reviewer memeriksa ulang seluruh51 entri removed:44 target yang tidak ditandai `preservedGitkeep` sudah tidak ada;7 folder public/game dengan `preservedGitkeep=true` masih ada dan masing-masing hanya berisi `.gitkeep`.
+Reviewer memeriksa ulang seluruh 52 entri: 45 target sudah tidak ada; tujuh folder public/game dengan `preservedGitkeep=true` masing-masing hanya berisi `.gitkeep`.
 
 Pemeriksaan keberadaan read-only juga memastikan:
 
--29 worktree/pointer `.git` masih utuh. Tidak ada branch atau source worktree yang dibuang.
--Root main `client-godot/.godot`, `apps/web/public/game`, `apps/web/dist`, `apps/api/dist` dan shared `node_modules` tetap ada. Ini melindungi proses aktif/API3101 dan hasil build yang dipakai QA.
--Binary Godot `.runtime/godot`, installed Web templates, standalone `.runtime/worldkit-repo/.git`, serta direktori Mongo/Redis lokal tetap ada. Shared tool/dependency dan konfigurasi tidak dipilih untuk dihapus.
--Anotasi sumber restart Nala `tools/player-gait/restart-support-east.json`, bukti `artifacts/godot/nala-restart-source/annotated-support-east.png`, worktree house-alignment dan root native `artifacts/godot/nala-gait-transitions/results.json` tetap ada.
--Manifest integrator mempertahankan seluruh source, artefak bukti PNG/JSON/log, tool sources/binaries dan database/config. Reviewer memeriksa contoh penting di atas serta29 pointer Git; tidak mengklaim melakukan hash audit seluruh isi sumber/database.
+- 29 worktree/pointer `.git` masih utuh. Tidak ada branch atau source worktree yang dibuang.
+- Root main cache, public game, web/API dist dan shared `node_modules` tetap ada untuk API 3101 dan QA.
+- Binary Godot, installed Web templates, `.runtime/worldkit-repo/.git` serta direktori Mongo/Redis lokal tetap ada.
+- Anotasi/bukti restart Nala, kandidat house-alignment dan native sequence root tetap ada.
+- Seluruh source, bukti PNG/JSON/log, tool sources/binaries serta data/config dipertahankan menurut manifest. Pemeriksaan reviewer atas contoh penting dan pointer Git tidak dianggap sebagai hash audit seluruh source/database.
 
 Symlink node_modules tidak diikuti untuk menghapus target shared. Tidak membaca isi `.env`, private key, kredensial atau data database. Tidak ada reseed, migrasi atau perubahan ekonomi/gameplay yang dilakukan untuk pembersihan.
 
-## VPS: checkpoint parsial, belum hasil akhir
+## Hasil aktual VPS
 
-Menurut status integrator,24 tag image lama dan arsip f319/11c di VPS sudah dibuang; build cache masih menunggu langkah final. Reviewer **belum membaca manifest remote atau `df`/`docker system df` sesudah prune final**, sehingga tidak mencantumkan jumlah byte remote yang berhasil direklamasi atau mengklaim pembersihan VPS selesai. Penghapusan tag saja juga tidak otomatis membebaskan semua layer yang masih dipakai image lain.
+Reviewer membaca `/tmp/jalasmara-cleanup-20261109.json` melalui SSH read-only dan mencocokkan `df`, `docker system df`, image ID, kesehatan container dan HTTP. Salinan bukti root: `artifacts/maintenance/cleanup-20261109/vps.json`, SHA256 `be08a1eac3c65f8aedec4db518645962818faee121cbae98d3a9bd8065e71e95`.
 
-Sesudah integrator memberi sinyal final prune, langkah reviewer terbatas pada SSH read-only: baca `/tmp/jalasmara-cleanup-20261109.json`, `df` dan `docker system df`, cocokkan image/arsip yang benar-benar dihapus serta current/rollback/data yang dipertahankan, lalu tambahkan hasil final pada laporan ini. Tidak ada `prune`, `rm`, penghentian service, perubahan image aktif atau penghapusan volume yang diotorisasi untuk reviewer.
+- 24 tag image lama dihapus. Dua direktori build f319/11c dan dua arsip transfernya tidak lagi ada; keempat path diperiksa ulang.
+- Ruang bebas VPS teramati berubah dari 28.129.341.440 B menjadi 43.568.685.056 B, sekitar **15,44 GB lebih longgar**. Ini perubahan teramati selama cleanup sekaligus build kandidat baru, bukan penjumlahan ukuran Docker.
+- Images berubah dari 30 / 16,78 GB menjadi 5 / 2,227 GB. Build cache berubah dari 195 entri / 10,47 GB menjadi **0 B**. Lima volume data tetap ada; tidak ada volume prune.
+- Log integrator mencatat builder prune 10,47 GB dan dangling image prune 1,398 GB. Angka tersebut tidak dijumlahkan dengan image sizes atau delta `df`, karena layer dapat dipakai bersama.
 
-Tool yang benar-benar dipakai pada checkpoint ini: pembacaan manifest JSON, Python3 untuk menjumlahkan/mengecek path, `hashlib` untuk pin manifest, metadata installed templates, `df -k`, Git dan `apply_patch` untuk laporan. Tidak memakai SSH pada checkpoint awal ini. Root tetap pemilik penghapusan, rilis, handoff, AGENTS dan operasi.
+Image aktif/rollback `jalasmara:current` tetap `sha256:5c5a503d3d228042f457d8ddbe9785a20a7a5b49b035d5ea34f4346d01bf937a`. Kandidat `jalasmara:06b-f4fac83` tetap `sha256:43bd232ffcb651027b920b9967b0690f2631946e6ed2b582a7e9195416c462f9`. Kedua pin dicocokkan langsung dengan `docker image inspect`. App, Mongo dan Redis berstatus running/healthy; `/api/health` memberi HTTP 200. **Kandidat belum dianggap aktif di staging.**
+
+Integrator memverifikasi PCK kandidat `43df70a9c86d4feafd18daed16297a6c5b2cc02582daa1ee0b4d32605f56d19e`, 64.307.804 B. Backup terbaru `20261109T113749Z` mempunyai SHA256 `2f62b715b8159224d9e6c461e37fefd8117ac2e922eac21e669c184fe3ae3318`; menurut pemeriksaan integrator, restore 42 dokumen cocok dan database uji dibuang. Checksum `.env` privat serta ID Mongo/Redis dibandingkan integrator dan tetap sama. Reviewer memeriksa kesehatan serta ID container sekarang; tidak membaca `.env`, private baseline atau isi data untuk mengulangi perbandingan tersebut.
+
+Source/build directory dan arsip transfer f4 di VPS masih dipertahankan untuk aktivasi. Integrator akan mencatat penghapusan duplikat sementara itu setelah tidak diperlukan; laporan ini tidak mengklaimnya sudah dihapus. Current/rollback, source, backup, volume serta bukti tetap dilindungi.
+
+Tool aktual reviewer: SSH read-only, pembacaan JSON, Python3/`hashlib`, metadata installed templates, `df`, `docker system df`/inspect/ps dan HTTP health. Tidak menjalankan `prune`, `rm`, engine/browser, menghentikan service atau mengubah volume. Root tetap pemilik penghapusan, rilis, handoff, AGENTS dan operasi.
