@@ -51,6 +51,14 @@ class FacingRecoveryTests(unittest.TestCase):
         result = audit([sample()], 1, [{"message": "original reach rejection"}])
         self.assertFalse(result["terminalRecoveryAccepted"])
 
+    def test_matching_intermediate_artwork_does_not_hide_requested_direction_lag(self):
+        row = sample("north", "north", desired="north")
+        row["source"]["requestedDirection"] = "south"
+        result = audit([row], 1)
+        self.assertEqual(len(result["terminalMismatches"]), 3)
+        self.assertEqual(result["cases"]["daily/false/0"]["artworkDirections"], ["north"])
+        self.assertEqual(result["cases"]["daily/false/0"]["requestedDirectionObservations"], 1)
+
 
 if __name__ == "__main__":
     unittest.main()

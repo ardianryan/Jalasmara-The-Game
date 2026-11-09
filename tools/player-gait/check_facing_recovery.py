@@ -10,14 +10,20 @@ def audit(rows, expected_cases, rejections=None):
     for row in rows:
         label = row["case"].split(" ", 1)[0]
         pose = row["pose"]
-        desired = pose.get("desiredDirection")
+        artwork = pose.get("desiredDirection")
+        requested = row.get("source", {}).get("requestedDirection")
+        desired = requested or artwork
         body = pose.get("direction")
         feet = pose.get("contacts", {}).get("feet", {})
         if label not in cases:
-            cases[label] = {"observations": 0, "desiredChanges": 0, "directions": [], "incompleteObservations": 0,
+            cases[label] = {"observations": 0, "desiredChanges": 0, "directions": [], "artworkDirections": [],
+                            "requestedDirectionObservations": 0, "incompleteObservations": 0,
                             "body": {}, "left": {}, "right": {}, "lastDesired": None, "priorAccepted": 0.0}
         case = cases[label]
         case["observations"] += 1
+        case["requestedDirectionObservations"] += int(bool(requested))
+        if artwork and artwork not in case["artworkDirections"]:
+            case["artworkDirections"].append(artwork)
         if desired is None or body is None or not all("footDirection" in feet.get(side, {}) for side in ["left", "right"]):
             case["incompleteObservations"] += 1
             continue
@@ -68,6 +74,7 @@ def audit(rows, expected_cases, rejections=None):
         case.pop("priorAccepted")
     complete = len(cases) == expected_cases and not insufficient
     return {"scope": "Actual recorded final source views and hold intervals only; no naturalness or missing-case inference",
+            "desiredSource": "requestedDirection when recorded; intermediate artwork target only for older observations",
             "expectedCases": expected_cases, "observedCases": len(cases), "missingCases": missing,
             "completeCaseSet": complete, "incompleteObservationCases": insufficient,
             "terminalMismatches": mismatches, "originalRejections": rejections or [],
