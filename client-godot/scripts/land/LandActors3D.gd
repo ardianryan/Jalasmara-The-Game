@@ -180,9 +180,13 @@ func update_actors(delta: float) -> void:
 	for npc in _npcs:
 		if not is_instance_valid(npc): continue
 		var key: String=str(npc.actor_name)
+		var native_resident:=_native_resident(npc)
 		var sheet: Texture2D
 		var frame: Texture2D
 		if bool(npc.crate):
+			frame=preload("res://scripts/ItemIcons.gd").texture("cache")
+		elif native_resident:
+			# Hidden anchor supplies the ordinary ground shadow, never an adult portrait.
 			frame=preload("res://scripts/ItemIcons.gd").texture("cache")
 		else:
 			sheet=preload("res://resources/art/npc-atlas.png")
@@ -203,14 +207,15 @@ func update_actors(delta: float) -> void:
 				logical_facing={"east":Vector2.RIGHT,"west":Vector2.LEFT,"north":Vector2.UP,"south":Vector2.DOWN}.get(str(npc.body_animation_state().direction),logical_facing)
 			var view_facing: Vector2=renderer.visual_motion(logical_facing,renderer.ground_gradient(npc.position).dot(logical_facing))
 			flip_npc=view_facing.x<0
-		var npc_sprite:=_sprite("NPC_"+key,frame,npc.position,Vector2(70,70) if bool(npc.crate) else Vector2(100,100),30 if bool(npc.crate) else 36,flip_npc)
+		var npc_size:=Vector2(70,70) if bool(npc.crate) else Vector2(100,100)*float(npc.body_scale) if native_resident else Vector2(100,100)
+		var npc_sprite:=_sprite("NPC_"+key,frame,npc.position,npc_size,30 if bool(npc.crate) else 36,flip_npc)
 		if "custom_tint" in npc: npc_sprite.modulate*=npc.get("custom_tint")
 		var rig: Node3D=_body_rig(npc)
 		if rig!=null:
 			rig.update_pose(npc_sprite.modulate)
 			npc_sprite.visible=false
 			body_clips[key]=rig.pose_snapshot()
-		_activities.update_actor(npc,npc_sprite)
+		if not native_resident: _activities.update_actor(npc,npc_sprite)
 		if npc.has_method("activity_state") and str(npc.activity_kind)!="idle": resident_states[key]=npc.activity_state()
 		counts.npcs=int(counts.npcs)+1
 
@@ -246,12 +251,16 @@ func _update_equipment(sprite: Sprite3D,gear: Dictionary,in_water: bool,flip: bo
 		add_child(_equipment)
 	_equipment.update_attachment(sprite,gear,in_water,flip)
 
+func _native_resident(person:Node2D) -> bool:
+	return "visual_profile" in person and str(person.visual_profile.get("kind","")) in ["child","director"]
+
 func _body_rig(actor: Node2D) -> Node3D:
 	if not actor.has_method("body_animation_state"): return null
 	var id:=actor.get_instance_id()
 	if _body_rigs.has(id): return _body_rigs[id]
-	if not preload("res://scripts/NpcBodyRig3D.gd").IDS.has(str(actor.actor_name)): return null
-	var rig:=preload("res://scripts/NpcBodyRig3D.gd").new()
+	var native:=_native_resident(actor)
+	if not native and not preload("res://scripts/NpcBodyRig3D.gd").IDS.has(str(actor.actor_name)): return null
+	var rig:Node3D=preload("res://scripts/VillageResidentBody3D.gd").new() if native else preload("res://scripts/NpcBodyRig3D.gd").new()
 	add_child(rig)
 	if not rig.configure(renderer,actor):
 		rig.queue_free()

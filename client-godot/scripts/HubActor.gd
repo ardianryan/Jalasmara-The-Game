@@ -34,8 +34,15 @@ var _route_retry_in := 0.0
 var _blocked_seconds := 0.0
 var _body_animation := preload("res://scripts/NpcAnimationState.gd").new()
 var moved_velocity := Vector2.ZERO
+var resident_id := ""
+var visual_profile: Dictionary = {}
+var body_scale := 1.0
 
 func configure_activity(profile: Dictionary) -> void:
+	resident_id=str(profile.get("id",""))
+	visual_profile=profile.get("visual",{}).duplicate(true)
+	if not visual_profile.is_empty(): visual_profile["age"]=int(profile.get("age",0))
+	body_scale=clampf(float(profile.get("bodyScale",1.0)),.5,1.15)
 	activity_profile=profile.get("activity",{}).duplicate(true)
 	if activity_profile.is_empty(): return
 	activity_kind=str(activity_profile.get("kind","idle"))
@@ -179,6 +186,17 @@ func _process(delta: float) -> void:
 func _draw() -> void:
 	if crate:
 		draw_texture_rect(preload("res://scripts/ItemIcons.gd").texture("cache"),Rect2(-35,-44,70,70),false)
+		return
+	if str(visual_profile.get("kind","")) in ["child","director"]:
+		# Canvas fallback remains original and age-sized; the land path uses native geometry.
+		var shirt:=Color.from_string(str(visual_profile.get("shirtColor","#509887")),Color("509887"))
+		var skin:=Color.from_string(str(visual_profile.get("skinColor","#BD865A")),Color("BD865A"))
+		draw_set_transform(Vector2.ZERO,0,Vector2.ONE*body_scale)
+		draw_rect(Rect2(-7,-46,14,25),shirt)
+		draw_rect(Rect2(-8,-64,16,18),skin)
+		draw_rect(Rect2(-8,-68,16,5),Color.from_string(str(visual_profile.get("hairColor","#38302C")),Color("38302C")))
+		for side in [-1,1]: draw_rect(Rect2(side*4-2,-21,4,21),Color.from_string(str(visual_profile.get("trouserColor","#4D515D")),Color("4D515D")))
+		draw_set_transform(Vector2.ZERO)
 		return
 	var index: int = {"Mbah Wira":0,"Beno":1,"Bu Darmi":2,"Inspektur Raka":3}.get(actor_name,0)
 	if appearance_index>=0: index = appearance_index
