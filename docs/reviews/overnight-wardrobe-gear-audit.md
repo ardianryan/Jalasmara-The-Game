@@ -36,3 +36,35 @@ node --import tsx scripts/plan06-layout-browser.mjs
 ```
 
 No new asset, generator, library or license change. Existing character art/provenance remains unchanged. This is not acceptance of complete natural walking, anatomical arm contact or every identity's attachment occlusion.
+
+## Actual local browser result
+
+Integrator explicitly granted the exclusive browser slot after merging46601cb as integratione2c4441. The command above ran against the actual existing3111 host and pinned73d runtime; no new build/export was needed. Own UUID `695fa150-9380-4880-9042-2e9ddce9cc50`. Browser session74607 exited0 and the slot was explicitly **RELEASED** before this CPU report.
+
+**4/4 checks PASS**, outcome `completed`,73,115ms after initial attachment (below the five-minute cap),105 land-input matrix pulses and0legacy pulses. All recorded operation statuses were200;39 surface-position synchronizations were observed. The non-position action records were the actual `dive/start` and empty `dive/extract`. There were0browser errors and0gameplay API failures. Targeted Mongo/Redis cleanup completed: `ownTemporaryPlayerRemoved=true`; the existing harness asserts players/receipts/shifts/owned sessions gone. No existing account or owner data was used.
+
+Actual checkpoint positions and requested state:
+
+| Checkpoint | Actual logical position | Outfit / tank / net |
+| --- | --- | --- |
+| Declared dock approach |1360,1290|daily /false /false|
+| Curtain approached from village |1428.9408,1286.5760|daily /false /false|
+| Crossed to ladder side |1487.0930,1292.3564|diving /true /true|
+| Curtain approached from ladder |1428.0109,1291.3083|diving /true /true|
+| Crossed back to village |1362.6082,1288.3929|daily /false /false|
+| Actual ocean entry |1107.3225,470|diving /true /true|
+| Post-extraction village side |1362.3521,1293.0547|daily /false /false|
+| Reloaded dock position |1344.3286,1291.8800|daily /false /false|
+
+Satchel wasfalse at every dock assertion. Empty extraction intentionally advanced story stage from dive to night, retaining story day2,200coins and empty inventory. Reload recomputed daily state at the saved legal village-side position. Save/reload position tolerance is25logical units; this run differs by18.06units, so it is **not an exact-coordinate persistence claim**. The immediate reload screenshot shows the existing temporary calendar-writer lease message; this narrow wardrobe gate does not wait for lease recovery. The earlier public full6 and host-only actual writer-reacquisition proofs remain separate.
+
+Original screenshots were inspected. The daily approach and reloaded daily player are clearly visible beside the rendered changing arch. On the eastern crossing screenshot, the booth shade/curtain partially occludes Nala; this image alone cannot approve the complete worn tank/net artwork or its front/back sorting. The underwater swimmer is present but small at this viewport. This is a functional current-browser transition PASS, **not** a new proof of all actual attachment nodes, complete modular gear visual quality, every identity/direction, or natural walking. The existing independent native node/visibility proof remains necessary and distinct.
+
+Evidence directory in integration: `artifacts/browser/plan06-layout-695fa150-9380-4880-9042-2e9ddce9cc50/`. Log `.runtime/overnight-wardrobe-browser.log`.
+
+| Original artifact | SHA256 |
+| --- | --- |
+| `results.json` |`a60c819c192e89c9bcc7f299c2a71690d0ab864ecfd4ab7dccb83c2d996b91cc`|
+| `wardrobe-crossing-equips-diving-tank-and-net.png` |`3fb234b890f9e715c5c4cb0c6afca4a58b3470f609e457c90a76a43a4ff46498`|
+| `wardrobe-actual-ocean-entry-diving-state.png` |`e0d464516a7ff8c997b7f1a7a0d83b41d16a29ac0438b06754b5d7bdb0c5512b`|
+| `wardrobe-daily-dock-position-after-reload.png` |`e7831d33dc9f4e5fe7e1efff2dfca5f7e4c56aff8bd2fc00b533b6dbc30af1b7`|
