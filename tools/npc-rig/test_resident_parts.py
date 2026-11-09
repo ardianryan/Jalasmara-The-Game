@@ -21,6 +21,11 @@ class ResidentPartsTest(unittest.TestCase):
             metadata=json.loads((first/"rigs.json").read_text())
             original=Image.open(SOURCE).convert("RGBA")
             packed=Image.open(first/"atlas.png").convert("RGBA")
+            runtime=ROOT/"client-godot/resources/art/resident-rigs-v1"
+            checked_in=Image.open(runtime/"atlas.png").convert("RGBA")
+            self.assertEqual(packed.size,checked_in.size)
+            self.assertEqual(packed.tobytes(),checked_in.tobytes(),"Runtime atlas must match the original-pixel generator")
+            self.assertEqual(metadata,json.loads((runtime/"rigs.json").read_text()))
             self.assertEqual(len(metadata["people"]),6)
             for person in metadata["people"].values():
                 self.assertEqual(person["authoredViews"],1)

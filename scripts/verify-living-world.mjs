@@ -76,6 +76,7 @@ const scripts = [
   "scripts/tests/homestead-options.gd",
   "scripts/tests/balai-resident-interaction.gd",
   "scripts/tests/kedai-focus.gd",
+  "scripts/tests/kedai-resume.gd",
   "scripts/tests/night-service-ui.gd",
   "scripts/tests/kedai-result-layout.gd",
   "scripts/tests/village-activities.gd",

@@ -74,3 +74,8 @@ Paket berikutnya364afe0 mencakup HUD desktop18,33px/body,48,3pxutility,56,7pxaks
 
 
 Root fullworld keempat pada43d293f selesai **59/59 lulus**,10spesies/722bingkai tetap lulus. Ini mencakup rigoriginal enamwarga, selector/lifecycle produksi, perubahan9-slice HUD desktop,18pxbacaanPC dan captureguardheadless. Source baru berikutnya hanya menjaga verifikasi preloader sesudah substitusi fetchPCK proyek; hashupstream tetap menolak perubahan retry/implementasi. Pengujian export/browser kandidat berjalan berikutnya, belum rilis.
+
+
+Ekspor gabungan `1b67a9b` selesai: PCK `1d3c94a5a449fe1e21ea6346da56f0684a1c3ccd0677100361296fc46923a2d8`,64.488.008byte,62bagian, web/APIbuild lulus dan preview3111healthy. Recorder browser sebenarnya lulus4checks/0error/cleanuptrue padaUUID3e9706b8…, mengunduh JSON10,954detik/10sample; rendererSwiftShader, bukan perangkatfisik.
+
+Night667 membuktikan sentuhgulir tetapi gagal resumeEscape→E: surface-position409 ketika shiftaktif. Fixture9832868f… sudah dibersihkan dan browserditutup; tidak ada klaim receiptpelayanan. Wira jahe/ikan-only juga menemukan guard lama kangkung-only, diperbaiki root dan focusedMain routing lulus. Kedua perbaikan memerlukan eksporbaru, kemudian alurmalam/kebun diulang. Paket1d3belumdirilis; root menyimpan hasil gagal dan belum mengklaimseluruh8selesai.
