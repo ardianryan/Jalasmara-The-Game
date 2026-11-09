@@ -11,6 +11,10 @@ var _last_pose: Dictionary = {}
 var ready_rig := false
 var _atlas: Texture2D
 var _tint := Color.WHITE
+var _foot_plant:RefCounted
+var _contact_pose:Dictionary={}
+var _sole_pixels:Dictionary={}
+var _pelvis_drop:=0.0
 
 func configure(owner_renderer: Node,person: Node2D) -> bool:
 	renderer=owner_renderer
@@ -37,6 +41,19 @@ func configure(owner_renderer: Node,person: Node2D) -> bool:
 		sprite.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		add_child(sprite)
 		sprites[name]=sprite
+	if id=="ujang":
+		var candidate:=preload("res://scripts/UjangFootPlant.gd").new()
+		if candidate.configure(renderer,actor,data):
+			_foot_plant=candidate
+			for side in ["left","right"]:
+				var image:Image=sprites["foot_"+side].texture.get_image()
+				if image.is_compressed(): image.decompress()
+				var bottom:=image.get_used_rect().end.y-1
+				var sum:=0.0
+				var count:=0
+				for x in range(image.get_width()):
+					if image.get_pixel(x,bottom).a>=.5: sum+=x+.5; count+=1
+				_sole_pixels[side]=Vector2(sum/maxi(1,count),bottom+1)
 	ready_rig=true
 	actor.set_meta("body_layered",true)
 	return true
@@ -75,7 +92,7 @@ func _length(name: String) -> float:
 
 func _body_transform(point: Vector2,lean: float) -> Vector2:
 	var hip:=Vector2(0,-36)
-	return hip+(point-hip).rotated(lean)
+	return hip+(point-hip).rotated(lean)+Vector2(0,_pelvis_drop)
 
 func update_pose(tint: Color) -> void:
 	if not ready_rig or not is_instance_valid(actor): return
@@ -83,11 +100,12 @@ func update_pose(tint: Color) -> void:
 	var state: Dictionary=actor.body_animation_state()
 	var camera:=get_viewport().get_camera_3d()
 	if camera==null: return
-	var foot: Vector3=renderer.map_point(actor.position,renderer.ground_height(actor.position))-renderer.camera_forward()*8
+	var foot: Vector3=renderer.map_point(actor.position,renderer.ground_height(actor.position))
+	if _foot_plant==null: foot-=renderer.camera_forward()*8
 	global_transform=Transform3D(camera.global_basis.orthonormalized(),foot)
 	var facing:=str(state.direction)
 	scale=Vector3(-1 if facing=="west" else 1,1,1)
-	if facing in ["east","west"]: scale.x*=.93
+	if facing in ["east","west"] and _foot_plant==null: scale.x*=.93
 	var back:=facing=="north"
 	var clip:=str(state.clip)
 	var reduced:=EnvironmentState.reduced_motion
@@ -98,19 +116,24 @@ func update_pose(tint: Color) -> void:
 	var work:=1.0 if clip=="work_loop" else clampf(t/.8,0,1) if clip=="start_work" else 1-clampf(t/.65,0,1) if clip=="end_work" else 0.0
 	var lean:=work*(.025+wave*.012) if not reduced else 0.0
 	for sprite in sprites.values(): sprite.visible=false
-	for index in range(2):
-		var side:="left" if index==0 else "right"
-		var hip:=_v(data.joints[side+"Hip"])
-		var foot_part: Dictionary=data.parts["foot_"+side]
-		var phase:=stride+index*PI
-		var lift:=maxf(0,sin(phase))*3.4 if walking else 0.0
-		var sole:=float(foot_part.size[1])
-		var ankle:=Vector2(hip.x+sin(phase)*3.5 if walking else hip.x,-sole-lift)
-		var knee:=hip.lerp(ankle,.52)+Vector2(1.0+lift*.35,0)
-		var depth: float=-.2 if index==0 else -.05
-		_bone("upper_leg_"+side,hip,knee,depth)
-		_bone("lower_leg_"+side,knee,ankle,depth+.01)
-		_place_part("foot_"+side,ankle+Vector2(0,sole*.5),0,depth+.02)
+	_pelvis_drop=0.0
+	if _foot_plant!=null:
+		_contact_pose=_foot_plant.update(actor.position,actor.moved_velocity,float(actor.get("_elapsed")),-1.0 if facing=="west" else 1.0)
+		_contact_legs(_contact_pose)
+	else:
+		for index in range(2):
+			var side:="left" if index==0 else "right"
+			var hip:=_v(data.joints[side+"Hip"])
+			var foot_part: Dictionary=data.parts["foot_"+side]
+			var phase:=stride+index*PI
+			var lift:=maxf(0,sin(phase))*3.4 if walking else 0.0
+			var sole:=float(foot_part.size[1])
+			var ankle:=Vector2(hip.x+sin(phase)*3.5 if walking else hip.x,-sole-lift)
+			var knee:=hip.lerp(ankle,.52)+Vector2(1.0+lift*.35,0)
+			var depth: float=-.2 if index==0 else -.05
+			_bone("upper_leg_"+side,hip,knee,depth)
+			_bone("lower_leg_"+side,knee,ankle,depth+.01)
+			_place_part("foot_"+side,ankle+Vector2(0,sole*.5),0,depth+.02)
 	var torso_name:="torso_back" if back else "torso"
 	_place_part(torso_name,_body_transform(_center("torso"),lean),lean,.03)
 	var head_angle:=0.0 if reduced else sin(t*2.4)*.035 if clip=="interact" else wave*.008
@@ -154,6 +177,79 @@ func update_pose(tint: Color) -> void:
 		snapshot_hands[side]=[p.x,p.y,p.z]
 	actor.set_meta("body_hands",snapshot_hands)
 	_last_pose={"clip":clip,"direction":facing,"frame":state.frame,"phase":state.workPhase,"parts":sprites.size(),"handsLocal":_local_hands.duplicate(true),"toolFront":not back,"footPivot":[0,0],"rootMotion":false,"source":"original portrait cutout rig"}
+	if _foot_plant!=null:
+		_last_pose["contacts"]=_contact_pose.duplicate(true)
+		for side in ["left","right"]:
+			var entry:Dictionary=_last_pose.contacts.feet[side]
+			var sole:Vector3=entry.sole
+			var plant:Vector3=entry.plant
+			entry["worldSole"]=[sole.x,sole.y,sole.z]
+			entry["worldPlant"]=[plant.x,plant.y,plant.z]
+		_last_pose["gripMeasurement"]={"status":"unknown","reason":"No independent palm grip pixel authored"}
+
+func _fixed_bone(name:String,a:Vector3,b:Vector3) -> void:
+	var up:Vector3=(a-b).normalized()
+	var right:=up.cross(Vector3(0,0,1)).normalized()
+	if right.length()<.01: right=Vector3.RIGHT
+	var normal:=right.cross(up).normalized()
+	var sprite:Sprite3D=sprites[name]
+	sprite.transform=Transform3D(Basis(right,up,normal),(a+b)*.5)
+	sprite.modulate=_tint
+	sprite.visible=true
+
+func _contact_legs(pose:Dictionary) -> void:
+	_pelvis_drop=-3.0
+	var ankles:Dictionary={}
+	for side in ["left","right"]:
+		var entry:Dictionary=pose.feet[side]
+		var part:Dictionary=data.parts["foot_"+side]
+		var sole_pixel:Vector2=_sole_pixels[side]
+		var sole:Vector3=to_local(entry.sole)
+		var ankle:=sole+Vector3(float(part.size[0])*.5-sole_pixel.x,sole_pixel.y,0)
+		ankles[side]=ankle
+		var hip2:=_v(data.joints[side+"Hip"])
+		var hip:=Vector3(hip2.x,-hip2.y,-.2 if side=="left" else -.05)
+		var reach:=_length("upper_leg_"+side)+_length("lower_leg_"+side)-.25
+		var horizontal:=Vector2(hip.x-ankle.x,hip.z-ankle.z).length_squared()
+		var drop:=hip.y-ankle.y-sqrt(maxf(.01,reach*reach-horizontal))
+		_pelvis_drop=maxf(_pelvis_drop,drop)
+	_contact_pose["requestedPelvisDrop"]=_pelvis_drop
+	_pelvis_drop=clampf(_pelvis_drop,-3.0,8.0)
+	_contact_pose["pelvisDrop"]=_pelvis_drop
+	_contact_pose["reachValid"]=float(_contact_pose.requestedPelvisDrop)<=8.0
+	_contact_pose["maxLengthError"]=0.0
+	for side in ["left","right"]:
+		var entry:Dictionary=pose.feet[side]
+		var part:Dictionary=data.parts["foot_"+side]
+		var sole_pixel:Vector2=_sole_pixels[side]
+		var sole:Vector3=to_local(entry.sole)
+		var ankle:Vector3=ankles[side]
+		var hip2:=_v(data.joints[side+"Hip"])
+		var hip:=Vector3(hip2.x,-hip2.y-_pelvis_drop,-.2 if side=="left" else -.05)
+		var first:=_length("upper_leg_"+side)
+		var second:=_length("lower_leg_"+side)
+		var vector:=ankle-hip
+		var length:=clampf(vector.length(),.01,first+second-.001)
+		var along:=vector.normalized()
+		var offset:=(first*first-second*second+length*length)/(2.0*length)
+		var facing:String=actor.body_animation_state().direction
+		var hint:=Vector3.RIGHT if facing in ["east","west"] else Vector3(0,0,-1 if facing=="north" else 1)
+		var bend:=hint-along*along.dot(hint)
+		if bend.length()<.01: bend=Vector3.RIGHT
+		bend=bend.normalized()
+		var knee:=hip+along*offset+bend*sqrt(maxf(0,first*first-offset*offset))
+		_fixed_bone("upper_leg_"+side,hip,knee)
+		_fixed_bone("lower_leg_"+side,knee,ankle)
+		var foot_sprite:Sprite3D=sprites["foot_"+side]
+		var pixel_offset:=Vector3(sole_pixel.x-float(part.size[0])*.5,float(part.size[1])*.5-sole_pixel.y,0)
+		foot_sprite.transform=Transform3D(Basis.IDENTITY,sole-pixel_offset)
+		foot_sprite.modulate=_tint
+		foot_sprite.visible=true
+		var error:=maxf(absf(hip.distance_to(knee)-first),absf(knee.distance_to(ankle)-second))
+		_contact_pose.maxLengthError=maxf(float(_contact_pose.maxLengthError),error)
+		_contact_pose.feet[side]["solePixel"]=[sole_pixel.x,sole_pixel.y]
+		_contact_pose.feet[side]["kneeLocal"]=[knee.x,knee.y,knee.z]
+
 
 func pose_snapshot() -> Dictionary:
 	return _last_pose.duplicate(true)

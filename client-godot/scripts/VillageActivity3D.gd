@@ -101,7 +101,7 @@ func update_actor(actor: Node2D,sprite: Sprite3D) -> void:
 		_place_line(lines[0],other_hand-grip*3,tip)
 		_place_line(lines[1],tip,float_point)
 		boxes[0].position=float_point
-		entry["gripError"]=maxf(_distance_to_segment(hand,other_hand-grip*3,tip),_distance_to_segment(other_hand,other_hand-grip*3,tip))
+		entry["gripMeasurement"]={"status":"unknown","reason":"Rod geometry is constructed from the same hand sockets; no independent palm grip pixel authored"}
 	elif kind=="weaving":
 		var left:=other_hand
 		var right:=hand
@@ -166,9 +166,11 @@ func debug_status() -> Dictionary:
 	for entry in _actors.values():
 		if entry.root.visible: active.append(str(entry.kind))
 	var grips: Dictionary={}
+	var measurements:Dictionary={}
 	for entry in _actors.values():
 		if entry.root.visible and entry.has("gripError"): grips[str(entry.actor.actor_name)]=entry.gripError
-	return {"gripErrors":grips,"active":active,"actors":_actors.size(),"cosmeticOnly":true,"clockPaused":EnvironmentState.clock_paused}
+		if entry.has("gripMeasurement"): measurements[str(entry.actor.actor_name)]=entry.gripMeasurement
+	return {"gripErrors":grips,"gripMeasurements":measurements,"active":active,"actors":_actors.size(),"cosmeticOnly":true,"clockPaused":EnvironmentState.clock_paused}
 
 func _distance_to_segment(point: Vector3,a: Vector3,b: Vector3) -> float:
 	var span:=b-a
