@@ -66,7 +66,7 @@ Trace CPU desa Seimbang yang terpisah berlangsung 5,110 detik; leaf `getParamete
 
 ## Status dan kelanjutan
 
-Selesai: harness lokal, tiga regresi statistik, sepuluh capture aktual, startup cold/context-warm, dan review gambar. Belum selesai: pengukuran sesudah pada PCK gabungan baru, pengulangan untuk variasi, soak test resource, serta Windows/S23 fisik. Sebelum/sesudah harus memakai fixture, viewport, durasi, diagnostik, dan urutan yang sama serta mencatat hash PCK baru. Target performa Plan 06 belum dinyatakan lulus.
+Selesai lokal: harness dan 14 tes CPU, sepuluh capture baseline, sepuluh capture kandidat gabungan, pengulangan hutan, dua pasangan kontrol paket lama/guard pada canopy tidak aktif, serta satu pasangan tambahan pada canopy aktif. [Perbandingan lengkap](06p-comparison.md) mencatat hash, metode dan confound host. Median kontrol berdekatan hampir sama; tidak ada klaim speedup. Startup cold/context-warm dan review gambar tersedia. Soak test resource serta Windows/S23 fisik belum selesai; target performa Plan 06 belum dinyatakan lulus.
 
 ## Pembanding otomatis
 

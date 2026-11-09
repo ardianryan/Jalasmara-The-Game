@@ -38,6 +38,12 @@ Website memakai ilustrasi loading asli dua lapis, persentase byte aset engine, k
 
 Pemeriksaan lokal: 77 tes API, 34 pemeriksaan dunia Godot, empat tes bridge, 24 pemeriksaan loading fixture, tujuh pemeriksaan shell, serta 29 pemeriksaan gameplay browser (tujuh alur malam, 15 integrasi Plan04 dan tujuh kontrol sentuh). Lima pemeriksaan loading juga dijalankan dengan export game asli dan pemain sementara yang dibersihkan. Fondasi jembatan/sisi tangga, arus partikel mengikuti karang dan tumpuan tiga model batu mendapat regresi tersendiri. Bukti dan batas revisi dijelaskan pada [laporan integrasi](reviews/parallel-hud-loading-delivery.md); laporan dasar tetap tersedia sebagai bukti historis. Ini bukan pengukuran FPS Windows/S23; penerimaan perangkat nyata tetap terbuka. Status rilis mengikuti revisi sumber dan artefak pipeline, terpisah dari [rancangan Rencana 04](plans/04-hud-fullscreen-performa-dan-gerak.md).
 
+## Pengiriman awal Rencana 06
+
+Kandidat gabungan memperjelas Nala di balik tajuk melalui bukaan piksel setempat, menghaluskan tepian patch tanah/rumput, memperlebar sambungan penyangga platform laut 13, serta membentuk relief tepi gua. Kamera 35°, collision, manifest, save, dan ekonomi tetap sama. Rutinitas warga mempertahankan perjalanan pada reduced motion, berhenti saat terhalang, serta mencoba pemulihan rute terbatas. Tujuan hujan yang ada belum mempunyai atap fisik; animasi empat arah dan kontak alat seluruh pilot belum selesai.
+
+Pemeriksaan lokal mencakup 37 pemeriksaan dunia, 77 tes API, 14 tes harness performa, delapan pemeriksaan browser hutan dan tujuh regresi malam. Kontrol paket lama/baru belum membuktikan speedup; SwiftShader bukan GPU Windows atau S23. [Laporan pengiriman](reviews/06a-delivery.md) memisahkan bukti lokal, status CI/staging, serta pekerjaan 06-B2/C/D yang tersisa. Noxe dan PixelDoll sudah diaudit sebagai referensi, belum dipasang sebagai runtime atau dipakai menghasilkan aset batch.
+
 ## Siklus harian, rumah, dan kebun Plan 03
 
 Kalender dan cuaca harian memakai data akun, bukan jam yang dimulai ulang setiap refresh. Satu penulis Redis mencegah tab/perangkat menggandakan waktu. Klien mengirim heartbeat sekitar lima detik; jeda lebih dari 15 detik tidak dihitung sebagai waktu aktif. Offline tidak memajukan kalender. Membaca, kuis, modal rumah, tab yang tidak berfokus, serta kondisi jeda yang sah menghentikan kemajuan sesuai kontrak server. Kalender harian terpisah dari nomor siklus cerita.

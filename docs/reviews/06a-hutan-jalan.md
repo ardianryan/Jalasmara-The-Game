@@ -77,3 +77,7 @@ Artefak lokal yang tidak dibundel:
 Pemeriksaan manual dilakukan pada entry/gateway, kontrol tajuk, patch rumput, ujung jembatan, gerbang desa, contoh malam/hujan serta frame jalan 30/60/120/200/251. Root juga meninjau gambar gateway setelah fade selesai dan menerima keterbacaan kepala/badan pada kondisi tersebut. Keluaran awal yang belum settle diganti; tidak dipakai sebagai hasil final.
 
 Ruang lingkup UI tidak berubah. Native fixture menghentikan controller Forest untuk mempertahankan posisi, sehingga label HUD fixture bukan bukti penerimaan HUD atau nilai akun langsung. Buku, joystick, host loading, fullscreen, kalender 36 menit, save, collider, portal, spawn dan manifest tidak diedit. Lane ini tidak melakukan ekspor publik, deployment atau pengujian perangkat Windows/S23. Peninjauan gabungan, CI dan rute browser kandidat tetap menjadi tanggung jawab integrator.
+
+## Penggabungan akhir
+
+Runtime `2f7f551` melewati perhitungan reveal saat nilainya nol dan memakai `MAIN_CAM_INV_VIEW_MATRIX` agar orientasi billboard pada shadow pass mengikuti kamera utama seperti Sprite3D semula. Delapan capture native gabungan selesai tanpa error shader/script. [Delapan pemeriksaan browser](06a-forest-browser.md) membuktikan perjalanan melalui gerbang, reveal dan pemulihannya, kedua jembatan, save/reload, serta portal pulang pada ekspor PCK `a9378a52`. [Kontrol performa aktif dan tidak aktif](../performance/06p-comparison.md) tidak menunjukkan perbedaan median yang konsisten terhadap paket lama; tidak dipakai sebagai klaim peningkatan FPS perangkat fisik.

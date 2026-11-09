@@ -1,6 +1,6 @@
 # Rencana 06: finishing dunia, aktivitas NPC, dan perluasan desa
 
-Tanggal: 9 November 2026. Status: **06-0/06-A dan persiapan 06-P dimulai atas instruksi pengguna; hasil baru belum diterima atau dirilis**. Pengguna mula-mula meminta perencanaan, kemudian meminta subagent mulai bekerja sambil audit Noxe/PixelDoll berlangsung. Dokumen ini terpisah dari Rencana 03, Rencana 04, dan pembagian jalur pada Rencana 05.
+Tanggal: 9 November 2026. Status: **06-A dan perbaikan dasar 06-B1 sudah digabung dan lolos penerimaan lokal; rilis menunggu CI serta verifikasi staging**. Profiling 06-P sudah mencakup baseline, kandidat, dan kontrol berpasangan; Windows/S23 fisik serta sesi panjang masih terbuka. Pilot kaki Ujang 06-B2 dikerjakan pada cabang terpisah dan belum masuk kandidat ini. Pengguna meminta subagent mulai bekerja sambil audit Noxe/PixelDoll berlangsung. Dokumen ini terpisah dari Rencana 03, Rencana 04, dan pembagian jalur pada Rencana 05. Bukti gabungan tersedia pada [laporan pengiriman awal](../reviews/06a-delivery.md).
 
 Baseline: `efdacba0e402f5acc3df174e2c27582381628f53`, sudah terpasang di staging. Pipeline GitLab `3043497430` lulus; pemeriksaan staging mencakup 16 alur tanpa error browser. Keberhasilan baseline bukan bukti bahwa pekerjaan dalam rencana ini sudah selesai.
 
@@ -212,9 +212,9 @@ Paket D dicatat agar sisa permintaan tidak hilang. Implementasinya tidak menjadi
 
 Tambahan referensi pengguna, 9 November 2026: [audit Noxe dan PixelDoll](../world/noxe-pixeldoll-reference.md). Noxe menjadi kandidat adaptasi mesh ruang/bangunan tiga perempat pada paket C, dengan interior playable tetap paket D. PixelDoll menjadi kandidat authoring layer pakaian/alat pada paket B melalui adapter billboard Godot; delapan arah Nala harus mandiri dan fase langkah tetap mengikuti perpindahan nyata. Keduanya belum diintegrasikan. Pilot kecil dan bukti visual/performa mendahului batch; urutan A–B–C serta jalur perangkat tidak berubah.
 
-- [ ] Bukti baseline terbaru dan temuan aktif sudah dicocokkan.
-- [ ] Kepala/badan Nala terbaca pada pintu masuk dan jalur bertajuk tanpa menghilangkan kedalaman foreground.
-- [ ] Tepi jalan/rumput, sambungan platform, dan tepi gua membaik pada kamera sebenarnya.
+- [x] Bukti baseline terbaru dan temuan aktif sudah dicocokkan.
+- [x] Kepala/badan Nala terbaca pada pintu masuk dan jalur bertajuk tanpa menghilangkan kedalaman foreground.
+- [x] Tepi jalan/rumput, sambungan platform, dan tepi gua membaik pada kamera sebenarnya.
 - [ ] Tujuh rutinitas warga tidak terjebak, menggandakan aktor, atau mengunci layanan.
 - [ ] Tiga pilot dan batch warga berikutnya memenuhi kontak tubuh/alat serta arah yang ditetapkan.
 - [ ] Rumah lurah, direktur dan Laskar yang dirilis mempunyai identitas, lokasi, rute, serta fungsi nyata.
@@ -222,4 +222,4 @@ Tambahan referensi pengguna, 9 November 2026: [audit Noxe dan PixelDoll](../worl
 - [ ] Pengujian Windows/S23 mencatat perangkat, kondisi, durasi dan metrik yang sebenarnya, atau ditandai belum tersedia.
 - [ ] HUD tetap ringkas, UI dapat dibaca/dioperasikan, CI hijau dan kandidat staging diperiksa melalui alamat publik.
 
-Daftar ini belum menandai pekerjaan baru sebagai selesai. Catatan pelaksanaan berikutnya harus menyebut paket, revisi source, bukti, hasil, serta kekurangan yang masih tersisa.
+Tanda selesai di atas terbatas pada penerimaan lokal 06-A. Dasar rutinitas B1 sudah diperiksa, tetapi tujuh tujuan hujan belum berada di bawah atap fisik sehingga penerimaan aktivitas lengkap tetap terbuka. Tidak ada perluasan layout pada kandidat ini. Catatan pelaksanaan menyebut paket, revisi source, bukti, hasil, serta kekurangan yang masih tersisa.
