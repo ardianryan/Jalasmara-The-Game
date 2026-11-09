@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createLandGateway, type GatewaySpec } from "../../../packages/shared/src/gateways.js";
-import { LAND_MAPS, isLandWalkable, isLandSegmentWalkable, type LandObstacle } from "../../../packages/shared/src/land.js";
+import { LAND_MAPS, isLandWalkable, isLandSegmentWalkable, landPointInPolygon, type LandObstacle } from "../../../packages/shared/src/land.js";
 
 const physical = ([x, y]: readonly number[]) => [x, -y / Math.cos(55 * Math.PI / 180)];
 const close = (a: number, b: number, epsilon = 1e-7) => assert.ok(Math.abs(a - b) < epsilon, `${a} != ${b}`);
@@ -36,7 +36,7 @@ test("forest gateway derives physical perpendicular and post footprints from the
     for (let index = 0; index < 4; index++) {
       const next = points[(index + 1) % 4];
       close(Math.hypot(next[0] - points[index][0], next[1] - points[index][1]), 18);
-      assert.ok(isLandWalkable(LAND_MAPS.forest, { x: footprint[index][0], y: footprint[index][1] }, 0), "each base corner stays on actual forest floor");
+      assert.ok(LAND_MAPS.forest.surfaces.some((surface) => surface.walkable !== false && landPointInPolygon({ x: footprint[index][0], y: footprint[index][1] }, surface.polygon)), "each base corner stays on actual forest floor");
     }
   }
   close(-gate.halfSpan + gate.baseSize[0] / 2 + gate.edgeClearance, gate.roadSection[0], .002);

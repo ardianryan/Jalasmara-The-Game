@@ -1,3 +1,5 @@
+import { createLandGateway, type LandGateway } from "./gateways.ts";
+
 export type LandPoint = readonly [number, number];
 export type LandMaterial =
   "dirt" | "grass" | "sand" | "stone" | "dock" | "bridge" | "wood";
@@ -56,6 +58,7 @@ export type LandMap = {
   terraces: { id: string; elevation: number }[];
   routes: LandPoint[][];
   shelters?: LandShelter[];
+  gateways?: LandGateway[];
 };
 export type LandShelter = {
   id: string;
@@ -194,10 +197,11 @@ function strip(a: LandPoint, b: LandPoint, width: number): LandPoint[] {
 }
 function miteredRouteSegments(
   route: readonly LandPoint[],
-  width: number,
+  width: number | readonly number[],
 ): LandPoint[][] {
   if (route.length < 2) return [];
-  const half = width / 2;
+  if (typeof width !== "number" && width.length !== route.length)
+    throw new Error("Trail widths must match its route points");
   const normals: [number, number][] = [];
   for (let i = 0; i < route.length - 1; i++) {
     const a = route[i],
@@ -207,6 +211,7 @@ function miteredRouteSegments(
   }
   const offsets: [number, number][] = [];
   for (let i = 0; i < route.length; i++) {
+    const half = (typeof width === "number" ? width : width[i]) / 2;
     if (i === 0) {
       offsets.push([normals[0][0] * half, normals[0][1] * half]);
     } else if (i === route.length - 1) {
@@ -941,7 +946,7 @@ export const LAND_MAPS: Record<"hub" | "forest", LandMap> = {
   },
   forest: {
     id: "forest",
-    layoutVersion: 5,
+    layoutVersion: 6,
     width: 2400,
     height: 1600,
     spawn: { x: 200, y: 1320 },
@@ -1152,21 +1157,51 @@ for (const [
   );
 }
 const hubRidgeTrail = miteredRouteSegments(
-  [
-    [1780, 390],
-    [1780, 345],
-    [1950, 295],
-    [2180, 295],
-    [2282, 225],
-    [2282, 82],
-  ],
-  92,
+  hubRoutes[7].slice(2),
+  [92, 92, 92, 52, 52],
 );
 for (const [index, segment] of hubRidgeTrail.entries()) {
   LAND_MAPS.hub.surfaces.push({
     ...floor(`hub_ridge_trail_${index}`, segment, "dirt", 3, 10),
     walkable: false,
   });
+}
+const hubGatewayRoad = LAND_MAPS.hub.surfaces.find(
+  (surface) => surface.id === "hub_ridge_trail_3",
+)!;
+LAND_MAPS.hub.gateways = [
+  createLandGateway({
+    id: "hub_forest_gate",
+    label: "HubForestGate",
+    elevation: 3,
+    route: { segment: [[2295, 230], [2295, 125]], fraction: 95 / 105 },
+    roadSurfaceId: hubGatewayRoad.id,
+    roadPolygon: hubGatewayRoad.polygon,
+    colliderIds: ["forest_gate_west", "forest_gate_east"],
+    halfSpan: 42.5,
+  }),
+];
+const forestGatewayRoad = LAND_MAPS.forest.surfaces.find(
+  (surface) => surface.id === "forest_trail_0_1",
+)!;
+const forestGateway = createLandGateway({
+  id: "forest_entry_gate",
+  label: "ForestEntryGate",
+  elevation: 0,
+  route: { segment: [[85, 1378], [200, 1320]], fraction: 0.65 },
+  roadSurfaceId: forestGatewayRoad.id,
+  roadPolygon: forestGatewayRoad.polygon,
+  colliderIds: ["forest_entry_gate_post_0", "forest_entry_gate_post_1"],
+});
+LAND_MAPS.forest.gateways = [forestGateway];
+for (const [index, footprint] of forestGateway.postFootprints.entries()) {
+  const xs = footprint.map((point) => point[0]);
+  const ys = footprint.map((point) => point[1]);
+  LAND_MAPS.forest.obstacles.push(obstacle(
+    forestGateway.colliderIds[index], "fence", Math.min(...xs), Math.min(...ys),
+    Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys),
+    118, "gateway_post", forestGateway.elevation, footprint,
+  ));
 }
 export function landDistanceToSegment(
   point: LandPosition,
