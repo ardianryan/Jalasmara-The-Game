@@ -26,6 +26,8 @@ func run() -> void:
 	root.add_child(hud)
 	scene.hud=hud
 	scene.nala=load("res://scripts/Player.gd").new()
+	root.add_child(scene.nala)
+	scene.nala.set_physics_process(false)
 	scene.nala.position=wira
 	scene.nala.land_path.reset(wira)
 	scene.status=Label.new()
@@ -36,7 +38,34 @@ func run() -> void:
 	await settle()
 	assert(api.get("calls").size()==1 and api.get("calls")[0].path=="/kedai/start","Resume must use the authenticated shift endpoint without a forbidden redundant surface write")
 	assert(scene.modal.get_meta("service_tray",false) and not scene.network_busy)
+	scene.nala.velocity=Vector2(100,0)
+	scene.nala.touch=Vector2.RIGHT
 	scene._close()
+	assert(scene.nala.frozen and scene.nala.velocity==Vector2.ZERO and scene.nala.touch==Vector2.ZERO,"Closing the service panel must retain the shift's land lock and clear queued inputs")
+	assert(scene._action_label({"kind":"npc","name":"Mbah Wira"})=="Lanjutkan giliran kedai")
+	for frame in range(12):
+		scene.nala.touch=Vector2.RIGHT
+		scene.nala._physics_process(1.0/60)
+	assert(scene.nala.position==wira and scene.nala.land_path.size()==0 and scene._can_resume_kedai("Mbah Wira"),"Actual Player physics must not create an unsavable path while the shift is active")
+	scene.set_interaction_modal(false)
+	assert(scene.nala.frozen and scene.nala.touch==Vector2.ZERO,"Interaction close must also preserve the active shift lock")
+	scene.nala.frozen=false
+	scene._restore_player_movement()
+	assert(scene.nala.frozen,"Restoring controls after loading/refresh must preserve the active shift lock")
+	var active_shift:Dictionary=state.shift
+	state.shift={}
+	scene.set_interaction_modal(true)
+	assert(scene.nala.frozen,"A modal must still lock movement after a shift ends")
+	scene.set_interaction_modal(false)
+	assert(not scene.nala.frozen,"A settled or abandoned shift with refreshed empty state must release movement")
+	scene.nala.touch=Vector2.RIGHT
+	scene.nala._physics_process(1.0/60)
+	assert(scene.nala.velocity.x>0,"Actual Player physics must accept input again once the shift is cleared")
+	scene.nala.position=wira
+	scene.nala.velocity=Vector2.ZERO
+	scene.nala.touch=Vector2.ZERO
+	scene.nala.land_path.reset(wira)
+	state.shift=active_shift
 	api.get("calls").clear()
 	api.set("accept_start",false)
 	await scene._npc_interact("Mbah Wira")
@@ -88,5 +117,5 @@ func run() -> void:
 	hud.free()
 	scene.free()
 	api.set_script(original)
-	print("KEDAI RESUME PASS: actual Main resumes only an acknowledged stationary Wira shift through authenticated start; server denial, nine exclusion guards and travel rejection preserved; API capture only, no transaction")
+	print("KEDAI RESUME PASS: actual Main resumes only an acknowledged stationary Wira shift through authenticated start; active-shift close/restore lock, actual Player input suppression and empty-shift unlock; server denial, nine exclusion guards and travel rejection preserved; API capture only, no transaction")
 	quit()

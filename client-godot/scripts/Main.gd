@@ -109,7 +109,7 @@ func _ready() -> void:
 	_ensure_residents()
 	GameState.changed.connect(_ensure_residents)
 	nala.position = _surface_point()
-	nala.frozen = false
+	_restore_player_movement()
 	if GameState.dive.is_empty() and is_instance_valid(terrain.scenery) and terrain.scenery.has_method("nearest_walkable"):
 		nala.position = terrain.scenery.nearest_walkable(nala.position)
 	if str(GameState.surface.get("area","hub"))=="forest" and GameState.dive.is_empty():
@@ -172,11 +172,17 @@ func _ensure_residents() -> void:
 func set_interaction_modal(active: bool) -> void:
 	modal_open=active
 	if is_instance_valid(hud): hud.set_modal(active)
-	if is_instance_valid(nala):
-		nala.frozen=active
-		if active:
-			nala.velocity=Vector2.ZERO
-			nala.touch=Vector2.ZERO
+	_restore_player_movement()
+
+func _service_movement_locked() -> bool:
+	return not GameState.shift.is_empty() and GameState.dive.is_empty()
+
+func _restore_player_movement() -> void:
+	if not is_instance_valid(nala): return
+	nala.frozen=modal_open or _service_movement_locked()
+	if nala.frozen:
+		nala.velocity=Vector2.ZERO
+		nala.touch=Vector2.ZERO
 
 func _setup_input() -> void:
 	var bindings = {"left":[KEY_A,KEY_LEFT],"right":[KEY_D,KEY_RIGHT],"up":[KEY_W,KEY_UP],"down":[KEY_S,KEY_DOWN],"interact":[KEY_E],"net":[KEY_SPACE],"map":[KEY_M],"journal":[KEY_J],"inventory":[KEY_I],"character":[KEY_C]}
@@ -378,7 +384,7 @@ func _close() -> void:
 		modal = null
 	modal_open = false
 	hud.set_modal(false)
-	nala.frozen = false
+	_restore_player_movement()
 	if not GameState.dive.is_empty():
 		ApiClient.call_api("/dive/reading",{"diveId":GameState.dive.id,"paused":ViewportLayout.host_paused})
 func _show_message(title: String, text: String) -> void:
@@ -658,6 +664,7 @@ func _action_label(obj: Dictionary) -> String:
 		"homestead":
 			return "Periksa: "+label_name
 		"npc", "resident":
+			if label_name=="Mbah Wira" and _service_movement_locked(): return "Lanjutkan giliran kedai"
 			return "Bicara: " + label_name
 		"surface_landmark":
 			return ("Periksa Ulang: " if found.has(str(obj.get("id",""))) else "Amati Kebun: ") + label_name
@@ -1277,7 +1284,7 @@ func _kedai_customer() -> void:
 		if not any:
 			_label(box,"Tas kosong. Tutup kedai sementara untuk kembali menyelam.")
 		_button(box,"Tutup sementara · cari stok",func(): await _close_shift(true))
-	_button(box,"Berjalan di dermaga",_close)
+	_button(box,"Tutup panel · tetap di kedai",_close)
 	_pin_service_context()
 	if is_instance_valid(pantry_first) and not pantry_first.disabled:
 		pantry_first.grab_focus.call_deferred()
@@ -1419,7 +1426,7 @@ func _sync_surface() -> bool:
 				_update_hud()
 				status.text = message
 				hud.message(message)
-			nala.frozen = false
+			_restore_player_movement()
 		else:
 			status.text = str(refreshed.get("error","Perubahan data belum dapat dimuat. Coba sambungkan kembali."))
 		return false
