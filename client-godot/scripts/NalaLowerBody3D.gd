@@ -267,13 +267,13 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 				var ankle:=Vector3(entry.sole)+correction+_ankle_offset(side,foot_direction,right,vertical,current)
 				var current_clear:=FootPlane.airborne_clear(renderer,entry.logical,mask,ankle-_ankle_offset(side,foot_direction,right,vertical,current),current)
 				var backtracks:=0
-				if not current_clear: next=current
-				else:
-					while backtracks<10 and not FootPlane.airborne_clear(renderer,entry.logical,mask,ankle-_ankle_offset(side,foot_direction,right,vertical,next),next):
-						next=current.slerp(next,.5).normalized()
-						backtracks+=1
-					if backtracks==10 and not FootPlane.airborne_clear(renderer,entry.logical,mask,ankle-_ankle_offset(side,foot_direction,right,vertical,next),next): next=current
-				entry["rotationClearance"]={"currentClear":current_clear,"backtracks":backtracks,"originalOpaqueVertices":mask.vertices.size()}
+				var next_clear:=FootPlane.airborne_clear(renderer,entry.logical,mask,ankle-_ankle_offset(side,foot_direction,right,vertical,next),next)
+				while backtracks<10 and not next_clear:
+					next=current.slerp(next,.5).normalized()
+					backtracks+=1
+					next_clear=FootPlane.airborne_clear(renderer,entry.logical,mask,ankle-_ankle_offset(side,foot_direction,right,vertical,next),next)
+				if not next_clear: next=current
+				entry["rotationClearance"]={"currentClear":current_clear,"selectedClear":next_clear or current_clear,"backtracks":backtracks,"originalOpaqueVertices":mask.vertices.size()}
 				if current.angle_to(next)>.000001:
 					var offset:=_ankle_offset(side,str(_foot_views[side]),right,vertical,current)
 					var pivot:Vector3=Vector3(entry.sole)+correction+offset
