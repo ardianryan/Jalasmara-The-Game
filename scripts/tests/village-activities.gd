@@ -24,7 +24,10 @@ func _run() -> void:
 			for station in ["rest","shelter"]:
 				var a: Array=profiles[index].activity[station]
 				var b: Array=profiles[other].activity[station]
-				assert(Vector2(a[0],a[1]).distance_to(Vector2(b[0],b[1]))>=60,"Residents must not stack at shared home or shelter entrances")
+				if Vector2(a[0],a[1]).distance_to(Vector2(b[0],b[1]))<60:
+					printerr("VILLAGE STATION SPACING FAILED: ",profiles[index].name," / ",profiles[other].name," ",station," ",a," / ",b)
+					quit(1)
+					return
 	var steps:=0
 	for profile in profiles:
 		var actor: Node2D=load("res://scripts/HubActor.gd").new()
@@ -89,5 +92,5 @@ func _run() -> void:
 		clock.elapsed_seconds=0
 		actor.queue_free()
 	assert(before==JSON.stringify({"player":state.player,"dive":state.dive}),"Cosmetic village simulation must not mutate economy or progress")
-	print("VILLAGE ACTIVITIES PASS:7 workers, ",steps," continuous collision-checked travel steps, opening/closing boundaries, rain shelter, reading/nearby pauses and reduced-motion travel, no teleport or gameplay mutation")
+	print("VILLAGE ACTIVITIES PASS:",profiles.size()," workers, ",steps," continuous collision-checked travel steps, opening/closing boundaries, rain shelter, reading/nearby pauses and reduced-motion travel, no teleport or gameplay mutation")
 	quit()

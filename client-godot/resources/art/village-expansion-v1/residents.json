@@ -1,0 +1,181 @@
+{
+  "sourceSha256": "9e2c42cd06f3c438e4eae194edf5caa45d23a4fb8610f0e13fa2640078f27d95",
+  "pillowVersion": "11.3.0",
+  "image": "residents.png",
+  "cellSize": [
+    96,
+    128
+  ],
+  "grid": [
+    3,
+    2
+  ],
+  "alphaThreshold": 230,
+  "paletteColors": 64,
+  "dither": false,
+  "people": [
+    {
+      "id": "npc_direktur_cakrawala",
+      "cell": [
+        0,
+        0,
+        96,
+        128
+      ],
+      "sourceBoundsInCell": [
+        170,
+        8,
+        402,
+        511
+      ],
+      "contentBounds": [
+        22,
+        8,
+        52,
+        112
+      ],
+      "alphaBottomPivot": [
+        48.9286,
+        120
+      ],
+      "authoredViews": 1,
+      "view": "front_three_quarter"
+    },
+    {
+      "id": "npc_kid_bagas",
+      "cell": [
+        96,
+        0,
+        96,
+        128
+      ],
+      "sourceBoundsInCell": [
+        168,
+        93,
+        358,
+        510
+      ],
+      "contentBounds": [
+        22,
+        8,
+        51,
+        112
+      ],
+      "alphaBottomPivot": [
+        37.5,
+        120
+      ],
+      "authoredViews": 1,
+      "view": "front_three_quarter"
+    },
+    {
+      "id": "npc_kid_kinasih",
+      "cell": [
+        192,
+        0,
+        96,
+        128
+      ],
+      "sourceBoundsInCell": [
+        140,
+        115,
+        331,
+        511
+      ],
+      "contentBounds": [
+        21,
+        8,
+        54,
+        112
+      ],
+      "alphaBottomPivot": [
+        49.0714,
+        120
+      ],
+      "authoredViews": 1,
+      "view": "front_three_quarter"
+    },
+    {
+      "id": "npc_kid_danu",
+      "cell": [
+        0,
+        128,
+        96,
+        128
+      ],
+      "sourceBoundsInCell": [
+        180,
+        32,
+        389,
+        503
+      ],
+      "contentBounds": [
+        23,
+        8,
+        50,
+        112
+      ],
+      "alphaBottomPivot": [
+        37.5,
+        120
+      ],
+      "authoredViews": 1,
+      "view": "front_three_quarter"
+    },
+    {
+      "id": "npc_kid_gito",
+      "cell": [
+        96,
+        128,
+        96,
+        128
+      ],
+      "sourceBoundsInCell": [
+        138,
+        20,
+        379,
+        502
+      ],
+      "contentBounds": [
+        20,
+        8,
+        56,
+        112
+      ],
+      "alphaBottomPivot": [
+        34.0,
+        120
+      ],
+      "authoredViews": 1,
+      "view": "front_three_quarter"
+    },
+    {
+      "id": "npc_kid_cempaka",
+      "cell": [
+        192,
+        128,
+        96,
+        128
+      ],
+      "sourceBoundsInCell": [
+        131,
+        75,
+        358,
+        501
+      ],
+      "contentBounds": [
+        18,
+        8,
+        60,
+        112
+      ],
+      "alphaBottomPivot": [
+        35.5,
+        120
+      ],
+      "authoredViews": 1,
+      "view": "front_three_quarter"
+    }
+  ],
+  "status": "Source cutouts only; not installed as runtime gait or four-view art"
+}

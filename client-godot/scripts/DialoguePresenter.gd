@@ -145,6 +145,8 @@ func _portrait(speaker: String) -> Texture2D:
 	else:
 		for resident in GameState.world.get("surface_hub",{}).get("residents",[]):
 			if str(resident.name)==speaker:
+				var extra:Texture2D=preload("res://scripts/VillagePortraits.gd").for_resident(str(resident.get("id","")))
+				if extra!=null: return extra
 				sheet = load("res://resources/art/village-residents-v1.png")
 				grid = Vector2i(3,2)
 				index = int(resident.appearance)
@@ -155,7 +157,7 @@ func _portrait(speaker: String) -> Texture2D:
 			sheet = load(path)
 			grid = Vector2i(3,3)
 			index = 0
-	if sheet==null: return null
+	if sheet==null or index<0 or index>=grid.x*grid.y: return null
 	var cell := Vector2(sheet.get_size())/Vector2(grid)
 	var atlas := AtlasTexture.new()
 	atlas.atlas = sheet
