@@ -121,6 +121,9 @@ func body_animation_state() -> Dictionary:
 	var result: Dictionary=_body_animation.snapshot()
 	result["layered"]=bool(get_meta("body_layered",false))
 	result["hands"]=get_meta("body_hands",{})
+	var point:Array=activity_profile.get("lookAt",[])
+	if point.size()==2 and str(result.clip) in ["start_work","work_loop","end_work"]:
+		result["workFacing"]={"point":[float(point[0]),float(point[1])],"height":float(activity_profile.get("lookAtHeight",0))}
 	return result
 
 func _process(delta: float) -> void:
@@ -174,6 +177,11 @@ func _process(delta: float) -> void:
 	if talking and is_instance_valid(player) and _body_animation.clip not in ["start_work","work_loop","end_work"]:
 		var look:=player.position-position
 		_body_animation.direction=("east" if look.x>0 else "west") if absf(look.x)>absf(look.y)*.8 else ("south" if look.y>0 else "north")
+	var work_look:Array=activity_profile.get("lookAt",[])
+	if not EnvironmentState.clock_paused and activity_phase=="work" and moved_velocity.length()<.1 and work_look.size()==2:
+		var to_work:=Vector2(float(work_look[0]),float(work_look[1]))-position
+		if to_work.length()>.1:
+			_body_animation.direction=("east" if to_work.x>0 else "west") if absf(to_work.x)>absf(to_work.y) else ("south" if to_work.y>0 else "north")
 	_body_animation.update(delta,moved_velocity,activity_phase=="work",activity_phase in ["rest","shelter"],talking,EnvironmentState.clock_paused,EnvironmentState.reduced_motion,activity_kind)
 	if is_instance_valid(player) and player.position.distance_to(position)<420 and GameState.dive.is_empty() and not EnvironmentState.clock_paused and not EnvironmentState.reduced_motion:
 		for event in _body_animation.events:
