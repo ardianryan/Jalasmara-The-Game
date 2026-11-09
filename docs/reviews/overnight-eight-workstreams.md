@@ -79,3 +79,10 @@ Root fullworld keempat pada43d293f selesai **59/59 lulus**,10spesies/722bingkai 
 Ekspor gabungan `1b67a9b` selesai: PCK `1d3c94a5a449fe1e21ea6346da56f0684a1c3ccd0677100361296fc46923a2d8`,64.488.008byte,62bagian, web/APIbuild lulus dan preview3111healthy. Recorder browser sebenarnya lulus4checks/0error/cleanuptrue padaUUID3e9706b8…, mengunduh JSON10,954detik/10sample; rendererSwiftShader, bukan perangkatfisik.
 
 Night667 membuktikan sentuhgulir tetapi gagal resumeEscape→E: surface-position409 ketika shiftaktif. Fixture9832868f… sudah dibersihkan dan browserditutup; tidak ada klaim receiptpelayanan. Wira jahe/ikan-only juga menemukan guard lama kangkung-only, diperbaiki root dan focusedMain routing lulus. Kedua perbaikan memerlukan eksporbaru, kemudian alurmalam/kebun diulang. Paket1d3belumdirilis; root menyimpan hasil gagal dan belum mengklaimseluruh8selesai.
+
+
+## Checkpoint 10 November: perangkat tersedia, kandidat belum dirilis
+
+Pengguna mengonfirmasi bantuan pengujian Windows dan Samsung S23. Root menyiapkan [panduan singkat](../performance/overnight-device-test.md), terikat pada pin rilis yang harus diisi integrator sebelum pengujian. Belum ada klaim FPS perangkat asli.
+
+Pada source06fac42, keenam pemeriksaan terarah resident rig/integration, legacyUjang, resume kedai, opsi kebun dan traymalam lulus tanpa error engine. Log `.runtime/overnight-export2-other-{name}.log` dan JSONringkasan menyimpan hasil. Actualcommute gagal lagi pada Gito sampel6767: pelvis11,284 melampaui6,3 pada belokan setelah ramp, reset0. FailureJSON disalin sebagai `.runtime/resident-commute-failure-cap-root.json`; tes gabungan berhenti sebelum kasus lain, sehingga keenamnya dijalankan terpisah. Kandidat turn handover sedang disiapkan berdasarkan arah belokan56derajat, defaultlegacy tetap. Ekspor1d3 lama belum mencakup guardWira/resume atau diagnostik sentuh terbaru.
