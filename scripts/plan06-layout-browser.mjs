@@ -1482,7 +1482,7 @@ async function verifyOcean() {
   );
   assert(Math.hypot(value.x - at.x, value.y - at.y) < 30);
   const state = await apiState();
-  assert.equal(state.surface.layoutVersion, 9);
+  assert.equal(state.surface.layoutVersion, WORLD.hub.layoutVersion);
   assert.equal(state.player.coins, 200);
   assert.equal(state.player.inventory.length, 0);
   assert.equal(state.player.progress.day, 2);
@@ -1723,7 +1723,7 @@ try {
   );
   if (routeMode === "full") {
     const migrated = await apiState();
-    assert.equal(migrated.surface.layoutVersion, 9);
+    assert.equal(migrated.surface.layoutVersion, WORLD.hub.layoutVersion);
     assert(isLandWalkable(world.landMaps.hub, migrated.surface));
     assert(
       Math.hypot(
@@ -1734,7 +1734,7 @@ try {
     assert.equal((await snapshot()).land.components.AttachedShelterRoofs, 5);
     assert.equal((await snapshot()).land.components.ShelterCollisionPosts, 10);
     assert.equal((await snapshot()).land.components.SasmitaPileFooting, 4);
-    checks.push("legacy-layout8-post-position-migrates-to-real-layout9-floor");
+    checks.push("legacy-layout8-post-position-migrates-to-current-canonical-floor");
     await verifyHome();
     await verifyShelters();
     await routeTo(world.forest.gate, "hub");

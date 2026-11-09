@@ -1,6 +1,6 @@
 # Jalasmara visual evidence
 
-Sixteen original evidence images, copied without cropping, recoloring, recompression or new image generation. This is a small review gallery, not an asset kit or a complete acceptance report. Total PNG payload: **3,544,076 bytes**. Released-world images, local browser evidence and uninstalled authoring proposals are labelled separately.
+Eighteen original evidence images, copied without cropping, recoloring, recompression or new image generation. This is a small review gallery, not an asset kit or a complete acceptance report. Total PNG payload: **3,587,051 bytes**. Released-world images, local browser evidence and uninstalled authoring proposals are labelled separately.
 
 ## Export5 local browser evidence: visible compact location overflow
 
@@ -155,3 +155,19 @@ Root reviewed both originals for exposed credentials/account details; no email/p
 | --- | --- | ---: | --- |
 | `export3-public-hub.png` | 844×390 | 202,769 | `81936735bf9f7c97d544b1e1226bf7f9b18cf5f5929ee91cbcd03e0e2fba9696` |
 | `export3-public-forest-clock.png` | 667×375 | 252,452 | `4c385d15b10d6a3833a438c445a61116a0a19cc9f6624f2055c32082f83fafc4` |
+
+
+## SOUTH upper-body authoring proposal, not installed
+
+![Eight proposed SOUTH daily arm poses; fixed torso and original palette.](nala-south-upper-authoring-proposal.png)
+
+![CPU APNG preview of the authored SOUTH arm cycle; timing is for review only.](nala-south-upper-authoring-preview.png)
+
+Original authoring source85b5933, root34ec26b. [Scope/provenance](../reviews/overnight-south-upper-loop.md): original daily SOUTH frame0 supplies cutouts, v7 supplies93 authored hidden-body texels, six explicitly reviewed source boundary texels move with the right forearm. Shoulder/elbow/wrist anchors and motion are authored design, not measured anatomical joints. These are eight upper crops, not complete body gait or an eight-direction solution. No atlas, Lower, actor or gear was changed. No release/default adoption or natural-walk acceptance follows.
+
+Root independently regenerated both files, matched exact hashes and reviewed all eight poses;9loop CPU tests passed. APNG contains8exactRGBAframes/100ms each; its cadence is not game timing. Original-art terms and existing Pillow notice remain. No moodboard pixels, external image service or credential used. Files have no account data; APNG animation metadata is intentional.
+
+| File | Bytes | SHA256 |
+| --- | ---: | --- |
+| `nala-south-upper-authoring-proposal.png` |27,302|`6c9669ba365cf7f30de57274f6a47238abba4d8e7032bba80816e194bf932702`|
+| `nala-south-upper-authoring-preview.png` |15,673|`0247e364733e4e5db951094e90fb16a600ffbbf6f5de8418b24ee8b8c288dbb3`|
