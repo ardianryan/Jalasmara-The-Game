@@ -3,9 +3,45 @@ extends Node3D
 var renderer: Node
 var _actors: Dictionary = {}
 var _materials: Dictionary = {}
+var _watering_soils:Array[Dictionary]=[]
 
 func configure(owner_renderer: Node) -> void:
 	renderer=owner_renderer
+	_watering_soils.clear()
+	for bed in renderer.map.get("obstacles",[]):
+		if str(bed.get("variant",""))!="raised_beds": continue
+		var size:=Vector2(float(bed.width),float(bed.height))
+		var logical_center:=Vector2(float(bed.x),float(bed.y))+size*.5
+		var center:Vector3=renderer.map_point(logical_center,float(bed.get("elevation",2))*48)
+		var depth:float=center.distance_to(renderer.map_point(logical_center+Vector2(0,size.y),float(bed.get("elevation",2))*48))
+		for index in range(3):
+			var at:=center+Vector3((index-1)*size.x*.3,0,32)
+			var half:=Vector3(size.x*.125,(depth-6)*.5,0)
+			_watering_soils.append({"garden":str(bed.id),"index":index,"low":at-half+Vector3(2,2,0),"high":at+half-Vector3(2,2,0)})
+
+func _watering_target(feet:Vector3) -> Dictionary:
+	var best:Dictionary={}
+	var distance:=INF
+	for soil in _watering_soils:
+		var low:Vector3=soil.low
+		var high:Vector3=soil.high
+		var point:=Vector3(clampf(feet.x,low.x,high.x),clampf(feet.y,low.y,high.y),low.z)
+		var candidate:=feet.distance_squared_to(point)
+		if candidate<distance:
+			distance=candidate
+			best={"point":point,"garden":soil.garden,"bed":soil.index}
+	return best
+
+func _fishing_target(logical_feet: Vector2,tip: Vector3,water_height: float) -> Dictionary:
+	var feet: Vector3=renderer.map_point(logical_feet,renderer.ground_height(logical_feet))
+	var side:=signf((tip-feet).dot(renderer.camera_right()))
+	if side==0: side=-1
+	for reach in [110.0,140.0,170.0]:
+		var delta: Vector2=renderer.logical_view_delta(Vector2(side*reach,60))
+		var logical:=logical_feet+delta
+		var wet: bool=is_instance_valid(renderer.water_node) and not renderer.water_node.water_field.sample_world(logical).on_land
+		if wet: return {"point":renderer.map_point(logical,water_height),"logical":[logical.x,logical.y],"wet":true,"screenSide":side}
+	return {"point":tip,"logical":[logical_feet.x,logical_feet.y],"wet":false,"screenSide":side}
 
 func _material(color: String) -> Material:
 	if not _materials.has(color):
@@ -33,8 +69,12 @@ func _line(parent: Node3D,color: String,radius: float) -> MeshInstance3D:
 
 func _place_line(mesh: MeshInstance3D,a: Vector3,b: Vector3) -> void:
 	mesh.position=(a+b)*.5
-	mesh.quaternion=Quaternion(Vector3.UP,(b-a).normalized())
-	mesh.scale=Vector3(1,maxf(.01,a.distance_to(b)),1)
+	var span:=b-a
+	if span.length_squared()<.000001:
+		mesh.scale=Vector3.ZERO
+		return
+	mesh.quaternion=Quaternion(Vector3.UP,span.normalized())
+	mesh.scale=Vector3(1,span.length(),1)
 
 func _box(parent: Node3D,dimensions: Vector3,color: String) -> MeshInstance3D:
 	var box:=BoxMesh.new()
@@ -69,11 +109,15 @@ func update_actor(actor: Node2D,sprite: Sprite3D) -> void:
 	var body: Dictionary=actor.body_animation_state() if actor.has_method("body_animation_state") else {}
 	var layered:=bool(body.get("layered",false))
 	entry.root.visible=(str(body.get("clip","")) in ["start_work","work_loop","end_work"]) if layered else str(activity.phase)=="work"
-	if not entry.root.visible: return
+	if not entry.root.visible:
+		entry.erase("gripError")
+		entry["gripMeasurement"]={"status":"inactive","reason":"Work prop is hidden"}
+		return
 	var feet: Vector3=renderer.map_point(actor.position,renderer.ground_height(actor.position))
 	var up: Vector3=renderer.camera_up()
-	var hand: Vector3=feet+up*35+Vector3(10,0,0)-renderer.camera_forward()*12
-	var other_hand: Vector3=hand-Vector3(8,0,0)
+	var right_axis: Vector3=renderer.camera_right()
+	var hand: Vector3=feet+up*35+right_axis*10-renderer.camera_forward()*12
+	var other_hand: Vector3=hand-right_axis*8
 	var phase:=str(body.get("workPhase","work"))
 	var pose_time:=float(body.get("elapsed",0))
 	if layered:
@@ -89,14 +133,18 @@ func update_actor(actor: Node2D,sprite: Sprite3D) -> void:
 	var boxes: Array=entry.boxes
 	if kind=="fishing":
 		var grip: Vector3=(hand-other_hand).normalized()
-		if grip.length()<.5: grip=Vector3(-1,0,0)
+		if grip.length()<.5: grip=-right_axis
 		var tip:=hand+grip*47
 		var rod_base:=other_hand-grip*3
 		var independent:Dictionary=actor.get_meta("body_rod",{}) if str(actor.actor_name)=="Mang Ujang" else {}
 		if not independent.is_empty():
 			rod_base=to_local(independent.base)
 			tip=to_local(independent.tip)
-		var water_point: Vector3=renderer.map_point(actor.position+Vector2(-80,70),0)+Vector3(0,0,-11+motion*.6)
+		var target: Dictionary=_fishing_target(actor.position,tip,-11+motion*.6)
+		entry["fishingTarget"]=target
+		var water_point: Vector3=target.point
+		lines[1].visible=bool(target.wet)
+		boxes[0].visible=bool(target.wet)
 		var hook:=tip-up*9
 		var float_point:=water_point
 		if layered:
@@ -131,30 +179,37 @@ func update_actor(actor: Node2D,sprite: Sprite3D) -> void:
 			var center:=left.lerp(right,float(index)/4.0)
 			_place_line(lines[index+4],center-vertical,center+vertical)
 		boxes[0].position=left.lerp(right,(motion+1)*.5)+renderer.camera_forward()*-.2
-		entry["gripError"]=0.0
+		entry.erase("gripError")
+		entry["gripMeasurement"]={"status":"unknown","reason":"Frame follows hand sockets; no independent palm or shuttle contact annotation"}
 	elif kind=="gardening":
 		var center:=hand-up*4
 		boxes[0].position=center
-		var spout:=center+Vector3(15,0,0)-up
+		var spout:=center+right_axis*15-up
 		_place_line(lines[0],center,spout)
-		_place_line(lines[1],center+Vector3(-3,0,0),hand-Vector3(3,0,0))
-		_place_line(lines[2],hand-Vector3(3,0,0),hand+Vector3(3,0,0))
-		_place_line(lines[3],hand+Vector3(3,0,0),center+Vector3(3,0,0))
+		_place_line(lines[1],center-right_axis*3,hand-right_axis*3)
+		_place_line(lines[2],hand-right_axis*3,hand+right_axis*3)
+		_place_line(lines[3],hand+right_axis*3,center+right_axis*3)
+		var target:Dictionary=_watering_target(feet)
+		var landing:Vector3=target.get("point",spout)
+		entry["wateringTarget"]=target
 		for index in range(5):
 			var t:=fposmod(float(index)/5.0+pose_time*.8,1)
-			boxes[index+1].position=spout.lerp(feet+Vector3(95,0,30),t)-Vector3(0,0,sin(t*PI)*5)
-			boxes[index+1].visible=phase=="pour" and not EnvironmentState.reduced_motion
-		entry["gripError"]=0.0
+			var drop:=spout.lerp(landing,t)
+			drop.z=lerpf(spout.z,landing.z,t*t)
+			boxes[index+1].position=drop
+			boxes[index+1].visible=not target.is_empty() and phase=="pour" and not EnvironmentState.reduced_motion
+		entry.erase("gripError")
+		entry["gripMeasurement"]={"status":"unknown","reason":"Can handle follows hand sockets; no independent palm grip pixel authored"}
 	elif kind=="pump":
-		var pivot:=hand+Vector3(motion*2,0,0)
+		var pivot:=hand+right_axis*motion*2
 		_place_line(lines[0],pivot-up*9,pivot+up*9)
-		_place_line(lines[1],pivot+up*9,pivot+up*9+Vector3(7,0,0))
-		boxes[0].position=feet+up*42+Vector3(-11,0,0)
+		_place_line(lines[1],pivot+up*9,pivot+up*9+right_axis*7)
+		boxes[0].position=feet+up*42-right_axis*11
 	elif kind=="trading":
-		for index in range(boxes.size()): boxes[index].position=hand+Vector3(index*5-6,0,0)+up*(motion*1.2+index%2*3)
+		for index in range(boxes.size()): boxes[index].position=hand+right_axis*(index*5-6)+up*(motion*1.2+index%2*3)
 	elif kind=="research":
-		boxes[0].position=hand+Vector3(-4,0,0)+up*motion*.7
-		boxes[1].position=hand+Vector3(5,0,0)+up*motion*.7
+		boxes[0].position=hand-right_axis*4+up*motion*.7
+		boxes[1].position=hand+right_axis*5+up*motion*.7
 
 func _build(entry: Dictionary) -> void:
 	var holder: Node3D=entry.root

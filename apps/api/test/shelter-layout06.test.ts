@@ -64,23 +64,23 @@ const deckAisles = [
   [261, 600],
 ] as const;
 
-test("seven rain stations have body clearance under physical roof plans", () => {
+test("seven rain stations have body clearance under physical roofs in legacy and left views", () => {
   for (const profile of profiles) {
     const station = point(profile.activity.shelter);
     assert.ok(isLandWalkable(map, station), profile.name);
     const roof = map.shelters!.find((shelter) => {
-      for (let index = 0; index < 16; index++) {
-        const angle = (index * Math.PI) / 8;
-        if (
-          !landPointInPolygon(
-            {
-              x: station.x + Math.cos(angle) * 13,
-              y: station.y + Math.sin(angle) * 13,
-            },
-            shelter.roof,
-          )
-        )
-          return false;
+      for (const azimuth of [0, -Math.PI / 4]) {
+        const upX = -Math.sin(azimuth) * Math.sin((35 * Math.PI) / 180);
+        const upY = Math.cos(azimuth) * Math.sin((35 * Math.PI) / 180);
+        for (const height of [0, 35, 70]) {
+          for (let index = 0; index < 16; index++) {
+            const angle = (index * Math.PI) / 8;
+            if (!landPointInPolygon({
+              x: station.x + Math.cos(angle) * 13 + upX * height,
+              y: station.y + Math.sin(angle) * 13 - upY * height * Math.cos((55 * Math.PI) / 180),
+            }, shelter.roof)) return false;
+          }
+        }
       }
       return true;
     });

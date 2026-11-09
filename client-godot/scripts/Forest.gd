@@ -416,6 +416,7 @@ func _physics_process(delta: float) -> void:
 	var direction := Input.get_vector("left","right","up","down")
 	if touch_direction != Vector2.ZERO:
 		direction = touch_direction.limit_length()
+	if is_instance_valid(land_renderer): direction=land_renderer.input_motion(direction,avatar.position)
 	if modal_open or ViewportLayout.host_paused or busy or land_path.full():
 		direction = Vector2.ZERO
 		avatar.velocity=Vector2.ZERO
@@ -454,7 +455,8 @@ func _physics_process(delta: float) -> void:
 		avatar.swim_sprite.set_appearance(str(GameState.player.get("appearance","male_default")))
 		avatar.swim_sprite.set_outfit("explorer")
 		avatar.swim_sprite.set_equipment(avatar.equipment)
-		avatar.swim_sprite.set_locomotion(moved_velocity,delta)
+		var visual_velocity: Vector2=land_renderer.visual_locomotion(previous_position,avatar.position,delta) if is_instance_valid(land_renderer) else moved_velocity
+		avatar.swim_sprite.set_locomotion(moved_velocity,delta,visual_velocity)
 		avatar.swim_sprite.animate(avatar.walking,false,-1 if avatar.facing.x<0 else 1,avatar.clock)
 		avatar.swim_sprite.visible = not is_instance_valid(land_renderer)
 	light_clock += delta

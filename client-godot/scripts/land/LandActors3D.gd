@@ -16,6 +16,7 @@ var max_foot_error:=0.0
 var _equipment: Node3D
 var _activities: Node3D
 var _body_rigs: Dictionary={}
+var _wet_effects: MultiMeshInstance3D
 
 func configure(owner_renderer: Node, scene: Node2D, player: Node2D) -> void:
 	renderer=owner_renderer
@@ -88,7 +89,7 @@ func _sprite(key: String, texture: Texture2D, feet: Vector2, dimensions: Vector2
 	var up: Vector3=renderer.camera_up()
 	var forward: Vector3=renderer.camera_forward()
 	sprite.position=renderer.map_point(feet,height)+up*rise-forward*8
-	var projected: Vector2=renderer.ground_projection(sprite.position-up*rise)
+	var projected: Vector2=renderer.logical_on_height(sprite.position-up*rise,height)
 	max_foot_error=maxf(max_foot_error,projected.distance_to(feet))
 	_shadow(key,feet,height,dimensions.x*.18)
 	sprite.modulate=_readable_tint(feet,height)
@@ -122,6 +123,7 @@ func _shadow(key: String,feet: Vector2,height: float,radius: float) -> void:
 
 func update_actors(delta: float) -> void:
 	if not is_instance_valid(actor): return
+	_update_wet_marks()
 	_scan_clock+=delta
 	if _scan_clock>2:
 		_scan_clock=0
@@ -185,7 +187,15 @@ func update_actors(delta: float) -> void:
 			if "appearance_index" in npc and int(npc.get("appearance_index"))>=0: index=int(npc.get("appearance_index"))
 			var cell:=sheet.get_size()/Vector2(grid)
 			frame=_frame(sheet,Rect2(Vector2(index%grid.x,floori(float(index)/grid.x))*cell,cell))
-		var flip_npc := false if bool(npc.crate) else float(npc.get("_facing")) < 0.0
+		var flip_npc := false
+		if not bool(npc.crate):
+			var logical_facing:=Vector2(float(npc.get("_facing")),0)
+			if "moved_velocity" in npc and npc.moved_velocity.length()>.1:
+				logical_facing=npc.moved_velocity
+			elif npc.has_method("body_animation_state"):
+				logical_facing={"east":Vector2.RIGHT,"west":Vector2.LEFT,"north":Vector2.UP,"south":Vector2.DOWN}.get(str(npc.body_animation_state().direction),logical_facing)
+			var view_facing: Vector2=renderer.visual_motion(logical_facing,renderer.ground_gradient(npc.position).dot(logical_facing))
+			flip_npc=view_facing.x<0
 		var npc_sprite:=_sprite("NPC_"+key,frame,npc.position,Vector2(70,70) if bool(npc.crate) else Vector2(100,100),30 if bool(npc.crate) else 36,flip_npc)
 		if "custom_tint" in npc: npc_sprite.modulate*=npc.get("custom_tint")
 		var rig: Node3D=_body_rig(npc)
@@ -241,3 +251,32 @@ func _body_rig(actor: Node2D) -> Node3D:
 		return null
 	_body_rigs[id]=rig
 	return rig
+
+func _update_wet_marks() -> void:
+	if not "wet_marks" in actor: return
+	if not is_instance_valid(_wet_effects):
+		_wet_effects=MultiMeshInstance3D.new()
+		_wet_effects.name="GroundWetMarks"
+		var quad:=QuadMesh.new()
+		quad.size=Vector2(10,3.5)
+		var instances:=MultiMesh.new()
+		instances.transform_format=MultiMesh.TRANSFORM_3D
+		instances.use_colors=true
+		instances.mesh=quad
+		instances.instance_count=24
+		_wet_effects.multimesh=instances
+		var shader:=Shader.new()
+		shader.code="shader_type spatial; render_mode unshaded,cull_disabled,depth_draw_never; void fragment(){float edge=1.0-smoothstep(.6,1.0,length(UV*2.0-1.0));ALBEDO=vec3(.06,.23,.23);ALPHA=COLOR.a*edge;}"
+		var material:=ShaderMaterial.new()
+		material.shader=shader
+		_wet_effects.material_override=material
+		_wet_effects.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		add_child(_wet_effects)
+	var marks: Array=actor.get("wet_marks")
+	_wet_effects.multimesh.visible_instance_count=mini(24,marks.size())
+	var basis:=Basis(Vector3.RIGHT,Vector3(0,-1.0/cos(renderer.TILT),0),Vector3(0,0,-1))
+	for index in range(mini(24,marks.size())):
+		var mark: Dictionary=marks[index]
+		var feet: Vector2=mark.at
+		_wet_effects.multimesh.set_instance_transform(index,Transform3D(basis,renderer.map_point(feet,renderer.ground_height(feet)+.6)))
+		_wet_effects.multimesh.set_instance_color(index,Color(1,1,1,clampf(1-float(mark.age)/5,0,1)*.45))

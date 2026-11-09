@@ -17,7 +17,7 @@ export const VILLAGE_RESIDENTS = [
   {
     id: "npc_mang_ujang", name: "Mang Ujang", title: "Nakhoda Bandar Hujung", appearance: 2, cycle: 1,
     route: [[1210, 1250], [1330, 1280]],
-    activity: { kind: "fishing", startMinute: 360, endMinute: 1050, work: [900, 1360], rest: [1210, 1250], shelter: [1430, 1260], commute: [[900, 1360], [1120, 1360], [1210, 1250]] },
+    activity: { kind: "fishing", startMinute: 360, endMinute: 1050, work: [900, 1360], rest: [1210, 1250], shelter: [1424, 1260], commute: [[900, 1360], [1120, 1360], [1210, 1250]] },
     line: "Bilik Beno ada sebelum tangga selam. Lewati biliknya untuk memasang tabung dan Jala Kognisi. Perjalanan pulang juga memerlukan oksigen; jangan habiskan semuanya saat mengejar tangkapan.",
     evening: "Permukaan yang tenang belum tentu berarti arus di bawah juga tenang. Lihat arah renik air dan simpan bekal oksigen untuk pulang.",
   },
@@ -49,8 +49,8 @@ export const VILLAGE_DISTRICT_ACTIVITIES = {
   "Bu Darmi": {
     activity: {
       kind: "gardening", startMinute: 420, endMinute: 1050,
-      work: [1720, 520], rest: [1375, 300], shelter: [1375, 300],
-      commute: [[1720, 520], [1350, 635], [900, 650], [900, 350], [940, 310], [1150, 320], [1150, 360], [1240, 365], [1305, 360], [1305, 300], [1375, 300]],
+      work: [1720, 520], rest: [1365, 280], shelter: [1365, 280],
+      commute: [[1720, 520], [1350, 635], [900, 650], [900, 350], [940, 310], [1150, 320], [1150, 360], [1240, 365], [1305, 360], [1305, 300], [1365, 280]],
     },
   },
 } as const;

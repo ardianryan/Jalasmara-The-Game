@@ -10,6 +10,8 @@ var direction := 1
 var walk_time := 0.0
 var touch := Vector2.ZERO
 var land_mask := Callable()
+var input_transform := Callable()
+var visual_motion_transform := Callable()
 var swim_sprite: Sprite2D
 var hybrid_visual := false
 var was_water := false
@@ -64,6 +66,7 @@ func _physics_process(delta: float) -> void:
 		if in_water:
 			velocity = velocity.move_toward(input*speed,delta*500)
 		else:
+			if input_transform.is_valid(): input = input_transform.call(input,position)
 			velocity = velocity.move_toward(input*LAND_WALK_SPEED*float(traversal_state.get("paceScale",1.0)),delta*850)
 		if absf(velocity.x)>3:
 			direction = 1 if velocity.x>0 else -1
@@ -111,12 +114,14 @@ func _physics_process(delta: float) -> void:
 		swim_sprite.set_appearance(str(GameState.player.get("appearance","male_default")))
 		swim_sprite.set_outfit(outfit)
 		swim_sprite.set_equipment(equipment)
-		swim_sprite.set_locomotion(moved_velocity,delta)
+		var visual_velocity: Vector2=visual_motion_transform.call(previous,position,delta) if not in_water and visual_motion_transform.is_valid() else moved_velocity
+		swim_sprite.set_locomotion(moved_velocity,delta,visual_velocity)
 		swim_sprite.animate(moved_velocity.length()>10,in_water,direction,walk_time)
 		if not in_water: swim_sprite.position.y += float(traversal_state.get("footBob",0.0))
 		swim_sprite.visible = not hybrid_visual
 	queue_redraw()
 func _draw() -> void:
+	if hybrid_visual and not in_water: return
 	for mark in wet_marks:
 		var at: Vector2 = mark.at-position
 		draw_set_transform(at,0,Vector2(1,.35))

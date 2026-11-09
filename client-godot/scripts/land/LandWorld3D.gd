@@ -5,6 +5,12 @@ const DISTANCE := 3300.0
 const LEVEL_HEIGHT := 48.0
 const Materials = preload("res://scripts/land/LandMaterials.gd")
 const CameraPose = preload("res://scripts/land/LandCameraPose.gd")
+const ViewProjection = preload("res://scripts/land/LandViewProjection.gd")
+var camera_azimuth := -45.0
+var camera_elevation := 35.0
+var view_projection = ViewProjection.new()
+var _view_ready := false
+var _follow_world := Vector3.ZERO
 var source: Node2D
 var actor: Node2D
 var source_camera: Camera2D
@@ -142,6 +148,8 @@ func set_area(place: String) -> void:
 	_plot_components.clear()
 	_plot_signatures.clear()
 	_cache_ground_queries()
+	# Billboards are authored during construction, before the first rendered frame.
+	_update_view(0.0,true)
 	if is_instance_valid(_geometry):
 		world_root.remove_child(_geometry)
 		_geometry.queue_free()
@@ -201,11 +209,67 @@ func set_homestead_state(home: Dictionary) -> void:
 			_homestead_dirty=true
 			return
 
+func camera_right() -> Vector3:
+	return camera_3d.global_basis.x
+
 func camera_up() -> Vector3:
-	return Vector3(0,cos(TILT),sin(TILT))
+	return camera_3d.global_basis.y
 
 func camera_forward() -> Vector3:
-	return Vector3(0,sin(TILT),-cos(TILT))
+	return -camera_3d.global_basis.z
+
+func _update_view(delta: float,immediate := false) -> void:
+	var logical_size:=get_viewport().get_visible_rect().size
+	display.size=logical_size
+	var render_size:=preload("res://scripts/RenderBudget.gd").viewport_size(logical_size)
+	if viewport_3d.size!=render_size: viewport_3d.size=render_size
+	# Follow accepted actor motion in world space; Camera2D's axis-aligned bounds
+	# describe the old view, not the rotated screen or a different terrace floor.
+	var target:=map_point(actor.position,ground_height(actor.position))
+	if immediate or not _view_ready:
+		_follow_world=target
+	else:
+		_follow_world=_follow_world.lerp(target,1.0-exp(-delta*8.0))
+	_center=actor.position
+	camera_3d.size=logical_size.y/maxf(.1,source_camera.zoom.y)
+	camera_3d.transform=CameraPose.pose(_follow_world,camera_azimuth,camera_elevation,DISTANCE,camera_3d.size,viewport_3d.size.y)
+	view_projection.configure(camera_3d.global_transform,camera_3d.size,viewport_3d.size)
+	_view_ready=true
+
+func ground_gradient(point: Vector2) -> Vector2:
+	var gradient:=Vector2.ZERO
+	for stair in _stair_queries:
+		var along: Vector2=stair.end-stair.start
+		var t: float=(point-stair.start).dot(along)/stair.lengthSquared
+		if t>=0 and t<=1 and point.distance_to(Geometry2D.get_closest_point_to_segment(point,stair.start,stair.end))<=stair.width:
+			gradient=along*(stair.to-stair.from)/stair.lengthSquared
+	return gradient
+
+func _sync_projection() -> void:
+	if not camera_3d.global_transform.is_equal_approx(view_projection.camera_pose) or camera_3d.size!=view_projection.view_height or viewport_3d.size!=view_projection.pixels:
+		view_projection.configure(camera_3d.global_transform,camera_3d.size,viewport_3d.size)
+
+func logical_view_delta(screen_delta: Vector2) -> Vector2:
+	_sync_projection()
+	return view_projection.logical_vector_from_view(screen_delta)
+
+func input_motion(input: Vector2,point: Vector2) -> Vector2:
+	return view_projection.input_motion(input,ground_gradient(point)) if _view_ready else input.limit_length()
+
+func visual_motion(logical_velocity: Vector2,height_velocity := 0.0) -> Vector2:
+	return view_projection.logical_motion_to_view(logical_velocity,height_velocity)
+
+func visual_locomotion(previous: Vector2,current: Vector2,delta: float) -> Vector2:
+	return visual_motion((current-previous)/maxf(.001,delta),(ground_height(current)-ground_height(previous))/maxf(.001,delta))
+
+func project_host(point: Vector2,height := NAN) -> Vector2:
+	var floor_height:=ground_height(point) if is_nan(height) else height
+	return view_projection.project_to_host(point,floor_height,Rect2(display.position,display.size))
+
+func logical_on_height(point: Vector3,height: float) -> Vector2:
+	_sync_projection()
+	return view_projection.logical_on_height(point,height)
+
 
 func map_point(point: Vector2, height := 0.0) -> Vector3:
 	return Vector3(point.x,-point.y/cos(TILT)-height*tan(TILT),height)
@@ -848,7 +912,7 @@ func _canopy(at: Vector3,width: float,seed_value: int) -> void:
 	var factor:=width/390.0
 	for p in outline:
 		var relative: Vector2=(p-pixel_base)*factor
-		vertices.append(at+Vector3(relative.x,0,0)-camera_up()*relative.y)
+		vertices.append(at+camera_right()*relative.x-camera_up()*relative.y)
 		poly.append(p)
 	var shader:=Shader.new()
 	shader.code="""
@@ -1185,14 +1249,7 @@ func _process(delta: float) -> void:
 	if is_instance_valid(water_node) and water_node.has_method("set_active"): water_node.set_active(active)
 	viewport_3d.render_target_update_mode=SubViewport.UPDATE_ALWAYS if active else SubViewport.UPDATE_DISABLED
 	if not active: return
-	var logical_size:=get_viewport().get_visible_rect().size
-	display.size=logical_size
-	var render_size:=preload("res://scripts/RenderBudget.gd").viewport_size(logical_size)
-	if viewport_3d.size!=render_size: viewport_3d.size=render_size
-	_center=source_camera.get_screen_center_position()
-	var center:=map_point(_center,0)
-	camera_3d.size=logical_size.y/maxf(.1,source_camera.zoom.y)
-	camera_3d.transform=CameraPose.pose(center,0.0,35.0,DISTANCE,camera_3d.size,viewport_3d.size.y)
+	_update_view(delta)
 	actors_3d.update_actors(delta)
 	var conditions:=EnvironmentState.snapshot()
 	var sway:=0.0 if bool(conditions.get("reduced_motion",false)) else 1.2+absf(float(conditions.get("wind_x",0)))*.035
@@ -1203,7 +1260,7 @@ func _process(delta: float) -> void:
 	for cloth in _cloth:
 		var panel: Node3D=cloth.node
 		panel.rotation.y=sin(float(Time.get_ticks_msec())*.0014+float(cloth.phase))*.035*sway
-	_canopy_readability.update(map_point(actor.position,ground_height(actor.position)),camera_up(),camera_forward(),delta)
+	_canopy_readability.update(map_point(actor.position,ground_height(actor.position)),camera_up(),camera_forward(),delta,camera_right())
 	_shelter_architecture.update(self,delta)
 	_weather_clock+=delta
 	if _weather_clock>.25:
@@ -1221,7 +1278,7 @@ func _process(delta: float) -> void:
 		environment.ambient_light_color=(Color("9faeae") if area=="home" else Color("8da4a8")).lerp(Color("bdc0b5"),daylight)
 
 func debug_status() -> Dictionary:
-	return {"active":active,"area":area,"renderer":"LandSubViewport3D","viewport":[viewport_3d.size.x,viewport_3d.size.y],"quality":RenderQuality.get_profile(),"performance":{"staticBuilds":_static_builds,"plotUpdates":_plot_updates,"softGroundPatches":_soft_ground_patches,"softGroundVertices":_soft_ground_vertices},"readability":_canopy_readability.debug_status(),"tilt":55,"elevationDegrees":35,"meshes":_meshes,"houses":_houses,"trees":_trees,"glbModels":_models,"stairTreads":_stair_treads,"surfaces":map.get("surfaces",[]).size(),"obstacles":map.get("obstacles",[]).size(),"actors":actors_3d.counts if is_instance_valid(actors_3d) else {},"maxFootError":actors_3d.max_foot_error if is_instance_valid(actors_3d) else 0,"camera":[_center.x,_center.y],"warmLanterns":_lanterns.size(),"gardenState":_garden_state,"streamCleared":_stream_cleared,"components":_components.duplicate(),"bridges":_bridges.duplicate(true),"bitmapGround":false,"water":water_node.debug_status() if is_instance_valid(water_node) else {}}
+	return {"active":active,"area":area,"renderer":"LandSubViewport3D","viewport":[viewport_3d.size.x,viewport_3d.size.y],"quality":RenderQuality.get_profile(),"performance":{"staticBuilds":_static_builds,"plotUpdates":_plot_updates,"softGroundPatches":_soft_ground_patches,"softGroundVertices":_soft_ground_vertices},"readability":_canopy_readability.debug_status(),"tilt":55,"elevationDegrees":camera_elevation,"azimuthDegrees":camera_azimuth,"view":{"azimuth":camera_azimuth,"elevation":camera_elevation,"input":"screen-relative","motion":view_projection.motion_contract(ground_gradient(actor.position)),"targetHeight":ground_height(actor.position)},"meshes":_meshes,"houses":_houses,"trees":_trees,"glbModels":_models,"stairTreads":_stair_treads,"surfaces":map.get("surfaces",[]).size(),"obstacles":map.get("obstacles",[]).size(),"actors":actors_3d.counts if is_instance_valid(actors_3d) else {},"maxFootError":actors_3d.max_foot_error if is_instance_valid(actors_3d) else 0,"camera":[_center.x,_center.y],"warmLanterns":_lanterns.size(),"gardenState":_garden_state,"streamCleared":_stream_cleared,"components":_components.duplicate(),"bridges":_bridges.duplicate(true),"bitmapGround":false,"water":water_node.debug_status() if is_instance_valid(water_node) else {}}
 
 func _build_bridge(surface: Dictionary) -> void:
 	var polygon:=_polygon(surface.polygon)

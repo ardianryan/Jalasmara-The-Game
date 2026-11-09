@@ -80,7 +80,7 @@ func get_land_pivot() -> Vector2:
 func _stride() -> float:
 	return 64.0 if directional_pilot_active() else STRIDE
 
-func set_locomotion(velocity: Vector2,delta: float) -> void:
+func set_locomotion(velocity: Vector2,delta: float,visual_velocity := Vector2.INF) -> void:
 	_locomotion_driven=true
 	_speed=velocity.length()
 	if delta<=0 or _speed<.1 or _in_water: return
@@ -91,10 +91,12 @@ func set_locomotion(velocity: Vector2,delta: float) -> void:
 	for contact in range(before+1,mini(after,before+4)+1):
 		_foot_contacts.append({"side":"left" if contact%2==0 else "right","distance":contact*stride*.5,"phase":0.0 if contact%2==0 else .5})
 		if _foot_contacts.size()>8: _foot_contacts.pop_front()
-	if absf(velocity.x)>.1: _last_horizontal=1 if velocity.x>0 else -1
-	var octant:=posmod(roundi(velocity.angle()/(PI*.25)),8)
+	var facing_velocity:=velocity if not visual_velocity.is_finite() else visual_velocity
+	if facing_velocity.is_zero_approx(): return
+	if absf(facing_velocity.x)>.1: _last_horizontal=1 if facing_velocity.x>0 else -1
+	var octant:=posmod(roundi(facing_velocity.angle()/(PI*.25)),8)
 	var previous:=DIRECTIONS.find(_requested_direction)
-	var difference:=absf(angle_difference(previous*PI*.25,velocity.angle()))
+	var difference:=absf(angle_difference(previous*PI*.25,facing_velocity.angle()))
 	if difference>PI*.125+deg_to_rad(5): _requested_direction=DIRECTIONS[octant]
 
 func consume_foot_contacts() -> Array[Dictionary]:
@@ -126,7 +128,7 @@ func animate(moving: bool, in_water: bool, facing: int, elapsed: float) -> void:
 	if not texture: return
 	hframes=8 if gait else 3
 	vframes=3 if atlas_ready else 2
-	flip_h = (_last_horizontal<0 if gait else facing<0)
+	flip_h = _last_horizontal<0 if _locomotion_driven and not in_water else facing<0
 	var cell := Vector2(texture.get_size())/Vector2(hframes,vframes)
 	scale = Vector2(SWIM_SIZE/cell.x,SWIM_SIZE/cell.y) if in_water else Vector2(LAND_SIZE/cell.x,LAND_SIZE/cell.y)
 	position.y = 0 if in_water else -48.0 if gait else FOOT_Y-LAND_SIZE/2.0
