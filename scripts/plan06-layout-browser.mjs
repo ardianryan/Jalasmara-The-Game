@@ -31,7 +31,7 @@ assert(["localhost", "127.0.0.1"].includes(new URL(origin).hostname));
 assert(/^mongodb:\/\/(127\.0\.0\.1|localhost)(:|\/)/.test(mongoUrl));
 assert(["localhost", "127.0.0.1"].includes(new URL(redisUrl).hostname));
 const routeMode = process.env.PLAN06_ROUTE_MODE ?? "full";
-assert(["full", "continuation"].includes(routeMode));
+assert(["full", "continuation", "ocean"].includes(routeMode));
 const expectedPck = process.env.PLAN06_EXPECT_PCK;
 const expectedPckBytes = Number(process.env.PLAN06_EXPECT_PCK_BYTES);
 assert(
@@ -68,6 +68,7 @@ let browser,
 let candidatePck,
   initialLegacy,
   initialContinuation,
+  initialOcean,
   routeStarted,
   fixtureAttempted = false;
 function budget() {
@@ -455,6 +456,7 @@ async function verifyOcean() {
   const stopped = await snapshot();
   assert(Math.hypot(...stopped.hud.joystick.direction) < 0.01);
   assert(Math.hypot(stopped.x - value.x, stopped.y - value.y) > 2);
+  await shot("ocean-night-portrait-joystick-cancelled");
   await tap("bag");
   await waitState((state) => state.modal && state.weather.clockPaused);
   await shot("ocean-night-portrait-bag-pauses-and-cancels-input");
@@ -476,6 +478,7 @@ async function verifyOcean() {
   await responsive(667, 375, "returned-hub-night-667x375");
   const at = await snapshot();
   await waitSaved(at);
+  await page.waitForTimeout(2500);
   await page.reload();
   await attach();
   value = await waitState(
@@ -559,7 +562,17 @@ try {
   const fixtureCache = new Redis(redisUrl);
   try {
     let initialSurface;
-    if (routeMode === "continuation") {
+    if (routeMode === "ocean") {
+      initialOcean = {
+        area: "hub",
+        ...WORLD.surfaceSpawn,
+        layoutVersion: WORLD.hub.layoutVersion,
+        playerVersion: 0,
+        positionAt: Date.now(),
+      };
+      assert(isLandWalkable(WORLD.landMaps.hub, initialOcean));
+      initialSurface = initialOcean;
+    } else if (routeMode === "continuation") {
       const bridge = WORLD.landMaps.forest.bridges.find(
         (entry) => entry.id === "bridge_lower",
       );
@@ -625,8 +638,18 @@ try {
   page.on("response", async (response) => {
     const path = new URL(response.url()).pathname;
     if (!path.startsWith("/api/")) return;
-    if (response.status() >= 400)
-      failures.push({ path, status: response.status() });
+    if (response.status() >= 400) {
+      const body = await response.json().catch(() => ({}));
+      const sent = response.request().postDataJSON() ?? {};
+      failures.push({
+        path,
+        status: response.status(),
+        code: body.code,
+        error: body.error,
+        requestVersion: sent.version,
+        fromPositionAt: sent.fromPositionAt,
+      });
+    }
     if (
       response.request().method() !== "POST" ||
       !["/api/adventure/travel", "/api/adventure/surface-position"].includes(
@@ -635,7 +658,14 @@ try {
     )
       return;
     const body = await response.json().catch(() => ({}));
-    operations.push({ path, status: response.status(), surface: body.surface });
+    const sent = response.request().postDataJSON() ?? {};
+    operations.push({
+      path,
+      status: response.status(),
+      surface: body.surface,
+      requestVersion: sent.version,
+      fromPositionAt: sent.fromPositionAt,
+    });
   });
   await page.goto(`${origin}/login`);
   await page.getByLabel("Email", { exact: true }).fill(email);
@@ -804,7 +834,7 @@ try {
         `${bridge.id}-crossed-physically-with-deck-rails-and-ground-foot-pivot`,
       );
     }
-  } else {
+  } else if (routeMode === "continuation") {
     const initial = await waitState(
       (value) => value.area === "forest" && value.land?.actors?.player === 1,
     );
@@ -826,35 +856,47 @@ try {
       "separate-fixture-starts-at-previously-crossed-real-forest-bridge",
     );
   }
-  await routeTo({ x: 200, y: 1320 }, "forest");
-  await waitState((value) => value.nearby === "return");
-  const returning = page.waitForResponse(
-    (response) =>
-      response.url().endsWith("/api/adventure/travel") &&
-      response.request().method() === "POST",
-  );
-  await page.keyboard.press("e");
-  assert.equal((await (await returning).json()).surface.area, "hub");
-  await waitState(
-    (value) =>
-      value.area !== "forest" &&
-      value.land?.area === "hub" &&
-      value.land?.actors?.player === 1,
-  );
-  await shot("09-return-through-real-portal");
-  const finalState = await apiState();
-  assert.equal(finalState.surface.area, "hub");
-  assert.equal(
-    finalState.player.coins,
-    200,
-    "World readability and physical navigation must not invent rewards",
-  );
-  assert.equal(finalState.player.progress.day, 2);
-  assert.equal(finalState.calendar.dayLengthMs, 36 * 60 * 1000);
-  assert.equal((await snapshot()).weather.dayLengthMinutes, 36);
-  checks.push(
-    "physical-return-portal-keeps-story-coins-and-authoritative-surface",
-  );
+  if (routeMode !== "ocean") {
+    await routeTo({ x: 200, y: 1320 }, "forest");
+    await waitState((value) => value.nearby === "return");
+    const returning = page.waitForResponse(
+      (response) =>
+        response.url().endsWith("/api/adventure/travel") &&
+        response.request().method() === "POST",
+    );
+    await page.keyboard.press("e");
+    assert.equal((await (await returning).json()).surface.area, "hub");
+    await waitState(
+      (value) =>
+        value.area !== "forest" &&
+        value.land?.area === "hub" &&
+        value.land?.actors?.player === 1,
+    );
+    await shot("09-return-through-real-portal");
+    const finalState = await apiState();
+    assert.equal(finalState.surface.area, "hub");
+    assert.equal(
+      finalState.player.coins,
+      200,
+      "World readability and physical navigation must not invent rewards",
+    );
+    assert.equal(finalState.player.progress.day, 2);
+    assert.equal(finalState.calendar.dayLengthMs, 36 * 60 * 1000);
+    assert.equal((await snapshot()).weather.dayLengthMinutes, 36);
+    checks.push(
+      "physical-return-portal-keeps-story-coins-and-authoritative-surface",
+    );
+  } else {
+    const initial = await waitState(
+      (value) => value.land?.area === "hub" && value.land?.actors?.player === 1,
+    );
+    assert(
+      Math.hypot(initial.x - initialOcean.x, initial.y - initialOcean.y) < 30,
+    );
+    assert.deepEqual(world.surfaceSpawn, WORLD.surfaceSpawn);
+    await shot("ocean-fixture-start-at-actual-hub-spawn");
+    checks.push("separate-ocean-fixture-starts-on-real-hub-floor");
+  }
   await verifyOcean();
   assert.deepEqual(errors, []);
   assert.deepEqual(failures, []);
@@ -943,6 +985,7 @@ try {
           routeMode,
           initialLegacy,
           initialContinuation,
+          initialOcean,
           errors,
           failures,
           operations,
