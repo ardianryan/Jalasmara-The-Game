@@ -79,7 +79,11 @@ func _run() -> void:
 			rig.update_pose(Color.WHITE)
 			var status:Dictionary=rig.debug_status()
 			assert(status.authoredViews==1 and not status.mirrored and status.separateProp)
-			assert(is_equal_approx(float(status.contacts.stride),25*float(profile.get("bodyScale",1))))
+			var left_leg:Dictionary=status.links.leg_left
+			var right_leg:Dictionary=status.links.leg_right
+			var shortest_leg:=minf(float(left_leg.first)+float(left_leg.second),float(right_leg.first)+float(right_leg.second))
+			assert(float(status.contacts.stride)>0 and float(status.contacts.stride)<=25*float(profile.get("bodyScale",1))+.001)
+			assert(float(status.contacts.stride)<=shortest_leg*.85+.001,"Stride cannot exceed measured source leg-reach allowance")
 			for link in status.links.values():
 				assert(absf(link.start.distance_to(link.joint)-float(link.first))<.04,"First bone cannot stretch")
 				assert(absf(link.joint.distance_to(link.end)-float(link.second))<.04,"Second bone cannot stretch")

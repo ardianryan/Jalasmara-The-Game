@@ -28,7 +28,7 @@ var turn_distance:=TURN_DISTANCE
 
 func configure(renderer:Node,actor:Node2D,data:Dictionary) -> bool:
 	if not ("map" in renderer) or renderer.map.is_empty(): return false
-	var step_scale:=clampf(float(data.get("stepScale",1.0)),.5,1.15)
+	var step_scale:=clampf(float(data.get("stepScale",1.0)),.25,1.15)
 	if not is_finite(step_scale): step_scale=1.0
 	stride_length=STRIDE*step_scale
 	lift_height=LIFT*step_scale

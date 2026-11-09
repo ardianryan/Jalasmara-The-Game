@@ -14,3 +14,6 @@ Candidate berikut hanya membatasi3perubahan: walking arm mempertahankan clip/pha
 
 
 Root menjalankan before meaningful pause: FAIL sampel24 pada direktur, lengan kembali rest ketika feet/clip masih walk (log `.runtime/overnight-resident-commute-before-root.log`). Root setelah6f334d1 maju6766 sampel: pause dan turn Bagas sebelumnya lolos; kini Gito di[1122.163,1191.442] ujung ramp perlu pelvis6.538343 > bound6.3, reset0. Tidak mengubah bound. Sampai titik itu actual authored commutes tercatat stairs0/ramp26. Guard akhir yang mengasumsikan stair>10 dikoreksi menjadi connector contacts>10, tetap melaporkan stairs/ramp terpisah. Tidak mengarang rute tangga untuk menyebut coverage yang tidak dilalui.
+
+
+Root mengizinkan kandidat reach cap setelah kegagalan Gito terbukti: stepScale=min(bodyScale, shortest actual thigh+calf ×.85/25), minimum opsi .25 (enam sumber diketahui jauh di atas ini), default Ujang1 tetap. Director tidak mengecil; tidak ada override nama, hip/art/toleransi berubah. Uji576 sekarang mengharuskan stride positif, tidak melebihi25×bodyScale maupun .85×panjang kaki yang diukur dari fixed links. Contact/reach guard tidak dilonggarkan. Kandidat ini menunggu actual all6 commutes + ulang legacy1242 oleh root sebelum ekspor baru.

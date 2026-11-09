@@ -65,7 +65,9 @@ void fragment() { vec4 texel=texture(atlas_tex,part_uv); if(texel.a<0.5) discard
 	var hips:Dictionary={}
 	for side in ["left","right"]: hips[side+"Hip"]=[_relative(data.joints[side+"Hip"]).x,0]
 	_plant=FootPlant.new()
-	if not _plant.configure(renderer,actor,{"joints":hips,"stepScale":float(actor.body_scale)}): return false
+	var shortest_leg:=minf(_length("upper_leg_left")+_length("lower_leg_left"),_length("upper_leg_right")+_length("lower_leg_right"))
+	var step_scale:=minf(float(actor.body_scale),shortest_leg*.85/FootPlant.STRIDE)
+	if not _plant.configure(renderer,actor,{"joints":hips,"stepScale":step_scale}): return false
 	_held=Node3D.new()
 	_held.name="SeparateHeldProp"
 	add_child(_held)
