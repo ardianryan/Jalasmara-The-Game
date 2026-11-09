@@ -122,6 +122,15 @@ func _run() -> void:
 		rig.update_pose(Color.WHITE)
 		assert(rig.pose_snapshot()==frozen,"Pause must preserve physical contacts and pose")
 		clock.clock_paused=false
+		for discontinuity in [Vector2.RIGHT*55,Vector2.DOWN*8]:
+			var resets:=int(rig.pose_snapshot().contacts.discontinuityResets)
+			actor.position+=discontinuity
+			actor.moved_velocity=discontinuity/.05
+			actor._elapsed+=.05
+			rig.update_pose(Color.WHITE)
+			var discontinuous:Dictionary=rig.pose_snapshot()
+			assert(discontinuous.integration.discontinuity and int(discontinuous.integration.slices)==1,"Original logical/physical discontinuities must reach the support guard before substeps")
+			assert(int(discontinuous.contacts.discontinuityResets)==resets+1,"Substeps cannot disguise an actual teleport or excessive physical step")
 		actor.position=anchors[index]
 		rig._plant._ready=false
 		rig._contacts.clear()

@@ -73,6 +73,12 @@ func _pixel(name:String,pixel:Array) -> Vector3:
 func _measure() -> bool:
 	var pose:Dictionary=rig.pose_snapshot()
 	var contacts:Dictionary=pose.contacts
+	var integration:Dictionary=pose.integration
+	if not bool(integration.initial):
+		if not _check(not bool(integration.discontinuity),"Accepted continuous route cannot bypass the original discontinuity guard"): return false
+		if not _check(int(integration.slices)>=1 and int(integration.slices)<=16,"Resident support integration must remain bounded"): return false
+		if not _check(float(integration.integratedPhysicalDistance)+.002>=float(integration.physicalDistance),"Support slices must consume the whole physical accepted segment"): return false
+		if not _check(rig._plant._last_at.distance_to(actor.position)<.0001,"Final contact solve must reach the actual actor endpoint"): return false
 	if not _check(bool(contacts.feet.left.grounded) or bool(contacts.feet.right.grounded),"Both feet lost support"): return false
 	if not _check(int(contacts.discontinuityResets)==0,"Continuous 2.6-unit commute must not be treated as teleport/reanchored"): return false
 	if not _check(rig.global_basis.determinant()>0,"No anatomical mirror for view-relative movement"): return false

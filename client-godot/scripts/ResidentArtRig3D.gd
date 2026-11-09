@@ -21,6 +21,7 @@ var _atlas:Texture2D
 var body_mesh:MultiMeshInstance3D
 var _part_transforms:Dictionary={}
 var _body_material:ShaderMaterial
+var _integration:Dictionary={}
 var ready_rig:=false
 
 func configure(owner_renderer:Node,person:Node2D) -> bool:
@@ -155,6 +156,32 @@ func _screen(world:Vector3) -> Vector2:
 	var local:=global_transform.affine_inverse()*world
 	return Vector2(local.x,-local.y)
 
+func _advance_contacts(at:Vector2,ground:Vector3,time:float) -> Dictionary:
+	var previous:Vector2=_plant._last_at
+	var start_time:float=_plant._last_time
+	var logical:=at.distance_to(previous)
+	var physical:=ground.distance_to(_plant._last_ground)
+	# Keep real discontinuities visible to the original support solver.
+	var discontinuity:bool=logical>50 or physical>FootPlant.STRIDE*.5
+	var slices:=1
+	if bool(_plant._ready) and not discontinuity:
+		slices=maxi(1,ceili(maxf(logical,physical)/maxf(.001,float(_plant.stride_length)/8.0)))
+	var travelled:=0.0
+	var largest:=0.0
+	var from:Vector3=_plant._last_ground
+	var contacts:Dictionary={}
+	for index in range(1,slices+1):
+		var fraction:=float(index)/slices
+		var point:=previous.lerp(at,fraction)
+		var next:Vector3=renderer.ground_point(point)
+		var distance:=from.distance_to(next)
+		travelled+=distance
+		largest=maxf(largest,distance)
+		contacts=_plant.update(point,actor.moved_velocity,lerpf(start_time,time,fraction),1.0)
+		from=next
+	_integration={"slices":slices,"logicalDistance":logical,"physicalDistance":physical,"integratedPhysicalDistance":travelled,"largestSlice":largest,"discontinuity":discontinuity,"initial":_contacts.is_empty()}
+	return contacts
+
 func update_pose(tint:Color) -> void:
 	if not ready_rig or not is_instance_valid(actor): return
 	var camera:Camera3D=renderer.camera_3d
@@ -168,7 +195,7 @@ func update_pose(tint:Color) -> void:
 	var ground:Vector3=renderer.ground_point(actor.position)
 	global_transform=Transform3D(camera.global_basis.orthonormalized(),ground)
 	if _contacts.is_empty() or not paused:
-		_contacts=_plant.update(actor.position,actor.moved_velocity,float(actor.get("_elapsed")),1.0)
+		_contacts=_advance_contacts(actor.position,ground,float(actor.get("_elapsed")))
 	var ankles:Dictionary={}
 	_drop=0
 	for side in ["left","right"]:
@@ -286,7 +313,7 @@ func _build_prop(kind:String) -> void:
 		_box(Vector3(0,-11,0),Vector3(7,3,2),"bb8a51")
 
 func debug_status() -> Dictionary:
-	return {"id":str(actor.resident_id),"authoredViews":1,"view":"front_three_quarter","mirrored":false,"bodyScale":float(actor.body_scale),"pelvisDrop":_drop,"contacts":_contacts.duplicate(true),"workFacing":[_work_facing.x,_work_facing.y],"separateProp":_held.get_child_count()>0,"hands":hands.duplicate(),"links":_links.duplicate(true),"clip":str(_state.get("clip","idle")),"parts":sprites.size(),"bodyDrawCalls":1,"rootMotion":false,"logicalDirection":str(_state.get("direction","south")),"source":"original reviewed resident pixel partitions"}
+	return {"id":str(actor.resident_id),"authoredViews":1,"view":"front_three_quarter","mirrored":false,"bodyScale":float(actor.body_scale),"pelvisDrop":_drop,"contacts":_contacts.duplicate(true),"integration":_integration.duplicate(true),"workFacing":[_work_facing.x,_work_facing.y],"separateProp":_held.get_child_count()>0,"hands":hands.duplicate(),"links":_links.duplicate(true),"clip":str(_state.get("clip","idle")),"parts":sprites.size(),"bodyDrawCalls":1,"rootMotion":false,"logicalDirection":str(_state.get("direction","south")),"source":"original reviewed resident pixel partitions"}
 
 func pose_snapshot() -> Dictionary:
 	return debug_status()
