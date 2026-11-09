@@ -84,3 +84,8 @@ Pembersihan installer Godot terakhir: ZIP executable cocok SHA256 dengan binary 
 
 
 Smoke publik pertama UUIDce0c4fb0-e7b4-42c0-b7a5-e0e35a2df48e berhenti pada `attach`240detik. Screenshot memperlihatkan loader57%,60,1MB/103,8MB; hasil1check(publichealth+PCK),0console/APIerror,0gerak,cleanuptrue. Ini **bukan PASS gameplay publik**. Curl independen membaca wasm gzip10.054.758B/0,608detik dan PCK64.307.804B/1,616detik, sehingga waktu tunggu browser tidak dijelaskan oleh hasil curl saja. Agen QA mendiagnosis request/unduhan/readiness sebelum memilih perubahan atau rollback; tidak ada runtimefix yang diklaim dari timeout ini.
+
+
+Penutupan diagnosis sesi: HTTP1 diagnostik UUID73395c21 berhasilready≈70detik dan mencapaihutan, lalu gagal assertion reveal pada target350,1250 yang berasal dari pandangan lama.407matrixpulse/243.208ms,2checks/0console/APIerror/cleanuptrue; integrator meninjau Nala jelas tidak tertutup pada failure.png. Touch/save sesudahnya belum diuji, tidak ada fullsmoke/defaultPASS. Proxy tetap, liveNGINX1.24.0 diperiksa read-only; jangan memasukkan directivehttp2off per-server modern atau mengubah shared443 tanpa pemeriksaan dampak. [Diagnosis dan pekerjaan berikutnya](06p-public-startup-transport.md).
+
+Kandidat loader stream-error `8833185` selesai terpisah,10CPUtes lulus dan diulang integrator; hanya [laporannya](06p-preloader-stream-errors.md) disalin main. Code belum merged/export/browser/deploy, tidak diklaim menyelesaikan H2. Semua slot engine/browser dilepas. Cleanupstorage selesai terpisah dari penerimaan publik yang masih terbuka.

@@ -27,7 +27,7 @@ Nala datang ke Kota Apung Bandar Hujung, menjelajah desa/hutan/gua daratan, meny
 
 ## Prioritas pengembangan
 
-1. Selesaikan paket aktif 06-B: keselarasan Griya/dek, tempat berteduh/rute/save, kontak kaki dan alat; integrasikan perbaikan website yang sudah diuji.
+1. Tutup penerimaan publik paket aktif06-B: diagnosis startupHTTP2 dan targetcanopyharness setelah kamera kiri. Runtime46world/82API sudah lolos, tetapi hasil HTTP1 diagnostik bukan bukti browser default. Lihat [diagnosis startup](reviews/06p-public-startup-transport.md).
 2. Pertahankan kamera kiri yang sudah diterapkan bersama invers input/proyeksi; lanjutkan alignment rumah selain Griya melalui kandidat layout10 dan native penerimaan. Jangan mengubah rotasi kamera sendirian.
 3. Matangkan pilot Ujang, Darmi dan Sari sebelum menggandakan rig ke seluruh warga. Pertahankan bukti visual walking/turn, bukan angka socket saja.
 4. Lanjut 06-C: rumah lurah, direktur dengan tempat tinggal terpisah dan Laskar Kognisi beserta fungsi/rutenya.
