@@ -101,6 +101,40 @@ func _logical_offset(at:Vector2,world:Vector3) -> Vector2:
 	var determinant:=x.x*y.y-y.x*x.y
 	return Vector2((world.x*y.y-y.x*world.y)/determinant,(x.x*world.y-world.x*x.y)/determinant)
 
+func _stair_path_point(from:Vector2,to:Vector2,progress:float) -> Vector2:
+	var delta:=to-from
+	if delta.length_squared()<.000001: return to
+	var fractions:Array[float]=[0.0,1.0]
+	for profile in _stairs:
+		var start:Vector2=profile.start
+		var end:Vector2=profile.end
+		var tangent:=(end-start).normalized()
+		var side:=Vector2(-tangent.y,tangent.x)*float(profile.width)
+		var corners:Array[Vector2]=[start-side,start+side,end+side,end-side]
+		for index in range(4):
+			var crossing:Variant=Geometry2D.segment_intersects_segment(from,to,corners[index],corners[(index+1)%4])
+			if crossing==null: continue
+			var fraction:float=(Vector2(crossing)-from).dot(delta)/delta.length_squared()
+			if fraction>.00001 and fraction<.99999: fractions.append(fraction)
+	fractions.sort()
+	var lengths:Array[float]=[]
+	var total:=0.0
+	for index in range(fractions.size()-1):
+		var first:=_ground(from.lerp(to,fractions[index]))
+		var second:=_ground(from.lerp(to,fractions[index+1]))
+		var span:=Vector2(second.x-first.x,second.y-first.y).length()
+		lengths.append(span)
+		total+=span
+	# The connector and its adjoining floor have different XY scales. Interpolate
+	# accepted world arc length so leaving a tread does not accelerate the shoe.
+	var remaining:=clampf(progress,0,1)*total
+	for index in range(lengths.size()):
+		if remaining<=lengths[index] or index==lengths.size()-1:
+			var fraction:=lerpf(fractions[index],fractions[index+1],remaining/maxf(.00001,lengths[index]))
+			return from.lerp(to,fraction)
+		remaining-=lengths[index]
+	return to
+
 func _base(at:Vector2,hip_x:float,right:Vector3) -> Vector2:
 	return at+_logical_offset(at,right*hip_x)
 
@@ -213,7 +247,7 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 					elevation=clampf((u-(1.0-window))/window,0,1)
 			var smooth:=advance*advance*(3.0-2.0*advance)
 			var rise_smooth:=elevation*elevation*(3.0-2.0*elevation)
-			entry.logical=Vector2(entry.from).lerp(target,smooth)
+			entry.logical=_stair_path_point(entry.from,target,smooth) if absf(rise)>.01 else Vector2(entry.from).lerp(target,smooth)
 			var floor_world:=_ground(entry.logical)
 			var world:=Vector3(entry.fromWorld).lerp(entry.toWorld,rise_smooth)
 			world.z=maxf(world.z+sin(u*PI)*TOE_CLEARANCE,floor_world.z+.02)
