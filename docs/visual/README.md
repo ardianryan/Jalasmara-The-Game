@@ -1,6 +1,6 @@
 # Jalasmara visual evidence
 
-Eighteen original evidence images, copied without cropping, recoloring, recompression or new image generation. This is a small review gallery, not an asset kit or a complete acceptance report. Total PNG payload: **3,587,051 bytes**. Released-world images, local browser evidence and uninstalled authoring proposals are labelled separately.
+Twenty original evidence images, copied without cropping, recoloring, recompression or new image generation. This is a small review gallery, not an asset kit or a complete acceptance report. Total PNG payload: **3,710,611 bytes**. Released-world images, local browser evidence and uninstalled authoring proposals are labelled separately.
 
 ## Export5 local browser evidence: visible compact location overflow
 
@@ -171,3 +171,19 @@ Root independently regenerated both files, matched exact hashes and reviewed all
 | --- | ---: | --- |
 | `nala-south-upper-authoring-proposal.png` |27,302|`6c9669ba365cf7f30de57274f6a47238abba4d8e7032bba80816e194bf932702`|
 | `nala-south-upper-authoring-preview.png` |15,673|`0247e364733e4e5db951094e90fb16a600ffbbf6f5de8418b24ee8b8c288dbb3`|
+
+
+## Explorer NW source defect and single-frame proposal
+
+![Original explorer canonical WALK0/IDLE comparison; NW row turns to the opposite side from its idle reference.](nala-explorer-source-direction-audit.png)
+
+![Defective original NW walk, original daily/idle references and a separately authored rear-left upper arrangement.](nala-explorer-nw-orientation-proposal.png)
+
+[Source audit](../reviews/overnight-nw-upper-source-audit.md) reads original rows/columns without mirror or swap. Root independently viewed the eight-direction comparisons and confirmed explorer NW WALK/IDLE orientation mismatch; distinct hashes and eight labelled rows do not establish eight correct headings. Other identities belong to the [isolated Gemini audit](../plans/07-gemini-character-source-audit.md), not this two-outfit lane.
+
+The [proposal](../reviews/overnight-nw-explorer-orientation-proposal.md) is explicitly AUTHORED: original dailyNW0 head rows0–42 plus original explorerNWIDLE body rows43–75, identity transform. It covers one128×76 upper crop only, not frames1–7, joints, gear, anatomical mapping, contact phase or natural walking. Original atlas/runtime remain unchanged. Root regenerated both images with exact hashes and reviewed the rear-left head/neck continuity as a bounded still proposal. Existing project artwork/Pillow terms remain; no external image service or moodboard pixels used.
+
+| File | Bytes | SHA256 |
+| --- | ---: | --- |
+|`nala-explorer-source-direction-audit.png`|96,467|`76dabb25ddf9578719a8c8f3264374964648e0adc70b9d3b5672d7073e913997`|
+|`nala-explorer-nw-orientation-proposal.png`|27,093|`beb1161d1f49f948babe2488673a191ed68b4d65f458bb4faef887e3d90a915d`|
