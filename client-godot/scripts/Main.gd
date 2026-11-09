@@ -824,19 +824,29 @@ func _extract(fainted := false) -> void:
 		status.text = "Kembali ke tangga selam di Dangkalan Segaran."
 		return
 	network_busy = true
+	var was_frozen: bool = nala.frozen
+	nala.frozen = true
+	nala.velocity = Vector2.ZERO
+	nala.touch = Vector2.ZERO
+	while syncing: await get_tree().process_frame
 	var r: Dictionary = await ApiClient.call_api("/dive/extract",{"diveId":GameState.dive.id})
-	network_busy = false
 	if not r.get("ok",false):
+		network_busy = false
+		nala.frozen = was_frozen or modal_open or ViewportLayout.host_paused
 		status.text = str(r.get("error","Belum dapat kembali."))
 		return
-	GameState.dive = {}
-	if r.has("surface"):
-		GameState.surface = r.surface
-	nala.velocity = Vector2.ZERO
+	# Publish the returned version and dock position before any refresh can yield.
+	GameState.apply_result(r.merged({"dive":{}},true))
+	nala.position = _surface_point()
+	nala.land_path.reset(nala.position)
+	surface_clock = 0.0
+	camera.reset_smoothing()
 	await GameState.refresh()
 	nala.position = _surface_point()
 	nala.land_path.reset(nala.position)
 	camera.reset_smoothing()
+	network_busy = false
+	nala.frozen = was_frozen or modal_open or ViewportLayout.host_paused
 	_update_hud()
 	if r.get("victory",false):
 		_talk([{"name":"Babak 5 · Sang Penjaga Kembali Mengingat","text":"Pipa terakhir terlepas. Gajah Mina berhenti mengamuk; air di sekitar mahkotanya kembali jernih. Nala mengembalikan Inti Smara kepada sang penjaga."},{"name":"Saras","text":"Ini bukan reruntuhan biasa. Prasasti itu memetakan ruang penyimpanan ingatan di kedalaman 300 meter. Seseorang membangun seluruh palung ini."},{"name":"Bandar Hujung","text":"Kebun kembali hijau. Warga tidak lagi bergantung pada Kapsul Instan. Di bawah Tamansari, gerbang mekanik perlahan terbuka. Fase 1 selesai."}])

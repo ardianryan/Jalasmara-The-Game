@@ -58,6 +58,7 @@ const scripts = [
   "scripts/tests/land-path.gd",
   "scripts/tests/world-clock.gd",
   "scripts/tests/authoritative-calendar.gd",
+  "scripts/tests/extraction-state-handover.gd",
   "scripts/tests/homestead-world.gd",
   "scripts/tests/homestead-ui.gd",
   "scripts/tests/kedai-focus.gd",
