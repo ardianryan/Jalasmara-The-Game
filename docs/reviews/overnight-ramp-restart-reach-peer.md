@@ -38,3 +38,15 @@ The source fix must retain actual coordinates, the stopped foot's contact truth,
 - `rejected.json` SHA256 `a2b64e8a77b068c764c9d2928f3c5e59ab3995392d7450fff85d43d74cb71331`.
 - `samples.jsonl` SHA256 `63c56e64d8e8a700e1b6990154a69aad40ff36d60fcf26071e0b85dd06ecb1a2`.
 - `source.json` SHA256 `7a45f627570305083ad97ef6ea2a8eef9132973e207c074b2fac6f0d234d5e81`.
+
+## Independent execution and a rejected analytical assumption
+
+I executed the expanded character CPU replay independently, writing only this lane's ignored output `.runtime/peer-restart-body-budget-b05a211.json` (SHA256 `e326a6ec0ca2e4331997de039d1df51a20342f8162c086f0c363899ba050783e`). Actual recorded phases reproduce the body and failure described above. Across30/60/120/2000Hz and recorded-prefix mixed schedules, retained duration10 fails every grid;10.75 reaches8.052827px on the dense grid;11 has worst observed drop7.785918px and ankle ratio2.670748, with both original annuli, angular budget and landing checks valid in this frozen replay. These are CPU results, not runtime or native acceptance. Checking all six actual samples gives worst ankle reconstruction error0.005185world and drop error0.004121px; the failure sample itself is closer. The bare-profile/inverse approximation must remain visible in precision claims.
+
+The later analytical interval prototype initially tested the single hip point at both maximum possible torso descent and the full8px pelvis drop against each limb's outer sphere. That is not a necessary condition for legal poses when the higher uphill ankle lies above that hip. I supplied this counterexample from the actual frozen feet:
+
+- Same captured initial root worldY≈-2054.027164, actual planted left ankle `(1116.302124,-2050.205078,33.393250)`, right flat landing ankle `(1116.464,-2078.236,6.103873)` andSE body hips.
+- At accepted duration17.5, optimistic body baseline0 and full8px drop, left hip-to-ankle distance28.234858 exceeds the conservative27.977815reach.
+- At the **same root, feet and baseline**, a common2px pelvis drop gives left26.820511 and right27.607340, both inside the original inner1.220775/outer28.077815annuli and conservative27.977815reach. At duration18 the same common2px choice also fits (27.297519/27.425734).
+
+Thus fixing maximum pelvis drop can falsely prune a valid duration interval. This does not invalidate the captured-duration11 witness or the saturated-body causal diagnosis. It rejects the broader label that these fixed-point outer-sphere intervals are universally necessary. The parent accepted the counterexample and asked the author to retain it as a regression and use common hip-height segment/limb vertical-interval feasibility instead. A torso-rate lower bound is still optimistic unless actual current-foot support targets permit that descent. Source view/Q/C changes, inner annuli and actual common pelvis correction remain separate requirements. No dense runtime solver or new duration constant was approved by this peer.
