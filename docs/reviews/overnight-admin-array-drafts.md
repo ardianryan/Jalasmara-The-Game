@@ -48,3 +48,6 @@ Bukti di worktree `Jalasmara-overnight-hud-perf`:
 - `imported-questions-export.json` memuat soal fixture saja. Screenshot login/settings/admin semua viewport tersedia di direktori yang sama.
 
 Browser/context ditutup melalui `finally` pada setiap run, slot GPU dilepas sesudah run akhir. Server preview sendiri dihentikan setelah bukti diperiksa; server 3111 dan data owner tetap tidak disentuh. Tidak ada dependency/aset baru atau perubahan lisensi.
+
+
+Follow-up copy setelah review integrator: label pemilih memakai “Pilih soal”, “Pilih fragmen”, “Pilih pelanggan/resep”, dan “Pilih kemampuan”, menggantikan nama key internal. Key/state/API tetap sama; hanya label dan selector harness yang berubah. Pemeriksaan CPU typecheck dilakukan untuk hunk ini; run browser35 di atas mendahului perubahan label tersebut, bukan pengulangan baru.

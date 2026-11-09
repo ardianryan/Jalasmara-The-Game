@@ -49,6 +49,13 @@ const labels: Record<string, string> = {
   bossHits: "Jumlah perisai boss",
   bossDamage: "Kerusakan serangan boss",
 };
+const categoryLabels: Record<keyof Catalog, string> = {
+  questions: "soal",
+  fragments: "fragmen",
+  recipes: "pelanggan/resep",
+  abilities: "kemampuan",
+  balance: "keseimbangan",
+};
 type ArrayDraft = { raw: string; invalid: boolean };
 
 function EditFields({
@@ -1095,7 +1102,7 @@ export function Admin({ auth }: { auth: AuthState }) {
                 {category !== "balance" && (
                   <>
                     <label>
-                      Pilih {category}
+                      Pilih {categoryLabels[category]}
                       <select
                         value={record}
                         onChange={(e) => setRecord(Number(e.target.value))}

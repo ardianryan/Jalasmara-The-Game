@@ -438,7 +438,7 @@ try {
         }),
         "Invalid raw JSON alone must register unsaved navigation protection",
       );
-      await page.getByLabel("Pilih abilities").selectOption("1");
+      await page.getByLabel("Pilih kemampuan").selectOption("1");
       assert.equal(await prices.inputValue(), "[0,150,300]");
       await page
         .getByLabel("Nilai tiap level (array JSON)", { exact: true })
@@ -471,7 +471,7 @@ try {
         true,
         "Another record's invalid raw array must still prevent saving",
       );
-      await page.getByLabel("Pilih abilities").selectOption("1");
+      await page.getByLabel("Pilih kemampuan").selectOption("1");
       assert.equal(
         await page
           .getByLabel("Nilai tiap level (array JSON)", { exact: true })
@@ -523,7 +523,7 @@ try {
         label:
           "invalid JSON raw drafts survive record/category and canceled navigation; disabled controls and invalid-field Enter produce no write, keyboard saves only repaired arrays",
       });
-      await page.getByLabel("Pilih abilities").selectOption("0");
+      await page.getByLabel("Pilih kemampuan").selectOption("0");
       await prices.fill("[7,");
       await page.getByRole("button", { name: "Soal", exact: true }).click();
       const replacement = [
