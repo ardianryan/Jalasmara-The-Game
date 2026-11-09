@@ -529,8 +529,32 @@ async function verifyOcean() {
   await closeDialogue();
   await waitState((state) => !state.diving && state.land?.actors?.player === 1);
   await responsive(667, 375, "returned-hub-night-667x375");
+  const beforeMove = operations.length;
+  await routeTo(
+    { x: world.hub.divePoint.x - 60, y: world.hub.divePoint.y - 40 },
+    "hub",
+  );
   const at = await snapshot();
-  await waitSaved(at);
+  const saved = await waitSaved(at);
+  assert.equal(saved.player.version, extracted.player.version);
+  assert.equal(saved.surface.playerVersion, extracted.player.version);
+  await page.waitForTimeout(250);
+  const acknowledged = operations
+    .slice(beforeMove)
+    .find(
+      (operation) =>
+        operation.path === "/api/adventure/surface-position" &&
+        operation.status === 200 &&
+        operation.requestVersion === extracted.player.version &&
+        operation.surface?.playerVersion === extracted.player.version &&
+        Math.hypot(operation.surface.x - at.x, operation.surface.y - at.y) < 25,
+    );
+  assert(
+    acknowledged,
+    "A real dock move must be acknowledged using the version returned by extraction.",
+  );
+  checks.push("post-extraction-dock-move-acknowledges-returned-player-version");
+  await shot("post-extraction-dock-move-saved-with-new-version");
   await page.waitForTimeout(2500);
   await page.reload();
   await attach();
