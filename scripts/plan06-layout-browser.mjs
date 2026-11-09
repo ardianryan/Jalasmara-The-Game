@@ -132,6 +132,9 @@ assert(
 );
 const wardrobeNodeProof = wardrobeNodeMode(process.env.PLAN06_WARDROBE_NODES, routeMode, expectedPck);
 const explorerNodeProof = explorerNodeMode(process.env.PLAN06_EXPLORER_NODES, routeMode, expectedPck);
+const regionBadgeReview = process.env.PLAN06_HUD_REGION;
+assert(regionBadgeReview === undefined || regionBadgeReview === "1", "PLAN06_HUD_REGION accepts only explicit1");
+if (regionBadgeReview) assert.equal(routeMode, "left-forest", "Location badge review uses the separate forest fixture");
 const wardrobeVisibilitySource = wardrobeNodeProof ? readFileSync(new URL("../client-godot/scripts/land/LandWorld3D.gd", import.meta.url), "utf8") : null;
 let shelterPredecessor;
 assert(
@@ -820,6 +823,10 @@ async function verifyLeftForestRemainder(focused = false) {
   }
   if (!focused) await routeTo({ x: 650, y: 1050 }, "forest");
   await responsive(844, 390, "left-forest-touch-844x390");
+  if (regionBadgeReview) {
+    await responsive(667, 375, "left-forest-location-badge-667x375");
+    await responsive(844, 390, "left-forest-location-badge-restored-844x390");
+  }
   const prior = await snapshot();
   const stick = prior.hud.joystick;
   const start = await touchPoint(stick.center);
