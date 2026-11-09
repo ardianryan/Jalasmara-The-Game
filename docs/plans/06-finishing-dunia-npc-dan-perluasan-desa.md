@@ -1,6 +1,6 @@
 # Rencana 06: finishing dunia, aktivitas NPC, dan perluasan desa
 
-Tanggal: 9 November 2026. Status: **rencana; implementasi paket baru belum dimulai**. Pengguna meminta perencanaan terlebih dahulu. Dokumen ini terpisah dari Rencana 03, Rencana 04, dan pembagian jalur pada Rencana 05.
+Tanggal: 9 November 2026. Status: **06-0/06-A dan persiapan 06-P dimulai atas instruksi pengguna; hasil baru belum diterima atau dirilis**. Pengguna mula-mula meminta perencanaan, kemudian meminta subagent mulai bekerja sambil audit Noxe/PixelDoll berlangsung. Dokumen ini terpisah dari Rencana 03, Rencana 04, dan pembagian jalur pada Rencana 05.
 
 Baseline: `efdacba0e402f5acc3df174e2c27582381628f53`, sudah terpasang di staging. Pipeline GitLab `3043497430` lulus; pemeriksaan staging mencakup 16 alur tanpa error browser. Keberhasilan baseline bukan bukti bahwa pekerjaan dalam rencana ini sudah selesai.
 
@@ -209,6 +209,8 @@ Rilis bertahap: **06-A keterbacaan dunia**, **06-B rutinitas/animasi warga**, ke
 Paket D dicatat agar sisa permintaan tidak hilang. Implementasinya tidak menjadi syarat menyelesaikan paket A dan B; setiap perluasan memerlukan rincian kontrak serta bukti penerimaan tersendiri sebelum kode fiturnya dibuat.
 
 ## 11. Daftar penerimaan
+
+Tambahan referensi pengguna, 9 November 2026: [audit Noxe dan PixelDoll](../world/noxe-pixeldoll-reference.md). Noxe menjadi kandidat adaptasi mesh ruang/bangunan tiga perempat pada paket C, dengan interior playable tetap paket D. PixelDoll menjadi kandidat authoring layer pakaian/alat pada paket B melalui adapter billboard Godot; delapan arah Nala harus mandiri dan fase langkah tetap mengikuti perpindahan nyata. Keduanya belum diintegrasikan. Pilot kecil dan bukti visual/performa mendahului batch; urutan A–B–C serta jalur perangkat tidak berubah.
 
 - [ ] Bukti baseline terbaru dan temuan aktif sudah dicocokkan.
 - [ ] Kepala/badan Nala terbaca pada pintu masuk dan jalur bertajuk tanpa menghilangkan kedalaman foreground.
