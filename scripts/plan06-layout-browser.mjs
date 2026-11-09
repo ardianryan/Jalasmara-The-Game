@@ -88,12 +88,24 @@ async function attach() {
   await page.locator("iframe").waitFor();
   frame = await (await page.locator("iframe").elementHandle()).contentFrame();
   await frame.waitForFunction(
-    () => window.jalasmaraReady && window.jalasmaraSnapshot?.hud,
+    () =>
+      window.jalasmaraReady &&
+      (window.jalasmaraSnapshot?.hud ||
+        (window.jalasmaraSnapshot?.area === "home" &&
+          window.jalasmaraSnapshot?.renderer?.active)),
     null,
     { polling: 200, timeout: 240000 },
   );
   await page.locator(".game-loading").waitFor({ state: "detached" });
   await frame.locator("canvas").focus();
+  const value = await snapshot();
+  console.log(
+    JSON.stringify({
+      phase: "game-attached",
+      area: value.area ?? value.land?.area,
+      inside: value.homestead?.inside ?? false,
+    }),
+  );
 }
 async function shot(name) {
   await page.screenshot({ path: `${directory}/${name}.png` });
@@ -109,6 +121,14 @@ async function shot(name) {
     weather: value.weather,
     hud: value.hud,
   });
+  console.log(
+    JSON.stringify({
+      phase: name,
+      area: value.area ?? value.land?.area,
+      x: value.x,
+      y: value.y,
+    }),
+  );
 }
 async function walkTo(x, y) {
   await frame.locator("canvas").focus();
@@ -353,6 +373,12 @@ async function verifyShelters() {
     ).id,
   });
   assert.equal(residents.length, 7);
+  console.log(
+    JSON.stringify({
+      phase: "waiting-seven-shelters",
+      residentStates: (await snapshot()).land?.actors?.residentStates,
+    }),
+  );
   await waitState(
     (value) =>
       value.weather.rain > 0.42 &&
