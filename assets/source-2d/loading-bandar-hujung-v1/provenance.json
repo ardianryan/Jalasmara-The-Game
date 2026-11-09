@@ -1,0 +1,34 @@
+{
+  "tool": "built-in image_gen",
+  "intent": "original generated project loading-screen illustration",
+  "no_upstream_asset_pixels": true,
+  "assets": [
+    {
+      "name": "harbor",
+      "source": "assets/source-2d/loading-bandar-hujung-v1/harbor-original.png",
+      "runtime": "apps/web/public/art/loading-bandar-hujung-v1/harbor.webp",
+      "source_sha256": "e3b3264f7c05c0803b0e684df4481cf8b3476ebc2edb868556eb2b055b327ec4",
+      "dimensions": [
+        1672,
+        941
+      ],
+      "alpha_extrema": null,
+      "runtime_bytes": 401690
+    },
+    {
+      "name": "foreground",
+      "source": "assets/source-2d/loading-bandar-hujung-v1/foreground-original.png",
+      "runtime": "apps/web/public/art/loading-bandar-hujung-v1/foreground.webp",
+      "source_sha256": "f72012fdaf6cd289e8a9d29ec2eb799caaacef72e45fd35c4aa69664753ae06d",
+      "dimensions": [
+        1672,
+        941
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "runtime_bytes": 166066
+    }
+  ]
+}

@@ -8,6 +8,7 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 import { gzipSync } from "node:zlib";
+import { withLoadingBridge } from "./game-loading-bridge.mjs";
 const candidates = [
   process.env.GODOT_BIN,
   "godot",
@@ -74,7 +75,7 @@ const html = readFileSync(htmlPath, "utf8").replace(
   /<script>([\s\S]*?)<\/script>/gi,
   (_, script) => {
     const name = `bootstrap-${++count}.js`;
-    writeFileSync(`apps/web/public/game/${name}`, script);
+    writeFileSync(`apps/web/public/game/${name}`, withLoadingBridge(script));
     return `<script src="${name}"></script>`;
   },
 );

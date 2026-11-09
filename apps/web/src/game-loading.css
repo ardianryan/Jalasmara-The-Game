@@ -1,0 +1,249 @@
+.godot-player.immersive-player .harbor-loading {
+  --harbor-x: 0px;
+  --harbor-y: 0px;
+  display: block;
+  padding: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  text-align: left;
+  background: #163f3f;
+  color: #fff0d1;
+  pointer-events: auto;
+}
+.harbor-loading-scene,
+.harbor-loading-shade {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.harbor-loading-harbor,
+.harbor-loading-foreground {
+  position: absolute;
+  inset: -12px;
+  background-position: 58% center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  transition: transform 700ms ease-out;
+}
+.harbor-loading-harbor {
+  background-image: url("/art/loading-bandar-hujung-v1/harbor.webp");
+}
+.harbor-loading-foreground {
+  background-image: url("/art/loading-bandar-hujung-v1/foreground.webp");
+}
+.harbor-loading-shade {
+  background: linear-gradient(
+    180deg,
+    rgb(4 28 29 / 65%) 0%,
+    transparent 30%,
+    rgb(4 28 29 / 16%) 58%,
+    rgb(4 28 29 / 90%) 100%
+  );
+}
+.harbor-loading-brand {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: max(20px, env(safe-area-inset-top, 0px))
+    max(24px, env(safe-area-inset-left, 0px));
+  width: fit-content;
+  font:
+    600 clamp(25px, 2.5vw, 36px) "Lora",
+    serif;
+  text-shadow: 0 2px #143430;
+}
+.harbor-loading-brand img {
+  flex: none;
+}
+.harbor-loading-panel {
+  position: absolute;
+  left: max(24px, env(safe-area-inset-left, 0px));
+  right: max(24px, env(safe-area-inset-right, 0px));
+  bottom: max(48px, env(safe-area-inset-bottom, 0px));
+  width: min(560px, calc(100% - 48px));
+  padding: 22px 24px;
+  border: 1px solid #d3ac6d;
+  border-left: 4px solid #d3ac6d;
+  border-radius: 2px;
+  background: #123735;
+  box-shadow: 0 4px 0 #092726;
+}
+.harbor-loading-panel h1 {
+  margin: 0 0 18px;
+  font:
+    500 clamp(25px, 3vw, 34px)/1.2 "Lora",
+    serif;
+  color: #fff0d1;
+}
+.harbor-loading-stage {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.harbor-loading .harbor-loading-stage p,
+.harbor-loading .harbor-loading-panel p {
+  max-width: none;
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+}
+.harbor-loading-percent {
+  font-size: 22px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: #ffd58b;
+}
+.harbor-loading-panel progress {
+  display: block;
+  width: 100%;
+  height: 14px;
+  margin: 12px 0 10px;
+  appearance: none;
+  border: 2px solid #d3ac6d;
+  border-radius: 0;
+  background: #062c2a;
+  accent-color: #dfb673;
+  overflow: hidden;
+}
+.harbor-loading-panel progress::-webkit-progress-bar {
+  background: #062c2a;
+}
+.harbor-loading-panel progress::-webkit-progress-value {
+  background: #dfb673;
+  box-shadow: inset 0 2px #f9d79c;
+}
+.harbor-loading-panel progress::-moz-progress-bar {
+  background: #dfb673;
+}
+.harbor-loading-panel progress:indeterminate {
+  background: repeating-linear-gradient(
+    90deg,
+    #dfb673 0 18px,
+    #285650 18px 36px
+  );
+}
+.harbor-loading-panel progress:indeterminate::-webkit-progress-bar {
+  background: repeating-linear-gradient(
+    90deg,
+    #dfb673 0 18px,
+    #285650 18px 36px
+  );
+}
+.harbor-loading-panel .harbor-loading-detail {
+  color: #fff0d1;
+  font-variant-numeric: tabular-nums;
+}
+.harbor-loading .harbor-loading-panel .harbor-loading-note {
+  margin-top: 12px;
+  color: #d4dfcb;
+}
+.harbor-loading .harbor-loading-panel .harbor-loading-stalled {
+  margin-top: 12px;
+  color: #ffd58b;
+}
+.harbor-loading-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+.harbor-loading-actions button,
+.harbor-loading-actions a {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 14px;
+  font:
+    700 16px/1.3 "Nunito Sans",
+    sans-serif;
+}
+.harbor-loading-actions button {
+  background: #dfb673;
+  color: #182d28;
+  border: 2px solid #f9d79c;
+  border-radius: 2px;
+  box-shadow: 0 3px 0 #082e2c;
+  cursor: pointer;
+}
+.harbor-loading-actions button:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #082e2c;
+}
+.harbor-loading-actions a {
+  color: #fff0d1;
+  text-underline-offset: 4px;
+}
+@media (min-width: 900px) and (min-height: 560px) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .harbor-loading-harbor {
+    transform: translate(var(--harbor-x), var(--harbor-y));
+    animation: harbor-tide 14s ease-in-out infinite alternate;
+  }
+  .harbor-loading-foreground {
+    transform: translate(
+      calc(var(--harbor-x) * -1.5),
+      calc(var(--harbor-y) * -1.5)
+    );
+  }
+  @keyframes harbor-tide {
+    from {
+      translate: 0 -2px;
+    }
+    to {
+      translate: 0 2px;
+    }
+  }
+}
+@media (max-width: 600px) {
+  .harbor-loading-brand {
+    margin-top: max(68px, env(safe-area-inset-top, 0px));
+  }
+  .harbor-loading-harbor,
+  .harbor-loading-foreground {
+    background-position: 38% center;
+  }
+  .harbor-loading-panel {
+    left: 16px;
+    right: 16px;
+    width: auto;
+    padding: 20px;
+    bottom: max(76px, env(safe-area-inset-bottom, 0px));
+  }
+}
+@media (max-height: 550px) and (orientation: landscape) {
+  .harbor-loading-brand {
+    margin: 14px 20px;
+    font-size: 24px;
+  }
+  .harbor-loading-brand img {
+    width: 28px;
+    height: 28px;
+  }
+  .harbor-loading-panel {
+    left: max(20px, env(safe-area-inset-left, 0px));
+    bottom: max(16px, env(safe-area-inset-bottom, 0px));
+    width: min(530px, calc(100% - 40px));
+    padding: 14px 18px;
+  }
+  .harbor-loading-panel h1 {
+    font-size: 24px;
+    margin-bottom: 8px;
+  }
+  .harbor-loading-panel .harbor-loading-note {
+    display: none;
+  }
+  .harbor-loading-actions {
+    margin-top: 8px;
+  }
+}
+@media (prefers-reduced-motion: reduce), (pointer: coarse) {
+  .harbor-loading-harbor,
+  .harbor-loading-foreground {
+    transform: none;
+    transition: none;
+    animation: none;
+  }
+}

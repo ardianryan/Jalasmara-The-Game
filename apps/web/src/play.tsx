@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Notice } from "./components";
+import { GameLoading } from "./GameLoading";
+import { INITIAL_LOADING, parseLoadingMessage } from "./loading";
 
 interface PlayProps {
   canManage?: boolean;
@@ -25,7 +26,11 @@ export function Play({ canManage = false, onLogout }: PlayProps) {
   const fullscreenButton = useRef<HTMLButtonElement>(null);
   const safeArea = useRef<HTMLSpanElement>(null);
   const [ready, setReady] = useState(false);
-  const [slow, setSlow] = useState(false);
+  const [loading, setLoading] = useState(INITIAL_LOADING);
+  const [stalled, setStalled] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const lastProgress = useRef(Date.now());
+  const progressKey = useRef("");
   const [menuOpen, setMenuOpen] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const [notice, setNotice] = useState("");
@@ -89,7 +94,22 @@ export function Play({ canManage = false, onLogout }: PlayProps) {
       if (event.data?.type === "jalasmara:ready") {
         setReady(true);
         schedule();
+        return;
       }
+      const progress = parseLoadingMessage(event.data);
+      if (!progress) return;
+      const key = `${progress.phase}:${progress.downloadedBytes}:${progress.totalBytes}`;
+      if (key !== progressKey.current) {
+        progressKey.current = key;
+        lastProgress.current = Date.now();
+        setStalled(false);
+      }
+      setLoading((previous) => {
+        if (previous.phase === "error") return previous;
+        if (previous.phase === "preparing" && progress.phase === "downloading")
+          return previous;
+        return progress;
+      });
     };
     const changed = () => {
       setFullscreen(document.fullscreenElement === shell.current);
@@ -127,9 +147,30 @@ export function Play({ canManage = false, onLogout }: PlayProps) {
   }, [sendViewport]);
 
   useEffect(() => {
-    const timer = setTimeout(() => setSlow(true), 45000);
-    return () => clearTimeout(timer);
-  }, []);
+    if (ready || loading.phase === "error") return;
+    const timer = setInterval(() => {
+      if (!document.hidden && Date.now() - lastProgress.current >= 30000)
+        setStalled(true);
+    }, 1000);
+    const visible = () => {
+      lastProgress.current = Date.now();
+      setStalled(false);
+    };
+    document.addEventListener("visibilitychange", visible);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", visible);
+    };
+  }, [ready, loading.phase, attempt]);
+
+  function retryLoading() {
+    setReady(false);
+    setLoading(INITIAL_LOADING);
+    setStalled(false);
+    lastProgress.current = Date.now();
+    progressKey.current = "";
+    setAttempt((previous) => previous + 1);
+  }
 
   useEffect(() => {
     if (menuOpen) fullscreenButton.current?.focus();
@@ -169,11 +210,13 @@ export function Play({ canManage = false, onLogout }: PlayProps) {
       aria-label="Permainan Jalasmara"
     >
       <iframe
+        key={attempt}
         ref={game}
         title="Jalasmara: Petualangan Bandar Hujung dan Palung Smara"
         src="/game/index.html"
         allow="autoplay; fullscreen; gamepad"
         allowFullScreen
+        onLoad={sendViewport}
       />
       <span className="play-safe-area" ref={safeArea} aria-hidden="true" />
       <button
@@ -300,22 +343,11 @@ export function Play({ canManage = false, onLogout }: PlayProps) {
         </div>
       )}
       {!ready && (
-        <div className="game-loading" role="status">
-          <h1>Menuju Bandar Hujung</h1>
-          <p>
-            Memuat dunia petualangan Godot. Unduhan pertama mencakup mesin
-            permainan.
-          </p>
-          {slow && (
-            <>
-              <Notice>
-                Jika pemuatan terhenti, buka permainan pada tab tersendiri.
-                Browser memerlukan WebGL 2.
-              </Notice>
-              <a href="/game/index.html">Buka permainan langsung</a>
-            </>
-          )}
-        </div>
+        <GameLoading
+          progress={loading}
+          stalled={stalled}
+          onRetry={retryLoading}
+        />
       )}
       {!ready && (
         <div className="landscape-hint">
