@@ -5,22 +5,39 @@ const Stairs = preload("res://scripts/land/StairGeometry3D.gd")
 const GRID := 64.0
 var _triangles: Dictionary={}
 var checks:=0
+var flat_floor_normals:=0
 
 func _initialize() -> void: call_deferred("run")
 func _v2(value: Array) -> Vector2: return Vector2(float(value[0]),float(value[1]))
 
 func _index_meshes(renderer: Node) -> void:
+	var dirt: Color=renderer._materials.get_material("dirt").get_shader_parameter("base_color")
+	var grass: Color=renderer._materials.get_material("grass").get_shader_parameter("base_color")
 	for instance in renderer._geometry.find_children("*","MeshInstance3D",true,false):
 		if not str(instance.name).begins_with("StaticMaterialBatch_"): continue
+		var material: Material=instance.material_override
+		var floor_material:=false
+		if material is ShaderMaterial:
+			var kind:=int(material.get_shader_parameter("kind"))
+			var color: Color=material.get_shader_parameter("base_color")
+			floor_material=kind in [0,1] and (color.is_equal_approx(dirt) or color.is_equal_approx(grass))
 		for surface in range(instance.mesh.get_surface_count()):
 			var arrays: Array=instance.mesh.surface_get_arrays(surface)
 			var vertices: PackedVector3Array=arrays[Mesh.ARRAY_VERTEX]
+			var normals: PackedVector3Array=arrays[Mesh.ARRAY_NORMAL]
 			var indices: PackedInt32Array=arrays[Mesh.ARRAY_INDEX] if arrays[Mesh.ARRAY_INDEX]!=null else PackedInt32Array()
 			var count:=indices.size() if not indices.is_empty() else vertices.size()
 			for index in range(0,count,3):
 				var triangle: Array[Vector3]=[]
 				for corner in range(3): triangle.append(instance.to_global(vertices[indices[index+corner] if not indices.is_empty() else index+corner]))
-				if absf((triangle[1]-triangle[0]).cross(triangle[2]-triangle[0]).normalized().z)<.2: continue
+				var geometric: Vector3=(triangle[1]-triangle[0]).cross(triangle[2]-triangle[0]).normalized()
+				if floor_material and absf(geometric.z)>.99:
+					for corner in range(3):
+						var at:=indices[index+corner] if not indices.is_empty() else index+corner
+						var normal: Vector3=(instance.global_basis.inverse().transposed()*normals[at]).normalized()
+						assert(normal.dot(Vector3(0,0,1))>.99999,"Actual batched flat dirt/grass vertex normal must face up in both the shadow pass and fragment lighting")
+						flat_floor_normals+=1
+				if absf(geometric.z)<.2: continue
 				var low:=Vector2(minf(triangle[0].x,minf(triangle[1].x,triangle[2].x)),minf(triangle[0].y,minf(triangle[1].y,triangle[2].y)))
 				var high:=Vector2(maxf(triangle[0].x,maxf(triangle[1].x,triangle[2].x)),maxf(triangle[0].y,maxf(triangle[1].y,triangle[2].y)))
 				for x in range(floori(low.x/GRID),floori(high.x/GRID)+1):
@@ -62,6 +79,7 @@ func run() -> void:
 	renderer._process(0)
 	assert(renderer.has_method("ground_point"),"Integration must use the actual stair contact embedding")
 	_index_meshes(renderer)
+	assert(flat_floor_normals>30,"Normal regression must measure real batched dirt/grass surfaces, excluding vegetation and vertical cliff faces")
 	var traversal:=Traversal.new()
 	traversal.configure(state.world.landMaps.hub)
 	var actual_treads:=0
@@ -135,6 +153,6 @@ func run() -> void:
 	assert(player.position==position_before and player.swim_sprite.locomotion_state().distance==distance_before,"Pause must preserve accepted position and distance-driven gait")
 	assert(renderer.actors_3d.counts.playerGrounding.visualLift==grounding.visualLift)
 	assert(JSON.stringify({"world":state.world,"player":state.player,"dive":state.dive})==original)
-	print("STAIR FOOT GROUNDING PASS: ",checks," actual highest-triangle/height/logical inverse/host projection samples; ",actual_treads," real treads/ramp; ascent/descent/idle/pause/reduced/lowdelta; ordinary floor and authoritative state unchanged")
+	print("STAIR FOOT GROUNDING PASS: ",checks," actual highest-triangle/height/logical inverse/host projection samples; ",actual_treads," real treads/ramp; ",flat_floor_normals," actual upward flat terrain vertex normals; ascent/descent/idle/pause/reduced/lowdelta; ordinary floor and authoritative state unchanged")
 	stage.free()
 	quit()
