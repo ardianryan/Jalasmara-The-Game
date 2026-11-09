@@ -15,6 +15,7 @@ import {
 import { WORLD } from "../packages/shared/src/world.ts";
 import { fetchWorld } from "./game-navigation.mjs";
 import { physicalRoute } from "./plan06-physical-route.mjs";
+import { gameplayFailureDetails } from "./gameplay-api-failure.mjs";
 import { keyboardPulse, corridorTargets } from "./land-view-navigation.mjs";
 
 const homeOnly = process.env.NIGHT_HOME_ONLY === "1";
@@ -470,6 +471,7 @@ try {
         x: body.x,
         y: body.y,
         pathPoints: body.path?.length,
+        positionPath: gameplayFailureDetails(url.pathname, body).positionPath,
         paused: body.paused,
       },
     };
@@ -629,13 +631,64 @@ try {
   await waitState((s) => !s.modal && !s.homePanel);
   await routeTo(world.homestead.interior.entry, true);
   await waitState((s) => s.nearby === "exit");
-  await requestViaKeys("homestead/action", (b) => b.action === "exit", ["e"]);
+  const exited = await requestViaKeys(
+    "homestead/action",
+    (b) => b.action === "exit",
+    ["e"],
+  );
   await waitState((s) => s.area !== "home" && !s.homestead?.inside);
   await waitState((s) => s.land?.active && s.land.view?.motion);
   await page.waitForTimeout(3500);
+  let postExitPosition;
+  if (homeOnly) {
+    const from = await snapshot(),
+      afterSequence = trace.length;
+    await routeTo({
+      x: world.homestead.door.x + 45,
+      y: world.homestead.door.y,
+    });
+    postExitPosition = await snapshot();
+    assert(
+      Math.hypot(postExitPosition.x - from.x, postExitPosition.y - from.y) > 20,
+    );
+    const deadline = Date.now() + 15000;
+    let acknowledgement;
+    while (!acknowledgement && Date.now() < deadline) {
+      acknowledgement = trace
+        .slice(afterSequence)
+        .find(
+          (entry) =>
+            entry.path === "/api/adventure/surface-position" &&
+            entry.status === 200 &&
+            entry.sent.version === exited.player.version &&
+            entry.surface?.playerVersion === exited.player.version &&
+            Math.hypot(
+              entry.surface.x - postExitPosition.x,
+              entry.surface.y - postExitPosition.y,
+            ) < 15,
+        );
+      if (!acknowledgement) await page.waitForTimeout(150);
+    }
+    assert(
+      acknowledgement,
+      "A real move after home exit must ACK the returned player version.",
+    );
+    checks.push("post-home-exit-walk-acknowledges-exit-player-version");
+    await shot("03-post-exit-walk-acknowledged");
+  }
   await page.reload();
   await attach();
   await waitState((s) => s.stage === "dive" && !s.homestead?.inside);
+  if (postExitPosition) {
+    const reloaded = await snapshot();
+    assert(
+      Math.hypot(
+        reloaded.x - postExitPosition.x,
+        reloaded.y - postExitPosition.y,
+      ) < 15,
+    );
+    checks.push("post-home-exit-walk-persists-after-reload");
+  }
   const persisted = await state();
   assert.equal(persisted.player.progress.day, 2);
   assert.equal(persisted.calendar.calendarDay, 2);

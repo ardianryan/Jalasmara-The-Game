@@ -18,6 +18,7 @@ import { WORLD } from "../packages/shared/src/world.ts";
 import { isLandWalkable } from "../packages/shared/src/land.ts";
 import { fetchWorld } from "./game-navigation.mjs";
 import { physicalRoute } from "./plan06-physical-route.mjs";
+import { watchGameplayFailures } from "./gameplay-api-failure.mjs";
 import {
   keyboardPulse,
   corridorTargets,
@@ -961,21 +962,10 @@ try {
   page.on("console", (message) => {
     if (message.type() === "error") errors.push(message.text());
   });
+  watchGameplayFailures(page, origin, failures);
   page.on("response", async (response) => {
     const path = new URL(response.url()).pathname;
     if (!path.startsWith("/api/")) return;
-    if (response.status() >= 400) {
-      const body = await response.json().catch(() => ({}));
-      const sent = response.request().postDataJSON() ?? {};
-      failures.push({
-        path,
-        status: response.status(),
-        code: body.code,
-        error: body.error,
-        requestVersion: sent.version,
-        fromPositionAt: sent.fromPositionAt,
-      });
-    }
     if (
       response.request().method() !== "POST" ||
       !["/api/adventure/travel", "/api/adventure/surface-position"].includes(

@@ -7,6 +7,7 @@ import { spawn } from "node:child_process";
 import { chromium } from "@playwright/test";
 import { fetchWorld } from "./game-navigation.mjs";
 import { physicalRoute } from "./plan06-physical-route.mjs";
+import { watchGameplayFailures } from "./gameplay-api-failure.mjs";
 import { keyboardPulse, corridorTargets } from "./land-view-navigation.mjs";
 
 assert.equal(
@@ -335,16 +336,7 @@ try {
   page.on("console", (message) => {
     if (message.type() === "error") errors.push(message.text());
   });
-  page.on("response", (response) => {
-    if (
-      new URL(response.url()).pathname.startsWith("/api/") &&
-      response.status() >= 400
-    )
-      failures.push({
-        path: new URL(response.url()).pathname,
-        status: response.status(),
-      });
-  });
+  watchGameplayFailures(page, origin, failures);
   await page.goto(`${origin}/login`);
   await page.getByLabel("Email", { exact: true }).fill(email);
   await page.getByLabel("Password", { exact: true }).fill(password);
