@@ -146,6 +146,11 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 	var drop_limit:=8.0/vertical
 	if drop>drop_limit: unreachable=true
 	var requested_drop:=drop
+	if unreachable:
+		visible=false
+		proxy.visible=true
+		_last={"enabled":false,"rejected":true,"reason":"fixed-length reach","direction":direction,"desiredDirection":desired,"contacts":pose,"reachValid":false,"requestedDropPixels":requested_drop*vertical,"rootMotion":false}
+		return _last.duplicate(true)
 	drop=clampf(drop,0,drop_limit)
 	root_hip.z-=drop
 	var heading:Vector3=renderer.map_point(actor.position+{"east":Vector2.RIGHT,"west":Vector2.LEFT,"north":Vector2.UP,"south":Vector2.DOWN,"north_east":Vector2(1,-1),"north_west":Vector2(-1,-1),"south_east":Vector2(1,1),"south_west":Vector2(-1,1)}[direction],0)-renderer.map_point(actor.position,0)
