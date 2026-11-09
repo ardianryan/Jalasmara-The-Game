@@ -19,6 +19,7 @@ var _requested_direction := "east"
 var _artwork_direction := "east"
 var _turn_travel := 0.0
 var _turn_sign := 1
+var _last_facing_frame := -1
 var _pose_frame := 0
 var _pose_phase := 0.0
 var _pose_walking := false
@@ -148,11 +149,14 @@ func _advance_facing(distance:float) -> void:
 		_turn_travel=0.0
 		return
 	_turn_travel+=distance
-	while _turn_travel>=TURN_DISTANCE and current!=target:
+	# Multiple physics samples can precede one draw on slower devices.
+	var render_frame:=Engine.get_process_frames()
+	if _turn_travel>=TURN_DISTANCE and _last_facing_frame!=render_frame:
 		var clockwise:=posmod(target-current,8)
 		if clockwise!=4: _turn_sign=1 if clockwise<4 else -1
 		current=posmod(current+_turn_sign,8)
 		_turn_travel-=TURN_DISTANCE
+		_last_facing_frame=render_frame
 	_artwork_direction=DIRECTIONS[current]
 
 func _advance_settle(delta:float) -> void:

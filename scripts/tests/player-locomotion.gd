@@ -10,6 +10,7 @@ class MotionOwner extends Node2D:
 func _initialize() -> void: call_deferred("_run")
 
 func _step(visual:Sprite2D,velocity:Vector2,delta:float,tag:String) -> Dictionary:
+	if not _capture: await process_frame
 	visual.set_locomotion(velocity,delta)
 	visual.animate(velocity.length()>.1,false,1,0)
 	var state:Dictionary=visual.locomotion_state()
@@ -94,6 +95,29 @@ func _transition_checks() -> void:
 			assert(is_equal_approx(visual.locomotion_state().distance,distance+20.0),"Turn art must not alter accepted movement distance")
 			for tick in range(6): await _step(visual,Vector2(0,-100),1.0/60,"turn-90")
 			assert(visual.locomotion_state().artworkDirection=="north")
+			for cadence in [1.0/30,.1]:
+				for tick in range(4): await _step(visual,Vector2(175,0),cadence,"stress-prepare-east")
+				assert(visual.locomotion_state().artworkDirection=="east")
+				visual.consume_foot_contacts()
+				var before_distance:float=visual.locomotion_state().distance
+				drawn="east"
+				for tick in range(6):
+					var state:=await _step(visual,Vector2(-175,0),cadence,"stress-turn-%0.3f"%cadence)
+					var step:int=posmod(visual.DIRECTIONS.find(state.artworkDirection)-visual.DIRECTIONS.find(drawn),8)
+					assert(step in [0,1,7],"175px/s at30Hz or a100ms spike must not skip an authored view")
+					drawn=state.artworkDirection
+					checked+=1
+				var after_distance:float=visual.locomotion_state().distance
+				assert(drawn=="west" and is_equal_approx(after_distance-before_distance,175*cadence*6))
+				assert(visual.consume_foot_contacts().size()==floori(after_distance/32)-floori(before_distance/32),"Render-facing throttling must not change accepted-distance footstep cadence")
+			for tick in range(4): await _step(visual,Vector2(175,0),1.0/30,"prepare-multiple-physics")
+			var rows:Array[String]=[visual.locomotion_state().artworkDirection]
+			for tick in range(4):
+				visual.set_locomotion(Vector2(-175,0),1.0/60)
+				visual.animate(true,false,-1,0)
+				var row:String=visual.locomotion_state().artworkDirection
+				if not rows.has(row): rows.append(row)
+			assert(rows.size()<=2,"Four physics samples in one render frame may expose at most one new facing view")
 			assert(owner.position==Vector2.ZERO,"Visual settling and turns must not translate the actor root")
 			visual.free()
 			owner.free()
@@ -129,9 +153,11 @@ func _run() -> void:
 			visual.animate(false,false,1,0)
 			for index in range(8):
 				var velocity:=Vector2.RIGHT.rotated(index*PI*.25)*175
-				#17.5 accepted units also completes the maximum four-octant16-unit turn.
-				visual.set_locomotion(velocity,.1)
-				visual.animate(true,false,1,0)
+				#17.5 accepted units, with real render boundaries for a maximum180turn.
+				for tick in range(4):
+					visual.set_locomotion(velocity,.025)
+					visual.animate(true,false,1,0)
+					await process_frame
 				var state: Dictionary=visual.locomotion_state()
 				assert(visual.hframes==8 and visual.vframes==8)
 				assert(state.supportedDirections.size()==8 and not state.directionalFallback)
@@ -151,8 +177,10 @@ func _run() -> void:
 			visual.set_locomotion(Vector2(-100,0),.01)
 			visual.animate(true,false,-1,0)
 			var turn_stop_distance:float=visual.locomotion_state().distance
-			visual.set_locomotion(Vector2.ZERO,.4)
-			visual.animate(false,false,-1,0)
+			for tick in range(4):
+				visual.set_locomotion(Vector2.ZERO,.1)
+				visual.animate(false,false,-1,0)
+				await process_frame
 			assert(visual.vframes==1 and visual.frame==4 and visual.get_equipment_state().facingDirection=="west","All12sets must finish a pending turn while standing, rather than retain an unrelated intermediate direction")
 			assert(visual.locomotion_state().distance==turn_stop_distance)
 	visual.consume_foot_contacts()

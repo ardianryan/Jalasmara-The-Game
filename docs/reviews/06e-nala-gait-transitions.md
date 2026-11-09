@@ -61,3 +61,18 @@ Folder `artifacts/godot/nala-gait-transitions/` berisi `0000.png`…`0495.png`, 
 Daily normal:stop3 frame0012–0023,stop7 frame0040–0051,pause0069–0071,resume0074–0085,turn180 frame0106–0117,turn90 frame0118–0123. Explorer normal memakai index+248; blok reduced masing-masing+124 dan+372. Semua gambar dibaca dari file setelah engine berhenti; tidak ada browser/game render kedua bersamaan.
 
 CPU audit lanjutan mempertahankan dua batas nyata: restart neutral0023→walk0024 mengambil lagi raw phase3 sehingga knee pop belum ditutup; pada cadence175px/s/30Hz, loop facing berpotensi melewati dua octant pada satu update. Temuan stress-turn dikirim ke integrator untuk bounded followup sebelum penerimaan. Jangan menyebut checkpoint ini natural walk lengkap atau menganggap still membuktikan world-space footplant.
+
+## Followup CPU: satu pandangan baru per render frame
+
+Integrator menerima perbaikan stress-turn. `_advance_facing()` kini memakai `Engine.get_process_frames()` untuk membatasi satu perubahan octant per rendered frame, termasuk ketika beberapa physics sample datang sebelum satu draw. Sisa accepted-distance disimpan untuk frame berikutnya; `_travel` dan contact/foley tetap unchanged. Pending turn dari idle masih boleh melewati neutral views secara visual, tetapi tidak dapat menampilkan beberapa pandangan sekaligus dalam satu frame. Target settle150/200ms berlaku pada cadence normal; ketika frame benar-benar lambat, penyelesaian dibatasi jumlah gambar yang dapat ditampilkan, bukan forced jump.
+
+Repro CPU exact untuk180° pada175px/s:
+
+| Cadence | Loop lama, row setelah6update | Kandidat, row setelah6frame | Jarak aktual keduanya |
+| --- | --- | --- | ---: |
+| 30Hz |1,2,4,4,4,4|1,2,3,4,4,4|35 |
+|100ms spike|4,4,4,4,4,4|1,2,3,4,4,4|105 |
+
+Empat physics sample175/60 dalam frame yang sama menerima11.666667unit tetapi hanya menampilkan row0→1, tanpa row2. Model CPU PASS; itu belum hasil engine baru.
+
+Focused test sekarang menunggu render boundary sesungguhnya, memeriksa175/30Hz,100ms spike, empat physics sample dalam satu frame, serta jumlah event langkah persis floor(distance/32). Legacy12×8 row fixture membagi interval100ms menjadi4sample25ms agar tidak lagi meminta seluruh180° selesai dalam satu gambar. Assertion arah dan jarak tetap dipertahankan. Native496frame di atas tetap bukti checkpoint5d52aba; followup ini belum dirender atau diklaim lulus engine. Root menjalankan focused/gabungan pada giliran berikutnya. Restart knee pop tetap terbuka dan tidak disembunyikan oleh cap arah.
