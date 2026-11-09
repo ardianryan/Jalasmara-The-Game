@@ -27,7 +27,11 @@ var _activity_goal := ""
 var _activity_path := PackedVector2Array()
 var _activity_index := 0
 var _activity_target := Vector2.ZERO
-var _schedule_clock := 1.0
+const ROUTE_RETRY_DELAYS := [0.5,1.0,2.0,8.0]
+var _activity_routes: Array = []
+var _route_attempts := 0
+var _route_retry_in := 0.0
+var _blocked_seconds := 0.0
 var _body_animation := preload("res://scripts/NpcAnimationState.gd").new()
 var moved_velocity := Vector2.ZERO
 
@@ -44,29 +48,49 @@ func configure_activity(profile: Dictionary) -> void:
 	var own_commute: Array=activity_profile.get("commute",[])
 	if own_commute.size()>1: paths.append(own_commute)
 	_navigation=preload("res://scripts/NpcActivityNavigation.gd").new()
-	_navigation.configure(paths,walkable)
+	_activity_routes=paths
+	_navigation.configure(_activity_routes,walkable)
 	_activity_goal=""
-	_schedule_clock=1.0
+	_route_attempts=0
+	_route_retry_in=0
+	_blocked_seconds=0
+
+func _plan_activity_path() -> void:
+	# Rebuild edges against current walkability, so a blocked cached edge is not reused.
+	_navigation.configure(_activity_routes,walkable)
+	_activity_path=_navigation.path_between(position,_activity_target)
+	_activity_index=1 if _activity_path.size()>1 else 0
+	_route_attempts+=1
+	_route_retry_in=float(ROUTE_RETRY_DELAYS[mini(_route_attempts-1,ROUTE_RETRY_DELAYS.size()-1)])
 
 func _activity_update(delta: float,nearby: bool) -> void:
 	moving=false
+	activity_motion=0.0 if EnvironmentState.reduced_motion or EnvironmentState.clock_paused else sin(_elapsed*1.8)
+	if EnvironmentState.clock_paused: return
 	var weather:=EnvironmentState.snapshot()
 	var minute: float=EnvironmentState.visual_minutes
 	var open:=minute>=float(activity_profile.get("startMinute",420)) and minute<float(activity_profile.get("endMinute",1080))
 	var desired:="shelter" if float(weather.get("rain",0))>.42 else "work" if open else "rest"
-	_schedule_clock+=delta
-	if desired!=_activity_goal and activity_phase=="work": _body_animation.begin_departure()
-	if desired!=_activity_goal or (_activity_path.is_empty() and _schedule_clock>3.0):
-		_schedule_clock=0
+	if desired!=_activity_goal:
+		if activity_phase=="work": _body_animation.begin_departure()
 		_activity_goal=desired
 		var point: Array=activity_profile.get(desired,activity_profile.get("work",[position.x,position.y]))
 		_activity_target=Vector2(float(point[0]),float(point[1]))
-		_activity_path=_navigation.path_between(position,_activity_target)
-		_activity_index=1 if _activity_path.size()>1 else 0
+		_route_attempts=0
+		_route_retry_in=0
+		_blocked_seconds=0
+		_plan_activity_path()
 	var arrived:=position.distance_to(_activity_target)<2.0
 	activity_phase=desired if arrived else "walking_"+desired if not _activity_path.is_empty() else "blocked_"+desired
-	activity_motion=0.0 if EnvironmentState.reduced_motion or EnvironmentState.clock_paused else sin(_elapsed*1.8)
-	if arrived or nearby or EnvironmentState.clock_paused or EnvironmentState.reduced_motion or _body_animation.movement_locked: return
+	if arrived:
+		_blocked_seconds=0
+		return
+	if nearby or _body_animation.movement_locked: return
+	if _activity_path.is_empty():
+		_blocked_seconds+=delta
+		_route_retry_in=maxf(0,_route_retry_in-delta)
+		if _route_retry_in<=0: _plan_activity_path()
+		return
 	if _activity_index>=_activity_path.size(): return
 	var target:=_activity_path[_activity_index]
 	var candidate:=position.move_toward(target,delta*26.0)
@@ -74,14 +98,16 @@ func _activity_update(delta: float,nearby: bool) -> void:
 		if absf(candidate.x-position.x)>.01: _facing=signf(candidate.x-position.x)
 		moving=position.distance_to(candidate)>.001
 		position=candidate
+		_blocked_seconds=0
 		if position.distance_to(target)<.3: _activity_index+=1
 	else:
 		_activity_path.clear()
-		_schedule_clock=0
+		_route_attempts=0
+		_route_retry_in=float(ROUTE_RETRY_DELAYS[0])
 		activity_phase="blocked_"+desired
 
 func activity_state() -> Dictionary:
-	return {"kind":activity_kind,"phase":activity_phase,"moving":moving,"atStation":not moving and position.distance_to(_activity_target)<2,"destination":[_activity_target.x,_activity_target.y],"remaining":maxi(0,_activity_path.size()-_activity_index),"minute":EnvironmentState.visual_minutes,"reducedMotion":EnvironmentState.reduced_motion}
+	return {"kind":activity_kind,"phase":activity_phase,"moving":moving,"atStation":not moving and position.distance_to(_activity_target)<2,"destination":[_activity_target.x,_activity_target.y],"remaining":maxi(0,_activity_path.size()-_activity_index),"minute":EnvironmentState.visual_minutes,"reducedMotion":EnvironmentState.reduced_motion,"routeAttempts":_route_attempts,"retryIn":_route_retry_in,"blockedSeconds":_blocked_seconds}
 
 
 func body_animation_state() -> Dictionary:
@@ -104,7 +130,7 @@ func _process(delta: float) -> void:
 		_activity_update(delta,nearby)
 		_anchor=position
 	elif not route.is_empty() and not crate:
-		if not nearby and not EnvironmentState.reduced_motion:
+		if not nearby and not EnvironmentState.clock_paused:
 			rest_time = maxf(0,rest_time-delta)
 			if rest_time<=0:
 				var target: Vector2 = route[route_index]

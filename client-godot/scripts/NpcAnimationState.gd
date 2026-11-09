@@ -61,7 +61,7 @@ func update(delta: float,velocity: Vector2,working: bool,resting: bool,talking: 
 		elapsed+=delta
 	else: elapsed+=delta
 	frame=floori(elapsed*8)%8
-	if reduced: frame=0
+	if reduced and clip!="walk": frame=0
 	var phase:=work_phase()
 	if clip=="work_loop" and not reduced:
 		var index:=floori(elapsed/(.45 if kind=="gardening" else .8))

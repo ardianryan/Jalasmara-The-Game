@@ -71,7 +71,8 @@ func _run() -> void:
 		clock.clock_paused=false
 		clock.reduced_motion=true
 		actor.call("_process",1.0)
-		assert(actor.position==paused and actor.activity_motion==0)
+		assert(actor.position.distance_to(paused)>0 and actor.activity_motion==0,"Reduced motion must retain essential scheduled travel")
+		paused=actor.position
 		clock.reduced_motion=false
 		var player:=Node2D.new()
 		root.add_child(player)
@@ -88,5 +89,5 @@ func _run() -> void:
 		clock.elapsed_seconds=0
 		actor.queue_free()
 	assert(before==JSON.stringify({"player":state.player,"dive":state.dive}),"Cosmetic village simulation must not mutate economy or progress")
-	print("VILLAGE ACTIVITIES PASS:7 workers, ",steps," continuous collision-checked travel steps, opening/closing boundaries, rain shelter, reading/nearby/reduced-motion pauses, no teleport or gameplay mutation")
+	print("VILLAGE ACTIVITIES PASS:7 workers, ",steps," continuous collision-checked travel steps, opening/closing boundaries, rain shelter, reading/nearby pauses and reduced-motion travel, no teleport or gameplay mutation")
 	quit()

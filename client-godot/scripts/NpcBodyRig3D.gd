@@ -103,9 +103,9 @@ func update_pose(tint: Color) -> void:
 		var hip:=_v(data.joints[side+"Hip"])
 		var foot_part: Dictionary=data.parts["foot_"+side]
 		var phase:=stride+index*PI
-		var lift:=maxf(0,sin(phase))*3.4 if walking and not reduced else 0.0
+		var lift:=maxf(0,sin(phase))*3.4 if walking else 0.0
 		var sole:=float(foot_part.size[1])
-		var ankle:=Vector2(hip.x+sin(phase)*3.5 if walking and not reduced else hip.x,-sole-lift)
+		var ankle:=Vector2(hip.x+sin(phase)*3.5 if walking else hip.x,-sole-lift)
 		var knee:=hip.lerp(ankle,.52)+Vector2(1.0+lift*.35,0)
 		var depth: float=-.2 if index==0 else -.05
 		_bone("upper_leg_"+side,hip,knee,depth)
@@ -124,7 +124,7 @@ func update_pose(tint: Color) -> void:
 		var first:=_length("upper_arm_"+side)
 		var second:=_length("lower_arm_"+side)
 		var hand:=shoulder+Vector2(-2 if index==0 else 2,(first+second)*.93)
-		if walking and not reduced: hand+=Vector2(sin(stride+index*PI)*4,-absf(sin(stride+index*PI))*2)
+		if walking: hand+=Vector2(sin(stride+index*PI)*4,-absf(sin(stride+index*PI))*2)
 		var work_hand:=Vector2(5 if index==0 else 13,-49 if index==0 else -48)
 		var phase:=str(state.workPhase)
 		if reduced: phase="wait" if str(actor.activity_kind)=="fishing" else "aim" if str(actor.activity_kind)=="gardening" else "weave"
