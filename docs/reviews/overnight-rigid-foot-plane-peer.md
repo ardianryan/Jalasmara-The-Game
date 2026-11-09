@@ -1,0 +1,21 @@
+# Peer CPU: rigid foot plane d8bf012
+
+Review source read-only `d8bf01203322989ecf69f61d53e39bd17b26c52a` pada worktree character, termasuk `NalaFootPlane.gd`, `NalaLowerBody3D.gd`, dan `model_ramp_sole.py`. Tidak mengubah file character, planner, fixture, guard atau aset. Pilot tetap OFF; tidak ada engine/native/browser dijalankan.
+
+## Geometri yang sesuai
+
+Quaternion dari camera-right ke proyeksinya pada bidang ramp merupakan rotasi rigid. Normal ramp aktual `(0,-0.7312608894,0.6820978754)`, support axis `(0.8261197820,-0.3843584341,-0.4120615244)`, sudut31.136555°. Transform foot memakai quaternion yang sama untuk kedua sumbu piksel, mempertahankan panjang axis asli1 dan1/vertical serta ortogonalitas. Radius maksimum quad terhadap ankle pada `NalaFootPlane.gd:23` konservatif karena mencakup sudut transparan juga; bound perpindahan rigid `R*angle` sah.
+
+Persamaan kompensasi `Cnew = Cold + Qold*A − Qnew*A` pada `NalaLowerBody3D.gd:224` mempertahankan ankle saat rotasi itu sendiri: `S+Cnew+Qnew*A = S+Cold+Qold*A`. Menjalankan model CPU asli ke output baru milik lane peer memverifikasi32 kaki original untuk kedua outfit; tidak menimpa output character. Output `.runtime/rigid-foot-peer-d8bf012.json`. Ini membuktikan identitas rigid/statik, bukan lintasan mesh nyata.
+
+## Temuan penerimaan konkret
+
+1. **Centroid di ramp belum membuktikan seluruh sole berada pada bidang yang sama.** `NalaFootPlane.gd:5–20` memilih plane hanya dari `entry.logical`. Ambil pusat legal di ramp `(1116.464,1189.9)` dengan groundZ0.07384615. Daily left northwest mempunyai solePixel `(12,6)` dan opaque endpoints `(8.5,6)`, `(15.5,6)`. Setelah Q, endpoint positif3.5 berada di world `(1119.355419,-2075.978060,-1.368369)`, sudah di sisi lantai dock yang datarZ0. Endpoint itu penetrasi **1.368369** meskipun centroid berada di ramp. Endpoint negatif tetap pada plane ramp. Ini counterexample geometri terhadap klaim centroid→wholefoot, bukan bukti run aktual memilih lokasi tersebut. Target landing perlu seluruh support berada di bidang/triangle yang sesuai; jangan menutupnya dengan toe lift atau toleransi.
+
+2. **Bound rotasi rigid tidak membatasi penghapusan kompensasi saat settle.** `NalaLowerBody3D.gd:197` hanya meluruhkan C bila moved_distance>0, tetapi baris221 tetap merotasi airborne foot dengan delta*24 ketika actor diam. Saat planner settle menjadi grounded (`NalaFootPlant.gd:446–459`), baris194 langsung menghapus C. Untuk leftNW full rotation, C=`(-2.0778327,1.4791565,0.5584269)`, norm **2.6109640**. Jika actor berhenti ketika current logical dan target sama-sama di ramp, Q dapat selesai sementara C tetap, lalu seluruh C hilang pada frame contact. Bound R*angle dan preservasi ankle sesaat tidak mencakup lonjakan reset itu. Guard ankle nonmoving tetap delta*24, misalnya0.4 pada1/60s; jangan melemahkannya. Ini transisi source yang perlu diuji, belum hasil kegagalan runtime.
+
+3. **Target orientation saat stop bisa mengacu titik yang berbeda dari landing settle.** Cabang diam planner mengganti `entry.toWorld` ke ground pada `entry.logical`, tetapi tidak mengganti `entry.to`. Visual pada baris211 tetap mengambil plane dari `entry.to` selama airborne. Bila kaki berhenti sebelum entry ramp sementara target lamanya di ramp, orientasi menuju incline berbeda dari plane tempat ia benar-benar settle; guard unfinished-at-contact akan menolak. Penolakan itu jujur, tetapi stop tersebut belum didukung. Pilih plane dari destination settle yang aktual sebelum menyatakan stop/restart diterima.
+
+Fixture baru yang mengukur basis, triangle normal, dan opaque endpoints tetap berguna dan harus dipertahankan. Source sudah mempunyai penolakan eksplisit bila plane belum selesai di contact; tidak ada alasan menghapus guard tersebut. Lifecycle outfit/reinitialization dan perubahan target pada batas connector masih memerlukan bukti aktual tersendiri; review ini tidak mengklaim bug spesifik tambahan di sana.
+
+Tidak ditemukan kesalahan pada aljabar quaternion/kompensasi sesaat atau preservasi ukuran foot. Ketiga batas di atas mencegah menyebut model32 statik sebagai penerimaan incline/stop lengkap. Penerimaan berikutnya memerlukan actual current-source ramp/flat/stair matrix, kontak urut, clearance/ankle ketat, dan frame native; cadence/lengan tetap terpisah.
