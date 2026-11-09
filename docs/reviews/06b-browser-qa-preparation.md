@@ -97,3 +97,27 @@ node --import tsx scripts/plan06-layout-browser.mjs
 ```
 
 Mode continuation dan transaksi malam masih **belum dijalankan** pada saat pembaruan ini. Perubahan hanya harness/dokumentasi; paket runtime tidak berubah.
+
+## Continuation actual-game: alur selesai, satu konflik sinkronisasi ditemukan
+
+Mode continuation dijalankan pada integrasi `75e2dc2`, runtime `e1bdf95`, PCK **`7f2ac59f0e39bed9ad5d6e47f4836f76a097b89cc2dadf388514cfbd5d02eaf9` / 64.289.088 B**, API lokal production 3101. Fixture baru `28725b49-5e35-4088-a2ae-614ad838a4bb` mulai di endpoint bridge bawah `[1620,1080]` lalu berjalan memakai input nyata. **Tiga pemeriksaan fungsional selesai** dalam **151.206 ms**: posisi awal sesuai manifest final, perjalanan portal hutan→hub dengan progres/uang tetap, serta masuk laut→joystick portrait `touchCancel`→tas/pause→ekstraksi→hub→save/reload. Ini kelompok fixture kedua, terpisah dari 17 pemeriksaan prefix yang sudah lulus.
+
+Penerimaan bersih **tetap gagal**: sesudah `POST /api/dive/extract` 200, satu `POST /api/adventure/surface-position` mendapat **409** dan browser mencatat satu resource error. Assertion `errors == []` menghentikan run setelah reload akhir, walaupun posisi hub `[1485,1290]`, cerita day 2/night, koin 200, dan inventori kosong semuanya benar. Kegagalan ini tidak dihapus atau diabaikan.
+
+Diagnosis source yang dikirim ke integrator: `Main.gd::_extract` mengosongkan `GameState.dive` dan menghapus `network_busy` sebelum `await GameState.refresh()` selesai; timer `_sync_surface` dapat berjalan pada celah ini sebelum player version/posisi darat diperbarui. API menolak versi atau posisi awal lama dengan 409. Log saat ini menyimpan path/status, belum body/code respons atau request version, jadi penyebab persis **masih inferensi source**, bukan bukti respons `SESSION_CHANGED` yang sudah direkam. Integrator perlu memperbaiki/menilai race dan menguji ulang bagian ekstraksi, tanpa melonggarkan assertion API.
+
+Bukti: `Jalasmara-06-integration/artifacts/browser/plan06-layout-28725b49-5e35-4088-a2ae-614ad838a4bb/results.json`, lima capture fase ditambah failure, dan `/tmp/jalasmara-06b-layout-continuation.log`. Capture tas portrait dan hub sesudah kembali diperiksa. Browser ditutup; cleanup scoped player/email/role/name, receipts, shifts, Redis posisi/rumah/kalender/dive dan sesi pemilik lulus `ownTemporaryPlayerRemoved: true`.
+
+## Transaksi malam dan Griya: lulus pada paket yang sama
+
+Sesudah continuation selesai dan browsernya ditutup, `VERIFY_COMPACT_NIGHT=1 APP_TEST_ORIGIN=http://localhost:3101 node --import tsx scripts/night-home-browser.mjs` dijalankan pada integrasi/PCK yang sama. **Exit 0: 7 checks, 8 transaksi POST, 0 error JavaScript/console, 0 respons API gagal.**
+
+Yang terbukti: bahan kangkung+fragmen dikonsumsi dengan bonus 5, seluruh pesanan day 1 dilayani, penutupan kedai menyimpan pending advance tanpa langsung mengubah hari cerita, dialog dan HUD/bag responsif dengan safe area 667×375 dan 390×844, tas melepas input gerak serta pause, rute pintu Griya dapat dicapai, tidur mengubah kalender menjadi day 2 pukul 06.00 serta cerita menjadi day 2/dive, lalu keluar/reload mempertahankan hasil. Koin akhir 525 dan stok kangkung habis sesuai operasi; tidak ada hadiah dari navigasi. Fixture ini memakai appearance `male_default` milik harness lama, sehingga hasil tidak menggantikan penilaian natural walking rig Nala terbaru.
+
+Bukti lokal: `Jalasmara-06-integration/artifacts/godot/night-home/results.json`, sepuluh PNG fase layanan/dialog/HUD/tas/tidur/reload, dan `/tmp/jalasmara-06b-night-home.log`. Gambar gameplay malam 667, pesan tidur dan reload pagi diperiksa. UI gameplay tengah tetap tersedia; modal tas/dialog memang menutupi sebagian besar viewport, dan review ringkas dialog yang dimiliki jalur UI masih perlu ditindaklanjuti. Ini bukan persetujuan visual semua modal/rumah/NPC.
+
+UUID fixture malam `71549acf-05b1-4206-8a0e-a38e8095f5b1` sudah dibersihkan. Verifikasi read-only tambahan sesudah exit membuktikan **players 0, receipts 0, shifts 0, empat kunci Redis bernama 0**. Harness juga menghapus key auth dari cookie sesi lokalnya; pemeriksaan tambahan tidak memindai sesi akun lain. Browser ditutup dan slot engine/browser dilepas ke integrator.
+
+Tool aktual untuk kedua run: Node 26.12.1, Playwright Chromium/SwiftShader, CDP touch, keyboard sintetis, Fastify/MongoDB/Redis lokal, Godot Web melalui PCK terpin, filesystem/Git dan image viewer. Tidak memakai Godot native, generator gambar, Sprite AI, API berbayar atau aset upstream tambahan pada paket QA ini. Tidak ada sumber runtime/website produksi/API yang diubah oleh lane ini.
+
+**Sisa berikutnya:** integrator menangani konflik sesudah ekstraksi dan export/checkpoint terkait; QA mengulang subset laut pada PCK baru yang terpin bila runtime berubah. Prefix 17 dan transaksi malam 7 tetap bukti sah untuk paket lama yang dicatat di atas, bukan otomatis hasil export baru. Billboard nonrig, dialog terlalu besar, camera kiri gameplay global, comfy warna malam, serta perangkat Windows/S23 fisik tetap belum ditutup. Belum ada klaim kandidat ini sudah dirilis ke staging.
