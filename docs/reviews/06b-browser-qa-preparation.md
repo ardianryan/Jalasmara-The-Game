@@ -4,13 +4,13 @@ Tanggal: 9 November 2026. **Status: persiapan CPU selesai, browser game belum di
 
 ## Cakupan yang sudah tersedia dan celah kandidat
 
-| Harness | Bukti sebelumnya | Celah pada kandidat gabungan |
-| --- | --- | --- |
-| `plan06-forest-browser.mjs` | Gerbang fisik, bukaan tajuk, pemulihan, dua jembatan, input analog, pause jurnal, posisi forest setelah reload pada PCK `a9378a52`. | Belum dijalankan pada layout 9, tujuh shelter, Griya sejajar dek, dan rig kandidat akhir. |
-| `night-home-browser.mjs`, dengan `VERIFY_COMPACT_NIGHT=1` | Pelayanan kedai, stok, penutupan, rumah, tidur dan reload; HUD malam 667/390 serta safe area. | Perlu putaran ulang pada API/PCK gabungan setelah export. Ini tetap pemeriksaan transaksi malam utama. |
-| `homestead-browser.mjs` | Transaksi rumah/kebun dan retry, termasuk respons hilang sesudah commit. | Tidak perlu diulang untuk setiap perubahan gambar; perubahan footprint/pintu/route memerlukan pemeriksaan akses dan posisi tersimpan yang baru. |
-| `staging-plan06-smoke.mjs` | Akun publik UUID sendiri, HTTPS/cookie, PCK pin, gerbang/tajuk/jurnal/save pada rilis lama. | Masih mematok PCK `a9378a52` dan 64.249.828 B. Jangan menjalankannya sebagai bukti kandidat baru tanpa memperbarui metadata sesudah rilis yang benar-benar dipasang. |
-| `website06-browser.mjs` | 32 checks production website pada source website yang sama, API fixture, bukan game. | Tidak menggantikan pengujian HUD Godot, gerak, collision, rumah, save, atau laut. |
+| Harness                                                   | Bukti sebelumnya                                                                                                                    | Celah pada kandidat gabungan                                                                                                                                         |
+| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `plan06-forest-browser.mjs`                               | Gerbang fisik, bukaan tajuk, pemulihan, dua jembatan, input analog, pause jurnal, posisi forest setelah reload pada PCK `a9378a52`. | Belum dijalankan pada layout 9, tujuh shelter, Griya sejajar dek, dan rig kandidat akhir.                                                                            |
+| `night-home-browser.mjs`, dengan `VERIFY_COMPACT_NIGHT=1` | Pelayanan kedai, stok, penutupan, rumah, tidur dan reload; HUD malam 667/390 serta safe area.                                       | Perlu putaran ulang pada API/PCK gabungan setelah export. Ini tetap pemeriksaan transaksi malam utama.                                                               |
+| `homestead-browser.mjs`                                   | Transaksi rumah/kebun dan retry, termasuk respons hilang sesudah commit.                                                            | Tidak perlu diulang untuk setiap perubahan gambar; perubahan footprint/pintu/route memerlukan pemeriksaan akses dan posisi tersimpan yang baru.                      |
+| `staging-plan06-smoke.mjs`                                | Akun publik UUID sendiri, HTTPS/cookie, PCK pin, gerbang/tajuk/jurnal/save pada rilis lama.                                         | Masih mematok PCK `a9378a52` dan 64.249.828 B. Jangan menjalankannya sebagai bukti kandidat baru tanpa memperbarui metadata sesudah rilis yang benar-benar dipasang. |
+| `website06-browser.mjs`                                   | 32 checks production website pada source website yang sama, API fixture, bukan game.                                                | Tidak menggantikan pengujian HUD Godot, gerak, collision, rumah, save, atau laut.                                                                                    |
 
 ## Harness tambahan yang disiapkan
 
@@ -51,7 +51,7 @@ PLAN06_EXPECT_PCK_BYTES=<byte-export-final> \
 node --import tsx scripts/plan06-layout-browser.mjs
 ```
 
-Rute dibatasi tujuh menit setelah kesiapan awal agar kalender fixture malam tidak berubah hari/cuaca. Kesiapan engine/reload mempunyai timeout 240 detik masing-masing. Melebihi anggaran dicatat sebagai kegagalan harness/lingkungan yang perlu diperiksa, bukan otomatis kesalahan game. Tiap waypoint juga mempunyai batas retry/stuck; tidak ada fallback teleport.
+Rute dibatasi sepuluh menit setelah kesiapan awal. Pergantian hari kalender yang sah boleh terjadi sesudah pemeriksaan shelter; hari kalender dan progres cerita tetap dibedakan. Kesiapan engine/reload mempunyai timeout 240 detik masing-masing. Melebihi anggaran dicatat sebagai kegagalan harness/lingkungan yang perlu diperiksa, bukan otomatis kesalahan game. Tiap waypoint juga mempunyai batas retry/stuck; tidak ada fallback teleport.
 
 Sesudah slot dilepas, jalankan rangkaian transaksi malam terpisah pada kandidat yang sama:
 
@@ -80,3 +80,20 @@ Bukti lokal: `Jalasmara-06-integration/artifacts/browser/plan06-layout-6174b6a2-
 Cleanup run gagal tetap lulus: player/email/role/name fixture, receipts dan shifts UUID tersebut serta kunci cache/sesi yang diverifikasi sudah nol melalui assertion. Laporan menyatakan `ownTemporaryPlayerRemoved: true`. Browser ditutup. Tidak memakai SIGKILL, tidak menyentuh proses 3100 atau data akun lain.
 
 Commit `b208942` memperbaiki predicate attach agar menerima renderer home yang aktif dan menambahkan progress fase/capture/states warga. Pemeriksaan sintaks lulus. Perbaikan ini hanya pada harness; tidak mengubah script atau paket game. **Tujuh shelter, hutan, laut dan penerimaan reload lengkap masih menunggu rerun yang berhasil.**
+
+## Rerun kedua: 17 pemeriksaan lulus, batas harness tercapai
+
+Pada source harness `9faa532`, PCK dan API yang sama, fixture `eb16cba0-1e9d-487b-84b2-c51d8bbadfed` menyelesaikan **17 pemeriksaan**: migrasi layout, Griya masuk/simpan/reload/keluar, tujuh warga tiba di shelter dan percakapan masing-masing, gerbang hutan, tajuk, heartbeat pause jurnal, joystick, proyeksi desktop, save/reload hutan, serta kedua jembatan. Tidak ada error JavaScript/console atau respons API gagal. Pukul 421.023 ms, harness berhenti karena batas tujuh menit saat perjalanan pulang dari jembatan bawah, pada `[1579.01,1073.75]`. Ini kegagalan anggaran harness, bukan collision atau transaksi game yang gagal. Cleanup UUID dan browser lulus.
+
+Bukti: `Jalasmara-06-integration/artifacts/browser/plan06-layout-eb16cba0-1e9d-487b-84b2-c51d8bbadfed/results.json` dan capture tiap fase. Log lokal `/tmp/jalasmara-06b-layout-browser-rerun.log`. Capture percakapan membuktikan akses/interaksi; modal menutupi sebagian dunia sehingga ketertutupan tubuh oleh atap tetap perlu bukti renderer/native terpisah. Dialog malam pada layar pendek juga masih besar; pemeriksaan perbaikannya dimiliki jalur karakter/UI, bukan diubah pada QA ini.
+
+Arahan integrator sesudah hasil ini: pertahankan 17 hasil parsial dan lanjutkan bagian yang belum teruji dengan **fixture UUID baru**. Mode `PLAN06_ROUTE_MODE=continuation` menyiapkan save awal di endpoint `bridge_lower` dari manifest saat itu, lokasi yang sudah dilewati pada kelompok pertama. Setelah game mulai, seluruh perjalanan hutan→portal→hub→selam→ekstraksi→reload tetap melalui input nyata. Tidak ada perubahan posisi/kalender/cuaca saat sesi berjalan. Mode ini dilaporkan sebagai kelompok fixture kedua, bukan satu perjalanan tanpa jeda. Rangkaian penuh tetap tersedia dengan batas sepuluh menit bila dibutuhkan.
+
+```sh
+PLAN06_ROUTE_MODE=continuation APP_TEST_ORIGIN=http://localhost:3101 \
+PLAN06_EXPECT_PCK=7f2ac59f0e39bed9ad5d6e47f4836f76a097b89cc2dadf388514cfbd5d02eaf9 \
+PLAN06_EXPECT_PCK_BYTES=64289088 \
+node --import tsx scripts/plan06-layout-browser.mjs
+```
+
+Mode continuation dan transaksi malam masih **belum dijalankan** pada saat pembaruan ini. Perubahan hanya harness/dokumentasi; paket runtime tidak berubah.

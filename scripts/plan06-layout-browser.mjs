@@ -30,6 +30,8 @@ assert(
 assert(["localhost", "127.0.0.1"].includes(new URL(origin).hostname));
 assert(/^mongodb:\/\/(127\.0\.0\.1|localhost)(:|\/)/.test(mongoUrl));
 assert(["localhost", "127.0.0.1"].includes(new URL(redisUrl).hostname));
+const routeMode = process.env.PLAN06_ROUTE_MODE ?? "full";
+assert(["full", "continuation"].includes(routeMode));
 const expectedPck = process.env.PLAN06_EXPECT_PCK;
 const expectedPckBytes = Number(process.env.PLAN06_EXPECT_PCK_BYTES);
 assert(
@@ -65,12 +67,13 @@ let browser,
   lastSnapshot;
 let candidatePck,
   initialLegacy,
+  initialContinuation,
   routeStarted,
   fixtureAttempted = false;
 function budget() {
   assert(
-    !routeStarted || Date.now() - routeStarted < 7 * 60 * 1000,
-    "Bounded layout route exceeded seven minutes; stop before fixture calendar/weather rolls into another day.",
+    !routeStarted || Date.now() - routeStarted < 10 * 60 * 1000,
+    "Bounded layout route exceeded ten minutes; preserve partial evidence and clean the fixture.",
   );
 }
 const snapshot = () => frame.evaluate(() => window.jalasmaraSnapshot);
@@ -555,21 +558,40 @@ try {
     });
   const fixtureCache = new Redis(redisUrl);
   try {
-    const [x, y] = WORLD.landMaps.hub.shelters.find(
-      (shelter) => !shelter.existing,
-    ).posts[0];
-    assert(!isLandWalkable(WORLD.landMaps.hub, { x, y }));
-    initialLegacy = {
-      area: "hub",
-      x,
-      y,
-      layoutVersion: 8,
-      playerVersion: 0,
-      positionAt: Date.now(),
-    };
+    let initialSurface;
+    if (routeMode === "continuation") {
+      const bridge = WORLD.landMaps.forest.bridges.find(
+        (entry) => entry.id === "bridge_lower",
+      );
+      const [x, y] = bridge.path.at(-1);
+      initialContinuation = {
+        area: "forest",
+        x,
+        y,
+        layoutVersion: WORLD.hub.layoutVersion,
+        playerVersion: 0,
+        positionAt: Date.now(),
+      };
+      assert(isLandWalkable(WORLD.landMaps.forest, initialContinuation));
+      initialSurface = initialContinuation;
+    } else {
+      const [x, y] = WORLD.landMaps.hub.shelters.find(
+        (shelter) => !shelter.existing,
+      ).posts[0];
+      assert(!isLandWalkable(WORLD.landMaps.hub, { x, y }));
+      initialLegacy = {
+        area: "hub",
+        x,
+        y,
+        layoutVersion: 8,
+        playerVersion: 0,
+        positionAt: Date.now(),
+      };
+      initialSurface = initialLegacy;
+    }
     await fixtureCache.set(
       `surface:${id}`,
-      JSON.stringify(initialLegacy),
+      JSON.stringify(initialSurface),
       "EX",
       1800,
     );
@@ -628,153 +650,180 @@ try {
     9,
     "Running API must include the exported shelter layout.",
   );
-  const migrated = await apiState();
-  assert.equal(migrated.surface.layoutVersion, 9);
-  assert(isLandWalkable(world.landMaps.hub, migrated.surface));
-  assert(
-    Math.hypot(
-      migrated.surface.x - initialLegacy.x,
-      migrated.surface.y - initialLegacy.y,
-    ) >= 12,
-  );
-  assert.equal((await snapshot()).land.components.AttachedShelterRoofs, 5);
-  assert.equal((await snapshot()).land.components.ShelterCollisionPosts, 10);
-  assert.equal((await snapshot()).land.components.SasmitaPileFooting, 4);
-  checks.push("legacy-layout8-post-position-migrates-to-real-layout9-floor");
-  await verifyHome();
-  await verifyShelters();
-  await routeTo(world.forest.gate, "hub");
-  const travel = page.waitForResponse(
-    (response) =>
-      response.url().endsWith("/api/adventure/travel") &&
-      response.request().method() === "POST",
-  );
-  await page.keyboard.press("e");
-  assert.equal((await (await travel).json()).surface.area, "forest");
-  await waitState(
-    (value) =>
-      value.area === "forest" &&
-      value.land?.readability &&
-      value.land?.actors?.player === 1,
-  );
-  await page.waitForTimeout(700);
-  await shot("01-physical-forest-entry");
-  checks.push("physical-hub-gate-to-forest-entry-with-real-3d-player");
-
-  await walkTo(350, 1250);
-  await page.waitForTimeout(700);
-  const gateway = await snapshot(),
-    originalCrowns = gateway.land.readability.active.map(
-      (entry) => entry.index,
-    );
-  assert(
-    originalCrowns.length > 0 &&
-      originalCrowns.length < gateway.land.readability.crowns / 4,
-  );
-  assert(gateway.land.readability.active.every((entry) => entry.amount > 0.99));
-  await responsive(667, 375, "02-gateway-667x375");
-  const beforeModal = await snapshot();
-  const pausedHeartbeat = page.waitForResponse(
-    (response) =>
-      response.url().endsWith("/api/calendar/heartbeat") &&
-      response.request().postDataJSON()?.paused === true,
-  );
-  await tap("journal");
-  await waitState((value) => value.modal && value.weather.clockPaused);
-  const pausedCalendarResponse = await pausedHeartbeat;
-  assert(pausedCalendarResponse.ok());
-  const pausedCalendar = (await pausedCalendarResponse.json()).calendar;
-  await page.keyboard.down("d");
-  await page.waitForTimeout(350);
-  await page.keyboard.up("d");
-  const paused = await snapshot();
-  assert(Math.hypot(paused.x - beforeModal.x, paused.y - beforeModal.y) < 1);
-  await page.waitForTimeout(6200);
-  assert.equal(
-    (await apiState()).calendar.minuteOfDay,
-    pausedCalendar.minuteOfDay,
-    "The actual server calendar must stay paused through the next heartbeat while reading",
-  );
-  await shot("03-journal-pauses-under-canopy");
-  await page.keyboard.press("Escape");
-  await waitState((value) => !value.modal && !value.weather.clockPaused);
-  checks.push("localized-settled-canopy-and-touch-journal-pause-at-667x375");
-
-  await responsive(844, 390, "04-gateway-844x390");
-  const joystick = (await snapshot()).hud.joystick,
-    start = await touchPoint(joystick.center),
-    moved = await touchPoint([
-      joystick.center[0] + joystick.radius * 0.65,
-      joystick.center[1] - joystick.radius * 0.25,
-    ]);
-  const prior = await snapshot();
-  await cdp.send("Input.dispatchTouchEvent", {
-    type: "touchStart",
-    touchPoints: [start],
-  });
-  await cdp.send("Input.dispatchTouchEvent", {
-    type: "touchMove",
-    touchPoints: [moved],
-  });
-  await page.waitForTimeout(350);
-  assert(Math.hypot(...(await snapshot()).hud.joystick.direction) > 0.1);
-  await cdp.send("Input.dispatchTouchEvent", {
-    type: "touchEnd",
-    touchPoints: [],
-  });
-  await page.waitForTimeout(350);
-  const released = await snapshot();
-  assert(Math.hypot(...released.hud.joystick.direction) < 0.01);
-  assert(Math.hypot(released.x - prior.x, released.y - prior.y) > 2);
-  checks.push(
-    "round-joystick-physically-moves-and-releases-in-forest-at-844x390",
-  );
-  await responsive(1440, 900, "05-gateway-desktop-width-touch-context");
-  checks.push("desktop-width-preserves-3d-projection-and-hud-context");
-
-  await walkTo(480, 1210);
-  await walkTo(650, 1050);
-  await page.waitForTimeout(1000);
-  const canopy = await snapshot();
-  assert.equal(canopy.nearby, "forest_canopy");
-  assert(
-    originalCrowns.every(
-      (index) =>
-        !canopy.land.readability.active.some((entry) => entry.index === index),
-    ),
-    "Entrance crowns must recover after leaving them",
-  );
-  await shot("06-canopy-clearing-restored-entrance-crowns");
-  await waitSaved(canopy);
-  await page.reload();
-  await attach();
-  const resumed = await waitState(
-    (value) => value.area === "forest" && value.land?.actors?.player === 1,
-  );
-  assert(Math.hypot(resumed.x - canopy.x, resumed.y - canopy.y) < 30);
-  await shot("07-forest-save-reload");
-  checks.push(
-    "entrance-crowns-restore-and-physical-forest-position-survives-reload",
-  );
-
-  for (const bridge of world.landMaps.forest.bridges) {
-    const [a, b] = bridge.path;
-    await routeTo({ x: a[0], y: a[1] }, "forest");
-    const before = await snapshot();
-    await walkTo(b[0], b[1]);
-    const after = await snapshot(),
-      emitted = after.land.bridges[bridge.id];
-    assert(Math.hypot(after.x - before.x, after.y - before.y) > 250);
+  if (routeMode === "full") {
+    const migrated = await apiState();
+    assert.equal(migrated.surface.layoutVersion, 9);
+    assert(isLandWalkable(world.landMaps.hub, migrated.surface));
     assert(
-      emitted &&
-        emitted.oriented &&
-        emitted.railPosts >= 8 &&
-        emitted.thickness >= 12,
+      Math.hypot(
+        migrated.surface.x - initialLegacy.x,
+        migrated.surface.y - initialLegacy.y,
+      ) >= 12,
     );
-    assert.equal(after.diving, false);
-    await shot(`08-${bridge.id}-crossed`);
+    assert.equal((await snapshot()).land.components.AttachedShelterRoofs, 5);
+    assert.equal((await snapshot()).land.components.ShelterCollisionPosts, 10);
+    assert.equal((await snapshot()).land.components.SasmitaPileFooting, 4);
+    checks.push("legacy-layout8-post-position-migrates-to-real-layout9-floor");
+    await verifyHome();
+    await verifyShelters();
+    await routeTo(world.forest.gate, "hub");
+    const travel = page.waitForResponse(
+      (response) =>
+        response.url().endsWith("/api/adventure/travel") &&
+        response.request().method() === "POST",
+    );
+    await page.keyboard.press("e");
+    assert.equal((await (await travel).json()).surface.area, "forest");
+    await waitState(
+      (value) =>
+        value.area === "forest" &&
+        value.land?.readability &&
+        value.land?.actors?.player === 1,
+    );
+    await page.waitForTimeout(700);
+    await shot("01-physical-forest-entry");
+    checks.push("physical-hub-gate-to-forest-entry-with-real-3d-player");
+
+    await walkTo(350, 1250);
+    await page.waitForTimeout(700);
+    const gateway = await snapshot(),
+      originalCrowns = gateway.land.readability.active.map(
+        (entry) => entry.index,
+      );
+    assert(
+      originalCrowns.length > 0 &&
+        originalCrowns.length < gateway.land.readability.crowns / 4,
+    );
+    assert(
+      gateway.land.readability.active.every((entry) => entry.amount > 0.99),
+    );
+    await responsive(667, 375, "02-gateway-667x375");
+    const beforeModal = await snapshot();
+    const pausedHeartbeat = page.waitForResponse(
+      (response) =>
+        response.url().endsWith("/api/calendar/heartbeat") &&
+        response.request().postDataJSON()?.paused === true,
+    );
+    await tap("journal");
+    await waitState((value) => value.modal && value.weather.clockPaused);
+    const pausedCalendarResponse = await pausedHeartbeat;
+    assert(pausedCalendarResponse.ok());
+    const pausedCalendar = (await pausedCalendarResponse.json()).calendar;
+    await page.keyboard.down("d");
+    await page.waitForTimeout(350);
+    await page.keyboard.up("d");
+    const paused = await snapshot();
+    assert(Math.hypot(paused.x - beforeModal.x, paused.y - beforeModal.y) < 1);
+    await page.waitForTimeout(6200);
+    assert.equal(
+      (await apiState()).calendar.minuteOfDay,
+      pausedCalendar.minuteOfDay,
+      "The actual server calendar must stay paused through the next heartbeat while reading",
+    );
+    await shot("03-journal-pauses-under-canopy");
+    await page.keyboard.press("Escape");
+    await waitState((value) => !value.modal && !value.weather.clockPaused);
+    checks.push("localized-settled-canopy-and-touch-journal-pause-at-667x375");
+
+    await responsive(844, 390, "04-gateway-844x390");
+    const joystick = (await snapshot()).hud.joystick,
+      start = await touchPoint(joystick.center),
+      moved = await touchPoint([
+        joystick.center[0] + joystick.radius * 0.65,
+        joystick.center[1] - joystick.radius * 0.25,
+      ]);
+    const prior = await snapshot();
+    await cdp.send("Input.dispatchTouchEvent", {
+      type: "touchStart",
+      touchPoints: [start],
+    });
+    await cdp.send("Input.dispatchTouchEvent", {
+      type: "touchMove",
+      touchPoints: [moved],
+    });
+    await page.waitForTimeout(350);
+    assert(Math.hypot(...(await snapshot()).hud.joystick.direction) > 0.1);
+    await cdp.send("Input.dispatchTouchEvent", {
+      type: "touchEnd",
+      touchPoints: [],
+    });
+    await page.waitForTimeout(350);
+    const released = await snapshot();
+    assert(Math.hypot(...released.hud.joystick.direction) < 0.01);
+    assert(Math.hypot(released.x - prior.x, released.y - prior.y) > 2);
     checks.push(
-      `${bridge.id}-crossed-physically-with-deck-rails-and-ground-foot-pivot`,
+      "round-joystick-physically-moves-and-releases-in-forest-at-844x390",
+    );
+    await responsive(1440, 900, "05-gateway-desktop-width-touch-context");
+    checks.push("desktop-width-preserves-3d-projection-and-hud-context");
+
+    await walkTo(480, 1210);
+    await walkTo(650, 1050);
+    await page.waitForTimeout(1000);
+    const canopy = await snapshot();
+    assert.equal(canopy.nearby, "forest_canopy");
+    assert(
+      originalCrowns.every(
+        (index) =>
+          !canopy.land.readability.active.some(
+            (entry) => entry.index === index,
+          ),
+      ),
+      "Entrance crowns must recover after leaving them",
+    );
+    await shot("06-canopy-clearing-restored-entrance-crowns");
+    await waitSaved(canopy);
+    await page.reload();
+    await attach();
+    const resumed = await waitState(
+      (value) => value.area === "forest" && value.land?.actors?.player === 1,
+    );
+    assert(Math.hypot(resumed.x - canopy.x, resumed.y - canopy.y) < 30);
+    await shot("07-forest-save-reload");
+    checks.push(
+      "entrance-crowns-restore-and-physical-forest-position-survives-reload",
+    );
+
+    for (const bridge of world.landMaps.forest.bridges) {
+      const [a, b] = bridge.path;
+      await routeTo({ x: a[0], y: a[1] }, "forest");
+      const before = await snapshot();
+      await walkTo(b[0], b[1]);
+      const after = await snapshot(),
+        emitted = after.land.bridges[bridge.id];
+      assert(Math.hypot(after.x - before.x, after.y - before.y) > 250);
+      assert(
+        emitted &&
+          emitted.oriented &&
+          emitted.railPosts >= 8 &&
+          emitted.thickness >= 12,
+      );
+      assert.equal(after.diving, false);
+      await shot(`08-${bridge.id}-crossed`);
+      checks.push(
+        `${bridge.id}-crossed-physically-with-deck-rails-and-ground-foot-pivot`,
+      );
+    }
+  } else {
+    const initial = await waitState(
+      (value) => value.area === "forest" && value.land?.actors?.player === 1,
+    );
+    assert(
+      Math.hypot(
+        initial.x - initialContinuation.x,
+        initial.y - initialContinuation.y,
+      ) < 30,
+    );
+    const actualBridge = world.landMaps.forest.bridges.find(
+      (entry) => entry.id === "bridge_lower",
+    );
+    assert.deepEqual(actualBridge.path.at(-1), [
+      initialContinuation.x,
+      initialContinuation.y,
+    ]);
+    await shot("continuation-start-at-lower-bridge-endpoint");
+    checks.push(
+      "separate-fixture-starts-at-previously-crossed-real-forest-bridge",
     );
   }
   await routeTo({ x: 200, y: 1320 }, "forest");
@@ -891,7 +940,9 @@ try {
           checks,
           origin,
           candidatePck,
+          routeMode,
           initialLegacy,
+          initialContinuation,
           errors,
           failures,
           operations,
