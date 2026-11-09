@@ -64,6 +64,14 @@ func _logical_offset(at:Vector2,world:Vector3) -> Vector2:
 func _base(at:Vector2,hip_x:float,right:Vector3) -> Vector2:
 	return at+_logical_offset(at,right*hip_x)
 
+func _trailing_side(at:Vector2) -> String:
+	var world_heading:=_world_motion(at,_heading).normalized()
+	var origin:=_ground(at)
+	var left:float=(Vector3(_feet.left.sole)-origin).dot(world_heading)
+	var right:float=(Vector3(_feet.right.sole)-origin).dot(world_heading)
+	if absf(left-right)<.5: return _next_side
+	return "left" if left<right else "right"
+
 func _begin(side:String,at:Vector2,hips:Dictionary,right:Vector3) -> void:
 	_swing=side
 	_distance=0.0
@@ -107,7 +115,9 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 		var origin:=_last_at
 		var consumed:=0.0
 		while consumed<physical-.00001:
-			if _swing=="": _begin(_next_side,origin.lerp(at,consumed/physical),hips,right)
+			if _swing=="":
+				var begin_at:=origin.lerp(at,consumed/physical)
+				_begin(_trailing_side(begin_at),begin_at,hips,right)
 			var chunk:=minf(2.0,minf(physical-consumed,_landing_distance-_distance))
 			consumed+=chunk
 			var sample:=origin.lerp(at,consumed/physical)
