@@ -414,7 +414,7 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 	if accepted_moving and physical>.00001:
 		_accepted_distance+=physical
 		var next_heading:=logical_delta.normalized()
-		var resuming:=_physical_contract and _swing!="" and _feet[_swing].has("settlingTarget")
+		var resuming:bool=_physical_contract and _swing!="" and _feet[_swing].has("settlingTarget")
 		if resuming:
 			var entry:Dictionary=_feet[_swing]
 			var actual:=FootPlane.ground_below(renderer,entry.logical,entry.sole)
