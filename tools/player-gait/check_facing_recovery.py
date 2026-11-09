@@ -1,11 +1,23 @@
 #!/usr/bin/env python3
 """Audit actual body and original shoe views against desired artwork in gait JSONL."""
 import argparse
+import hashlib
 import json
 from pathlib import Path
 
 
-def audit(rows, expected_cases, rejections=None):
+def expected_labels(count):
+    if count == 32:
+        return {f"{outfit}/{reduced}/{heading}" for outfit in ["daily", "explorer"]
+                for reduced in ["false", "true"] for heading in range(8)}
+    if count == 16:
+        return {f"{profile}/{reverse}/{reduced}" for profile in
+                ["dock_gangway", "central_stone_steps", "western_stone_steps", "forest_ridge_steps"]
+                for reverse in ["false", "true"] for reduced in ["false", "true"]}
+    return None
+
+
+def audit(rows, expected_cases, rejections=None, completion=None, identities=None):
     cases = {}
     for row in rows:
         label = row["case"].split(" ", 1)[0]
@@ -75,13 +87,24 @@ def audit(rows, expected_cases, rejections=None):
             state.pop("wasHeld", None)
         case.pop("lastDesired")
         case.pop("priorAccepted")
-    complete = len(cases) == expected_cases and not insufficient
+    observed = len(cases) == expected_cases and not insufficient
+    identities = expected_labels(expected_cases) if identities is None else identities
+    completed = completion or []
+    fingerprints = {proof.get("sourceFingerprint") for proof in completed}
+    same_source = len(fingerprints) == 1 and None not in fingerprints
+    proof_valid = bool(identities) and same_source and any(
+        proof.get("declaredComplete") is True and len(proof.get("caseKeys", [])) == expected_cases
+        and set(proof.get("caseKeys", [])) == identities for proof in completed)
+    actual_identities = bool(identities) and set(cases) == identities
+    complete = observed and actual_identities and proof_valid
     raw_insufficient = [label for label, case in cases.items()
                         if case["requestedDirectionMissingObservations"] or not case["requestedDirectionObservations"]]
     return {"scope": "Actual recorded final source views and hold intervals only; no naturalness or missing-case inference",
             "desiredSource": "requestedDirection when recorded; intermediate artwork target only for older observations",
             "expectedCases": expected_cases, "observedCases": len(cases), "missingCases": missing,
-            "completeCaseSet": complete, "incompleteObservationCases": insufficient,
+            "observedCaseCoverage": observed, "observedExpectedIdentities": actual_identities,
+            "completionProofAccepted": proof_valid, "sameSourceCompletionProof": same_source,
+            "completionProof": completed, "completeCaseSet": complete, "incompleteObservationCases": insufficient,
             "rawRequestedInsufficientCases": raw_insufficient,
             "terminalMismatches": mismatches, "originalRejections": rejections or [],
             "terminalRecoveryAccepted": complete and not raw_insufficient and not mismatches and not rejections,
@@ -96,12 +119,24 @@ def main():
     args = parser.parse_args()
     rows = []
     rejections = []
+    completion = []
     for directory in args.run:
         rows.extend(json.loads(line) for line in (directory / "samples.jsonl").read_text().splitlines() if line.strip())
         rejection = directory / "rejected.json"
         if rejection.exists():
             rejections.append({"run": str(directory), "message": json.loads(rejection.read_text())["message"]})
-    result = audit(rows, args.expected_cases, rejections)
+        source_path = directory / "source.json"
+        source = json.loads(source_path.read_text()) if source_path.exists() else {}
+        fingerprint = None
+        if source.get("files") and source.get("fixtureWorldSha256"):
+            fingerprint = hashlib.sha256(json.dumps({"files": source["files"], "world": source["fixtureWorldSha256"]}, sort_keys=True).encode()).hexdigest()
+        manifest_path = directory / ("cadence.json" if args.expected_cases == 32 else "terrain-results.json")
+        manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
+        completion.append({"run": str(directory), "manifest": str(manifest_path), "manifestPresent": manifest_path.exists(),
+                           "sourceFingerprint": fingerprint,
+                           "declaredComplete": manifest.get("complete32Cases" if args.expected_cases == 32 else "complete16Cases", False),
+                           "caseKeys": [case["case"] for case in manifest.get("cases", [])]})
+    result = audit(rows, args.expected_cases, rejections, completion)
     result["runs"] = [str(path) for path in args.run]
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2) + "\n")
