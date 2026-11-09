@@ -37,7 +37,7 @@ class ResidentPartsTest(unittest.TestCase):
                     if "grip" in part:
                         xx,yy=part["grip"]
                         self.assertGreater(packed.getpixel((x+int(xx-bounds[0]),y+int(yy-bounds[1])))[3],0)
-                    restored.alpha_composite(packed.crop((x,y,x+w,y+h)),bounds[:2])
+                    restored.alpha_composite(packed.crop((x,y,x+w,y+h)),tuple(bounds[:2]))
                 x,y,w,h=person["sourceCell"]
                 expected=original.crop((x,y,x+w,y+h))
                 self.assertEqual(restored.getchannel("A").tobytes(),expected.getchannel("A").tobytes())
