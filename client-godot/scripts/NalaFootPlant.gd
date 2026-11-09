@@ -199,6 +199,16 @@ func _on_stairs(at:Vector2) -> bool:
 			if not Traversal.connector_ground(profile,entry.logical).is_empty(): return true
 	return false
 
+func _support_transfer_active(at:Vector2) -> bool:
+	if _on_stairs(at): return true
+	if not _physical_contract: return false
+	for profile in _connectors:
+		if str(profile.get("type",""))!="ramp": continue
+		if not Traversal.connector_ground(profile,at).is_empty(): return true
+		for entry in _feet.values():
+			if not Traversal.connector_ground(profile,entry.logical).is_empty(): return true
+	return false
+
 func _ramp_body_rate(from:Vector2,to:Vector2) -> float:
 	if not _physical_contract: return 1.0
 	var rate:=1.0
@@ -223,7 +233,7 @@ func _ramp_body_rate(from:Vector2,to:Vector2) -> float:
 	return rate
 
 func _transfer_body(at:Vector2,distance:float,side:String) -> void:
-	if not _on_stairs(at):
+	if not _support_transfer_active(at):
 		var ordinary:=_ground(at).z
 		_body_height=move_toward(_body_height,ordinary,maxf(0,distance)*_body_rate) if _stair_transfer else ordinary
 		if absf(_body_height-ordinary)<.001: _stair_transfer=false
@@ -348,7 +358,7 @@ func _reset(at:Vector2,hips:Dictionary,right:Vector3) -> void:
 	_transition_next=true
 	_last_at=at
 	_body_height=_ground(at).z
-	_stair_transfer=_on_stairs(at)
+	_stair_transfer=_support_transfer_active(at)
 	_ready=true
 
 func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,delta:float,support_extents:Dictionary={}) -> Dictionary:
@@ -449,7 +459,7 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 			_landing_distance=_steady_distance
 			_swing=""
 	if not accepted_moving: _transition_next=true
-	if _swing=="" and not _on_stairs(at):
+	if _swing=="" and not _support_transfer_active(at):
 		var ordinary:=_ground(at).z
 		if _stair_transfer:
 			if not body_advanced and (not moving or physical<.00001): _body_height=move_toward(_body_height,ordinary,maxf(0,delta)*24.0*_body_rate)
