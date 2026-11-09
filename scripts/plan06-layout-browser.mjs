@@ -687,17 +687,22 @@ async function verifyOcean() {
   const saved = await waitSaved(at);
   assert.equal(saved.player.version, extracted.player.version);
   assert.equal(saved.surface.playerVersion, extracted.player.version);
-  await page.waitForTimeout(250);
-  const acknowledged = operations
-    .slice(beforeMove)
-    .find(
-      (operation) =>
-        operation.path === "/api/adventure/surface-position" &&
-        operation.status === 200 &&
-        operation.requestVersion === extracted.player.version &&
-        operation.surface?.playerVersion === extracted.player.version &&
-        Math.hypot(operation.surface.x - at.x, operation.surface.y - at.y) < 25,
-    );
+  const acknowledgementDeadline = Date.now() + 10000;
+  let acknowledged;
+  while (!acknowledged && Date.now() < acknowledgementDeadline) {
+    acknowledged = operations
+      .slice(beforeMove)
+      .find(
+        (operation) =>
+          operation.path === "/api/adventure/surface-position" &&
+          operation.status === 200 &&
+          operation.requestVersion === extracted.player.version &&
+          operation.surface?.playerVersion === extracted.player.version &&
+          Math.hypot(operation.surface.x - at.x, operation.surface.y - at.y) <
+            25,
+      );
+    if (!acknowledged) await page.waitForTimeout(150);
+  }
   assert(
     acknowledged,
     "A real dock move must be acknowledged using the version returned by extraction.",
