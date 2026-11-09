@@ -33,9 +33,18 @@ assert(/^mongodb:\/\/(127\.0\.0\.1|localhost)(:|\/)/.test(mongoUrl));
 assert(["localhost", "127.0.0.1"].includes(new URL(redisUrl).hostname));
 const routeMode = process.env.PLAN06_ROUTE_MODE ?? "full";
 assert(
-  ["full", "continuation", "ocean", "dialogue", "left"].includes(routeMode),
+  [
+    "full",
+    "continuation",
+    "ocean",
+    "dialogue",
+    "left",
+    "shelters",
+    "lower",
+  ].includes(routeMode),
 );
-const routeLimitMs = (routeMode === "left" ? 5 : 10) * 60 * 1000;
+const routeLimitMs =
+  (["left", "lower"].includes(routeMode) ? 5 : 10) * 60 * 1000;
 const navigation = { matrixPulses: 0, legacyPulses: 0 };
 const inputProofs = [];
 const fixtureStoryDay = routeMode === "dialogue" ? 1 : 2;
@@ -76,6 +85,7 @@ let candidatePck,
   initialLegacy,
   initialContinuation,
   initialHub,
+  initialLower,
   routeStarted,
   fixtureAttempted = false;
 function budget() {
@@ -442,6 +452,9 @@ async function verifyShelters() {
       before.land.actors.residentStates[resident.name].phase,
       "shelter",
     );
+    await shot(
+      `shelter-${resident.name.replaceAll(" ", "-")}-before-conversation`,
+    );
     await page.keyboard.press("e");
     await waitState((value) => value.modal && value.weather.clockPaused);
     await shot(`shelter-${resident.name.replaceAll(" ", "-")}-conversation`);
@@ -451,6 +464,56 @@ async function verifyShelters() {
       `${resident.name}: physical-shelter-access-dialogue-and-resume`,
     );
   }
+}
+
+async function verifyRemainingShelters() {
+  assertLeftView(await snapshot(), "hub");
+  await responsive(667, 375, "left-seven-shelters-start-667x375");
+  await verifyShelters();
+  const state = await apiState();
+  assert.equal(state.player.progress.day, 2);
+  assert.equal(state.player.progress.stage, "dive");
+  assert.equal(state.player.coins, 200);
+  assert.equal(state.player.inventory.length, 0);
+  assert.equal(state.calendar.dayLengthMs, 36 * 60 * 1000);
+  checks.push(
+    "seven-left-view-shelter-conversations-preserve-server-progress-and-rewards",
+  );
+}
+async function verifyLowerBridge() {
+  let value = await snapshot();
+  assertLeftView(value, "forest");
+  const bridge = world.landMaps.forest.bridges.find(
+    (entry) => entry.id === "bridge_lower",
+  );
+  assert.deepEqual(bridge.path[0], [initialLower.x, initialLower.y]);
+  await responsive(844, 390, "left-lower-bridge-start-844x390");
+  const [x, y] = bridge.path.at(-1);
+  await walkTo(x, y);
+  value = await snapshot();
+  assert(Math.hypot(value.x - initialLower.x, value.y - initialLower.y) > 250);
+  const rendered = value.land.bridges[bridge.id];
+  assert(
+    rendered?.oriented && rendered.railPosts >= 8 && rendered.thickness >= 12,
+  );
+  await shot("left-lower-bridge-crossed");
+  await waitSaved(value);
+  await page.reload();
+  await attach();
+  const resumed = await waitState(
+    (state) => state.area === "forest" && state.land?.actors?.player === 1,
+  );
+  assertLeftView(resumed, "forest");
+  assert(Math.hypot(resumed.x - value.x, resumed.y - value.y) < 30);
+  const state = await apiState();
+  assert.equal(state.player.progress.day, 2);
+  assert.equal(state.player.coins, 200);
+  assert.equal(state.player.inventory.length, 0);
+  assert.equal(state.calendar.dayLengthMs, 36 * 60 * 1000);
+  await shot("left-lower-bridge-position-resumes-after-reload");
+  checks.push(
+    "left-lower-bridge-physical-crossing-and-reload-preserve-server-state",
+  );
 }
 
 function assertLeftView(value, area) {
@@ -798,7 +861,7 @@ try {
   const fixtureCache = new Redis(redisUrl);
   try {
     let initialSurface;
-    if (["ocean", "dialogue", "left"].includes(routeMode)) {
+    if (["ocean", "dialogue", "left", "shelters"].includes(routeMode)) {
       initialHub = {
         area: "hub",
         ...WORLD.surfaceSpawn,
@@ -808,6 +871,21 @@ try {
       };
       assert(isLandWalkable(WORLD.landMaps.hub, initialHub));
       initialSurface = initialHub;
+    } else if (routeMode === "lower") {
+      const bridge = WORLD.landMaps.forest.bridges.find(
+        (entry) => entry.id === "bridge_lower",
+      );
+      const [x, y] = bridge.path[0];
+      initialLower = {
+        area: "forest",
+        x,
+        y,
+        layoutVersion: WORLD.landMaps.forest.layoutVersion,
+        playerVersion: 0,
+        positionAt: Date.now(),
+      };
+      assert(isLandWalkable(WORLD.landMaps.forest, initialLower));
+      initialSurface = initialLower;
     } else if (routeMode === "continuation") {
       const bridge = WORLD.landMaps.forest.bridges.find(
         (entry) => entry.id === "bridge_lower",
@@ -1092,7 +1170,7 @@ try {
       "separate-fixture-starts-at-previously-crossed-real-forest-bridge",
     );
   }
-  if (!["ocean", "dialogue", "left"].includes(routeMode)) {
+  if (!["ocean", "dialogue", "left", "shelters", "lower"].includes(routeMode)) {
     await routeTo({ x: 200, y: 1320 }, "forest");
     await waitState((value) => value.nearby === "return");
     const returning = page.waitForResponse(
@@ -1122,6 +1200,15 @@ try {
     checks.push(
       "physical-return-portal-keeps-story-coins-and-authoritative-surface",
     );
+  } else if (routeMode === "lower") {
+    const initial = await waitState(
+      (value) => value.area === "forest" && value.land?.actors?.player === 1,
+    );
+    assert(
+      Math.hypot(initial.x - initialLower.x, initial.y - initialLower.y) < 30,
+    );
+    await shot("lower-fixture-start-at-real-bridge-approach");
+    checks.push("separate-lower-fixture-starts-on-real-forest-floor");
   } else {
     const initial = await waitState(
       (value) => value.land?.area === "hub" && value.land?.actors?.player === 1,
@@ -1131,7 +1218,9 @@ try {
     await shot(`${routeMode}-fixture-start-at-actual-hub-spawn`);
     checks.push(`separate-${routeMode}-fixture-starts-on-real-hub-floor`);
   }
-  if (routeMode === "left") await verifyLeftView();
+  if (routeMode === "shelters") await verifyRemainingShelters();
+  else if (routeMode === "lower") await verifyLowerBridge();
+  else if (routeMode === "left") await verifyLeftView();
   else if (routeMode === "dialogue") await verifyCompactDialogue();
   else await verifyOcean();
   assert.deepEqual(errors, []);
@@ -1224,6 +1313,7 @@ try {
           initialLegacy,
           initialContinuation,
           initialHub,
+          initialLower,
           errors,
           failures,
           operations,

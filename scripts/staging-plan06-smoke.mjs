@@ -1,11 +1,13 @@
 // Explicit post-release smoke; temporary player lifecycle runs inside the staging app.
-// RUN_STAGING_SMOKE=plan06-public node scripts/staging-plan06-smoke.mjs
+// RUN_STAGING_SMOKE=plan06-public PLAN06_EXPECT_PCK=... PLAN06_EXPECT_PCK_BYTES=... node --import tsx scripts/staging-plan06-smoke.mjs
 import assert from "node:assert/strict";
 import { randomUUID, randomBytes, createHash } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { spawn } from "node:child_process";
 import { chromium } from "@playwright/test";
-import { fetchWorld, hubRoute } from "./game-navigation.mjs";
+import { fetchWorld } from "./game-navigation.mjs";
+import { physicalRoute } from "./plan06-physical-route.mjs";
+import { keyboardPulse } from "./land-view-navigation.mjs";
 
 assert.equal(
   process.env.RUN_STAGING_SMOKE,
@@ -17,9 +19,16 @@ assert(
   "Existing account fixtures are never accepted",
 );
 const origin = "https://staging-jalasmara.ardianryan.com";
-const expectedPck =
-  "a9378a52c9fbb64ec96ae579bcef1ced1ab7920962823025e238a453eb8a716b";
-const expectedPckBytes = 64_249_828;
+const expectedPck = process.env.PLAN06_EXPECT_PCK;
+const expectedPckBytes = Number(process.env.PLAN06_EXPECT_PCK_BYTES);
+assert(
+  /^[a-f0-9]{64}$/.test(expectedPck ?? ""),
+  "PLAN06_EXPECT_PCK must pin the candidate SHA-256.",
+);
+assert(
+  Number.isSafeInteger(expectedPckBytes) && expectedPckBytes > 0,
+  "PLAN06_EXPECT_PCK_BYTES must pin its exact size.",
+);
 const id = randomUUID(),
   email = `plan06-public-${id}@test.invalid`;
 const password = randomBytes(24).toString("base64url");
@@ -35,7 +44,15 @@ let browser,
   frame,
   fixtureAttempted = false,
   cleanup,
-  publicPck;
+  publicPck,
+  routeStarted;
+const navigation = { matrixPulses: 0 };
+function budget() {
+  assert(
+    !routeStarted || Date.now() - routeStarted < 8 * 60 * 1000,
+    "Public physical route exceeded eight minutes.",
+  );
+}
 
 // No credential is interpolated into this code or the SSH command line.
 const remoteCode = String.raw`
@@ -171,6 +188,7 @@ const snapshot = () => frame.evaluate(() => window.jalasmaraSnapshot);
 async function waitState(predicate, timeout = 30000) {
   const deadline = Date.now() + timeout;
   while (Date.now() < deadline) {
+    budget();
     const value = await snapshot();
     if (value && predicate(value)) return value;
     await page.waitForTimeout(180);
@@ -189,6 +207,7 @@ async function attach() {
   );
   await page.locator(".game-loading").waitFor({ state: "detached" });
   await frame.locator("canvas").focus();
+  routeStarted ??= Date.now();
 }
 async function shot(name) {
   await page.screenshot({ path: `${directory}/${name}.png` });
@@ -222,14 +241,27 @@ async function walkTo(x, y) {
       `Public physical route blocked to ${x},${y} at ${value.x},${value.y}`,
     );
     previous = value;
-    const keys = [],
-      threshold = stuck > 2 ? 3 : 8;
-    if (Math.abs(dx) > threshold) keys.push(dx > 0 ? "d" : "a");
-    if (Math.abs(dy) > threshold) keys.push(dy > 0 ? "s" : "w");
+    budget();
+    assert(
+      value.land?.view?.motion,
+      "Public land navigation requires the actual renderer motion contract.",
+    );
+    const { keys, holdMs, releaseMs } = keyboardPulse(
+      [dx, dy],
+      value.land.view.motion,
+      {
+        speed: 100 * (value.traversal?.paceScale ?? 1),
+        acceleration: value.area === "forest" ? 1250 : 850,
+      },
+    );
+    navigation.matrixPulses++;
     for (const key of keys) await page.keyboard.down(key);
-    await page.waitForTimeout(distance > 150 ? 330 : distance > 50 ? 200 : 90);
-    for (const key of keys) await page.keyboard.up(key);
-    await page.waitForTimeout(90);
+    try {
+      await page.waitForTimeout(holdMs);
+    } finally {
+      for (const key of keys) await page.keyboard.up(key);
+    }
+    await page.waitForTimeout(releaseMs);
   }
   throw Error("Public physical navigation exceeded bounded attempts");
 }
@@ -254,14 +286,21 @@ try {
   for await (const bytes of response.body) {
     hash.update(bytes);
     decodedBytes += bytes.length;
-    assert(decodedBytes <= expectedPckBytes, "Public PCK exceeds pinned release size");
+    assert(
+      decodedBytes <= expectedPckBytes,
+      "Public PCK exceeds pinned release size",
+    );
   }
   assert.equal(
     hash.digest("hex"),
     expectedPck,
     "Public release PCK must match before creating an account",
   );
-  assert.equal(decodedBytes, expectedPckBytes, "Public PCK size must match release");
+  assert.equal(
+    decodedBytes,
+    expectedPckBytes,
+    "Public PCK size must match release",
+  );
   // Only validated release metadata reaches the report, never downloaded content.
   publicPck = { sha256: expectedPck, decodedBytes: expectedPckBytes };
   checks.push("public-health-and-downloaded-pck-match-release");
@@ -314,7 +353,12 @@ try {
   await shot("01-public-ready-hub");
   checks.push("public-form-login-secure-cookie-and-real-game-ready");
   const world = await fetchWorld(context.request, origin);
-  for (const [x, y] of hubRoute(world, await snapshot(), world.forest.gate))
+  for (const [x, y] of physicalRoute(
+    world,
+    await snapshot(),
+    world.forest.gate,
+    "hub",
+  ))
     await walkTo(x, y);
   const travel = page.waitForResponse(
     (response) =>
@@ -326,7 +370,13 @@ try {
   await waitState(
     (value) => value.area === "forest" && value.land?.actors?.player === 1,
   );
-  await walkTo(350, 1250);
+  for (const [x, y] of physicalRoute(
+    world,
+    await snapshot(),
+    { x: 350, y: 1250 },
+    "forest",
+  ))
+    await walkTo(x, y);
   await page.waitForTimeout(800);
   const canopy = await snapshot();
   assert.equal(canopy.land.elevationDegrees, 35);
@@ -428,6 +478,8 @@ try {
           origin,
           expectedPck,
           publicPck,
+          navigation,
+          routeElapsedMs: routeStarted ? Date.now() - routeStarted : null,
           checks,
           errors,
           failures,

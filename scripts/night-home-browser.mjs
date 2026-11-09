@@ -12,9 +12,11 @@ import {
   freshCalendar,
   freshHomestead,
 } from "../packages/shared/src/index.ts";
-import { fetchWorld, hubRoute } from "./game-navigation.mjs";
+import { fetchWorld } from "./game-navigation.mjs";
+import { physicalRoute } from "./plan06-physical-route.mjs";
+import { keyboardPulse } from "./land-view-navigation.mjs";
 
-const origin = process.env.APP_TEST_ORIGIN ?? "http://localhost:3100";
+const origin = process.env.APP_TEST_ORIGIN ?? "http://localhost:3101";
 const mongoUrl =
   process.env.MONGO_URL ?? "mongodb://127.0.0.1:27018/jalasmara?replicaSet=rs0";
 const redisUrl = process.env.REDIS_URL ?? "redis://127.0.0.1:6380";
@@ -25,21 +27,49 @@ assert(
 assert(["localhost", "127.0.0.1"].includes(new URL(origin).hostname));
 assert(/^mongodb:\/\/(127\.0\.0\.1|localhost)(:|\/)/.test(mongoUrl));
 assert(["localhost", "127.0.0.1"].includes(new URL(redisUrl).hostname));
-const artifacts = "artifacts/godot/night-home";
-mkdirSync(artifacts, { recursive: true });
 const id = randomUUID(),
   email = `night-home-${id}@test.invalid`,
   password = randomBytes(24).toString("base64url");
+const expectedPck = process.env.PLAN06_EXPECT_PCK;
+const expectedPckBytes = Number(process.env.PLAN06_EXPECT_PCK_BYTES);
+assert(
+  /^[a-f0-9]{64}$/.test(expectedPck ?? ""),
+  "PLAN06_EXPECT_PCK must pin the candidate SHA-256.",
+);
+assert(
+  Number.isSafeInteger(expectedPckBytes) && expectedPckBytes > 0,
+  "PLAN06_EXPECT_PCK_BYTES must pin its exact size.",
+);
+const artifacts = `artifacts/browser/night-home-${id}`;
+mkdirSync(artifacts, { recursive: true });
 const mongo = new MongoClient(mongoUrl);
 const checks = [],
   operations = [],
   errors = [],
   failures = [];
-let browser, context, page, frame, world, recipes, multiplier;
+let browser,
+  context,
+  page,
+  frame,
+  world,
+  recipes,
+  multiplier,
+  candidatePck,
+  routeStarted,
+  fixtureAttempted = false,
+  cleaned = false;
+const navigation = { matrixPulses: 0, legacyPulses: 0 };
+function budget() {
+  assert(
+    !routeStarted || Date.now() - routeStarted < 8 * 60 * 1000,
+    "Night route exceeded its bounded eight-minute budget.",
+  );
+}
 const snapshot = () => frame.evaluate(() => window.jalasmaraSnapshot);
 async function waitState(predicate, timeout = 25000) {
   const start = Date.now();
   while (Date.now() - start < timeout) {
+    budget();
     const state = await snapshot();
     if (predicate(state)) return state;
     await page.waitForTimeout(220);
@@ -55,6 +85,13 @@ async function attach() {
     { timeout: 240000, polling: 200 },
   );
   await frame.locator("canvas").focus();
+  routeStarted ??= Date.now();
+  console.log(
+    JSON.stringify({
+      phase: "attached",
+      area: (await snapshot()).area ?? (await snapshot()).land?.area,
+    }),
+  );
 }
 async function state() {
   const response = await context.request.get(`${origin}/api/homestead/state`);
@@ -62,37 +99,61 @@ async function state() {
   return response.json();
 }
 async function walkTo(x, y) {
+  await frame.locator("canvas").focus();
   let previous,
     stuck = 0;
-  for (let i = 0; i < 180; i++) {
+  for (let i = 0; i < 450; i++) {
+    budget();
     const s = await snapshot(),
       dx = x - s.x,
       dy = y - s.y,
       distance = Math.hypot(dx, dy);
     assert(!s.modal && !s.homePanel, "Close panels before walking.");
-    if (distance < 24) return;
+    if (distance < 15) return;
     stuck =
       previous && Math.hypot(s.x - previous.x, s.y - previous.y) < 0.5
         ? stuck + 1
         : 0;
     previous = s;
-    assert(stuck < 15, `Blocked route to ${x},${y} from ${s.x},${s.y}`);
-    const keys = [],
-      threshold = stuck >= 2 ? 3 : 13;
-    if (Math.abs(dx) > threshold) keys.push(dx > 0 ? "d" : "a");
-    if (Math.abs(dy) > threshold) keys.push(dy > 0 ? "s" : "w");
+    assert(stuck < 20, `Blocked route to ${x},${y} from ${s.x},${s.y}`);
+    let keys, holdMs, releaseMs;
+    if (s.land?.active && s.area !== "home" && !s.diving) {
+      assert(
+        s.land.view?.motion,
+        "Night land navigation requires the actual renderer motion contract.",
+      );
+      ({ keys, holdMs, releaseMs } = keyboardPulse(
+        [dx, dy],
+        s.land.view.motion,
+        { speed: 100 * (s.traversal?.paceScale ?? 1), acceleration: 850 },
+      ));
+      navigation.matrixPulses++;
+    } else {
+      keys = [];
+      const threshold = stuck >= 2 ? 3 : 8;
+      if (Math.abs(dx) > threshold) keys.push(dx > 0 ? "d" : "a");
+      if (Math.abs(dy) > threshold) keys.push(dy > 0 ? "s" : "w");
+      holdMs = distance < 90 ? 110 : 160;
+      releaseMs = 230;
+      navigation.legacyPulses++;
+    }
     for (const key of keys) await page.keyboard.down(key);
-    await page.waitForTimeout(distance < 90 ? 110 : 160);
-    for (const key of keys) await page.keyboard.up(key);
-    await page.waitForTimeout(230);
+    try {
+      await page.waitForTimeout(holdMs);
+    } finally {
+      for (const key of keys) await page.keyboard.up(key);
+    }
+    await page.waitForTimeout(releaseMs);
   }
   throw Error(`Route exceeded bounded attempts: ${x},${y}`);
 }
 async function routeTo(point, inside = false) {
-  const map = inside
-    ? { hub: { paths: world.homestead.interior.routes } }
-    : world;
-  for (const [x, y] of hubRoute(map, await snapshot(), point))
+  for (const [x, y] of physicalRoute(
+    world,
+    await snapshot(),
+    point,
+    inside ? "home" : "hub",
+  ))
     await walkTo(x, y);
   await page.waitForTimeout(450);
 }
@@ -126,64 +187,126 @@ async function firstButton() {
 }
 async function shot(name) {
   await page.screenshot({ path: `${artifacts}/${name}.png` });
+  console.log(JSON.stringify({ phase: name }));
 }
 
 async function compactNight(label, expectedModal) {
   if (process.env.VERIFY_COMPACT_NIGHT !== "1") return;
   const cdp = await context.newCDPSession(page);
-  for (const [width, height] of [[667, 375], [390, 844]]) {
-    await page.setViewportSize({width, height});
+  for (const [width, height] of [
+    [667, 375],
+    [390, 844],
+  ]) {
+    await page.setViewportSize({ width, height });
     await page.evaluate(() => {
       const probe = document.querySelector(".play-safe-area");
       if (!probe) throw Error("Missing real host safe-area probe");
-      Object.assign(probe.style, {paddingLeft:"24px",paddingRight:"16px",paddingTop:"12px",paddingBottom:"18px"});
+      Object.assign(probe.style, {
+        paddingLeft: "24px",
+        paddingRight: "16px",
+        paddingTop: "12px",
+        paddingBottom: "18px",
+      });
       window.dispatchEvent(new Event("resize"));
     });
     await page.waitForTimeout(1400);
     let current = await snapshot();
     assert.equal(current.modal, expectedModal);
     assert.equal(current.homePanel, false);
-    assert.equal(current.weather.night, true, "Compact capture must show actual night gameplay");
+    assert.equal(
+      current.weather.night,
+      true,
+      "Compact capture must show actual night gameplay",
+    );
     assert.equal(current.hud.touch, true);
-    const logical=current.hud.logicalSize;
-    assert(Math.abs(logical[0]/logical[1]-width/height)<.015);
+    const logical = current.hud.logicalSize;
+    assert(Math.abs(logical[0] / logical[1] - width / height) < 0.015);
     if (!expectedModal) {
-      for (const control of ["bag","journal","map","character","sound"]) {
-        const center=current.hud[control];
-        const physical=[center[0]*width/logical[0],center[1]*height/logical[1]];
-        assert(physical[0]>=24 && physical[0]<=width-16, `${control} must respect emulated horizontal safe insets`);
-        assert(physical[1]>=12 && physical[1]<=height-18, `${control} must stay within the visible safe viewport`);
+      for (const control of ["bag", "journal", "map", "character", "sound"]) {
+        const center = current.hud[control];
+        const physical = [
+          (center[0] * width) / logical[0],
+          (center[1] * height) / logical[1],
+        ];
+        assert(
+          physical[0] >= 24 && physical[0] <= width - 16,
+          `${control} must respect emulated horizontal safe insets`,
+        );
+        assert(
+          physical[1] >= 12 && physical[1] <= height - 18,
+          `${control} must stay within the visible safe viewport`,
+        );
       }
     }
     await shot(`${label}-${width}x${height}`);
     if (!expectedModal) {
-      const canvas=await frame.locator("canvas").boundingBox();
-      const center=current.hud.bag;
-      const point={id:1,x:canvas.x+center[0]*canvas.width/logical[0],y:canvas.y+center[1]*canvas.height/logical[1],radiusX:4,radiusY:4,force:1};
-      await cdp.send("Input.dispatchTouchEvent",{type:"touchStart",touchPoints:[point]});
+      const canvas = await frame.locator("canvas").boundingBox();
+      const center = current.hud.bag;
+      const point = {
+        id: 1,
+        x: canvas.x + (center[0] * canvas.width) / logical[0],
+        y: canvas.y + (center[1] * canvas.height) / logical[1],
+        radiusX: 4,
+        radiusY: 4,
+        force: 1,
+      };
+      await cdp.send("Input.dispatchTouchEvent", {
+        type: "touchStart",
+        touchPoints: [point],
+      });
       await page.waitForTimeout(120);
-      await cdp.send("Input.dispatchTouchEvent",{type:"touchEnd",touchPoints:[]});
-      await waitState(value=>value.modal && value.weather.clockPaused);
+      await cdp.send("Input.dispatchTouchEvent", {
+        type: "touchEnd",
+        touchPoints: [],
+      });
+      await waitState((value) => value.modal && value.weather.clockPaused);
       await shot(`bag-night-${width}x${height}`);
-      current=await snapshot();
-      assert.equal(current.hud.oxygen.visible,false,"Non-diving bag must not show the O2 instrument");
-      assert(Math.hypot(...current.hud.joystick.direction)<.001,"Opening a real bag must release movement input");
+      current = await snapshot();
+      assert.equal(
+        current.hud.oxygen.visible,
+        false,
+        "Non-diving bag must not show the O2 instrument",
+      );
+      assert(
+        Math.hypot(...current.hud.joystick.direction) < 0.001,
+        "Opening a real bag must release movement input",
+      );
       await page.keyboard.press("Escape");
-      await waitState(value=>!value.modal && !value.homePanel);
+      await waitState((value) => !value.modal && !value.homePanel);
     }
-    checks.push(`actual-night-${label}-${width}x${height}-safe-insets-and-${expectedModal?"dialogue":"bag-pause-release"}`);
+    checks.push(
+      `actual-night-${label}-${width}x${height}-safe-insets-and-${expectedModal ? "dialogue" : "bag-pause-release"}`,
+    );
   }
   await page.evaluate(() => {
     document.querySelector(".play-safe-area").removeAttribute("style");
     window.dispatchEvent(new Event("resize"));
   });
-  await page.setViewportSize({width:1440,height:900});
+  await page.setViewportSize({ width: 1440, height: 900 });
   await page.waitForTimeout(1200);
   await frame.locator("canvas").focus();
   await cdp.detach();
 }
 
 try {
+  const release = await fetch(`${origin}/game/index.pck`, {
+    redirect: "error",
+    signal: AbortSignal.timeout(180000),
+  });
+  assert(
+    release.ok,
+    "Pinned game package must be served before creating a fixture.",
+  );
+  const digest = createHash("sha256");
+  let downloaded = 0;
+  for await (const chunk of release.body) {
+    digest.update(chunk);
+    downloaded += chunk.length;
+    assert(downloaded <= expectedPckBytes, "PCK exceeds pinned size.");
+  }
+  assert.equal(downloaded, expectedPckBytes);
+  assert.equal(digest.digest("hex"), expectedPck);
+  candidatePck = { sha256: expectedPck, decodedBytes: expectedPckBytes };
   await mongo.connect();
   const content = await mongo
     .db()
@@ -202,6 +325,7 @@ try {
   const now = new Date().toISOString(),
     home = freshHomestead();
   home.pantry.kangkung = 1;
+  fixtureAttempted = true;
   await mongo
     .db()
     .collection("players")
@@ -315,7 +439,10 @@ try {
   await shot("02-shift-closed-pending-sleep");
   await compactNight("02-night-result-dialogue", true);
   const conversation = (await snapshot()).dialogue;
-  assert(conversation, "Shift completion must use the shared dialogue presenter");
+  assert(
+    conversation,
+    "Shift completion must use the shared dialogue presenter",
+  );
   await page.keyboard.press("Enter");
   if (conversation.visibleCharacters >= 0) {
     await waitState((s) => s.modal && s.dialogue?.visibleCharacters === -1);
@@ -390,36 +517,88 @@ try {
   if (page) await shot("failure").catch(() => {});
   throw error;
 } finally {
-  writeFileSync(
-    `${artifacts}/results.json`,
-    JSON.stringify({ checks, operations, errors, failures }, null, 2),
-  );
   const cookies = context ? await context.cookies().catch(() => []) : [];
   if (browser) await browser.close();
-  const cache = new Redis(redisUrl);
+  const cache = fixtureAttempted ? new Redis(redisUrl) : null;
   try {
-    await mongo
-      .db()
-      .collection("players")
-      .deleteOne({ id, email, role: "player" });
-    await mongo
-      .db()
-      .collection("receipts")
-      .deleteMany({ _id: { $regex: `^${id}:` } });
-    await mongo.db().collection("shifts").deleteMany({ userId: id });
-    const keys = [
-      `surface:${id}`,
-      `home:${id}`,
-      `calendar:writer:${id}`,
-      `dive:${id}`,
-    ];
-    for (const cookie of cookies.filter((c) => c.name === "jalasmara"))
-      keys.push(
-        `auth:${createHash("sha256").update(cookie.value).digest("hex")}`,
+    if (fixtureAttempted) {
+      const players = mongo.db().collection("players");
+      await players.deleteOne({
+        id,
+        email,
+        role: "player",
+        name: "Nala Uji Malam",
+      });
+      await mongo
+        .db()
+        .collection("receipts")
+        .deleteMany({ _id: { $regex: `^${id}:` } });
+      await mongo.db().collection("shifts").deleteMany({ userId: id });
+      const keys = [
+        `surface:${id}`,
+        `home:${id}`,
+        `calendar:writer:${id}`,
+        `dive:${id}`,
+      ];
+      for (const cookie of cookies.filter((value) =>
+        ["jalasmara", "__Host-jalasmara"].includes(value.name),
+      )) {
+        const key = `auth:${createHash("sha256").update(cookie.value).digest("hex")}`;
+        const raw = await cache.get(key);
+        if (raw) {
+          assert.equal(JSON.parse(raw).userId, id);
+          keys.push(key);
+        }
+      }
+      await cache.del(...keys);
+      assert.equal(
+        await players.countDocuments({ id, email, role: "player" }),
+        0,
       );
-    await cache.del(...keys);
+      assert.equal(
+        await mongo
+          .db()
+          .collection("receipts")
+          .countDocuments({ _id: { $regex: `^${id}:` } }),
+        0,
+      );
+      assert.equal(
+        await mongo.db().collection("shifts").countDocuments({ userId: id }),
+        0,
+      );
+      assert((await cache.mget(...keys)).every((value) => value === null));
+      cleaned = true;
+    }
   } finally {
     await mongo.close();
-    await cache.quit();
+    await cache?.quit();
+    writeFileSync(
+      `${artifacts}/results.json`,
+      JSON.stringify(
+        {
+          origin,
+          id,
+          candidatePck,
+          checks,
+          operations,
+          errors,
+          failures,
+          navigation,
+          ownTemporaryPlayerRemoved: cleaned,
+          routeElapsedMs: routeStarted ? Date.now() - routeStarted : null,
+        },
+        null,
+        2,
+      ),
+    );
+    console.log(
+      JSON.stringify({
+        artifacts,
+        checks,
+        errors,
+        failures,
+        ownTemporaryPlayerRemoved: cleaned,
+      }),
+    );
   }
 }
