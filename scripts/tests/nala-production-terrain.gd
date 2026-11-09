@@ -27,6 +27,15 @@ func _measure(label:String) -> void:
 			var last:Vector3=renderer.ground_point(b)
 			expected=maxf(1.0,absf(last.z-first.z)/Vector2(last.x-first.x,last.y-first.y).length())
 	var contact:Dictionary=renderer.actors_3d.counts.get("nalaLowerBody",{}).get("contacts",{})
+	for entry in contact.get("feet",{}).values():
+		var plan:Dictionary=entry.get("rampCurvePlan",{})
+		if not plan.has("bodyDurationPreview"): continue
+		var preview:Dictionary=plan.bodyDurationPreview
+		if not _check(bool(preview.valid) and bool(preview.conditionalPreview) and not bool(preview.fullMaskProof),"Restart duration preview must remain conditional "+label): return
+		if not _check(int(preview.markerQueries)==64 and int(preview.samples)==32 and int(preview.candidates)==65,"Restart preview exceeded its bounded original-marker work "+label): return
+		if not _check(float(plan.distance)>=float(preview.originalDistance) and absf(float(plan.distance)*4.0-roundf(float(plan.distance)*4.0))<.00001,"Restart duration changed outside quarter grid "+label): return
+		if not _check(not bool(preview.frozenLandingChanged) and Vector3(plan.toWorld).distance_to(Vector3(preview.frozenTarget))<.003,"Restart preview moved frozen landing "+label): return
+		if not entry.has("settlingTarget") and not _check(Vector3(plan.toWorld).distance_to(Vector3(entry.toWorld))<.003,"Restart preview flight moved frozen landing "+label): return
 	if not _check(absf(float(contact.get("continuousGroundRate",1.0))-expected)<.00001,"Continuous ground rate disagrees with actual active ramp geometry "+label): return
 	var stair_rate:=1.0
 	for profile in renderer.get("_stair_queries"):
@@ -122,7 +131,7 @@ func run() -> void:
 		if not InputMap.has_action(action): InputMap.add_action(action)
 		Input.action_release(action)
 	var hashes:Dictionary={}
-	for path in ["res://scripts/Player.gd","res://scripts/NalaPhysicalMotion.gd","res://scripts/NalaFootPlant.gd","res://scripts/NalaFootPlane.gd","res://scripts/SurfaceTraversal.gd","res://scripts/WorldFoley.gd","res://scripts/land/LandSurfaceQueryCache.gd","res://scripts/NalaLowerBody3D.gd","res://scripts/CharacterVisual.gd","res://scripts/land/LandWorld3D.gd","res://scripts/land/LandGeometry.gd","res://../scripts/tests/nala-production-gait.gd","res://../scripts/tests/nala-production-terrain.gd","res://../scripts/tests/nala-lower-body.gd"]: hashes[path]=FileAccess.get_sha256(path)
+	for path in ["res://scripts/Player.gd","res://scripts/NalaPhysicalMotion.gd","res://scripts/NalaFootPlant.gd","res://scripts/NalaFootPlane.gd","res://scripts/NalaRestartBodyBudget.gd","res://scripts/SurfaceTraversal.gd","res://scripts/WorldFoley.gd","res://scripts/land/LandSurfaceQueryCache.gd","res://scripts/NalaLowerBody3D.gd","res://scripts/CharacterVisual.gd","res://scripts/land/LandWorld3D.gd","res://scripts/land/LandGeometry.gd","res://../scripts/tests/nala-production-gait.gd","res://../scripts/tests/nala-production-terrain.gd","res://../scripts/tests/nala-lower-body.gd"]: hashes[path]=FileAccess.get_sha256(path)
 	var filter:=OS.get_environment("NALA_TERRAIN_PROFILE")
 	var first:=maxi(0,int(OS.get_environment("NALA_TERRAIN_FIRST")))
 	var limit:=maxi(1,int(OS.get_environment("NALA_TERRAIN_CASES"))) if OS.has_environment("NALA_TERRAIN_CASES") else 16

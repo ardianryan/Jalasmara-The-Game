@@ -190,7 +190,7 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 	if physical_plane:
 		for side in ["left","right"]:
 			var foot_direction:=str(_foot_views[side])
-			geometry[side]={"id":outfit+"/"+foot_direction+"/"+side,"leg":_data.views[foot_direction].legs[side],"vertices":_opaque_vertices[foot_direction+"/"+side],"right":right,"vertical":vertical,"plane":_plane(side),"pivot":_pivot_offsets.get(side,Vector3.ZERO)}
+			geometry[side]={"id":outfit+"/"+foot_direction+"/"+side,"leg":_data.views[foot_direction].legs[side],"bodyLeg":view.legs[side],"vertices":_opaque_vertices[foot_direction+"/"+side],"right":right,"vertical":vertical,"plane":_plane(side),"pivot":_pivot_offsets.get(side,Vector3.ZERO)}
 	var planner_delta:=delta
 	var settlement_budget:=0.0
 	var settlement_ready:=true

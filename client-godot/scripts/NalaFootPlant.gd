@@ -38,6 +38,7 @@ var _transition_next:=true
 var _body_facing_transitions:=0
 const Traversal=preload("res://scripts/SurfaceTraversal.gd")
 const FootPlane=preload("res://scripts/NalaFootPlane.gd")
+const RestartBodyBudget=preload("res://scripts/NalaRestartBodyBudget.gd")
 
 func configure(owner_renderer: Node,contract:Dictionary={}) -> void:
 	renderer=owner_renderer
@@ -388,7 +389,7 @@ func commit_raw_support(side:String,world:Vector3,support_offset:float=NAN) -> v
 		_feet[side].sole=world
 		if not is_nan(support_offset): _feet[side].rampCurvePlan.fromSupportOffset=support_offset
 
-func _begin(side:String,at:Vector2,hips:Dictionary,right:Vector3) -> void:
+func _begin(side:String,at:Vector2,hips:Dictionary,right:Vector3,resuming:bool=false) -> void:
 	_swing=side
 	_distance=0.0
 	var entry:Dictionary=_feet[side]
@@ -425,6 +426,14 @@ func _begin(side:String,at:Vector2,hips:Dictionary,right:Vector3) -> void:
 			entry.treadPlan.merge(budget,true)
 	elif _physical_contract and _ramp_landing(entry.from,entry.to):
 		var budget:=_ramp_duration(entry.from,entry.to,entry.fromWorld,_landing_distance,side)
+		if resuming and bool(budget.valid) and Vector3(budget.groundKnots[0].world).z>Vector3(entry.toWorld).z+.01:
+			var direction:=_world_motion(at,_heading).normalized()
+			var preview:=RestartBodyBudget.propose(renderer,budget,side,_feet,_landing_geometry,at,direction,_body_height,maxf(_body_rate,_continuous_ground_rate))
+			budget["bodyDurationPreview"]=preview
+			if bool(preview.valid):
+				budget.curveSpeedBound=float(budget.curveSpeedBound)*float(budget.distance)/float(preview.distance)
+				budget.distance=preview.distance
+			else: budget.valid=false
 		_landing_distance=float(budget.distance)
 		entry.fixedRampTarget=true
 		entry["rampCurvePlan"]=budget
@@ -472,7 +481,7 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 			if bool(actual.valid): entry.logical=actual.logical
 			_heading=next_heading
 			_transition_next=true
-			_begin(_swing,_last_at,hips,right)
+			_begin(_swing,_last_at,hips,right,true)
 		elif _physical_contract and _swing=="" and _heading.dot(next_heading)<_turn_cosine: _transition_next=true
 		if not resuming and _swing!="" and _heading.dot(next_heading)<_turn_cosine:
 			# Re-anchor the airborne path at its actual pose before changing heading.
