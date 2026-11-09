@@ -1,6 +1,6 @@
 # Jalasmara visual evidence
 
-Five original evidence images, copied without cropping, recoloring, recompression or new image generation. This is a small review gallery, not an asset kit or a complete acceptance report. Total PNG payload: **1,255,344 bytes** (about 1.20 MiB).
+Eight original evidence images, copied without cropping, recoloring, recompression or new image generation. This is a small review gallery, not an asset kit or a complete acceptance report. Total PNG payload: **1,825,259 bytes** (about 1.74 MiB).
 
 ## Accepted local world and loader package
 
@@ -71,3 +71,20 @@ The existing [project LICENSE](/LICENSE) remains unchanged: source code uses MIT
 ![Native full-ocean frame with three small generated clownfish near the diving player.](fishgen-ocean-pilot.png)
 
 Original frame016 from the overnight production-HybridOcean fixture, copied unchanged. This is a new candidate after the released5f5 package above: FishGen0.1.0/pin0faa790, seed1519,32atlasframes, three decorative actors (one onlow), no catch/reward changes. Native40frames and5,400water-contact checks passed; export/browser/device acceptance remains pending. See [pilot and provenance](../reviews/overnight-fishgen-pilot.md). Fish Gen/JacobKulberg MIT notice and generated-output permission are credited separately; this screenshot retains the project artwork terms.
+
+## Overnight compact HUD and resident art — NOT RELEASED
+
+![Actual local browser gameplay with compact wood-and-brass HUD, round touch joystick, minimap and visible dock.](overnight-compact-hud-browser.png)
+
+This is actual844×390 Chromium gameplay, exported source `1b67a9b`, PCK `1d3c94a5a449fe1e21ea6346da56f0684a1c3ccd0677100361296fc46923a2d8`/64,488,008bytes. The private recorder was exercised through its real menu and download; four functional checks passed and the temporary player was removed. The screen records the complete rendered world color grade, unlike an isolated ungraded component fixture. It does not prove Windows/S23 FPS, public startup or the later night-service fixes. See [recorder evidence](../reviews/overnight-recorder-browser.md).
+
+![Native component view of Nala beside the original Danu rig, with the child's smaller stature and separate held bucket visible.](overnight-danu-size-native.png)
+
+The second image is a native component capture from the sized original-art rig candidate `70d8486`, integrated as `3ac21bb`. It uses source cutouts from the project's original six-resident atlas and one authored front-three-quarter view. Danu's65-world-unit body is compared with Nala's86; the full-world postprocessing is absent in this component view. Flat-court576/contact and production-selector lifecycle tests passed. The stronger scheduled-commute test subsequently found a Gito turn/reach failure, which remains open at this gallery checkpoint. This still image is neither a natural-walk acceptance nor evidence of eight authored directions. See [rig provenance and limits](../reviews/overnight-resident-art-rig.md) and [actual commute regression](../reviews/overnight-resident-commute-contact.md).
+
+| Gallery file | Original evidence | Dimensions | Bytes | SHA-256 |
+|---|---|---:|---:|---|
+| `overnight-compact-hud-browser.png` | Integration worktree `artifacts/browser/performance-recorder-3e9706b8-6d78-4949-b3ac-5de2e3f7b2a0/recording-actual-game.png` | 844×390 | 213,879 | `518a86541cacf4eda31ee8b414faa96753f3104b2aa29abd296f36cb039b4294` |
+| `overnight-danu-size-native.png` | Resident-art worktree `artifacts/godot/resident-art-rig-sized/pair-npc_kid_danu.png` | 1440×810 | 259,577 | `cc038d39fdcef6e429d4b3d0d80a812e001b0720aa14a69205f70676a69a7fd5` |
+
+Both copies byte-match their source, have no PNG text metadata and were visually checked for account details or credentials. Existing project-art and third-party terms above remain unchanged. These are documentation images, not reusable MIT game assets.
