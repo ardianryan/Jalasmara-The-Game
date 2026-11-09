@@ -12,10 +12,16 @@ import {
   freshCalendar,
   freshHomestead,
 } from "../packages/shared/src/index.ts";
+import { WORLD } from "../packages/shared/src/world.ts";
 import { fetchWorld } from "./game-navigation.mjs";
 import { physicalRoute } from "./plan06-physical-route.mjs";
 import { keyboardPulse, corridorTargets } from "./land-view-navigation.mjs";
 
+const homeOnly = process.env.NIGHT_HOME_ONLY === "1";
+assert(
+  !process.env.NIGHT_HOME_ONLY || homeOnly,
+  "NIGHT_HOME_ONLY accepts only 1 when set.",
+);
 const origin = process.env.APP_TEST_ORIGIN ?? "http://localhost:3101";
 const mongoUrl =
   process.env.MONGO_URL ?? "mongodb://127.0.0.1:27018/jalasmara?replicaSet=rs0";
@@ -47,7 +53,22 @@ const checks = [],
   operations = [],
   errors = [],
   failures = [],
-  observations = [];
+  observations = [],
+  trace = [];
+const requestTrace = new WeakMap();
+const tracePaths = new Set([
+  "/api/adventure/surface-position",
+  "/api/adventure/state",
+  "/api/game/state",
+  "/api/homestead/state",
+  "/api/homestead/action",
+  "/api/homestead/position",
+  "/api/kedai/start",
+  "/api/kedai/serve",
+  "/api/kedai/close-shift",
+  "/api/calendar/heartbeat",
+]);
+let currentPhase = "setup";
 let browser,
   context,
   page,
@@ -194,6 +215,7 @@ async function firstButton() {
   await page.waitForTimeout(500);
 }
 async function shot(name) {
+  currentPhase = name;
   await page.screenshot({ path: `${artifacts}/${name}.png` });
   const value = await snapshot();
   observations.push({
@@ -344,7 +366,11 @@ try {
   multiplier = content.catalog.balance.starMultipliers[2];
   const now = new Date().toISOString(),
     home = freshHomestead();
-  home.pantry.kangkung = 1;
+  home.pantry.kangkung = homeOnly ? 0 : 1;
+  if (homeOnly) {
+    home.pendingStoryAdvance = { storyDay: 1, shiftId: randomUUID() };
+    home.revision++;
+  }
   fixtureAttempted = true;
   await mongo
     .db()
@@ -356,23 +382,55 @@ try {
       role: "player",
       status: "active",
       appearance: "male_default",
-      coins: 100,
-      inventory: recipes.map((r) => ({
-        fragmentId: r.fragmentId,
-        stars: 3,
-        quantity: 1,
-      })),
+      coins: homeOnly
+        ? 105 +
+          recipes.reduce((sum, r) => sum + Math.round(r.reward * multiplier), 0)
+        : 100,
+      inventory: homeOnly
+        ? []
+        : recipes.map((r) => ({
+            fragmentId: r.fragmentId,
+            stars: 3,
+            quantity: 1,
+          })),
       abilities: freshAbilities(),
-      progress: { ...freshProgress(), day: 1, stage: "night", tutorial: true },
+      progress: {
+        ...freshProgress(),
+        day: 1,
+        stage: "night",
+        tutorial: true,
+        missions: homeOnly
+          ? recipes.map((recipe) => recipe.id)
+          : freshProgress().missions,
+      },
       adventure: { discoveries: [], puzzles: [], keyItems: [] },
       calendar: { ...freshCalendar(), minuteOfDay: 1140 },
       homestead: home,
-      version: 0,
+      version: homeOnly ? 4 : 0,
       authVersion: 0,
       passwordHash: await argon2.hash(password, { type: argon2.argon2id }),
       createdAt: now,
       updatedAt: now,
     });
+  if (homeOnly) {
+    const cache = new Redis(redisUrl);
+    try {
+      await cache.set(
+        `surface:${id}`,
+        JSON.stringify({
+          area: "hub",
+          ...WORLD.homestead.door,
+          layoutVersion: WORLD.hub.layoutVersion,
+          playerVersion: 4,
+          positionAt: Date.now(),
+        }),
+        "EX",
+        1800,
+      );
+    } finally {
+      await cache.quit();
+    }
+  }
   browser = await chromium.launch({
     args: [
       "--enable-webgl",
@@ -393,11 +451,70 @@ try {
   page.on("console", (message) => {
     if (message.type() === "error") errors.push(message.text());
   });
-  page.on("response", (response) => {
-    if (response.url().includes("/api/") && response.status() >= 400)
+  page.on("request", (request) => {
+    const url = new URL(request.url());
+    if (url.origin !== origin || !tracePaths.has(url.pathname)) return;
+    const body =
+      request.method() === "POST" ? (request.postDataJSON() ?? {}) : {};
+    const entry = {
+      sequence: trace.length + 1,
+      at: Date.now(),
+      phase: currentPhase,
+      path: url.pathname,
+      method: request.method(),
+      sent: {
+        action: body.action,
+        version: body.version,
+        fromPositionAt: body.fromPositionAt,
+        expectedRevision: body.expectedRevision,
+        x: body.x,
+        y: body.y,
+        pathPoints: body.path?.length,
+        paused: body.paused,
+      },
+    };
+    trace.push(entry);
+    requestTrace.set(request, entry);
+  });
+  page.on("response", async (response) => {
+    const entry = requestTrace.get(response.request());
+    const path = new URL(response.url()).pathname;
+    if (!entry) return;
+    const body = await response.json().catch(() => ({}));
+    Object.assign(entry, {
+      respondedAt: Date.now(),
+      status: response.status(),
+      code: body.code,
+      error: typeof body.error === "string" ? body.error : undefined,
+      playerVersion: body.player?.version,
+      surface: body.surface,
+      home: body.homestead
+        ? {
+            inside: body.homestead.inside,
+            revision: body.homestead.revision,
+            pendingStoryDay: body.homestead.pendingStoryAdvance?.storyDay,
+          }
+        : undefined,
+    });
+    if (response.status() >= 400)
       failures.push({
-        path: new URL(response.url()).pathname,
+        sequence: entry.sequence,
+        path,
         status: response.status(),
+        code: body.code,
+        error: entry.error,
+        sent: entry.sent,
+        at: entry.at,
+        respondedAt: entry.respondedAt,
+        phase: entry.phase,
+      });
+  });
+  page.on("requestfailed", (request) => {
+    const entry = requestTrace.get(request);
+    if (entry)
+      Object.assign(entry, {
+        failedAt: Date.now(),
+        failure: request.failure()?.errorText,
       });
   });
   await page.addInitScript(() => {
@@ -411,67 +528,74 @@ try {
   await attach();
   world = await fetchWorld(context.request, origin);
   await waitState((s) => s.stage === "night" && !s.modal && !s.homePanel);
-  const wira = world.surface_hub.districts.find((d) => d.npc === "Mbah Wira");
-  assert(wira);
-  await routeTo(wira);
-  const shift = await requestViaKeys("kedai/start", () => true, ["e"]);
-  assert.deepEqual(
-    shift.shift.customers.map((r) => r.id),
-    recipes.map((r) => r.id),
-  );
-  await waitState((s) => s.modal);
-  for (let i = 0; i < recipes.length; i++) {
-    const keys = i === 0 ? ["Space", "Tab", "Enter"] : ["Enter"];
-    const result = await requestViaKeys(
-      "kedai/serve",
-      (body) => body.recipeId === recipes[i].id,
-      keys,
+  if (!homeOnly) {
+    const wira = world.surface_hub.districts.find((d) => d.npc === "Mbah Wira");
+    assert(wira);
+    await routeTo(wira);
+    const shift = await requestViaKeys("kedai/start", () => true, ["e"]);
+    assert.deepEqual(
+      shift.shift.customers.map((r) => r.id),
+      recipes.map((r) => r.id),
     );
-    assert.equal(result.gardenBonus, i === 0 ? 5 : 0);
+    await waitState((s) => s.modal);
+    for (let i = 0; i < recipes.length; i++) {
+      const keys = i === 0 ? ["Space", "Tab", "Enter"] : ["Enter"];
+      const result = await requestViaKeys(
+        "kedai/serve",
+        (body) => body.recipeId === recipes[i].id,
+        keys,
+      );
+      assert.equal(result.gardenBonus, i === 0 ? 5 : 0);
+      assert.equal(
+        result.earned,
+        Math.round(recipes[i].reward * multiplier) + (i === 0 ? 5 : 0),
+      );
+      assert.equal(result.homestead.pantry.kangkung, 0);
+      assert(
+        !result.player.inventory.some(
+          (item) => item.fragmentId === recipes[i].fragmentId,
+        ),
+      );
+      if (i === 0) await shot("01-garden-ingredient-served");
+      await firstButton();
+    }
+    checks.push(
+      "garden-checkbutton-consumes-one-kangkung-and-real-fragment-for-five-bonus",
+    );
+    const closed = await requestViaKeys(
+      "kedai/close-shift",
+      (body) => body.abandon === false,
+      ["Enter"],
+    );
+    assert.equal(closed.player.progress.day, 1);
+    assert.equal(closed.homestead.pendingStoryAdvance.storyDay, 1);
     assert.equal(
-      result.earned,
-      Math.round(recipes[i].reward * multiplier) + (i === 0 ? 5 : 0),
+      closed.player.coins,
+      105 +
+        recipes.reduce((sum, r) => sum + Math.round(r.reward * multiplier), 0),
     );
-    assert.equal(result.homestead.pantry.kangkung, 0);
+    await shot("02-shift-closed-pending-sleep");
+    await compactNight("02-night-result-dialogue", true);
+    const conversation = (await snapshot()).dialogue;
     assert(
-      !result.player.inventory.some(
-        (item) => item.fragmentId === recipes[i].fragmentId,
-      ),
+      conversation,
+      "Shift completion must use the shared dialogue presenter",
     );
-    if (i === 0) await shot("01-garden-ingredient-served");
-    await firstButton();
-  }
-  checks.push(
-    "garden-checkbutton-consumes-one-kangkung-and-real-fragment-for-five-bonus",
-  );
-  const closed = await requestViaKeys(
-    "kedai/close-shift",
-    (body) => body.abandon === false,
-    ["Enter"],
-  );
-  assert.equal(closed.player.progress.day, 1);
-  assert.equal(closed.homestead.pendingStoryAdvance.storyDay, 1);
-  assert.equal(
-    closed.player.coins,
-    105 +
-      recipes.reduce((sum, r) => sum + Math.round(r.reward * multiplier), 0),
-  );
-  await shot("02-shift-closed-pending-sleep");
-  await compactNight("02-night-result-dialogue", true);
-  const conversation = (await snapshot()).dialogue;
-  assert(
-    conversation,
-    "Shift completion must use the shared dialogue presenter",
-  );
-  await page.keyboard.press("Enter");
-  if (conversation.visibleCharacters >= 0) {
-    await waitState((s) => s.modal && s.dialogue?.visibleCharacters === -1);
     await page.keyboard.press("Enter");
-    checks.push("dialogue-first-enter-reveals-second-enter-continues");
+    if (conversation.visibleCharacters >= 0) {
+      await waitState((s) => s.modal && s.dialogue?.visibleCharacters === -1);
+      await page.keyboard.press("Enter");
+      checks.push("dialogue-first-enter-reveals-second-enter-continues");
+    }
+    await waitState((s) => !s.modal && !s.homePanel);
+    checks.push(
+      "all-day-one-customers-served-close-keeps-story-day-until-sleep",
+    );
+    await compactNight("02-night-clear-gameplay", false);
+  } else {
+    assert.deepEqual(world.homestead.door, WORLD.homestead.door);
+    checks.push("focused-home-fixture-starts-after-closed-shift-at-real-door");
   }
-  await waitState((s) => !s.modal && !s.homePanel);
-  checks.push("all-day-one-customers-served-close-keeps-story-day-until-sleep");
-  await compactNight("02-night-clear-gameplay", false);
   await routeTo(world.homestead.door);
   await waitState((s) => s.nearby === "home_enter");
   await page.keyboard.press("e");
@@ -605,6 +729,8 @@ try {
           failures,
           navigation,
           observations,
+          trace,
+          homeOnly,
           ownTemporaryPlayerRemoved: cleaned,
           routeElapsedMs: routeStarted ? Date.now() - routeStarted : null,
         },
