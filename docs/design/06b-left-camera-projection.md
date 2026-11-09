@@ -1,6 +1,6 @@
 # Adapter pandangan kiri untuk gameplay daratan
 
-Status 9 November 2026: helper dan regresi disiapkan pada `work/06b-view-projection`, dari integration `b765587`. Default kamera, input, Player, Main, Forest dan renderer belum diubah. Bukti matematis CPU tersedia; pengujian GDScript/Camera3D menunggu slot engine. Dokumen ini menyimpan hasil parsial agar pekerjaan integrasi tidak dianggap selesai hanya karena gambar statis tampak benar.
+Status 9 November 2026: helper dan regresi pada `work/06b-view-projection`, dari integration `b765587`. Default kamera, input, Player, Main, Forest dan renderer belum diubah. Bukti matematis CPU dan regresi GDScript/Camera3D sudah lulus; wiring runtime serta penerimaan gameplay global masih terbuka. Dokumen ini menyimpan hasil parsial agar pekerjaan integrasi tidak dianggap selesai hanya karena gambar statis tampak benar.
 
 ## Kontrak koordinat yang dipertahankan
 
@@ -75,7 +75,7 @@ Kontrak kamera helper ialah orthographic `KEEP_HEIGHT` seperti LandWorld3D exist
 
 ## Pengujian dan penerimaan tersisa
 
-`scripts/tests/land-view-projection.gd` disiapkan untuk membandingkan helper langsung dengan Camera3D serta `LandWorld3D.map_point`: embedding/ray, offset telapak, host rect, arah joystick/keyboard, magnitudo analog, kemiringan konektor dan parity kamera lama. Belum dijalankan pada saat dokumen ini dibuat; jangan mendaftarkan status lulus runtime sebelum slot engine tersedia.
+`scripts/tests/land-view-projection.gd` membandingkan helper langsung dengan Camera3D serta `LandWorld3D.map_point`: embedding/ray, offset telapak, host rect, arah joystick/keyboard, magnitudo analog, kemiringan konektor dan parity kamera lama. Pengujian Godot 4.7.2 headless lulus 576 sampel embedding/ray/kaki/host dan 2.304 sampel input/gradient pada tiga resolusi, empat sudut kamera dan kondisi pixel snap aktif/nonaktif. Log akhir `.runtime/view-projection-test.log` tidak memuat SCRIPT ERROR, Parse Error atau ERROR. Nama konstanta fixture awal `Projection` berbenturan dengan tipe bawaan Godot; diganti `ViewAdapter`, lalu tipe Vector2 input dinyatakan eksplisit sebelum pengujian akhir lulus. UID helper hasil impor dicatat bersama source. Tidak ada full-world/export atau aktivasi kamera global pada tahap ini.
 
 Model referensi analitis CPU juga memeriksa 640 kasus arah/magnitudo pada tanah rata dan empat gradient konektor manifest: delapan arah, empat besar input dan empat pasangan azimut/elevasi. Arah layar serta batas magnitudo logis konsisten. Model ini tidak menjalankan GDScript dan tidak menggantikan regression Camera3D tersebut.
 

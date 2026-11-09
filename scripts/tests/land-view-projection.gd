@@ -1,7 +1,7 @@
 extends SceneTree
 
 const Pose = preload("res://scripts/land/LandCameraPose.gd")
-const Projection = preload("res://scripts/land/LandViewProjection.gd")
+const ViewAdapter = preload("res://scripts/land/LandViewProjection.gd")
 var projection_samples:=0
 var motion_samples:=0
 
@@ -20,7 +20,7 @@ func run() -> void:
 	viewport.add_child(camera)
 	camera.current=true
 	var reference: Node2D=load("res://scripts/land/LandWorld3D.gd").new()
-	var adapter:=Projection.new()
+	var adapter:=ViewAdapter.new()
 	for dimensions in [Vector2i(480,270),Vector2i(238,421),Vector2i(960,540)]:
 		viewport.size=dimensions
 		for angles in [Vector2(0,35),Vector2(-45,30),Vector2(-45,35.26438968),Vector2(45,35)]:
@@ -49,7 +49,7 @@ func run() -> void:
 				for gradient in [Vector2.ZERO,Vector2(0,.6),Vector2(.13,-.2)]:
 					for direction in range(8):
 						for strength in [0.0,.25,1.0,2.0]:
-							var screen:=Vector2.RIGHT.rotated(direction*PI*.25)*strength
+							var screen: Vector2=Vector2.RIGHT.rotated(direction*PI*.25)*strength
 							var logical:=adapter.input_motion(screen,gradient)
 							assert(absf(logical.length()-minf(1,strength))<.0001,"Do not change logical walking speed or the server distance budget")
 							var view:=adapter.logical_motion_to_view(logical,gradient.dot(logical))
