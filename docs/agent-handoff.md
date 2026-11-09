@@ -1,5 +1,15 @@
 # Handoff aktif agent
 
+**Checkpoint aktif, 10 November 02.08 WIB.** Rilis publik tetap source798a47b/image d044/PCK1315 di bawah. Source tambahan pada branch `work/overnight-integration` belum diekspor atau dirilis. Checkpoint ini mengatasi antrean historis berikutnya.
+
+- [Alur induk keramba aktual](reviews/overnight-live-parent-cycle-actual.md) selesai **8/8**: dua tangkapan Bintang3 asli, ekstraksi, stok dua induk, pakan dan tidur dua hari, panen satu anak, reload sama; tidak menyuntik induk/hasil panen. Nol error, browser dan fixture dibersihkan.
+- [Admin](reviews/overnight-admin-array-drafts.md) lulus **35 pemeriksaan React** pada 1440/667/390/320; draft JSON invalid dipertahankan dan memblokir simpan, draft lain tidak hilang saat impor. API memakai fixture intersep, bukan transaksi database aktual. [Loading landscape pendek](reviews/overnight-loading-short-landscape.md) lulus **16 pemeriksaan host**; Menu tidak bertabrakan dan aksi dapat digulir/disentuh pada tinggi280/320. Root meninjau gambar aktual. Keduanya masih lokal, bukan isi image798.
+- CI **3046470595/sourcef9e9d69** telah lulus empat job,120API dan tes CPU navigasi/cleanup terbaru. SARIF tetap satu warning dan dua notes. Source CI ini mendahului perbaikan admin/loading/predicate lantai terbaru; jangan menyebut CI HEAD sudah lulus.
+- [Predicate lantai kanonis](reviews/overnight-canonical-ground-predicate.md), root75b866a/cf28881, lulus Godot terarah:324 titik dunia+12 kasus scalar,991 pemeriksaan,64 perbedaan membership Geometry2D lama. Hasil gagal pertama karena tipe angka fixture tetap disimpan; runtime tidak dilonggarkan. Runner didaftarkan menjadi62, suite lengkap/ekspor/browser berikutnya masih diperlukan.
+- Character sebelumnya memakai fixture hub10; source diagnosis dock yang relevan identik, tetapi hasil lama tidak dipindahkan menjadi penerimaan hub11. Snapshot lama dipertahankan, fixture sekarang cocok SHA28455e6f/layout11 dengan root. Character memegang slot engine terbatas untuk dock input aktual; lane lain CPU saja sampai RELEASE. Pilot lowerbody/normalisasi gerak tetap **OFF**, bukan source rilis. Batas reach, kontak dan kesinambungan kaki tidak dilonggarkan.
+
+Pengguna kembali mengonfirmasi akan membantu pengujian Samsung S23/Windows nanti. Panduan perangkat sudah mematok rilis publik798/PCK1315; belum ada FPS perangkat fisik. Lanjutkan delapan jalur hingga08.00WIB, prioritaskan core dan pertahankan rilis stabil.
+
 **Checkpoint aktif — 10 November, 01.17 WIB.** Kandidat overnight aktif dan [smoke publik default lulus](reviews/overnight-public-release.md). Runtime tetap Godot, bukan migrasi engine.
 
 - Source image: `798a47b00a8f471069033a0d6419cd201e7aa008`; image: `d044202760953c6cb295df49073f9e44a788f1b672c7618a4d313f8467eb9964`.

@@ -27,7 +27,7 @@ Nala datang ke Kota Apung Bandar Hujung, menjelajah desa/hutan/gua daratan, meny
 
 ## Prioritas pengembangan
 
-Checkpoint10November: kandidat798a47b/image d044/PCK1315 sudah aktif di staging, CI61world/120API lulus. Smoke publik default lulus gerak desa–hutan, jurnal/pause dan reload posisi; fixture dibersihkan. HUDmalam/kebun/retry lokal lulus, perangkat Windows/S23 dibantu pengguna nanti. Nala lowerbodytetapOFF dan siklus akuisisiparent→breedingbrowser masih terbuka. Status ini tidak mengubah kriteria penerimaan tabel.
+Checkpoint10November: kandidat798a47b/image d044/PCK1315 sudah aktif di staging, CI61world/120API lulus. Smoke publik default lulus gerak desa–hutan, jurnal/pause dan reload posisi; fixture dibersihkan. HUDmalam/kebun/retry lokal lulus; siklus tangkapan asli→dua induk→pakan/tidur dua hari→panen anak→reload juga lulus8/8 browser aktual. Perbaikan admin/loading pendek dan predicate lantai masih source lokal, memerlukan pemeriksaan gabungan serta rilis tersendiri. Nala lowerbody tetapOFF; pengguna membantu Windows/S23 nanti, belum ada hasil fisik. Status ini tidak mengubah kriteria penerimaan tabel.
 
 Arahan aktif pengguna: kerjakan seluruh [delapan jalur overnight](reviews/overnight-eight-workstreams.md) melalui tiga subagent dan satu integrator, bukan berhenti setelah rencana. Kandidat runtime tetap terpisah dari staging sampai tes gabungan dan browser diterima. Pengguna bersedia membantu Windows/S23 fisik setelah recorder siap; angka target performa di atas belum hasil pengukuran perangkat tersebut.
 
@@ -51,4 +51,4 @@ Godot tetap runtime; referensi Phaser diterjemahkan ke arsitektur yang ada. Noxe
 
 Tidak termasuk asumsi otomatis: migrasi ke Phaser/Three.js, semua interior langsung playable, exporter GLB Noxe tersedia, semua delapan arah asli selesai, atau perf HP terjamin. Keputusan itu memerlukan implementasi dan bukti tersendiri.
 
-Permintaan [Fish Gen](world/fish-gen-reference.md) sudah dilanjutkan menjadi [pilot kandidat overnight](reviews/overnight-fishgen-pilot.md): satu atlas asli dengan renang/putaran dan adapter tiga ikan dekoratif, terpisah dari sepuluh spesies gameplay. Reproduksi, animasi/kontak serta native render lulus; ekspor/browser/rilis masih menunggu. Lisensi MIT, izin hasil dan provenance disertakan. Pilot ini bukan generator terrain/air dan tidak mengubah aturan tangkapan atau ekonomi.
+Permintaan [Fish Gen](world/fish-gen-reference.md) sudah dilanjutkan menjadi [pilot overnight](reviews/overnight-fishgen-pilot.md): satu atlas asli dengan renang/putaran dan adapter tiga ikan dekoratif, terpisah dari sepuluh spesies gameplay. Reproduksi, animasi/kontak serta native render lulus; adapter telah masuk ekspor593/PCK1315 pada rilis798. Lisensi MIT, izin hasil dan provenance disertakan. Pilot ini bukan generator terrain/air dan tidak mengubah aturan tangkapan atau ekonomi.

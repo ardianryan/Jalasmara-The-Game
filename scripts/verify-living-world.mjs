@@ -55,6 +55,7 @@ const scripts = [
   "scripts/tests/component-land.gd",
   "scripts/tests/land-water-3d.gd",
   "scripts/tests/land-renderer.gd",
+  "scripts/tests/ground-query-canonical.gd",
   "scripts/tests/land-camera-pose.gd",
   "scripts/tests/land-view-projection.gd",
   "scripts/tests/land-left-gameplay.gd",
