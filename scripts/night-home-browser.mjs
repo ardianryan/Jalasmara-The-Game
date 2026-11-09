@@ -600,6 +600,16 @@ try {
       checks.push(
         "667-service-options-region-changes-after-real-touch-drag-with-world-paused",
       );
+      // Reopen through the real interaction to restore the authored first keyboard focus.
+      await page.keyboard.press("Escape");
+      await waitState((value) => !value.modal);
+      const reopened = await requestViaKeys("kedai/start", () => true, ["e"]);
+      assert.equal(reopened.shift.id, shift.shift.id);
+      assert.deepEqual(reopened.shift.served, []);
+      await waitState((value) => value.modal);
+      checks.push(
+        "same-unserved-shift-reopens-through-real-interaction-after-touch-scroll",
+      );
     }
     for (let i = 0; i < recipes.length; i++) {
       const keys = i === 0 ? ["Space", "Tab", "Enter"] : ["Enter"];
