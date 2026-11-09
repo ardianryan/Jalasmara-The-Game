@@ -2,6 +2,7 @@ extends SceneTree
 
 var renderer:Node2D
 var player:CharacterBody2D
+var collision:Node2D
 var clock:Node
 var triangles:Array=[]
 var _last_floor_height:=-INF
@@ -82,6 +83,7 @@ func _measure(label:String) -> void:
 	checks+=1
 
 func _tick(target:Vector2,delta:float,label:String) -> void:
+	if not _check(collision.is_walkable(target),"Fixture actor target left authoritative walkable floor "+label+" target="+str(target)): return
 	var before:=player.position
 	player.position=target
 	player.velocity=(target-before)/delta
@@ -121,6 +123,9 @@ func run() -> void:
 	clock.clock_paused=false
 	var stage:=Node2D.new()
 	root.add_child(stage)
+	collision=load("res://scripts/land/LandCollision.gd").new()
+	collision.configure(state.world.landMaps.hub)
+	stage.add_child(collision)
 	player=load("res://scripts/Player.gd").new()
 	stage.add_child(player)
 	player.set_physics_process(false)
