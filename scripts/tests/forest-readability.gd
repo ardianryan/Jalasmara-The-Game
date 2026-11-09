@@ -30,7 +30,31 @@ func run() -> void:
 	var forward: Vector3=renderer.camera_forward()
 	helper.update(feet,up,forward,.5)
 	var settled: Dictionary=helper.debug_status()
-	assert(settled.revealed>0 and settled.revealed<settled.crowns/4,"Gateway must reveal only its actual foreground occluders")
+	assert(settled.revealed<settled.crowns/4,"Gateway must reveal only actual foreground occluders; an unobstructed left view may reveal none")
+	if int(settled.revealed)==0:
+		var collision: Node2D=load("res://scripts/land/LandCollision.gd").new()
+		collision.configure(renderer.map)
+		var found:=false
+		for path in renderer.map.routes:
+			for segment in range(1,path.size()):
+				var start:=Vector2(path[segment-1][0],path[segment-1][1])
+				var end:=Vector2(path[segment][0],path[segment][1])
+				for step in range(ceili(start.distance_to(end)/20.0)+1):
+					var at:=start.move_toward(end,step*20.0)
+					if not collision.is_walkable(at): continue
+					var candidate: Vector3=renderer.map_point(at,renderer.ground_height(at))
+					helper.update(candidate,up,forward,.5)
+					if int(helper.debug_status().revealed)>0:
+						player.position=at
+						feet=candidate
+						found=true
+						break
+				if found: break
+			if found: break
+		collision.free()
+		assert(found,"Actual accessible forest routes must still exercise a real alpha-covered foreground canopy in the left view")
+		settled=helper.debug_status()
+	assert(settled.revealed>0 and settled.revealed<settled.crowns/4)
 	var selected: Array=[]
 	for index in range(helper.entries.size()):
 		var entry: Dictionary=helper.entries[index]
@@ -50,9 +74,9 @@ func run() -> void:
 	var node: Node3D=entry.node
 	var original_position: Vector3=node.position
 	# A one-sample texture gap must not switch a solid foreground crown instantly.
-	helper.update(feet+Vector3(1500,0,0),up,forward,.016)
+	helper.update(feet+renderer.camera_right()*15000,up,forward,.016)
 	assert(float(entry.amount)>.99 and entry.target,"Occlusion selection needs a short exit hold")
-	helper.update(feet+Vector3(1500,0,0),up,forward,.5)
+	helper.update(feet+renderer.camera_right()*15000,up,forward,.5)
 	assert(helper.debug_status().revealed==0,"Every local crown must restore after leaving")
 	assert(node.position==original_position,"Readability must not move the authored canopy")
 	# Put the same projected body in front of its crown: depth must reject the reveal.

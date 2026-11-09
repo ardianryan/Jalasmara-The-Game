@@ -112,8 +112,37 @@ func run() -> void:
 		renderer.actors_3d.update_actors(.1)
 		var hidden:Dictionary=activities.get("_actors")[person.get_instance_id()]
 		assert(not hidden.root.visible and not hidden.has("gripError") and hidden.gripMeasurement.status=="inactive")
+	assert(renderer.debug_status().azimuthDegrees==-45,"Tool/rig coverage must use the actual left runtime camera")
+	var facing_checks:=0
+	for person in people:
+		for index in range(4):
+			var wanted:=Vector2.RIGHT.rotated(index*PI*.5)
+			person.moved_velocity=renderer.input_motion(wanted,person.position)*20
+			renderer.actors_3d.update_actors(.1)
+			var rig: Node3D=renderer.actors_3d._body_rigs[person.get_instance_id()]
+			assert(rig.pose_snapshot().direction==["east","south","west","north"][index],"Layered worker facing must agree with actual projected movement")
+			var native_motion: Vector2=renderer.camera_3d.unproject_position(renderer.map_point(person.position+person.moved_velocity,renderer.ground_height(person.position)))-renderer.camera_3d.unproject_position(renderer.map_point(person.position,renderer.ground_height(person.position)))
+			assert(native_motion.normalized().dot(wanted)>.999)
+			facing_checks+=1
+		person.moved_velocity=Vector2.ZERO
+	assert(facing_checks==8)
+	# Reproduce the last authored Darmi commute edge, then enter work without
+	# changing its logical cardinal label: screen facing must turn to the soil.
+	for person in people:
+		if str(person.actor_name)!="Bu Darmi": continue
+		var animation=person.get("_body_animation")
+		person.moved_velocity=Vector2(370,-115)
+		animation.clip="walk"
+		animation.direction="east"
+		renderer.actors_3d.update_actors(.1)
+		var rig: Node3D=renderer.actors_3d._body_rigs[person.get_instance_id()]
+		assert(rig.pose_snapshot().direction=="north")
+		person.moved_velocity=Vector2.ZERO
+		animation.clip="start_work"
+		renderer.actors_3d.update_actors(.1)
+		assert(rig.pose_snapshot().direction=="east","Arrival at work must face the actual soil rather than keep the last projected commute vector")
 	assert(water_samples>100)
 	assert(JSON.stringify({"world":state.world,"player":state.player,"dive":state.dive})==before)
-	print("VILLAGE TOOL CONTACT PASS: two original workers, 480 working samples, ",water_samples," visible droplets; actual soil hit and original miss; unknown unannotated grips; pause/reduced/hidden state; no WORLD/economy mutation")
+	print("VILLAGE TOOL CONTACT PASS: two original workers, 480 working samples, ",water_samples," visible droplets; actual soil hit and original miss; unknown unannotated grips; 8 actual left-camera view-facing checks; pause/reduced/hidden state; no WORLD/economy mutation")
 	scene.free()
 	quit()

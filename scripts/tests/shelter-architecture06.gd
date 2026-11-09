@@ -79,6 +79,6 @@ func run() -> void:
 	player.position=Vector2(1120,1230)
 	renderer._shelter_architecture.update(renderer,1)
 	for panel in renderer._shelter_architecture._panels.values(): assert(float(panel.amount)==0.0,"All roof panels restore after leaving")
-	print("SHELTER ARCHITECTURE06 PASS: 5 attached solid roofs,10 authoritative posts,4 pile footings with submerged bed,",body_samples," world-space foot/torso/head rain samples; camera unchanged")
+	print("SHELTER ARCHITECTURE06 PASS: 5 attached solid roofs,10 authoritative posts,4 pile footings with submerged bed,",body_samples," world-space foot/torso/head rain samples at actual left camera")
 	stage.free()
 	quit()

@@ -172,6 +172,11 @@ func _ground_rain_impacts(data: Dictionary) -> void:
 		var fraction := fposmod(_impact_sequence*0.371,1.0)
 		var point := a.lerp(b,fraction)
 		var screen := get_viewport().get_canvas_transform()*point
+		var scene:=get_tree().current_scene
+		if scene!=null and "land_renderer" in scene:
+			var renderer: Node=scene.get("land_renderer")
+			if is_instance_valid(renderer) and renderer.active:
+				screen=renderer.project_host(point)
 		if get_viewport().get_visible_rect().grow(-12).has_point(screen):
 			var splash: AnimatedSprite2D = _pixel_fx.add_effect("bubble-splash",screen,0.3,0,true)
 			if is_instance_valid(splash):

@@ -58,12 +58,13 @@ func register(crown: Sprite3D, frame: AtlasTexture, width: float) -> void:
 	crown.material_override=material
 	entries.append({"node":crown,"size":size,"mask":_masks[key],"material":material,"amount":0.0,"hold":0.0,"target":false})
 
-func update(feet: Vector3, up: Vector3, forward: Vector3, delta: float) -> void:
+func update(feet: Vector3, up: Vector3, forward: Vector3, delta: float, right := Vector3.ZERO) -> void:
 	revealed=0
+	var screen_right:=forward.cross(up).normalized() if right.is_zero_approx() else right
 	var body:=feet+up*48.0-forward*8.0
 	for entry in entries:
 		var relative: Vector3=body-entry.node.global_position
-		var local:=Vector2(relative.x,-relative.dot(up))
+		var local:=Vector2(relative.dot(screen_right),-relative.dot(up))
 		var in_front: bool=relative.dot(forward)>12.0
 		var overlaps:=false
 		if in_front and absf(local.x)<entry.size.x*.5+28 and absf(local.y)<entry.size.y*.5+48:

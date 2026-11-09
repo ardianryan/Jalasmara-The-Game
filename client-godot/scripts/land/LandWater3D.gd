@@ -85,8 +85,35 @@ func configure(renderer: Node, map: Dictionary) -> void:
 	mesh_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(mesh_instance)
 
+	_build_distant_backing(renderer)
 	_setup_effect_pools()
 	_seed_initial_activity()
+
+func _build_distant_backing(renderer: Node) -> void:
+	# Two triangles continue the same water field beyond the near tessellation.
+	# Rotated edge views must not expose the SubViewport clear color.
+	var margin:=Vector2(10000,10000)
+	var corners: Array[Vector2]=[-margin,Vector2(_extent.x+margin.x,-margin.y),_extent+margin,Vector2(-margin.x,_extent.y+margin.y)]
+	var vertices:=PackedVector3Array()
+	var uv:=PackedVector2Array()
+	var normals:=PackedVector3Array()
+	for index in [0,2,1,0,3,2]:
+		vertices.append(renderer.map_point(corners[index],-20.0))
+		uv.append(corners[index]/_extent)
+		normals.append(Vector3(0,0,1))
+	var arrays:=[]
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX]=vertices
+	arrays[Mesh.ARRAY_TEX_UV]=uv
+	arrays[Mesh.ARRAY_NORMAL]=normals
+	var geometry:=ArrayMesh.new()
+	geometry.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES,arrays)
+	var backing:=MeshInstance3D.new()
+	backing.name="DistantWaterBacking"
+	backing.mesh=geometry
+	backing.material_override=material
+	backing.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(backing)
 
 func _setup_effect_pools() -> void:
 	_splashes.clear()

@@ -103,11 +103,14 @@ func _camera_facing(camera:Camera3D,state:Dictionary) -> String:
 	var velocity:Vector2=actor.moved_velocity
 	if velocity.length()>.1:
 		_view_velocity=velocity.normalized()
+	elif str(state.clip) in ["start_work","work_loop","end_work"] and str(actor.activity_kind) in ["fishing","gardening","weaving"]:
+		_view_velocity=Vector2.LEFT if str(actor.activity_kind)=="fishing" else Vector2.RIGHT
 	elif logical!=_logical_facing:
 		_view_velocity={"east":Vector2.RIGHT,"west":Vector2.LEFT,"north":Vector2.UP,"south":Vector2.DOWN}.get(logical,Vector2.DOWN)
 	_logical_facing=logical
 	var ground:float=renderer.ground_height(actor.position)
-	var delta:Vector3=renderer.map_point(actor.position+_view_velocity,ground)-renderer.map_point(actor.position,ground)
+	var height_delta:float=renderer.ground_gradient(actor.position).dot(_view_velocity) if renderer.has_method("ground_gradient") else 0.0
+	var delta:Vector3=renderer.map_point(actor.position+_view_velocity,ground+height_delta)-renderer.map_point(actor.position,ground)
 	var screen:=Vector2(delta.dot(camera.global_basis.x),-delta.dot(camera.global_basis.y))
 	if screen.length()<.0001: return _visual_facing
 	var previous:Vector2={"east":Vector2.RIGHT,"west":Vector2.LEFT,"north":Vector2.UP,"south":Vector2.DOWN}[_visual_facing]
@@ -124,7 +127,7 @@ func update_pose(tint: Color) -> void:
 	var foot: Vector3=renderer.map_point(actor.position,renderer.ground_height(actor.position))
 	if _foot_plant==null: foot-=renderer.camera_forward()*8
 	global_transform=Transform3D(camera.global_basis.orthonormalized(),foot)
-	var facing:=_camera_facing(camera,state) if _foot_plant!=null else str(state.direction)
+	var facing:=_camera_facing(camera,state)
 	scale=Vector3(-1 if facing=="west" and _foot_plant==null else 1,1,1)
 	if facing in ["east","west"] and _foot_plant==null: scale.x*=.93
 	var back:=facing=="north"

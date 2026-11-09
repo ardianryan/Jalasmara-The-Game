@@ -40,13 +40,15 @@ func _run() -> void:
 			var world_point: Vector3=renderer.map_point(point,height)
 			assert(renderer.ground_projection(world_point).distance_to(point)<.001)
 			var pixel: Vector2=renderer.camera_3d.unproject_position(world_point)
-			var logical_size: Vector2=renderer.get_viewport().get_visible_rect().size
-			var expected: Vector2=Vector2(renderer.viewport_3d.size)/2.0+(point-renderer.get("_center"))*(float(renderer.viewport_3d.size.y)/logical_size.y)*camera.zoom.y
-			assert(pixel.distance_to(expected)<.05,"Rendered elevated feet must project onto the actual logical floor")
+			var ray_start: Vector3=renderer.camera_3d.project_ray_origin(pixel)
+			var ray_direction: Vector3=renderer.camera_3d.project_ray_normal(pixel)
+			var floor_point: Vector3=ray_start+ray_direction*((height-ray_start.z)/ray_direction.z)
+			assert(renderer.ground_projection(floor_point).distance_to(point)<.01,"Actual Camera3D ray must recover the authored logical feet at their own floor height")
+			assert(renderer.view_projection.project_logical(point,height).distance_to(pixel)<.01)
 			checks+=1
 	var status: Dictionary=renderer.debug_status()
 	assert(status.active and status.renderer=="LandSubViewport3D")
-	assert(status.elevationDegrees==35)
+	assert(status.elevationDegrees==35 and status.azimuthDegrees==-45)
 	assert(status.viewport[0]*status.viewport[1]<=129600)
 	assert(absf(float(status.viewport[0])/status.viewport[1]-renderer.get_viewport().get_visible_rect().size.aspect())<.015)
 	assert(not status.bitmapGround and status.houses==8 and status.glbModels>0)
@@ -82,5 +84,5 @@ func _run() -> void:
 	assert(renderer.viewport_3d.render_target_update_mode==SubViewport.UPDATE_DISABLED)
 	assert(state.dive.oxygen==77)
 	scene.free()
-	print("LAND RENDERER PASS: ",checks," exact projected feet across4 elevations, 35degree camera, true3D architecture/GLB/trees/stairs, bounded batches, alpha-foot anchors, warm spatial lamps, emitted oriented bridge planks/beams/rails/thickness, no collision/resource mutation, dive transition")
+	print("LAND RENDERER PASS: ",checks," ray-projected feet across4 elevations, left -45/35 camera, true3D architecture/GLB/trees/stairs, bounded batches, alpha-foot anchors, warm spatial lamps, emitted oriented bridge planks/beams/rails/thickness, no collision/resource mutation, dive transition")
 	quit()

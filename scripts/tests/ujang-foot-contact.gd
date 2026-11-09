@@ -143,6 +143,10 @@ func _turn_trace() -> void:
 	_previous.clear()
 
 func _work_grip_checks() -> void:
+	# Artwork checks explicitly request cardinal views; restore gameplay's left pose afterward.
+	var original_camera: Transform3D=renderer.camera_3d.global_transform
+	var center: Vector3=renderer.map_point(person.position,renderer.ground_height(person.position))
+	renderer.camera_3d.transform=preload("res://scripts/land/LandCameraPose.gd").pose(center,0,35,3300,renderer.camera_3d.size,renderer.viewport_3d.size.y)
 	var animation=person.get("_body_animation")
 	var palm_meta:Dictionary=rig.data.parts.hand_rod_west
 	var palm:Sprite3D=rig.sprites.hand_rod_west
@@ -162,6 +166,10 @@ func _work_grip_checks() -> void:
 				renderer.actors_3d.update_actors(.1)
 				var entry:Dictionary=activities.get("_actors")[person.get_instance_id()]
 				assert(entry.root.visible and palm.visible)
+				assert(entry.fishingTarget.wet,"Fishing endpoint must lie on the actual WaterField")
+				var target:Vector3=entry.fishingTarget.point
+				var feet:Vector3=renderer.map_point(person.position,renderer.ground_height(person.position))
+				assert((target-feet).dot(renderer.camera_right())*float(entry.fishingTarget.screenSide)>0,"Bobber and rod must remain on the same visual side")
 				var rod:MeshInstance3D=entry.lines[0]
 				var a:=rod.to_global(Vector3(0,-.5,0))
 				var b:=rod.to_global(Vector3(0,.5,0))
@@ -196,6 +204,8 @@ func _work_grip_checks() -> void:
 				await process_frame
 				await RenderingServer.frame_post_draw
 				renderer.viewport_3d.get_texture().get_image().save_png(OUTPUT+"/art-%s-%s.png"%[direction,frame])
+
+	renderer.camera_3d.global_transform=original_camera
 
 func run() -> void:
 	_capture=OS.get_environment("UJANG_CAPTURE")=="1"
@@ -258,6 +268,13 @@ func run() -> void:
 		scene.free()
 		quit()
 		return
+	# Artwork inspection rotates the camera without walking. Start the independent
+	# gameplay route with a fresh rig at the actual runtime pose, as on scene entry.
+	renderer.actors_3d._body_rigs.erase(person.get_instance_id())
+	rig.free()
+	renderer.actors_3d.update_actors(0)
+	rig=renderer.actors_3d._body_rigs[person.get_instance_id()]
+	_previous.clear()
 	person.get("_body_animation").begin_departure()
 	for tick in range(8): await _step(person.position)
 	if OS.get_environment("UJANG_TURNS_ONLY")=="1":
