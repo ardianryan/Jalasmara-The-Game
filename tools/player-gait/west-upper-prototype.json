@@ -1,0 +1,408 @@
+{
+  "status": "Authored proposal, one WEST daily view only; not installed or accepted",
+  "identity": "male_nusantara",
+  "source": "client-godot/resources/art/player-gait/male-nusantara-daily-walk-8way-v1.png",
+  "sourceSha256": "342724d1724490279cd0f65c0340c5b35cdf366ecc36a99af716c51f751b8fc3",
+  "sourceCell": {
+    "row": 4,
+    "column": 0,
+    "size": 128
+  },
+  "upperCutY": 76,
+  "verifiedClothDonor": [
+    69,
+    47,
+    73,
+    62
+  ],
+  "knownGap": "No clean original torso beneath forward near arm and no complete hidden far shoulder exist. Torso repair, far sleeve/upper-arm extension and joint seals below are newly authored using original palette, not recovered source artwork.",
+  "torsoRepairEnvelope": [
+    [
+      61,
+      43
+    ],
+    [
+      66,
+      44
+    ],
+    [
+      71,
+      47
+    ],
+    [
+      74,
+      52
+    ],
+    [
+      74,
+      63
+    ],
+    [
+      71,
+      67
+    ],
+    [
+      59,
+      67
+    ],
+    [
+      58,
+      62
+    ],
+    [
+      58,
+      51
+    ]
+  ],
+  "arms": {
+    "near": {
+      "depth": "in front of torso; anatomical side unresolved",
+      "shoulder": [
+        62,
+        48
+      ],
+      "elbow": [
+        60,
+        56
+      ],
+      "wrist": [
+        51,
+        63
+      ],
+      "parts": {
+        "upper": [
+          [
+            61,
+            45
+          ],
+          [
+            64,
+            46
+          ],
+          [
+            67,
+            50
+          ],
+          [
+            66,
+            55
+          ],
+          [
+            63,
+            58
+          ],
+          [
+            58,
+            57
+          ],
+          [
+            57,
+            53
+          ],
+          [
+            59,
+            48
+          ]
+        ],
+        "fore": [
+          [
+            58,
+            54
+          ],
+          [
+            65,
+            55
+          ],
+          [
+            64,
+            58
+          ],
+          [
+            61,
+            61
+          ],
+          [
+            60,
+            63
+          ],
+          [
+            57,
+            65
+          ],
+          [
+            54,
+            67
+          ],
+          [
+            49,
+            66
+          ],
+          [
+            48,
+            62
+          ],
+          [
+            53,
+            59
+          ]
+        ],
+        "palm": [
+          [
+            48,
+            60
+          ],
+          [
+            52,
+            61
+          ],
+          [
+            54,
+            63
+          ],
+          [
+            55,
+            66
+          ],
+          [
+            54,
+            69
+          ],
+          [
+            50,
+            70
+          ],
+          [
+            46,
+            69
+          ],
+          [
+            44,
+            67
+          ],
+          [
+            44,
+            63
+          ]
+        ]
+      }
+    },
+    "far": {
+      "depth": "behind torso; anatomical side unresolved",
+      "shoulder": [
+        74,
+        51
+      ],
+      "elbow": [
+        77,
+        60
+      ],
+      "wrist": [
+        81,
+        68
+      ],
+      "parts": {
+        "upper": [
+          [
+            74,
+            50
+          ],
+          [
+            77,
+            51
+          ],
+          [
+            79,
+            55
+          ],
+          [
+            80,
+            60
+          ],
+          [
+            77,
+            63
+          ],
+          [
+            74,
+            59
+          ],
+          [
+            73,
+            55
+          ]
+        ],
+        "fore": [
+          [
+            77,
+            58
+          ],
+          [
+            80,
+            59
+          ],
+          [
+            82,
+            63
+          ],
+          [
+            84,
+            67
+          ],
+          [
+            82,
+            70
+          ],
+          [
+            79,
+            68
+          ],
+          [
+            77,
+            64
+          ],
+          [
+            75,
+            61
+          ]
+        ],
+        "palm": [
+          [
+            80,
+            65
+          ],
+          [
+            83,
+            66
+          ],
+          [
+            86,
+            69
+          ],
+          [
+            85,
+            72
+          ],
+          [
+            82,
+            74
+          ],
+          [
+            79,
+            72
+          ],
+          [
+            78,
+            69
+          ]
+        ]
+      },
+      "authoredSleeve": [
+        [
+          71,
+          48
+        ],
+        [
+          74,
+          48
+        ],
+        [
+          77,
+          51
+        ],
+        [
+          78,
+          55
+        ],
+        [
+          76,
+          57
+        ],
+        [
+          73,
+          54
+        ]
+      ],
+      "authoredUpperGap": [
+        [
+          74,
+          53
+        ],
+        [
+          77,
+          53
+        ],
+        [
+          80,
+          60
+        ],
+        [
+          77,
+          62
+        ],
+        [
+          74,
+          57
+        ]
+      ]
+    }
+  },
+  "poses": [
+    {
+      "frame": 0,
+      "near": {
+        "upperDeg": 0,
+        "foreRelativeDeg": 0,
+        "palmRelativeDeg": 0
+      },
+      "far": {
+        "upperDeg": 0,
+        "foreRelativeDeg": 0,
+        "palmRelativeDeg": 0
+      },
+      "label": "near forward / far back"
+    },
+    {
+      "frame": 4,
+      "near": {
+        "upperDeg": -55,
+        "foreRelativeDeg": -20,
+        "palmRelativeDeg": 0
+      },
+      "far": {
+        "upperDeg": 85,
+        "foreRelativeDeg": -5,
+        "palmRelativeDeg": 0
+      },
+      "label": "near back / far forward"
+    }
+  ],
+  "phaseContract": {
+    "halfCycleFrames": [
+      0,
+      4
+    ],
+    "nearFarArmsOppose": true,
+    "footContactMapping": "Not wired. Near/far are view-depth labels; anatomical leg mapping and accepted displacement phase must be reviewed before runtime use.",
+    "upperTorsoHeadSourceFrame": 0,
+    "lowerBodyContactSheetOnly": "Original corresponding frame0/4 below y76; no lower-body correction claimed"
+  },
+  "paletteSamples": {
+    "sleeve": [
+      70,
+      50
+    ],
+    "shirtShadow": [
+      72,
+      60
+    ],
+    "skin": [
+      78,
+      60
+    ],
+    "skinShadow": [
+      76,
+      61
+    ]
+  },
+  "authoring": "Original source cutouts, rigid nearest-neighbor joint transforms; original-palette torso repair and far hidden sleeve/arm proposal. No image API, moodboard, mirror, scale change or new character identity."
+}
