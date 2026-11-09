@@ -3,6 +3,7 @@ extends Node2D
 const PixelFX = preload("res://scripts/PixelEffects.gd")
 const MAX_MOTES := 48
 const MAX_WAKES := 18
+const CurrentField = preload("res://scripts/hybrid/OceanCurrentField.gd")
 var source: Node2D
 var enabled := false
 var elapsed := 0.0
@@ -20,6 +21,11 @@ var _clips := 0
 var _fx: Node2D
 var _last_loot := -1
 var _was_active := false
+var _field := CurrentField.new()
+var _mote_budget := MAX_MOTES
+var _wake_budget := MAX_WAKES
+var _shaft_budget := 3
+var _paused := false
 
 func setup(main: Node2D) -> void:
 	source = main
@@ -31,6 +37,7 @@ func set_active(value: bool) -> void:
 	visible = value
 	if not value:
 		_wakes.clear()
+		_motes.clear()
 		_last_loot = -1
 
 func _screen(point: Vector2, parallax: float = 1.0) -> Vector2:
@@ -47,7 +54,16 @@ func _process(delta: float) -> void:
 	_weather = EnvironmentState.snapshot()
 	_depth = maxf(0.0,(player.position.y-float(GameState.world.get("surface",400)))/28.0)
 	var reduced := bool(_weather.get("reduced_motion",false))
-	elapsed += delta*(0.2 if reduced else 1.0)
+	_paused=bool(_weather.get("clockPaused",false))
+	var step:=0.0 if _paused else delta*(0.2 if reduced else 1.0)
+	elapsed+=step
+	var low:=str(RenderQuality.get_profile().get("effective","balanced"))=="low"
+	_mote_budget=16 if reduced or low else MAX_MOTES
+	_wake_budget=8 if low else MAX_WAKES
+	_shaft_budget=2 if low else 3
+	while _motes.size()>_mote_budget: _motes.pop_back()
+	while _wakes.size()>_wake_budget: _wakes.pop_front()
+	if reduced: _wakes.clear()
 	var world_id := hash(GameState.world.get("terrainContours",[]))
 	if world_id != _world_id:
 		_world_id = world_id
@@ -60,15 +76,19 @@ func _process(delta: float) -> void:
 		_fx.add_effect("memory-spark",_screen(player.position+Vector2(24,-8)),0.8,0,true)
 	_last_loot = loot
 	for index in range(_wakes.size()-1,-1,-1):
-		_wakes[index].age += delta
+		_wakes[index].age += step
 		if float(_wakes[index].age)>1.1: _wakes.remove_at(index)
-	_wake_clock += delta
+	for mote in _motes:
+		mote.at=_field.trace(mote.at,Vector2(mote.flow)*step)
+	_wake_clock+=step
 	var velocity: Vector2 = player.get("velocity")
-	if velocity.length()>25 and _wake_clock>0.10 and not reduced:
+	if velocity.length()>25 and _wake_clock>0.10 and not reduced and not _paused:
 		_wake_clock = 0.0
-		if _wakes.size()>=MAX_WAKES: _wakes.pop_front()
+		if _wakes.size()>=_wake_budget: _wakes.pop_front()
 		var facing := float(player.get("direction"))
-		_wakes.append({"at":player.position+Vector2(-facing*35,8),"age":0.0,"facing":facing})
+		var origin:=player.position+Vector2(-facing*35,8)
+		if not _solid(origin):
+			_wakes.append({"at":origin,"age":0.0,"facing":facing,"flow":_field.sample(origin,Vector2(float(_weather.get("current_x",7)),float(_weather.get("current_y",0))))})
 	_sample_clock += delta
 	if _sample_clock>=0.16:
 		_sample_clock = 0.0
@@ -81,6 +101,7 @@ func _build_contours() -> void:
 		var polygon := PackedVector2Array()
 		for point in contour: polygon.append(Vector2(float(point[0]),float(point[1])))
 		if polygon.size()>2: _polygons.append(polygon)
+	_field.configure(_polygons)
 
 func clip_ray(origin: Vector2, target: Vector2) -> Vector2:
 	var closest := target
@@ -106,7 +127,7 @@ func _sample_water(player: Vector2,reduced: bool) -> void:
 	var daylight := float(_weather.get("daylight",0.8))
 	if _depth<36 and daylight>0.3:
 		var surface := float(GameState.world.get("surface",400))+8
-		for index in range(3):
+		for index in range(_shaft_budget):
 			var x := floorf(center.x/390.0)*390.0+(index-1)*390.0
 			var start := Vector2(x,surface)
 			var finish := Vector2(x+110+float(_weather.get("wind_x",9))*2,surface+900)
@@ -120,20 +141,28 @@ func _sample_water(player: Vector2,reduced: bool) -> void:
 			if left_end.distance_to(left_target)>2: _clips += 1
 			if right_end.distance_to(right_target)>2: _clips += 1
 			_shafts.append({"leftStart":left_start,"rightStart":right_start,"leftEnd":left_end,"rightEnd":right_end,"phase":x*0.01})
-	_motes.clear()
-	var offset := Vector2i(floori(center.x/128),floori(center.y/128))
-	var current := Vector2(float(_weather.get("current_x",7)),float(_weather.get("current_y",0)))
+	var previous: Dictionary={}
+	for mote in _motes: previous[mote.key]=mote
+	var candidates: Array[Dictionary]=[]
+	var offset:=Vector2i(floori(center.x/128),floori(center.y/128))
+	var current:=Vector2(float(_weather.get("current_x",7)),float(_weather.get("current_y",0)))
 	for y in range(offset.y-4,offset.y+5):
 		for x in range(offset.x-6,offset.x+7):
-			var seed_value := posmod(x*431+y*157,997)
+			var seed_value:=posmod(x*431+y*157,997)
 			if seed_value%3!=0: continue
-			var local := Vector2(fposmod(seed_value*17.0+elapsed*current.x,128),fposmod(seed_value*31.0+elapsed*current.y-elapsed*2,128))
-			var point := Vector2(x*128,y*128)+local
-			if _solid(point): continue
-			var fade := minf(minf(local.x,128-local.x),minf(local.y,128-local.y))/18.0
-			_motes.append({"at":point,"near":seed_value%2==0,"alpha":clampf(fade,0,1)})
-			if _motes.size()>= (16 if reduced else MAX_MOTES): break
-		if _motes.size()>= (16 if reduced else MAX_MOTES): break
+			var key:=Vector2i(x,y)
+			var local:=Vector2(fposmod(seed_value*17.0+elapsed*current.x,128),fposmod(seed_value*31.0+elapsed*current.y-elapsed*2,128))
+			var at:=Vector2(x*128,y*128)+local
+			if previous.has(key): at=previous[key].at
+			var near:=seed_value%2==0
+			var projected:=center+(at-center)*(1.05 if near else .82)
+			if _solid(at) or _solid(projected): continue
+			var distance:=at.distance_to(center)
+			var fade:=1.0-smoothstep(600.0,860.0,distance)
+			candidates.append({"key":key,"at":at,"near":near,"alpha":fade,"flow":_field.sample(at,current)})
+	candidates.sort_custom(func(a: Dictionary,b: Dictionary) -> bool: return Vector2(a.at).distance_squared_to(center)<Vector2(b.at).distance_squared_to(center))
+	_motes.clear()
+	for index in range(mini(_mote_budget,candidates.size())): _motes.append(candidates[index])
 	_caustics.clear()
 	if _depth<75 and daylight>0.3:
 		for polygon in _polygons:
@@ -155,6 +184,10 @@ func _draw() -> void:
 		draw_colored_polygon(PackedVector2Array([_screen(shaft.leftStart),_screen(shaft.rightStart),_screen(shaft.rightEnd),_screen(shaft.leftEnd)]),Color(0.78,0.94,0.78,strength))
 	for mote in _motes:
 		var near: bool = mote.near
+		var camera: Camera2D=source.get("camera")
+		var center:=camera.get_screen_center_position()
+		var projected: Vector2=center+(Vector2(mote.at)-center)*(1.05 if near else .82)
+		if _solid(projected): continue
 		var point := _screen(mote.at,1.05 if near else 0.82).round()
 		if not get_viewport_rect().grow(3).has_point(point): continue
 		draw_rect(Rect2(point,Vector2.ONE*(1.0 if near else 0.75)),Color(0.70,0.88,0.82,float(mote.alpha)*(0.26 if near else 0.12)))
@@ -166,10 +199,13 @@ func _draw() -> void:
 			draw_polyline(PackedVector2Array([at+Vector2(-9,1),at+Vector2(-3,-2),at+Vector2(5,0),at+Vector2(10,-2)]),Color(0.68,0.91,0.78,alpha),1)
 	for wake in _wakes:
 		var age := float(wake.age)
-		var flow := Vector2(float(_weather.get("current_x",7)),float(_weather.get("current_y",0)))*age
-		var at := _screen(wake.at+flow+Vector2(0,-age*6)).round()
+		var flow: Vector2=Vector2(wake.flow)*age+Vector2(0,-age*6)
+		var world_at:=_field.trace(wake.at,flow)
+		if _solid(world_at): continue
+		var at:=_screen(world_at).round()
 		var length := 3+age*5
-		draw_line(at,at+Vector2(-float(wake.facing)*length,1),Color(0.65,0.89,0.84,(1-age/1.1)*0.23),1)
+		var end:=_screen(_field.trace(world_at,Vector2(-float(wake.facing)*length,1))).round()
+		draw_line(at,end,Color(0.65,0.89,0.84,(1-age/1.1)*0.23),1)
 
 func debug_status() -> Dictionary:
-	return {"active":enabled,"depth":_depth,"motes":_motes.size(),"wakes":_wakes.size(),"shafts":_shafts.size(),"contourClips":_clips,"causticPatches":_caustics.size(),"current":[float(_weather.get("current_x",0)),float(_weather.get("current_y",0))],"reducedMotion":bool(_weather.get("reduced_motion",false)),"threeDParticles":0}
+	return {"active":enabled,"depth":_depth,"motes":_motes.size(),"wakes":_wakes.size(),"shafts":_shafts.size(),"contourClips":_clips,"causticPatches":_caustics.size(),"current":[float(_weather.get("current_x",0)),float(_weather.get("current_y",0))],"reducedMotion":bool(_weather.get("reduced_motion",false)),"threeDParticles":0,"qualityBudgets":{"motes":_mote_budget,"wakes":_wake_budget,"shafts":_shaft_budget},"clockPaused":_paused,"currentField":_field.debug_status()}
