@@ -10,7 +10,7 @@ Audit baca-saja pada cabang `work/laut-dinamis`, runtime `232385d` di atas basel
 
 Koordinat piksel berikut memakai gambar1440×810 laut asli, bukan gambar yang diperkecil di chat.
 
-## 1. Kerikil abu-abu laut memang dekorasi yang terpisah dari permukaan
+## 1. Kerikil abu-abu laut memang dekorasi yang terpisah dari permukaan — pemasangan diperbaiki
 
 **Terlihat:** pada `passage-159.png`, benda kecil abu-abu sekitar x490–560/y698–763 tampak mengambang atau ditempel di depan muka karang. Siluet abu-abu tanpa tekstur juga berbeda dari batu berlumut di sekelilingnya.
 
@@ -62,3 +62,12 @@ Pada keluaran terbaru desa `night-home/02-night-clear-gameplay-667x375.png`, seb
 - Aset UI baru dan perubahan loading sedang diverifikasi lane lain. Tidak ada temuan HUD lama yang dimasukkan kembali sebagai pekerjaan laut.
 
 Urutan lokal setelah rilis HUD/loading: kontak tiga batu dekoratif → keterbacaan sambungan platform13 → pemeriksaan entrance hutan pada build terbaru. Ini tiga pemeriksaan konkret dengan koordinat tetap; bukan roadmap perluasan fitur atau klaim kesiapan seni seluruh game.
+
+
+## Tindak lanjut terbatas sesudah audit
+
+Masalah kontak pada tiga batu dekoratif di bagian1 sudah diperbaiki pada lane laut. `OceanRockMount.gd` membaca vertex GLB setelah skala/rotasi, menguji muka mesh karang yang ada dengan ray segmen3D, dan menanam vertex belakang ke dalam permukaan dengan overlap yang diturunkan dari55% rentang depth model (dibatasi2..32satuan). Depth pusat yang dihasilkan26.74/32.16/38.40 menggantikan115. Seluruh footprint vertex harus berada dalam terrain sah; dekorasi tanpa dukungan dilewati. Titik asal proyeksi x/y ketiga model, collider, volume karang utama, save dan rute tidak berubah.
+
+Material model memakai crop128px dari atlas batu proyek yang sudah ada dengan proyeksi triplanar karena GLB ini tidak mempunyai UV. Model tetap GLB volumetrik; tidak diganti gambar2D. Palet/tekstur dekorasi masih dapat dinilai artistik pada build gabungan, tetapi celah kontak geometri yang terukur di bagian1 telah ditutup.
+
+`ocean-rock-mount.gd` lulus untuk ketiga model: vertex aktual menembus segitiga reef sebesar overlap yang dihitung, asal proyeksi tetap, depth span model>20, material bertekstur, penempatan di air bebas ditolak, tidak ada collider baru atau mutasi data dunia. Native Compatibility reef/passage/deep juga lulus tanpa error shader. Bukti lokal sebelum/sesudah: `artifacts/godot/ocean-rock-mount/passage-before-after.png`; gambar penuh sesudah berada di `artifacts/godot/ocean-current/`. Sambungan platform13, tepi gua dan keterbacaan entrance tetap merupakan temuan audit tersendiri; tidak dinyatakan selesai oleh perbaikan dekorasi ini.

@@ -146,17 +146,34 @@ func _build_cave_backwall() -> void:
 	add_child(wall)
 
 func _build_model_rocks() -> void:
+	set_meta("model_rock_mounts",[])
+	var mounting:=preload("res://scripts/hybrid/OceanRockMount.gd")
 	var path := "res://resources/models/reef-rock.glb"
 	if not ResourceLoader.exists(path): return
 	var source = load(path)
 	if not source is PackedScene: return
 	for at in [Vector2(620,1130),Vector2(1530,1140),Vector2(3210,990)]:
 		var rock: Node3D = source.instantiate()
-		rock.position = _point(at,115)
 		rock.scale = Vector3.ONE * 95.0
 		rock.rotation = Vector3(0.12,0.5 + model_instances * 1.6,0.18)
+		var mount: Dictionary=mounting.solve(self,world,rock,at,deg_to_rad(projection_tilt_degrees))
+		get_meta("model_rock_mounts").append(mount)
+		if not bool(mount.supported):
+			rock.free()
+			continue
+		rock.position=_point(at,float(mount.depth))
+		rock.set_meta("reef_mount",mount)
 		var rock_material := StandardMaterial3D.new()
-		rock_material.albedo_color = Color("475951")
+		rock_material.albedo_color = Color("a0b9ac")
+		var column:=0 if at.y<2080 else 1 if at.y<3060 else 2
+		var image:=_atlas.get_image()
+		if image.is_compressed():image.decompress()
+		var tile:=image.get_region(Rect2i(column*image.get_width()/3,0,image.get_width()/3,image.get_height()/2))
+		tile.resize(128,128,Image.INTERPOLATE_NEAREST)
+		rock_material.albedo_texture=ImageTexture.create_from_image(tile)
+		rock_material.uv1_triplanar=true
+		rock_material.uv1_scale=Vector3.ONE*2.8
+		rock_material.texture_filter=BaseMaterial3D.TEXTURE_FILTER_NEAREST
 		rock_material.roughness = 0.98
 		for mesh in rock.find_children("*","MeshInstance3D",true,false):
 			mesh.material_override = rock_material
