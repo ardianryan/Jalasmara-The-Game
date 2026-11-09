@@ -32,3 +32,7 @@ Provenance:
 ## Read-only v7 visual follow-up
 
 The website author generated `south-upper-ownership-draft-v7/south-daily0-alpha-contour-and-separate-arms.png` after reserving11 exact reviewed source cloth pixels for the torso before all arm masks. This peer viewed that actual image: the broad teal triangular flap is gone from isolated LEFT, and the warm palm keeps a narrow dark border. The previously ambiguous dark pixels remain explicit hand-boundary choices; this still does not prove their anatomy from source color alone. The author's original rest remains byte-exact and newly authored hidden repair decreases104→93pixels because11pixels are now retained original cloth. This bounded visual improvement applies only to SOUTH daily0 source ownership, not the four source masks, elbow/wrist anatomy or moving gait.
+
+## SOUTH loop proposal still review
+
+The website's `south-upper-loop-candidate-v2` eight-frame and isolated-arm sheets were also viewed CPU-only. Frame0/4 now visibly oppose raised RIGHT/low LEFT and low RIGHT/raised LEFT, correcting the first proposal's in-phase impression. The verified teal flap stays removed. Six additional original dark boundary texels are explicitly proposed as moving forearm ownership in the loop only; they form a narrow dark outline and no obvious bright hand remnant remains on fixed torso. This is a reviewable art proposal, with manual boundary uncertainty retained. Source rest, connected rasters and still opposition do not establish elbow/wrist anatomy, actual phase/contact mapping or native gait.
