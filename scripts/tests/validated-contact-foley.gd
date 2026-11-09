@@ -218,11 +218,26 @@ func _run() -> void:
 	foley.free()
 	actor.free()
 	source.free()
+	audio.set_process_input(false)
+	audio.set_process_unhandled_input(false)
+	audio.process_mode = Node.PROCESS_MODE_DISABLED
 	audio.audio_unlocked = false
 	audio.muted = true
+	audio.stop_bgm(0.0)
 	for sound in audio.get_children():
 		if sound is AudioStreamPlayer:
 			sound.stop()
 			sound.stream = null
+	audio.bgm_streams.clear()
+	audio.sfx_streams.clear()
+	for bus_name in [audio.ENVIRONMENT_BUS,audio.UI_BUS]:
+		var bus := AudioServer.get_bus_index(bus_name)
+		if bus<0: continue
+		for effect in range(AudioServer.get_bus_effect_count(bus)-1,-1,-1):
+			AudioServer.remove_bus_effect(bus,effect)
+	audio._filter = null
+	audio.queue_free()
 	await process_frame
+	await process_frame
+	await create_timer(.35).timeout
 	quit()
