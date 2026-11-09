@@ -41,6 +41,7 @@ func _run() -> void:
 		for index in range(renderer._surface_queries.size()):
 			var surface:Dictionary=renderer._surface_queries[index]
 			var inside:=Predicate.point_in_polygon(point,surface.canonicalPolygon)
+			if not _check(Predicate.cached_point_in_polygon(point,surface.canonicalPolygon,surface.bounds)==inside,"Cached scalar bounds changed membership "+str(sample)): return
 			if inside!=Geometry2D.is_point_in_polygon(point,surface.polygon): legacy_mismatches+=1
 			if not inside: continue
 			matches.append(index)
@@ -53,6 +54,7 @@ func _run() -> void:
 	for sample in expected.polygonCases:
 		var point:=Vector2(float(sample.point[0]),float(sample.point[1]))
 		if not _check(Predicate.point_in_polygon(point,sample.polygon)==bool(sample.inside),"Scalar edge/concave/strict boundary case "+str(sample)): return
+		if not _check(Predicate.cached_point_in_polygon(point,sample.polygon,Predicate.polygon_bounds(sample.polygon))==bool(sample.inside),"Cached raw AABB edge/epsilon case "+str(sample)): return
 	# Preserve the actual priority30 endpoint regression independently of the generated corpus.
 	renderer.map=world.landMaps.hub
 	renderer._cache_ground_queries()
