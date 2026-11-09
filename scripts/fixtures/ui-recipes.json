@@ -1,0 +1,56 @@
+[
+  {
+    "id": "daun_kuning",
+    "customer": "Bu Darmi",
+    "complaint": "Daun kebun apung saya menguning. Saya lupa apa yang dibutuhkan tanaman.",
+    "fragmentId": "klorofil"
+  },
+  {
+    "id": "air_keruh",
+    "customer": "Pak Jaya",
+    "complaint": "Air penampungan kami keruh. Apakah disaring saja sudah cukup?",
+    "fragmentId": "ekosistem"
+  },
+  {
+    "id": "takaran",
+    "customer": "Beno",
+    "complaint": "Saya butuh menghitung perbandingan bahan untuk wadah penyaring.",
+    "fragmentId": "rasio"
+  },
+  {
+    "id": "akar",
+    "customer": "Bu Darmi",
+    "complaint": "Media kebun apung saya terus terendam dan daunnya layu menguning. Mengapa disiram dan dipupuk tetap tidak menolong?",
+    "fragmentId": "klorofil"
+  },
+  {
+    "id": "alga",
+    "customer": "Pak Jaya",
+    "complaint": "Alga memenuhi teluk dan ikan mulai kekurangan napas.",
+    "fragmentId": "ekosistem"
+  },
+  {
+    "id": "pompa",
+    "customer": "Beno",
+    "complaint": "Pompa warga harus mengisi tangki tanpa menghabiskan energi.",
+    "fragmentId": "rasio"
+  },
+  {
+    "id": "kebun_baru",
+    "customer": "Bu Darmi",
+    "complaint": "Bagaimana kebun kami bisa lebih tahan setelah pencemaran ini?",
+    "fragmentId": "klorofil"
+  },
+  {
+    "id": "rantai",
+    "customer": "Saras",
+    "complaint": "Hilangnya predator ternyata mengubah seluruh teluk. Bagaimana menjelaskannya?",
+    "fragmentId": "ekosistem"
+  },
+  {
+    "id": "logistik",
+    "customer": "Beno",
+    "complaint": "Kita harus menghitung bekal sebelum turun ke sumber limbah.",
+    "fragmentId": "rasio"
+  }
+]

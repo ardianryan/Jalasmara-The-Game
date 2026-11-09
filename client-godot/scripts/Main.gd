@@ -282,10 +282,25 @@ func _layout_modal() -> void:
 	var safe:=ViewportLayout.insets()
 	var top:=ceilf(60*ratio)+safe.y
 	var dimensions:=Vector2(minf(680 if modal.get_meta("compact_result",false) else 900,view.x-32-safe.x-safe.z),minf(800 if view.x<800 else 520,view.y-top-16-safe.w))
+	var service:=bool(modal.get_meta("service_tray",false))
+	if service:
+		var edge:=ceilf(16*ratio)
+		var frame:StyleBox=modal.get_theme_stylebox("panel")
+		frame.content_margin_left=maxf(22,edge)
+		frame.content_margin_right=maxf(22,edge)
+		dimensions=Vector2(minf(420*ratio,view.x-edge*2-safe.x-safe.z),minf(view.y-top-edge-safe.w,view.y*(.62 if view.x<view.y else .76)))
 	modal.size=dimensions
 	modal.position=Vector2((view.x-dimensions.x)/2,top)
-	if modal.get_child_count()>0 and modal.get_child(0) is ScrollContainer:
-		var scroll:ScrollContainer=modal.get_child(0)
+	if service:
+		modal.position=Vector2(safe.x+(view.x-safe.x-safe.z-dimensions.x)*.5 if view.x<view.y else view.x-safe.z-ceilf(16*ratio)-dimensions.x,view.y-dimensions.y-ceilf(16*ratio)-safe.w)
+		modal_box.add_theme_constant_override("separation",ceili(8*ratio))
+		var header:BoxContainer=modal.get_meta("service_header",null)
+		if is_instance_valid(header):
+			header.add_theme_constant_override("separation",ceili(4*ratio))
+			(header.get_parent() as BoxContainer).add_theme_constant_override("separation",ceili(8*ratio))
+		for row in modal_box.find_children("*","HBoxContainer",true,false): row.add_theme_constant_override("separation",ceili(8*ratio))
+	var scroll:=_modal_scroll(modal)
+	if is_instance_valid(scroll):
 		scroll.custom_minimum_size=Vector2.ZERO
 		if is_instance_valid(modal_box): modal_box.custom_minimum_size.x=0
 	for label in modal.find_children("*","Label",true,false):
@@ -294,12 +309,20 @@ func _layout_modal() -> void:
 		button.custom_minimum_size.y=_ui_target()
 		preload("res://scripts/HudSkin.gd").apply_button(button)
 		button.add_theme_font_size_override("font_size",_ui_font())
+		if button is OptionButton:
+			var popup:PopupMenu=button.get_popup()
+			popup.add_theme_font_override("font",BODY_FONT)
+			popup.add_theme_font_size_override("font_size",_ui_font())
+			popup.add_theme_constant_override("v_separation",ceili(28*ratio))
 	for grid in modal.find_children("*","GridContainer",true,false):
 		if grid.get_meta("quiz_answers",false): _layout_quiz_answers(grid,dimensions.x-50)
-	if modal.get_meta("compact_result",false):
+	if modal.get_meta("compact_result",false) or service:
 		modal.set_meta("fit_max_height",dimensions.y)
 		_fit_compact_modal.call_deferred(modal)
 	_reveal_modal_focus.call_deferred(modal)
+func _modal_scroll(target:PanelContainer) -> ScrollContainer:
+	for scroll in target.find_children("*","ScrollContainer",true,false): return scroll as ScrollContainer
+	return null
 func _reveal_modal_focus(target: PanelContainer) -> void:
 	if not is_instance_valid(target) or not target.is_inside_tree(): return
 	var tree:=target.get_tree()
@@ -307,8 +330,9 @@ func _reveal_modal_focus(target: PanelContainer) -> void:
 	await tree.process_frame
 	if not is_instance_valid(target) or target!=modal or not target.is_inside_tree(): return
 	var focused:=target.get_viewport().gui_get_focus_owner()
-	if is_instance_valid(focused) and target.is_ancestor_of(focused):
-		(target.get_child(0) as ScrollContainer).ensure_control_visible(focused)
+	var scroll:=_modal_scroll(target)
+	if is_instance_valid(scroll) and is_instance_valid(focused) and scroll.is_ancestor_of(focused):
+		scroll.ensure_control_visible(focused)
 func _fit_compact_modal(target: PanelContainer) -> void:
 	# Wrapped labels need the final container width before their height is meaningful.
 	if not is_instance_valid(target) or not target.is_inside_tree(): return
@@ -318,11 +342,17 @@ func _fit_compact_modal(target: PanelContainer) -> void:
 	if not is_instance_valid(target) or target!=modal or not target.is_inside_tree(): return
 	var frame:StyleBox=target.get_theme_stylebox("panel")
 	var content_height:=modal_box.get_combined_minimum_size().y+frame.get_margin(SIDE_TOP)+frame.get_margin(SIDE_BOTTOM)
+	var header:Control=target.get_meta("service_header") if target.has_meta("service_header") else null
+	if is_instance_valid(header):
+		content_height+=header.get_combined_minimum_size().y+(target.get_child(0) as VBoxContainer).get_theme_constant("separation")
 	var maximum:=float(target.get_meta("fit_max_height",target.size.y))
 	target.size.y=minf(maximum,content_height)
 	var view:=target.get_viewport().get_visible_rect().size
 	var top:=ceilf(60*preload("res://scripts/UiMetrics.gd").ratio(self,hud))+ViewportLayout.insets().y
-	target.position.y=top+maxf(0,(view.y-top-16-ViewportLayout.insets().w-target.size.y)/2)
+	if target.get_meta("service_tray",false):
+		target.position.y=view.y-target.size.y-ceilf(16*preload("res://scripts/UiMetrics.gd").ratio(self,hud))-ViewportLayout.insets().w
+	else:
+		target.position.y=top+maxf(0,(view.y-top-16-ViewportLayout.insets().w-target.size.y)/2)
 
 func _layout_quiz_answers(answers: GridContainer,width: float) -> void:
 	var view:=preload("res://scripts/UiMetrics.gd").viewport(self,hud).get_visible_rect().size
@@ -1114,8 +1144,10 @@ func _open_kedai() -> void:
 	GameState.shift = r.shift
 	_kedai_customer()
 func _kedai_customer() -> void:
-	var box := _open("Meja Racik · Malam di Kedai Waras")
+	var box := _open("Meja Racik · Kedai Waras")
+	modal.set_meta("service_tray",true)
 	var current: Dictionary = {}
+	var pantry_first:Button
 	for customer in GameState.shift.get("customers",[]):
 		if not GameState.shift.get("served",[]).has(customer.id):
 			current = customer
@@ -1127,20 +1159,44 @@ func _kedai_customer() -> void:
 		var counts := _mission_counts()
 		_label(box,"Pelanggan: "+str(current.customer),20)
 		_label(box,"Keluhan: “"+str(current.complaint)+"”",17)
-		if str(current.id) == "akar":
-			_label(box,"Ringkasan Bukti Lapangan (Kebun %d/3 · Hutan Pesisir %d/3 · Laut Wringin %d/3):\n• Media tanam kebun apung tergenang rapat & saluran pasang tersendat -> pori media kehilangan oksigen untuk respirasi seluler akar.\n• Fragmen Benih Hayati menyimpan ingatan Biologi Tumbuhan utuh (respirasi akar, keseimbangan osmosis, asimilasi nitrogen, dan fotosintesis daun)." % [int(counts.garden),int(counts.forest),int(counts.sea)],13)
-		elif str(current.id) == "daun_kuning":
-			_label(box,"Petunjuk Meja Racik: Gejala daun menguning berkaitan dengan biologi sel tumbuhan, klorofil, dan kesehatan akar (Benih Hayati).",13)
-		_label(box,"Pilih Fragmen Ingatan dari Tas untuk Meracik Seduhan Solusi:",14)
+		var note_text:=""
+		if str(current.id)=="akar":
+			note_text="Bukti lapangan · Kebun %d/3 · Hutan %d/3 · Laut %d/3.\nMedia tergenang dan saluran tersendat mengurangi oksigen untuk respirasi akar. Benih Hayati menyimpan konsep respirasi, osmosis, nitrogen, dan fotosintesis." % [int(counts.garden),int(counts.forest),int(counts.sea)]
+		elif str(current.id)=="daun_kuning":
+			note_text="Daun menguning berkaitan dengan klorofil dan kesehatan akar. Bandingkan gejala dengan konsep biologi tumbuhan dalam Benih Hayati."
+		var garden_choices:Array[Dictionary]=[]
+		var servings:Dictionary=GameState.homestead_definitions.get("servings",{"kangkung":{"itemId":"kangkung","name":"Kangkung kebun"}})
+		for serving in servings.values():
+			var quantity:=int(GameState.homestead.get("pantry",{}).get(str(serving.itemId),0))
+			if quantity>0: garden_choices.append({"id":str(serving.itemId),"name":str(serving.name),"quantity":quantity})
 		var garden_ingredient:=CheckButton.new()
-		garden_ingredient.text="Pakai pelengkap kangkung · stok %d" % int(GameState.homestead.get("pantry",{}).get("kangkung",0))
-		garden_ingredient.disabled=int(GameState.homestead.get("pantry",{}).get("kangkung",0))<=0
-		garden_ingredient.custom_minimum_size.y=82
+		garden_ingredient.text="Pelengkap kedai habis"
+		if garden_choices.size()==1:
+			var short_name:=str(garden_choices[0].name).replace(" kebun","").replace(" pesisir","").replace(" budidaya","")
+			garden_ingredient.text="Pelengkap %s ×%d" % [short_name,int(garden_choices[0].quantity)]
+		elif garden_choices.size()>1: garden_ingredient.text="Pakai pelengkap kedai"
+		garden_ingredient.disabled=garden_choices.is_empty()
+		garden_ingredient.custom_minimum_size.y=_ui_target()
 		garden_ingredient.add_theme_font_override("font",BODY_FONT)
-		garden_ingredient.add_theme_font_size_override("font_size",24)
-		box.add_child(garden_ingredient)
+		garden_ingredient.add_theme_font_size_override("font_size",_ui_font())
+		pantry_first=garden_ingredient
+		var supplement_parent:Container=box
+		supplement_parent.add_child(garden_ingredient)
+		var garden_select:OptionButton
+		if garden_choices.size()>1:
+			garden_select=OptionButton.new()
+			garden_select.add_theme_font_override("font",BODY_FONT)
+			garden_select.add_theme_font_size_override("font_size",_ui_font())
+			garden_select.custom_minimum_size.y=_ui_target()
+			garden_select.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+			for choice in garden_choices:
+				var short_name:=str(choice.name).replace(" kebun","").replace(" pesisir","").replace(" budidaya","")
+				garden_select.add_item("%s ×%d" % [short_name,int(choice.quantity)])
+				garden_select.set_item_metadata(garden_select.item_count-1,choice.id)
+			supplement_parent.add_child(garden_select)
 		var feedback_label := _label(box,"",13)
 		feedback_label.modulate = Color("8c2d19")
+		feedback_label.hide()
 		var any := false
 		for item in GameState.player.get("inventory",[]):
 			if int(item.quantity)<=0:
@@ -1148,9 +1204,14 @@ func _kedai_customer() -> void:
 			any = true
 			var selected: Dictionary = item.duplicate()
 			var frag_id := str(item.fragmentId)
-			var scope := "Biologi Tumbuhan: akar, osmosis, nitrogen, & fotosintesis" if frag_id=="klorofil" else "Lingkungan & Ekosistem Pesisir" if frag_id=="ekosistem" else "Matematika: rasio, debit, & kapasitas" if frag_id=="rasio" else "Kimia: larutan & netralisasi"
-			_button(box,"%s (%s) · %d bintang · %d buah" % [GameState.fragment_name(frag_id),scope,int(item.stars),int(item.quantity)],func():
-				var r: Dictionary = await ApiClient.call_api("/kedai/serve",{"shiftId":GameState.shift.id,"recipeId":current.id,"fragmentId":selected.fragmentId,"stars":int(selected.stars),"gardenIngredient":garden_ingredient.button_pressed})
+			_button(box,"%s · %d bintang · %d buah" % [GameState.fragment_name(frag_id),int(item.stars),int(item.quantity)],func():
+				if network_busy: return
+				network_busy=true
+				var body:Dictionary={"shiftId":GameState.shift.id,"recipeId":current.id,"fragmentId":selected.fragmentId,"stars":int(selected.stars),"gardenIngredient":garden_ingredient.button_pressed}
+				if garden_ingredient.button_pressed:
+					body["gardenItemId"]=str(garden_select.get_item_metadata(garden_select.selected)) if is_instance_valid(garden_select) else str(garden_choices[0].id)
+				var r: Dictionary = await ApiClient.call_api("/kedai/serve",body)
+				network_busy=false
 				if r.get("ok",false):
 					AudioManager.play_sfx("recipe_cooked")
 					if str(current.id) == "akar":
@@ -1163,17 +1224,51 @@ func _kedai_customer() -> void:
 				else:
 					AudioManager.play_sfx("ui_Toggle_off")
 					var err_msg := str(r.get("error","Fragmen belum sesuai. Baca kembali keluhan pelanggan dan bukti lapangan."))
-					feedback_label.text = "Belum tepat (fragmen tidak berkurang): " + err_msg
+					if is_instance_valid(feedback_label):
+						feedback_label.text = "Belum tepat (fragmen tidak berkurang): " + err_msg
+						feedback_label.show()
 					status.text = err_msg
 			)
+		if not note_text.is_empty():
+			var notes:=_label(box,note_text,14)
+			notes.hide()
+			var notes_button:Button
+			notes_button=_button(box,"Baca bukti lapangan",func():
+				notes.visible=not notes.visible
+				(notes.get_meta("toggle") as Button).text="Tutup bukti lapangan" if notes.visible else "Baca bukti lapangan"
+				_layout_modal()
+			)
+			notes.set_meta("toggle",notes_button)
 		if not any:
 			_label(box,"Tas kosong. Tutup kedai sementara untuk kembali menyelam.")
 		_button(box,"Tutup sementara · cari stok",func(): await _close_shift(true))
 	_button(box,"Berjalan di dermaga",_close)
+	_pin_service_context()
+	if is_instance_valid(pantry_first) and not pantry_first.disabled:
+		pantry_first.grab_focus.call_deferred()
+		return
 	for child in box.get_children():
 		if child is Button and not child.disabled:
 			child.grab_focus.call_deferred()
 			break
+func _pin_service_context() -> void:
+	var scroll:=_modal_scroll(modal)
+	var context:=modal_box.get_children().slice(0,3)
+	modal.remove_child(scroll)
+	var wrapper:=VBoxContainer.new()
+	wrapper.add_theme_constant_override("separation",ceili(8*preload("res://scripts/UiMetrics.gd").ratio(self,hud)))
+	modal.add_child(wrapper)
+	var header:=VBoxContainer.new()
+	header.name="ServiceContext"
+	header.add_theme_constant_override("separation",ceili(4*preload("res://scripts/UiMetrics.gd").ratio(self,hud)))
+	wrapper.add_child(header)
+	for label in context:
+		if not label is Label: break
+		modal_box.remove_child(label)
+		header.add_child(label)
+	wrapper.add_child(scroll)
+	modal.set_meta("service_header",header)
+
 func _close_shift(abandon: bool) -> void:
 	var r: Dictionary = await ApiClient.call_api("/kedai/close-shift",{"shiftId":GameState.shift.id,"abandon":abandon})
 	if r.get("ok",false):
