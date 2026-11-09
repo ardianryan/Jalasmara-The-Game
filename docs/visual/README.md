@@ -1,6 +1,14 @@
 # Jalasmara visual evidence
 
-Twelve original evidence images, copied without cropping, recoloring, recompression or new image generation. This is a small review gallery, not an asset kit or a complete acceptance report. Total PNG payload: **2,735,910 bytes**.
+Thirteen original evidence images, copied without cropping, recoloring, recompression or new image generation. This is a small review gallery, not an asset kit or a complete acceptance report. Total PNG payload: **2,845,460 bytes**. Released-world images and uninstalled authoring proposals are labelled separately.
+
+## WEST arm authoring proposal: not installed
+
+![Eight WEST daily frames comparing original Nala, the arm proposal and explicit source-versus-authored pixel provenance.](/docs/visual/nala-west-upper-authoring-proposal.png)
+
+One daily view only. The near arm now moves between opposing extremes, with a compact sleeve and explicit new torso repair in the original palette. Cyan/gold identify original arm cutouts; magenta identifies newly authored pixels. The pictured legs are the original atlas frames for context, **not the unfinished physical lower-body pilot**. Arm contact phase, gear overlap, native movement, other directions and explorer clothing remain unaccepted. This image does not depict the active game build.
+
+Tool/source `e852197`, [authoring report](/docs/reviews/overnight-west-upper-authored-prototype.md), nine CPU tests passed independently in root. The original ignored evidence came from `Jalasmara-overnight-resident-art/artifacts/player-gait/west-upper-daily-loop-review/west-upper-before-after.png`; this copy is byte-identical,1620×1196,109,550bytes, SHA256 `0b2989f79a7e7ba7a75a33fdb0811fb9b6bb30fa91ddbd62e111b6391bc54d63`. Root inspected all eight frames and checked the copy for account/credential displays and image text metadata. Original-project artwork terms remain; this is development documentation, not an MIT asset pack or third-party moodboard copy.
 
 ## Accepted local world and loader package
 

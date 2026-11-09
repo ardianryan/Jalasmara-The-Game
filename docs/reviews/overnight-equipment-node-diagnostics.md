@@ -2,6 +2,10 @@
 
 Prepared source for the next coherent game package; **not exported or browser-tested**. ExistingPCK73d wardrobe4/4 actualPASS remains unchanged, including its partially occluded eastern-booth screenshot. Integrator approved this bounded diagnostic addition after that run. No new art, attachment transform, outfit rule, controller, geometry, server state or public deployment changes.
 
+Root integrated `bef2108` and independently ran the actual focused fixture: PASS marker, exit0, zero `SCRIPT ERROR`/`ERROR:` in `.runtime/overnight-equipment-node-focused-root.log`. The four route/projection CPU tests also passed in root. The fixture is registered as the additional64th world check, and both wardrobe helper suites are registered in CI. **Root full64/64 PASS**, summed fixture runtime147,165ms, no `SCRIPT ERROR`/line-start `ERROR:`; creature verifier10species/722frames also passed. Resident commute20,785ms remains below its unchanged60second limit. This is a new local headless result, not a transfer of the preceding63-check run or device FPS. No new export or browser result is claimed.
+
+Combined manifest `.runtime/overnight-64-world-diagnostics/world-checks.json`, SHA256 `db51408e0d55a70eb89902f4adf69d5dc176d9b2eb04b72ba1ca86398e4d6ea1`; full log `.runtime/overnight-64-world-diagnostics.log`. Existing headless audio-driver/ObjectDB warnings remain distinct from parser/runtime errors. All runtime files were fixed at `bef2108`/`4d955e1`; the runner additionally registered this fixture before execution. No physical Nala pilot files were present.
+
 ## Boundary and payload
 
 The existing `Diagnostics.gd` opt-in is reused. On Web, it reads the existing window/parent diagnostic flag or `diagnostics=1` query; the normal production host does not enable it. Native debug builds retain their existing default. No new route, command, postMessage listener or privileged action is introduced. `set_enabled` already supports explicit test toggles.

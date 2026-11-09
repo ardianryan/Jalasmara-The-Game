@@ -8,7 +8,7 @@ Checkpoint 10 November 2026, 04.08 WIB. Pengguna mengizinkan pekerjaan sampai08.
 - Character: `Jalasmara-overnight-character`; shelter: `Jalasmara-overnight-resident-art`; website kini mengerjakan consumer ground di `Jalasmara-overnight-ground-consumers`, sumber host sebelumnya di `Jalasmara-overnight-hud-perf`.
 - Semua Godot import/export/headless/native/browser/WebGL/GPU wajib serial dengan grant root dan RELEASE. CPU/source/API independen boleh paralel. Pada checkpoint ini semua slot engine dilepas: character menganalisis CPU pose d014f4e gagal, shelter meninjau sumber tersebut, website menyiapkan diagnostik actual-node opt-in untuk ekspor koheren berikutnya. Periksa pesan slot sebelum engine.
 - Symlink `node_modules`, `.runtime`, dump/artefak mentah dan kredensial tidak boleh distage. Jangan menggunakan akun owner, reseed, menghapus volume/data/backup, atau mengubah shared proxy.
-- GitLab CE dibatalkan. Remote `github` terakhir dipush096b4b2, `gitlab`3af35a6; commit sesudahnya belum otomatis dipublikasi. Tidak ada PR/merge main baru.
+- GitLab CE dibatalkan. Kedua remote `github`/`gitlab` terakhir dipush17d713c; push GitLab memakai `ci.skip` untuk mirror laporan sesudah kegagalan runner terdokumentasi. Ini bukan CI terbaru PASS. Commit sesudahnya belum otomatis dipublikasi. Tidak ada PR/merge main baru.
 - Kamera kiri→kanan3/4, azimut−45/elevasi35; satu hari36menit aktif; pakaian daily/explorer/diving dan gear modular tetap. Gagal reach/sole/ankle tidak boleh ditutup dengan memperpanjang kaki atau menaikkan toleransi.
 
 ## Rilis publik yang benar-benar aktif
@@ -34,6 +34,7 @@ Backup terbaru `/var/backups/jalasmara/jalasmara-20261109T203407Z.archive.gz`, S
 
 ## Source gabungan lokal dan bukti
 
+- [Diagnostik actual-node](reviews/overnight-equipment-node-diagnostics.md) sourcebef2108 sudah digabung **lokal saja**, focused Godot root PASS/0error serta4tes CPU route/proyeksiPASS. Hanya opt-in; normal Web tidak menambah field atau loop descendant. Bukti scene-tree tidak sama dengan tidak tertutup atap. Fixture didaftarkan sebagai world check64; full64 sedang dijalankan root, belum dinyatakan PASS. Tidak ada PCK baru atau diagnostik ini di staging. Satu contact sheet WEST109.550byte kini ada pada galeri berlabel proposal belum dipasang; total13PNG2.845.460byte.
 - Paket publik mencakup HUD malam ringkas,13rutinitas, rumah pribadi lurah/direkturRV/Laskar, jahe/keramba, serta tiga ikan dekoratif Fish Gen. Sepuluh spesies gameplay tetap. Commute enam warga11.826pose/ramp158/stairs0 lulus; jangan mengklaim seluruh tangga/delapan arah artwork warga.
 - PCK1315 lokal: kedai11, kebun5, PCKfault4, WASMfault3, recorder otomatis30detik4 pemeriksaan lulus. Recorder30.103ms/28sampel memakai SwiftShader; bukan FPS S23/Windows. [Panduan perangkat](performance/overnight-device-test.md) kini mengikuti host e171734/PCK73d, dengan dua scope smoke terpisah.
 - [Akuisisi induk sampai panen](reviews/overnight-live-parent-cycle-actual.md) **8/8** actualbrowser, UUID2fe51904-6362-40d0-80f7-303f799df9d3: dua tangkapan Bintang3 asli→ekstraksi→stok2induk→pakan/tidur dua hari→panen1anak→reload sama. Tidak menyuntik induk/hasil;0error, fixture dibersihkan. Bukan bukti pembukaan izin/benih atau pertumbuhan jahe4hari penuh.
