@@ -33,6 +33,7 @@ import {
 import { watchGameplayFailures } from "./gameplay-api-failure.mjs";
 import { deriveSarasFixture } from "./saras-alpha-fixture.mjs";
 import { deriveLeftForestFixture } from "./left-forest-fixture.mjs";
+import { deriveWardrobeFixture } from "./wardrobe-route-fixture.mjs";
 import {
   keyboardPulse,
   corridorTargets,
@@ -60,6 +61,7 @@ assert(
     "dialogue",
     "left",
     "left-forest",
+    "wardrobe",
     "shelters",
     "lower",
     "canopy",
@@ -68,7 +70,17 @@ assert(
   ].includes(routeMode),
 );
 const routeLimitMs =
-  (["left", "left-forest", "lower", "canopy", "gateways", "saras"].includes(routeMode) ? 5 : 10) *
+  ([
+    "left",
+    "left-forest",
+    "wardrobe",
+    "lower",
+    "canopy",
+    "gateways",
+    "saras",
+  ].includes(routeMode)
+    ? 5
+    : 10) *
   60 *
   1000;
 const shelterWaitPosition = { x: 800, y: 1000 };
@@ -100,6 +112,8 @@ assert(!process.env.PLAN06_SARAS_MINUTE || routeMode === "saras");
 assert(!process.env.PLAN06_SARAS_ATTENTION_WORK || (routeMode === "saras" && process.env.PLAN06_SARAS_ATTENTION_WORK === "1"));
 const sarasFixture = routeMode === "saras" ? deriveSarasFixture(WORLD, Number(process.env.PLAN06_SARAS_MINUTE ?? 1200), process.env.PLAN06_SARAS_ATTENTION_WORK === "1") : null;
 const leftForestFixture = routeMode === "left-forest" ? deriveLeftForestFixture(WORLD) : null;
+const wardrobeFixture =
+  routeMode === "wardrobe" ? deriveWardrobeFixture(WORLD) : null;
 const navigation = { matrixPulses: 0, legacyPulses: 0 };
 const inputProofs = [];
 const fixtureStoryDay = routeMode === "dialogue" ? 1 : 2;
@@ -200,7 +214,7 @@ if (routeMode === "gateways")
 let id;
 do {
   id = randomUUID();
-} while (calendarRain(id, 2) !== (routeMode !== "saras"));
+} while (calendarRain(id, 2) !== !["saras", "wardrobe"].includes(routeMode));
 const directory = `artifacts/browser/plan06-layout-${id}`;
 mkdirSync(directory, { recursive: true });
 const email = `plan06-layout-${id}@test.invalid`,
@@ -329,7 +343,7 @@ async function walkDirect(x, y) {
       !value.diving && value.area !== "home" && value.land?.active
         ? value.land.view?.motion
         : null;
-    if (["left", "left-forest"].includes(routeMode))
+    if (["left", "left-forest", "wardrobe"].includes(routeMode) && !value.diving)
       assert(
         contract,
         "Left-view navigation requires the actual renderer motion contract.",
@@ -1222,6 +1236,97 @@ async function verifyCompactDialogue() {
   );
 }
 
+async function verifyWardrobe() {
+  const fixture = deriveWardrobeFixture(world);
+  assert.deepEqual(fixture, wardrobeFixture);
+  const assertOutfit = async (outfit, tag) => {
+    const value = await waitState(
+      (state) => state.outfit === outfit && state.land?.actors?.player === 1,
+    );
+    assert.equal(value.equipment.tank, outfit === "diving");
+    assert.equal(value.equipment.net, outfit === "diving");
+    assert.equal(value.equipment.satchel, false);
+    observations.push({
+      name: tag + "-requested-gear-state",
+      x: value.x,
+      y: value.y,
+      outfit: value.outfit,
+      equipment: value.equipment,
+    });
+    await shot(tag);
+    return value;
+  };
+  await assertOutfit("daily", "wardrobe-declared-daily-dock-approach");
+  await walkTo(fixture.curtain.x, fixture.curtain.y);
+  await assertOutfit("daily", "wardrobe-curtain-retains-daily-from-village");
+  await walkTo(fixture.diving.x, fixture.diving.y);
+  await assertOutfit("diving", "wardrobe-crossing-equips-diving-tank-and-net");
+  await walkTo(fixture.curtain.x, fixture.curtain.y);
+  await assertOutfit("diving", "wardrobe-curtain-retains-diving-from-ladder");
+  await walkTo(fixture.daily.x, fixture.daily.y);
+  await assertOutfit("daily", "wardrobe-return-removes-tank-and-net");
+  checks.push(
+    "actual-booth-crossing-hysteresis-and-return-request-correct-outfits-and-gear",
+  );
+  await routeTo(fixture.divePoint, "hub");
+  await waitState(
+    (state) => state.nearby === "ladder" && state.outfit === "diving",
+  );
+  assert.equal(
+    navigation.legacyPulses,
+    0,
+    "Dock navigation must use the actual left-view motion contract",
+  );
+  await pressAndPost("dive/start", null, "e");
+  await waitState(
+    (state) =>
+      state.diving &&
+      state.hybrid?.active &&
+      state.outfit === "diving" &&
+      state.equipment?.tank &&
+      state.equipment?.net,
+  );
+  await shot("wardrobe-actual-ocean-entry-diving-state");
+  await walkTo(world.spawn.x, world.spawn.y);
+  await waitState((state) => state.nearby === "boat");
+  const extracted = await pressAndPost("dive/extract", null, "e");
+  await waitState((state) => !state.diving && state.modal);
+  await closeDialogue();
+  await waitState(
+    (state) => !state.diving && state.land?.area === "hub" && !state.modal,
+  );
+  await routeTo(fixture.daily, "hub");
+  const daily = await assertOutfit(
+    "daily",
+    "wardrobe-post-extraction-village-daily",
+  );
+  await waitSaved(daily);
+  assert.equal(extracted.player.coins, 200);
+  assert.equal(extracted.player.progress.day, 2);
+  assert.equal(extracted.player.progress.stage, "night");
+  assert.equal(extracted.player.inventory.length, 0);
+  checks.push(
+    "actual-dive-entry-and-empty-extraction-preserve-separate-requested-gear-transition",
+  );
+  await page.reload();
+  await attach();
+  const resumed = await assertOutfit(
+    "daily",
+    "wardrobe-daily-dock-position-after-reload",
+  );
+  assert(Math.hypot(resumed.x - daily.x, resumed.y - daily.y) < 25);
+  const saved = await apiState();
+  assert.equal(saved.surface.layoutVersion, world.hub.layoutVersion);
+  assert.equal(saved.player.coins, 200);
+  assert.equal(saved.player.progress.day, 2);
+  assert.equal(saved.player.progress.stage, "night");
+  assert.equal(saved.player.inventory.length, 0);
+  assert(navigation.matrixPulses > 0);
+  checks.push(
+    "daily-outfit-recomputed-after-real-position-save-reload-without-invented-rewards",
+  );
+}
+
 async function verifyOcean() {
   await routeTo(world.hub.divePoint, "hub");
   await waitState((value) => value.nearby === "ladder");
@@ -1387,7 +1492,7 @@ try {
         ...freshCalendar(),
         calendarDay: 2,
         lastSettledDay: 2,
-        minuteOfDay: sarasFixture?.minute ?? 1110,
+        minuteOfDay: wardrobeFixture ? 600 : (sarasFixture?.minute ?? 1110),
       },
       homestead: freshHomestead(fixtureStoryDay),
       version: 0,
@@ -1400,13 +1505,24 @@ try {
   try {
     let initialSurface;
     if (
-      ["ocean", "dialogue", "left", "shelters", "gateways", "saras"].includes(routeMode)
+      [
+        "ocean",
+        "dialogue",
+        "left",
+        "shelters",
+        "gateways",
+        "saras",
+        "wardrobe",
+      ].includes(routeMode)
     ) {
       initialHub = {
         area: "hub",
         ...(routeMode === "gateways"
           ? gatewayFixtureApproach
-          : (sarasFixture?.quiet ?? shelterPredecessor?.point ?? WORLD.surfaceSpawn)),
+          : (wardrobeFixture?.daily ??
+            sarasFixture?.quiet ??
+            shelterPredecessor?.point ??
+            WORLD.surfaceSpawn)),
         layoutVersion: WORLD.hub.layoutVersion,
         playerVersion: 0,
         positionAt: Date.now(),
@@ -1727,6 +1843,7 @@ try {
       "dialogue",
       "left",
       "left-forest",
+      "wardrobe",
       "shelters",
       "lower",
       "canopy",
@@ -1769,10 +1886,17 @@ try {
     const initial = await waitState(
       (value) => value.area === "forest" && value.land?.actors?.player === 1,
     );
-    assert(Math.hypot(initial.x - initialLeftForest.x, initial.y - initialLeftForest.y) < 5);
+    assert(
+      Math.hypot(
+        initial.x - initialLeftForest.x,
+        initial.y - initialLeftForest.y,
+      ) < 5,
+    );
     assertLeftView(initial, "forest");
     await shot("left-forest-declared-upper-bridge-approach-fixture");
-    checks.push("separate-left-forest-fixture-starts-on-shared-derived-clear-approach");
+    checks.push(
+      "separate-left-forest-fixture-starts-on-shared-derived-clear-approach",
+    );
   } else if (routeMode === "canopy") {
     const initial = await waitState(
       (value) => value.area === "forest" && value.land?.actors?.player === 1,
@@ -1799,15 +1923,18 @@ try {
     await shot(
       shelterPredecessor
         ? "shelter-continuation-start-at-previously-reached-quiet-point"
-        : routeMode === "saras"
-          ? "saras-fixture-start-on-checked-quiet-floor"
-        : routeMode === "gateways"
-          ? "gateways-fixture-start-at-previously-reached-hub-approach"
-          : `${routeMode}-fixture-start-at-actual-hub-spawn`,
+        : routeMode === "wardrobe"
+          ? "wardrobe-declared-legal-dock-approach"
+          : routeMode === "saras"
+            ? "saras-fixture-start-on-checked-quiet-floor"
+            : routeMode === "gateways"
+              ? "gateways-fixture-start-at-previously-reached-hub-approach"
+              : `${routeMode}-fixture-start-at-actual-hub-spawn`,
     );
     checks.push(`separate-${routeMode}-fixture-starts-on-real-hub-floor`);
   }
-  if (routeMode === "shelters") await verifyRemainingShelters();
+  if (routeMode === "wardrobe") await verifyWardrobe();
+  else if (routeMode === "shelters") await verifyRemainingShelters();
   else if (routeMode === "lower") await verifyLowerBridge();
   else if (routeMode === "left") await verifyLeftView();
   else if (routeMode === "left-forest") await verifyLeftForestRemainder(true);
@@ -1913,6 +2040,7 @@ try {
           initialCanopy,
           initialLeftForest,
           leftForestFixture,
+          wardrobeFixture,
           outcome: runCompleted && cleaned ? "completed" : "failed",
           completed: runCompleted && cleaned,
           errors,
