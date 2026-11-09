@@ -12,6 +12,8 @@ var touch := Vector2.ZERO
 var land_mask := Callable()
 var input_transform := Callable()
 var visual_motion_transform := Callable()
+var land_velocity_transform := Callable()
+var land_position_transform := Callable()
 var swim_sprite: Sprite2D
 var hybrid_visual := false
 var was_water := false
@@ -72,6 +74,7 @@ func _physics_process(delta: float) -> void:
 		if absf(velocity.x)>3:
 			direction = 1 if velocity.x>0 else -1
 	var previous := position
+	if not in_water and land_velocity_transform.is_valid(): velocity=land_velocity_transform.call(position,velocity,delta)
 	move_and_slide()
 	if in_water:
 		position.x = clampf(position.x,20,float(GameState.world.get("width",6144))-44)
@@ -92,6 +95,11 @@ func _physics_process(delta: float) -> void:
 			else:
 				position = previous
 				velocity = Vector2.ZERO
+	if not in_water and land_position_transform.is_valid():
+		var limited:Vector2=land_position_transform.call(previous,position,delta)
+		if limited!=position:
+			position=limited if not land_mask.is_valid() or land_mask.call(limited) else previous
+			velocity=(position-previous)/maxf(delta,.001)
 	var moved_velocity := (position-previous)/maxf(delta,0.001) if not in_water else velocity
 	if not in_water and moved_velocity.length()<8.0:
 		velocity = Vector2.ZERO

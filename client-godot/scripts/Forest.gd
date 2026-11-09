@@ -35,6 +35,8 @@ var sync_clock := 0.0
 var footstep_clock := 0.0
 var animation_clock := 0.0
 var touch_direction := Vector2.ZERO
+var land_velocity_transform := Callable()
+var land_position_transform := Callable()
 var last_facing := Vector2.DOWN
 var character_sheet: Texture2D
 var walkable_paths: Array = []
@@ -425,6 +427,7 @@ func _physics_process(delta: float) -> void:
 		avatar.velocity = avatar.velocity.move_toward(Vector2.ZERO,delta*1700)
 	var previous_position := avatar.position
 	if land_path.full(): avatar.velocity = Vector2.ZERO
+	if land_velocity_transform.is_valid(): avatar.velocity=land_velocity_transform.call(avatar.position,avatar.velocity,delta)
 	avatar.move_and_slide()
 	path_notice_cooldown = maxf(0.0,path_notice_cooldown-delta)
 	if not _is_walkable(avatar.position):
@@ -443,6 +446,11 @@ func _physics_process(delta: float) -> void:
 				game_hud.message("Vegetasi lebat menutup jalur. Ikuti jalan tanah atau telusuri cabangnya.")
 				path_notice_cooldown = 4.0
 	avatar.position = avatar.position.clamp(Vector2(12,12),Vector2(2388,1588))
+	if land_position_transform.is_valid():
+		var limited:Vector2=land_position_transform.call(previous_position,avatar.position,delta)
+		if limited!=avatar.position:
+			avatar.position=limited if _is_walkable(limited) else previous_position
+			avatar.velocity=(avatar.position-previous_position)/maxf(delta,.001)
 	var moved_velocity := (avatar.position-previous_position)/maxf(delta,0.001)
 	if moved_velocity.length() < 8.0:
 		avatar.velocity = Vector2.ZERO

@@ -85,6 +85,14 @@ func _open(outfit:String) -> void:
 	player.get("swim_sprite").call("set_appearance","male_nusantara")
 	renderer.set_process(false)
 	if physical_pilot:
+		var hook:=func(at:Vector2,velocity:Vector2,delta:float) -> Vector2: return PhysicalMotion.limit_velocity(renderer,at,velocity,delta)
+		var position_hook:=func(from:Vector2,to:Vector2,delta:float) -> Vector2: return PhysicalMotion.limit_position(renderer,from,to,delta)
+		if outfit=="explorer":
+			controller.set("land_velocity_transform",hook)
+			controller.set("land_position_transform",position_hook)
+		else:
+			player.set("land_velocity_transform",hook)
+			player.set("land_position_transform",position_hook)
 		input_driver=PhysicalInputDriver.new()
 		input_driver.set("renderer",renderer)
 		input_driver.set("actor",player)
@@ -206,7 +214,7 @@ func run() -> void:
 	capture_log=FileAccess.open(output+"/frames.jsonl",FileAccess.WRITE)
 	var hashes:Dictionary={}
 	for path in ["res://scripts/Player.gd","res://scripts/Forest.gd","res://scripts/CharacterVisual.gd","res://scripts/NalaFootPlant.gd","res://scripts/NalaLowerBody3D.gd","res://scripts/NalaPhysicalMotion.gd","res://scripts/AnalogJoystick.gd","res://scripts/land/LandActors3D.gd","res://../scripts/tests/nala-production-gait.gd","res://../scripts/tests/nala-lower-body.gd"]: hashes[path]=FileAccess.get_sha256(path)
-	FileAccess.open(output+"/source.json",FileAccess.WRITE).store_string(JSON.stringify({"files":hashes,"firstCase":first_case,"requestedCases":case_limit,"physicalPilot":physical_pilot,"analogProbe":analog_probe,"joystickProbe":joystick_probe,"additionalPhysicalDeadzone":false,"physicsHz":Engine.physics_ticks_per_second,"captureStride":capture_stride,"acceptance":"Geometry diagnostic; cadence and arm opposition require sequence review. No default adoption."},"  "))
+	FileAccess.open(output+"/source.json",FileAccess.WRITE).store_string(JSON.stringify({"files":hashes,"firstCase":first_case,"requestedCases":case_limit,"physicalPilot":physical_pilot,"analogProbe":analog_probe,"joystickProbe":joystick_probe,"additionalPhysicalDeadzone":false,"postAccelerationSegmentLimiter":physical_pilot,"acceptedPositionLimiter":physical_pilot,"physicsHz":Engine.physics_ticks_per_second,"captureStride":capture_stride,"acceptance":"Geometry diagnostic; cadence and arm opposition require sequence review. No default adoption."},"  "))
 	var state:=root.get_node("GameState")
 	if not _check(float(load("res://scripts/Player.gd").LAND_WALK_SPEED)==PhysicalMotion.LOGICAL_CAP,"Physical input contract differs from actual controller authority cap"): return
 	state.world=JSON.parse_string(FileAccess.get_file_as_string("res://../.runtime/world-map.json"))

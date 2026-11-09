@@ -20,11 +20,38 @@ func _boundary_tick(input:Vector2,label:String) -> bool:
 		var logical_speed:=before.distance_to(after)*float(Engine.physics_ticks_per_second)
 		var physical:Vector3=renderer.ground_point(after)-renderer.ground_point(before)
 		var world_speed:=Vector2(physical.x,physical.y).length()*float(Engine.physics_ticks_per_second)
+		var sampled_arc_speed:=_sampled_world_arc(before,after)*float(Engine.physics_ticks_per_second)
 		if not _check(logical_speed<=PhysicalMotion.LOGICAL_CAP+.03,"Boundary input exceeded actual logical authority cap "+label): return false
-		var record:={"case":label,"tick":entry.tick,"before":[before.x,before.y],"after":[after.x,after.y],"requested":[input.x,input.y],"delivered":entry.delivered,"gradient":entry.gradient,"logicalSpeed":logical_speed,"worldXYSpeed":world_speed,"inputOnly":true,"footGeometryChecked":false}
-		if world_speed>PhysicalMotion.WORLD_XY_SPEED+.03: overspeed.append(record)
+		var record:={"case":label,"tick":entry.tick,"before":[before.x,before.y],"after":[after.x,after.y],"requested":[input.x,input.y],"delivered":entry.delivered,"gradient":entry.gradient,"logicalSpeed":logical_speed,"worldXYSpeed":world_speed,"independentlySampledArcSpeed":sampled_arc_speed,"inputOnly":true,"footGeometryChecked":false}
+		if sampled_arc_speed>PhysicalMotion.WORLD_XY_SPEED+.03: overspeed.append(record)
 		boundary_log.store_line(JSON.stringify(record))
 		boundary_log.flush()
+	return true
+
+func _side_limits(profile:Dictionary) -> bool:
+	var axis:Vector2=(Vector2(profile.end)-Vector2(profile.start)).normalized()
+	var side:=Vector2(-axis.y,axis.x)
+	var cases:Array=[]
+	var old_rejections:=0
+	for progress in [.1,.5,.9]:
+		var middle:Vector2=Vector2(profile.start).lerp(profile.end,float(progress))
+		for sign in [-1.0,1.0]:
+			for direction in [-1.0,1.0]:
+				var from:Vector2=middle+side*float(sign)*(float(profile.width)-.001*float(direction))
+				var velocity:Vector2=side*float(sign)*float(direction)*100.0
+				var proposed:=from+velocity/60.0
+				if not collision.is_walkable(from) or not collision.is_walkable(proposed): continue
+				var limited:=PhysicalMotion.limit_position(renderer,from,proposed,1.0/60.0)
+				var arc:=_sampled_world_arc(from,limited)
+				var original_arc:=_sampled_world_arc(from,proposed)
+				if original_arc>100.0/60.0+.001: old_rejections+=1
+				cases.append({"from":from,"proposed":proposed,"limited":limited,"actualSampledArc":arc,"unlimitedArc":original_arc})
+				FileAccess.open(output+"/side-probes.json",FileAccess.WRITE).store_string(JSON.stringify(cases,"  "))
+				if not _check(collision.is_walkable(limited),"Connector-side limiter invented non-walkable prefix"): return false
+				if not _check(arc<=100.0/60.0+.001,"Connector-side limiter smeared a discontinuous XY jump"): return false
+				if not _check(from.distance_to(limited)<=from.distance_to(proposed)+.0001 and (limited-from).dot(velocity)>=-.0001,"Connector-side limiter enlarged or reversed actual segment"): return false
+	if not _check(cases.size()>=2 and old_rejections>=1,"Side probes missed actual walkable connector embedding discontinuity"): return false
+	print("PHYSICAL CONNECTOR SIDE PASS ",cases.size()," actual-ground prefixes, original segments rejected=",old_rejections)
 	return true
 
 func run() -> void:
@@ -47,7 +74,7 @@ func run() -> void:
 	boundary_log=FileAccess.open(output+"/physics.jsonl",FileAccess.WRITE)
 	var hashes:Dictionary={}
 	for path in ["res://scripts/Player.gd","res://scripts/NalaPhysicalMotion.gd","res://scripts/land/LandWorld3D.gd","res://scripts/land/LandViewProjection.gd","res://../scripts/tests/nala-production-gait.gd","res://../scripts/tests/nala-physical-boundary-input.gd"]: hashes[path]=FileAccess.get_sha256(path)
-	FileAccess.open(output+"/source.json",FileAccess.WRITE).store_string(JSON.stringify({"files":hashes,"inputOnly":true,"footGeometryChecked":false,"naturalWalkingAccepted":false},"  "))
+	FileAccess.open(output+"/source.json",FileAccess.WRITE).store_string(JSON.stringify({"files":hashes,"inputOnly":true,"footGeometryChecked":false,"naturalWalkingAccepted":false,"postAccelerationSegmentLimiter":true},"  "))
 	_open("daily")
 	player.set_meta("nala_lower_body_pilot",false)
 	var wanted:=OS.get_environment("NALA_INPUT_PROFILE") if OS.has_environment("NALA_INPUT_PROFILE") else "dock_gangway"
@@ -55,6 +82,7 @@ func run() -> void:
 	for entry in renderer.get("_stair_queries"):
 		if str(entry.id)==wanted: profile=entry
 	if not _check(not profile.is_empty(),"Unknown actual connector profile "+wanted): return
+	if not _side_limits(profile): return
 	var tangent:Vector2=(Vector2(profile.end)-Vector2(profile.start)).normalized()
 	var middle:Vector2=Vector2(profile.start).lerp(profile.end,.5)
 	var gradient:Vector2=renderer.ground_gradient(middle)
