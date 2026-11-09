@@ -65,6 +65,8 @@ WorldKit adalah lapisan authoring dan pipa aset milik proyek; Godot tetap runtim
 
 Lihat [panduan WorldKit](tools/worldkit/README.md), [Pixel Snapper](tools/pixel-snapper/README.md), [pengolah palet](tools/image-to-pixel/README.md), dan [backlog next-gen](docs/nextgen-world-authoring.md). Jalankan `npm run check:worldkit` untuk memeriksa adapter beserta kecocokan geometry server. `npm run check:worldkit-assets` membutuhkan instalasi/build alat sesuai README masing-masing.
 
+[Fish Gen](docs/world/fish-gen-reference.md) sudah disimpan sebagai kandidat generator fauna laut offline, lengkap dengan pin source, lisensi MIT dan rencana adapter animasi. Tool ini belum dijalankan atau masuk runtime; pilot dilakukan setelah pekerjaan inti selesai.
+
 ## Akun dan pengelolaan
 
 Login lokal adalah jalur utama. Owner dapat mengundang pemain, menerbitkan reset password, dan menetapkan admin. Admin dapat mengelola konten serta mengubah koin, fragmen, kemampuan, dan progres dengan alasan yang tercatat. Perubahan pemain membatalkan sesi permainan lama agar hasil sebelumnya tidak menimpa perubahan.
