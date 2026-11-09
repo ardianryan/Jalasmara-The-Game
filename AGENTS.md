@@ -35,6 +35,8 @@ Gunakan aset library proyek dahulu. Raster baru boleh dibuat sesuai otorisasi pe
 
 Port Noxe terbatas pada helper kamera saat ini; simpan pin dan notice MIT. Tidak ada runtime Three.js kedua. PixelDoll masih referensi authoring hingga adapter dan aset benar-benar diuji. WorldKit adalah adapter/workflow sendiri, bukan cara menghapus atribusi upstream. Jangan menyimpan key/API token dalam Markdown, command history, source atau laporan.
 
+[Fish Gen](docs/world/fish-gen-reference.md) sudah disimpan pada pin `0faa79003ca50a7d422b618cb59179d9834094f1` sebagai kandidat generator fauna laut offline. Belum dijalankan atau masuk runtime. Pertahankan lisensi MIT/provenance dan rencana adapter PNG/JSON; jangan mengganti biota aktif sebelum pilot serta pemeriksaan animasi/ukuran selesai.
+
 ## Wajib setelah tiap paket/progres bermakna
 
 Perbarui laporan `docs/reviews/` dan [handoff aktif](docs/agent-handoff.md), walaupun pekerjaan baru selesai sebagian. Catat:

@@ -10,11 +10,14 @@ Tanggal pemeriksaan: 9 November 2026. Permintaan pengguna: simpan tool untuk kem
 | Pin commit | `0faa79003ca50a7d422b618cb59179d9834094f1` |
 | Waktu commit upstream | `2026-10-18T16:44:10-04:00` |
 | Versi paket pada pin | `fishgen 0.1.0` |
-| Clone lokal yang disimpan | `/Users/ardianryan/Documents/Jalasmara-06-fish-gen/.runtime/reference-audit/fish-gen` |
+| Clone lokal utama | `/Users/ardianryan/Documents/Jalasmara/.runtime/reference-audit/fish-gen` |
+| Clone worktree audit | `/Users/ardianryan/Documents/Jalasmara-06-fish-gen/.runtime/reference-audit/fish-gen` |
 | Isi clone | 34 berkas tracked, sekitar 4.1 MiB termasuk metadata Git pada disk lokal |
 | Lisensi software | MIT, copyright 2026 Jacob Kulberg |
 
 Clone dibuat dengan Git melalui HTTPS, tanpa menjalankan kode repo. `git status --short` pada clone kosong; `.runtime/` sudah diabaikan oleh aturan proyek. Dokumen/pin masuk Git Jalasmara; salinan source lokal tetap berada di direktori audit. Clone bukan dependensi npm/Python, bukan submodule dan tidak masuk ekspor/PCK. Belum ada source upstream yang divendor ke berkas distribusi Jalasmara.
+
+Integrator menyimpan salinan tambahan pada workspace utama agar tool tetap tersedia jika worktree audit kelak dibersihkan. Salinan ini memakai Git lokal tanpa hardlink, HEAD detached pada pin yang sama dan URL origin upstream; status bersih. Tidak menjalankan kode generator.
 
 Untuk mengambil ulang **source saja**, gunakan Git lalu cocokkan pin sebelum melakukan tindakan lain:
 
