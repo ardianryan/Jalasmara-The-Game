@@ -203,7 +203,7 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 			var floor_world:=_ground(entry.logical)
 			var world:=Vector3(entry.fromWorld).lerp(entry.toWorld,smooth)
 			var lift:=TOE_CLEARANCE+absf(Vector3(entry.toWorld).z-Vector3(entry.fromWorld).z)*.5
-			world.z=maxf(world.z+sin(u*PI)*lift,floor_world.z+sin(u*PI)*lift)
+			world.z=maxf(world.z+sin(u*PI)*lift,floor_world.z+.02)
 			entry.sole=Vector3(floor_world.x,floor_world.y,world.z)
 			if u>=1:
 				entry.logical=target
