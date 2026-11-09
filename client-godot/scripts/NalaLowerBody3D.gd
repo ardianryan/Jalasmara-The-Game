@@ -77,8 +77,9 @@ func _ankle_offset(side:String,direction:String,right:Vector3,vertical:float) ->
 	var ankle:=_vec(leg.ankle)-Vector2(float(rect[0]),float(rect[1]))
 	return right*(ankle.x-sole.x)+Vector3(0,0,(sole.y-ankle.y)/vertical)
 
-func _anatomy(view:Dictionary,feet:Dictionary,at:Vector2,right:Vector3,vertical:float) -> Dictionary:
-	var root_hip:Vector3=renderer.ground_point(at)+Vector3(0,0,28.0/vertical)
+func _anatomy(view:Dictionary,feet:Dictionary,at:Vector2,right:Vector3,vertical:float,body_height:float=NAN) -> Dictionary:
+	var ground:Vector3=renderer.ground_point(at)
+	var root_hip:Vector3=ground+Vector3(0,0,28.0/vertical+(body_height-ground.z if not is_nan(body_height) else 0.0))
 	var ankles:Dictionary={}
 	var lengths:Dictionary={}
 	var drop:=0.0
@@ -134,14 +135,14 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 		var target:=DIRECTIONS.find(desired)
 		var forward:=posmod(target-index,8)
 		var adjacent:String=DIRECTIONS[posmod(index+(1 if forward<=4 else -1),8)]
-		var trial:=_anatomy(_data.views[adjacent],stored.feet,actor.position,right,vertical)
+		var trial:=_anatomy(_data.views[adjacent],stored.feet,actor.position,right,vertical,float(stored.bodyHeight))
 		var look_ahead:=actor.position
 		var accepted:Vector2=actor.get("velocity") if "velocity" in actor else Vector2.ZERO
 		if accepted.length()>.1:
 			var world_delta:Vector3=renderer.ground_point(actor.position+accepted.normalized())-renderer.ground_point(actor.position)
 			world_delta.z=0
 			look_ahead+=accepted.normalized()*4.0/maxf(.001,world_delta.length())
-		var future:=_anatomy(_data.views[adjacent],stored.feet,look_ahead,right,vertical)
+		var future:=_anatomy(_data.views[adjacent],stored.feet,look_ahead,right,vertical,float(stored.bodyHeight))
 		if not bool(trial.horizontalInvalid) and not bool(future.horizontalInvalid) and maxf(float(trial.drop),float(future.drop))*vertical<=6.0:
 			_direction=adjacent
 			_facing_frame=Engine.get_process_frames()
@@ -185,8 +186,9 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 		entry["pivotCorrectionWorld"]=[correction.x,correction.y,correction.z]
 		entry["footDirection"]=str(_foot_views[side])
 	var ground:Vector3=renderer.ground_point(actor.position)
-	var root_hip:=ground+Vector3(0,0,28.0/vertical)
-	var anatomy:=_anatomy(view,pose.feet,actor.position,right,vertical)
+	var support_body_offset:=float(pose.bodyHeight)-ground.z
+	var root_hip:=ground+Vector3(0,0,28.0/vertical+support_body_offset)
+	var anatomy:=_anatomy(view,pose.feet,actor.position,right,vertical,float(pose.bodyHeight))
 	var ankles:Dictionary=anatomy.ankles
 	var lengths:Dictionary=anatomy.lengths
 	var drop:float=anatomy.drop
@@ -199,7 +201,7 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 	if unreachable:
 		visible=false
 		proxy.visible=true
-		_last={"enabled":false,"rejected":true,"reason":"fixed-length reach","direction":direction,"desiredDirection":desired,"contacts":pose,"reachValid":false,"requestedDropPixels":requested_drop*vertical,"rootMotion":false}
+		_last={"enabled":false,"rejected":true,"reason":"fixed-length reach","direction":direction,"desiredDirection":desired,"contacts":pose,"reachValid":false,"requestedDropPixels":requested_drop*vertical,"supportBodyOffsetPixels":support_body_offset*vertical,"rootMotion":false}
 		return _last.duplicate(true)
 	drop=clampf(drop,0,drop_limit)
 	root_hip.z-=drop
@@ -243,5 +245,5 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 	upper.modulate=proxy.modulate
 	visible=true
 	proxy.visible=false
-	_last={"enabled":true,"identity":"male_nusantara","outfit":outfit,"direction":direction,"desiredDirection":desired,"heldFacing":direction!=desired,"contacts":pose,"calibration":1.0/vertical,"pelvisDropPixels":drop*vertical,"requestedDropPixels":requested_drop*vertical,"reachValid":not unreachable,"maxLengthError":max_length_error,"attachmentOffset":root_hip-ground-up*28-basis.z*8,"rootMotion":false,"status":"opt-in lower-body pilot, full natural gait unaccepted"}
+	_last={"enabled":true,"identity":"male_nusantara","outfit":outfit,"direction":direction,"desiredDirection":desired,"heldFacing":direction!=desired,"contacts":pose,"calibration":1.0/vertical,"supportBodyOffsetPixels":support_body_offset*vertical,"pelvisDropPixels":drop*vertical,"requestedDropPixels":requested_drop*vertical,"reachValid":not unreachable,"maxLengthError":max_length_error,"attachmentOffset":root_hip-ground-up*28-basis.z*8,"rootMotion":false,"status":"opt-in lower-body pilot, full natural gait unaccepted"}
 	return _last.duplicate(true)

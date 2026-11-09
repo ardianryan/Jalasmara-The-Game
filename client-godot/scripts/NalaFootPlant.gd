@@ -20,10 +20,17 @@ var _obstacles: Array[PackedVector2Array] = []
 var _discontinuities := 0
 var _support_extents:Dictionary={}
 var _right:=Vector3.RIGHT
+var _stairs:Array=[]
+var _body_height:=0.0
+var _body_rate:=1.0
 const Traversal=preload("res://scripts/SurfaceTraversal.gd")
 
 func configure(owner_renderer: Node) -> void:
 	renderer=owner_renderer
+	for profile in renderer.get("_stair_queries"):
+		if str(profile.get("type",""))=="stairs":
+			_stairs.append(profile)
+			_body_rate=maxf(_body_rate,absf(float(profile.to)-float(profile.from))/float(profile.steps)/STEP_DISTANCE*1.5)
 	for surface in renderer.map.get("surfaces",[]):
 		if bool(surface.get("walkable",true)): _floors.append(_polygon(surface.polygon))
 	for obstacle in renderer.map.get("obstacles",[]): _obstacles.append(_polygon(obstacle.footprint))
@@ -58,7 +65,7 @@ func _supported(point:Vector2,side:String,required_height:float=NAN) -> bool:
 func _safe(point:Vector2,origin:Vector2,side:String,required_height:float=NAN) -> Vector2:
 	var near_connector:=false
 	var tangent:=Vector2.ZERO
-	for profile in renderer.get("_stair_queries"):
+	for profile in _stairs:
 		if not Traversal.connector_ground(profile,point).is_empty() or not Traversal.connector_ground(profile,origin).is_empty():
 			if str(profile.get("type",""))=="stairs":
 				near_connector=true
@@ -96,6 +103,23 @@ func _logical_offset(at:Vector2,world:Vector3) -> Vector2:
 func _base(at:Vector2,hip_x:float,right:Vector3) -> Vector2:
 	return at+_logical_offset(at,right*hip_x)
 
+func _on_stairs(at:Vector2) -> bool:
+	for profile in _stairs:
+		if not Traversal.connector_ground(profile,at).is_empty(): return true
+		for entry in _feet.values():
+			if not Traversal.connector_ground(profile,entry.logical).is_empty(): return true
+	return false
+
+func _transfer_body(at:Vector2,distance:float,side:String) -> void:
+	if not _on_stairs(at):
+		_body_height=_ground(at).z
+		return
+	var support:String="left" if side=="right" else "right"
+	# Rise after the trailing foot releases; descend toward the real lower landing.
+	# Toe clearance never raises the body baseline, and a riser never moves actor coordinates.
+	var target:=minf(float(_feet[support].plant.z),float(_feet[side].toWorld.z))
+	_body_height=move_toward(_body_height,target,maxf(0,distance)*_body_rate)
+
 func _trailing_side(at:Vector2) -> String:
 	var world_heading:=_world_motion(at,_heading).normalized()
 	var origin:=_ground(at)
@@ -124,6 +148,7 @@ func _reset(at:Vector2,hips:Dictionary,right:Vector3) -> void:
 	_distance=0.0
 	_landing_distance=STEP_DISTANCE
 	_last_at=at
+	_body_height=_ground(at).z
 	_ready=true
 
 func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,delta:float,support_extents:Dictionary={}) -> Dictionary:
@@ -162,6 +187,7 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 			var target:=_safe(_base(sample,float(hips[_swing]),right)+_heading*(_landing_distance-_distance+LANDING_LEAD)/maxf(.001,_world_motion(sample,_heading).length()),sample,_swing)
 			entry.to=target
 			entry.toWorld=_ground(target)
+			_transfer_body(sample,chunk,_swing)
 			var u:=clampf(_distance/_landing_distance,0,1)
 			var smooth:=u*u*(3.0-2.0*u)
 			entry.logical=Vector2(entry.from).lerp(target,smooth)
@@ -181,6 +207,8 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 	elif _swing!="":
 		var entry:Dictionary=_feet[_swing]
 		var ground:=_ground(entry.logical)
+		entry.toWorld=ground
+		_transfer_body(at,maxf(0,delta)*24.0,_swing)
 		entry.sole=Vector3(entry.sole).move_toward(ground,maxf(0,delta)*24.0)
 		if Vector3(entry.sole).distance_to(ground)<.001:
 			entry.sole=ground
@@ -190,8 +218,9 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 			_next_side="left" if _swing=="right" else "right"
 			_landing_distance=STEP_DISTANCE
 			_swing=""
+	if _swing=="" and not _on_stairs(at): _body_height=_ground(at).z
 	_last_at=at
 	return snapshot()
 
 func snapshot() -> Dictionary:
-	return {"feet":_feet.duplicate(true),"swingSide":_swing,"swingDistance":_distance,"acceptedDistance":_accepted_distance,"stepDistance":STEP_DISTANCE,"landingDistance":_landing_distance,"contacts":_contact_count,"discontinuityResets":_discontinuities,"actorRootMotion":false,"legacyFoleyChanged":false}
+	return {"bodyHeight":_body_height,"bodyTransferRate":_body_rate,"feet":_feet.duplicate(true),"swingSide":_swing,"swingDistance":_distance,"acceptedDistance":_accepted_distance,"stepDistance":STEP_DISTANCE,"landingDistance":_landing_distance,"contacts":_contact_count,"discontinuityResets":_discontinuities,"actorRootMotion":false,"legacyFoleyChanged":false}

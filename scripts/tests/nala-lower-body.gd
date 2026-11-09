@@ -15,6 +15,7 @@ var length_max:=0.0
 var previous:Dictionary={}
 var frames:Array=[]
 var capture:=false
+var last_delta:=0.0
 var trace:Array=[]
 const OUTPUT:="res://../artifacts/godot/overnight-nala-lower"
 
@@ -65,6 +66,14 @@ func _measure(label:String) -> void:
 	if not _check(bool(pose.reachValid),"Unreachable Nala leg "+label+" at "+str(player.position)+" drop="+str(pose.requestedDropPixels)): return
 	if not _check(not bool(pose.rootMotion),"Visual rig may not move actor root"): return
 	var upper:Sprite3D=rig.get("_parts").upper
+	var vertical:=renderer.camera_up().dot(Vector3(0,0,1))
+	var actual_baseline:Vector3=upper.global_position-renderer.camera_up()*38+Vector3(0,0,(float(pose.pelvisDropPixels)-28.0)/vertical)
+	if not _check(absf(actual_baseline.z-float(pose.contacts.bodyHeight))<.003,"Actual upper body disagrees with support transfer "+label): return
+	if previous.has("body"):
+		var travelled:=maxf(0,float(pose.contacts.acceptedDistance)-float(previous.body.distance))
+		var allowance:float=(travelled if travelled>.00001 else last_delta*24.0)*float(pose.contacts.bodyTransferRate)+.003
+		if not _check(absf(float(pose.contacts.bodyHeight)-float(previous.body.height))<=allowance,"Stair body baseline jumps across a riser "+label): return
+	previous["body"]={"height":pose.contacts.bodyHeight,"distance":pose.contacts.acceptedDistance}
 	var equipment:Node3D=renderer.actors_3d.get("_equipment")
 	var full_body_anchor:Vector3=upper.global_position-renderer.camera_up()*26
 	if not _check(equipment.global_position.distance_to(full_body_anchor)<.003,"Separate equipment must follow actual lowered torso "+label): return
@@ -108,6 +117,7 @@ func _measure(label:String) -> void:
 
 func _tick(target:Vector2,delta:float,label:String) -> void:
 	if not _check(collision.is_walkable(target),"Fixture actor target left authoritative walkable floor "+label+" target="+str(target)): return
+	last_delta=delta
 	var before:=player.position
 	player.position=target
 	player.velocity=(target-before)/delta
