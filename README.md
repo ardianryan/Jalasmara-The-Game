@@ -69,7 +69,7 @@ OIDC opsional melalui ZITADEL. Pemain menautkan identitas eksternal dari akun lo
 
 ## Dokumentasi
 
-- [Rencana 06: finishing hutan/laut, aktivitas NPC, dan perluasan desa](docs/plans/06-finishing-dunia-npc-dan-perluasan-desa.md): urutan berikutnya setelah rilis HUD/loading, dengan jalur performa Windows/S23 yang berjalan paralel; status masih perencanaan.
+- [Rencana 06: finishing hutan/laut, aktivitas NPC, dan perluasan desa](docs/plans/06-finishing-dunia-npc-dan-perluasan-desa.md): jalur hutan, laut dan persiapan profiling mulai dikerjakan paralel setelah rilis HUD/loading. Hasil baru belum dirilis; validasi Windows/S23 fisik tetap terbuka.
 - [Rencana 04: HUD, fullscreen, performa, dan gerak Nala](docs/plans/04-hud-fullscreen-performa-dan-gerak.md): implementasi aktif dari laporan Windows/Samsung S23, dengan bukti pengujian dan batas penerimaan.
 - [Jalur paralel HUD, daratan, laut dan website](docs/plans/05-jalur-kerja-paralel.md), dengan [pemeriksaan HUD Bahari dan loading](docs/reviews/parallel-hud-loading-delivery.md). Persentase loading memakai byte aset engine; gambar panorama/foreground dan prompt sumber tersimpan dalam repo.
 - [Rencana 03: desa hidup, rumah Nala, dan siklus harian](docs/plans/03-desa-hidup-dan-siklus-harian.md): animasi warga, Griya Sasmita, kalender, kebun, pasar/balai, dan finishing.

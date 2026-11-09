@@ -1,6 +1,6 @@
 # Rencana next-gen world authoring
 
-Prioritas berikutnya direncanakan pada [Rencana 06: finishing dunia, aktivitas NPC, dan perluasan desa](plans/06-finishing-dunia-npc-dan-perluasan-desa.md). Pengguna meminta perencanaan terlebih dahulu. Implementasi inti [Rencana 04](plans/04-hud-fullscreen-performa-dan-gerak.md) beserta revisi HUD/loading sudah dirilis; validasi Windows/S23 fisik tetap terbuka dan berjalan sebagai jalur paralel dalam rencana berikutnya. Penyelesaian pengalaman bermain ini mendahului perluasan alat authoring.
+Prioritas berikutnya mengikuti [Rencana 06: finishing dunia, aktivitas NPC, dan perluasan desa](plans/06-finishing-dunia-npc-dan-perluasan-desa.md). Setelah perencanaan, pengguna meminta subagent mulai mengerjakan 06; jalur hutan, laut dan persiapan profiling telah dimulai, belum diterima atau dirilis. Implementasi inti [Rencana 04](plans/04-hud-fullscreen-performa-dan-gerak.md) beserta revisi HUD/loading sudah dirilis; validasi Windows/S23 fisik tetap terbuka dan berjalan sebagai jalur paralel. Penyelesaian pengalaman bermain ini mendahului perluasan alat authoring.
 
 Putaran dasar yang diimplementasikan mengikuti [Rencana 03: desa hidup dan siklus harian](plans/03-desa-hidup-dan-siklus-harian.md). Kalender, rumah, dua petak kebun, pasar/balai dan tiga pilot animasi sudah tersedia; perluasan warga, arah animasi dan playtest tetap mengikuti catatan penerimaan rencana itu. Dokumen ini tetap menjadi backlog alat authoring; perluasan tooling mengikuti kebutuhan hasil yang dapat dimainkan.
 
