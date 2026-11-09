@@ -23,6 +23,7 @@ var _right:=Vector3.RIGHT
 var _stairs:Array=[]
 var _body_height:=0.0
 var _body_rate:=1.0
+var _stair_transfer:=false
 const Traversal=preload("res://scripts/SurfaceTraversal.gd")
 
 func configure(owner_renderer: Node) -> void:
@@ -112,8 +113,11 @@ func _on_stairs(at:Vector2) -> bool:
 
 func _transfer_body(at:Vector2,distance:float,side:String) -> void:
 	if not _on_stairs(at):
-		_body_height=_ground(at).z
+		var ordinary:=_ground(at).z
+		_body_height=move_toward(_body_height,ordinary,maxf(0,distance)*_body_rate) if _stair_transfer else ordinary
+		if absf(_body_height-ordinary)<.001: _stair_transfer=false
 		return
+	_stair_transfer=true
 	var support:String="left" if side=="right" else "right"
 	# Rise after the trailing foot releases; descend toward the real lower landing.
 	# Toe clearance never raises the body baseline, and a riser never moves actor coordinates.
@@ -149,6 +153,7 @@ func _reset(at:Vector2,hips:Dictionary,right:Vector3) -> void:
 	_landing_distance=STEP_DISTANCE
 	_last_at=at
 	_body_height=_ground(at).z
+	_stair_transfer=_on_stairs(at)
 	_ready=true
 
 func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,delta:float,support_extents:Dictionary={}) -> Dictionary:
@@ -218,7 +223,12 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 			_next_side="left" if _swing=="right" else "right"
 			_landing_distance=STEP_DISTANCE
 			_swing=""
-	if _swing=="" and not _on_stairs(at): _body_height=_ground(at).z
+	if _swing=="" and not _on_stairs(at):
+		var ordinary:=_ground(at).z
+		if _stair_transfer:
+			if not moving or physical<.00001: _body_height=move_toward(_body_height,ordinary,maxf(0,delta)*24.0*_body_rate)
+			if absf(_body_height-ordinary)<.001: _stair_transfer=false
+		else: _body_height=ordinary
 	_last_at=at
 	return snapshot()
 
