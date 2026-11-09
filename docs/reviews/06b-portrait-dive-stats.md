@@ -19,3 +19,9 @@ Focused test mempertahankan kasus35/15threshold, loss/capacity/modal, target sen
 Integrator berikutnya: import/focused `hud-oxygen.gd` dengan scan log penuh; native fixture untuk visual; lalu export tunggal dan ulang actual browser portrait sebelum rilis. Jika teks tidak muat, perbaiki ukuran/row berdasarkan metrik, jangan mengecilkan font di bawah16px atau melonggarkan assertion.
 
 Tool aktual: Git/worktree, ripgrep dan pembacaan screenshot/source; tanpa generator gambar, upstream baru atau dependensi. Lisensi kit dan sumber tetap seperti sebelumnya. Natural walk dan artwork empat arah tidak dipengaruhi paket ini.
+
+## Hasil integrator dan review gambar
+
+Integrator menggabungkan runtime/test sebagai `235a42c`, lalu menjalankan focused `hud-oxygen`, `analog-dialogue` dan native `HUD_PORTRAIT_CAPTURE=1`. Log `Jalasmara-06-integration/.runtime/06b-portrait-hud-integrated.log` berisi dua HUD PASS (headless/native) dan satu ANALOG DIALOGUE PASS; scan read-only seluruh log oleh agent karakter tidak menemukan `SCRIPT ERROR`, `ERROR:` atau assertion.
+
+Gambar native `Jalasmara-06-integration/artifacts/godot/hud-portrait/ocean390-stats.png` ditinjau dengan `view_image`: OKSIGEN,80,maximum100,feedback−20O2,bar,kedalaman2m dan tas0/12kg berada pada slot terpisah dan di dalam bingkai; joystick/tombol serta kalimat tangga pulang tetap clear. Lebar frame tidak mengisi seluruh layar dan dunia tengah tetap terbuka. Ini fixture komponen memakai data aktual screenshot, berlatar kosong; belum screenshot world browser sesudah ekspor. Render dilakukan integrator pada slotnya, bukan agent karakter. Actual browser390 pada PCK baru masih gate berikutnya; staging belum berubah oleh bukti lokal ini.
