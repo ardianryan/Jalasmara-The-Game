@@ -67,6 +67,13 @@ func run() -> void:
 			for label in [hud.get("_warning"),hud.get("_action_label"),hud.get("_resources"),hud.get("_weather")]:
 				assert(label.get_theme_font_size("font_size")*scale>=16,"Primary HUD text needs16physical pixels")
 				assert(label.size.y>=label.get_theme_font("font").get_height(label.get_theme_font_size("font_size")),"Readable text needs a complete line box")
+			assert(not hud.get("_objective").visible,"Full mission is available through its button, not a persistent four-line banner")
+			assert(not hud.get("_utility_plate").visible,"Utility hit targets do not require another oversized outer frame")
+			if not diving:
+				assert(hud.get("_identity_plate").size.y*scale<=70,"Two-row land identity must stay below70physical pixels")
+				var focus:=Rect2(view.size*Vector2(.46,.35),view.size*Vector2(.08,.31))
+				for chrome in [hud.get("_identity_plate"),hud.get("_weather_plate"),hud.get("_action_plate"),hud.get("_dpad")]:
+					assert(not focus.intersects(chrome.get_global_rect()),"Default land HUD must leave the central player area unobstructed")
 			var sound:Button=hud.get("_sound_button")
 			assert(sound.icon!=null,"Mute status uses the actual colored sound icon with accessible tooltip")
 			assert(not sound.tooltip_text.is_empty())
@@ -83,6 +90,20 @@ func run() -> void:
 					assert(bag.get_theme_font("font").get_string_size(text_line,HORIZONTAL_ALIGNMENT_LEFT,-1,bag.get_theme_font_size("font_size")).x<=bag.size.x,"Bag amount and kg must fit without ellipsis")
 				assert(hud.get("_warning_plate").visible)
 				assert(not hud.get("_warning_plate").get_global_rect().intersects(hud.get("_dpad").get_global_rect()),"Critical warning must not overlap the joystick")
+	var retained_style:StyleBox=hud.get("_utilities")[0].get_theme_stylebox("normal")
+	hud.update_state(state)
+	assert(hud.get("_utilities")[0].get_theme_stylebox("normal")==retained_style,"State polling must not allocate utility-frame resources every layout")
+	var objective_received: Array=[]
+	hud.objective_requested.connect(func(text: String):objective_received.append(text))
+	hud.get("_objective_toggle").pressed.emit()
+	assert(objective_received==[state.objective],"Collapsed objective button still opens the complete real mission")
+	for clock in ["08:35","20:35"]:
+		state.clock=clock
+		hud.update_state(state)
+		hud.set_modal(true)
+		for element in [hud.get("_identity_plate"),hud.get("_region"),hud.get("_weather_plate"),hud.get("_sound_button")]:
+			assert(not element.visible,"Night/day serving and dialogue must hide decorative gameplay chrome")
+		hud.set_modal(false)
 	hud.free()
 	print("HUD OXYGEN PASS: inclusive35/15 thresholds, labels, authoritative loss delta, no feedback replay, capacity guard, reduced motion, expiry, modal and surface states;667/844landscape+390portrait48px targets/16px text, contrast backing, Menu clearance, joystick clearance")
 	quit()

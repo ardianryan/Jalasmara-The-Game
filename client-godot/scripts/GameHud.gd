@@ -20,8 +20,13 @@ const LAMUN := Color("6faba2")
 
 class Plate extends Panel:
 	var paper := false
+	var quiet := false
 	func _draw() -> void:
-		preload("res://scripts/HudSkin.gd").panel("paper" if paper else "dark").draw(get_canvas_item(),Rect2(Vector2.ZERO,size))
+		if quiet:
+			draw_rect(Rect2(Vector2.ZERO,size),Color(.13,.09,.06,.94))
+			draw_line(Vector2(0,size.y-1),Vector2(size.x,size.y-1),Color("af8759"),1)
+		else:
+			preload("res://scripts/HudSkin.gd").panel("paper" if paper else "dark").draw(get_canvas_item(),Rect2(Vector2.ZERO,size))
 
 class HudIcon extends Control:
 	var kind := "map"
@@ -226,6 +231,7 @@ func _build_identity() -> void:
 	_objective_toggle.move_to_front()
 	root_control.move_child(_objective,root_control.get_child_count()-1)
 	_weather_plate = _panel(Rect2(705,77,220,30),false)
+	_weather_plate.quiet=true
 	_weather = _label(root_control,"",Vector2(705,77) if touch_enabled else Vector2(723,68),Vector2(220,22),13 if touch_enabled else 11)
 	_weather.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 
@@ -272,10 +278,19 @@ func _build_utilities() -> void:
 		_sound_button.tooltip_text = "Suara nonaktif [V]" if AudioManager.muted else "Suara aktif [V]"
 	AudioManager.mute_changed.connect(refresh)
 	refresh.call(AudioManager.muted)
+	for button in _utilities+[_sound_button]:
+		for state in ["normal","hover","pressed","disabled"]:
+			var inset_art:=HudArt.button("normal" if state=="disabled" else state)
+			inset_art.expand_margin_left=-3
+			inset_art.expand_margin_right=-3
+			inset_art.expand_margin_top=-3
+			inset_art.expand_margin_bottom=-3
+			button.add_theme_stylebox_override(state,inset_art)
 
 func _build_actions() -> void:
 	_deck = _panel(Rect2(766,432,180,94) if touch_enabled else Rect2(784,448,162,78),false)
 	_action_plate = _panel(Rect2(632,402,310,40),false)
+	_action_plate.quiet=true
 	_action_label = _label(root_control,"",Vector2(632,402) if touch_enabled else Vector2(622,418),Vector2(310,27),15 if touch_enabled else 12)
 	_action_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	var net_rect := Rect2(774,438,80,80) if touch_enabled else Rect2(792,454,70,66)
@@ -333,15 +348,17 @@ func _layout() -> void:
 	var right := viewport.x-16-inset.z
 	var bottom := viewport.y-16-inset.w
 	var cell := maxf(48,ceilf(48*ratio))
-	var identity_height := cell+12 if compact_dive else line*4+12
+	var identity_height := cell+12 if compact_dive else line*2+24
 	var utilities_y := margin.y+identity_height+8 if portrait else margin.y
 	_utility_plate.position=Vector2(right-cell*5-4,utilities_y-4)
 	_utility_plate.size=Vector2(cell*5+8,cell+8)
+	_utility_plate.hide()
 	var controls:Array=_utilities+[_sound_button]
 	for index in range(controls.size()):
 		var button:Button=controls[index]
 		button.position=Vector2(right-cell*(5-index),utilities_y)
 		button.size=Vector2(cell,cell)
+		button.visible=not _modal
 		for child in button.get_children():
 			if child is HudIcon:
 				child.position=Vector2.ONE*(cell-32)/2
@@ -353,14 +370,16 @@ func _layout() -> void:
 	var width:=minf(410,viewport.x-margin.x-24) if portrait else minf(370,viewport.x-cell*5-48)
 	_identity_plate.position=margin-Vector2(6,6)
 	_identity_plate.size=Vector2(width+12,identity_height)
-	_identity_portrait.position=margin
+	_identity_plate.visible=not _modal
+	_region.visible=not _modal
+	_identity_portrait.position=margin+Vector2(10,6)
 	_identity_portrait.size=Vector2(46,line)
 	_identity_portrait.visible=not _modal
-	_region.position=margin+Vector2(54,0)
-	_region.size=Vector2((width-cell-8 if compact_dive else width)-54,line)
-	_region.add_theme_font_size_override("font_size",body+2)
-	_resources.position=margin+Vector2(0,line)
-	_resources.size=Vector2(width,line)
+	_region.position=margin+Vector2(64,6)
+	_region.size=Vector2(width-cell-8-64,line)
+	_region.add_theme_font_size_override("font_size",body if touch_enabled else body+2)
+	_resources.position=margin+Vector2(10,line+4)
+	_resources.size=Vector2(width-cell-18,line)
 	_resources.add_theme_font_size_override("font_size",body)
 	_resources.add_theme_font_override("font",preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2"))
 	_resources.visible=not compact_dive and not _modal
@@ -368,19 +387,23 @@ func _layout() -> void:
 	_objective.size=Vector2(width-cell-8,line*2)
 	_objective.max_lines_visible=2
 	_objective.add_theme_font_size_override("font_size",body)
-	_objective.visible=not compact_dive and not _modal
-	_objective_toggle.position=margin+Vector2(width-cell,0 if compact_dive else line*2)
+	_objective.hide()
+	_objective_toggle.position=margin+Vector2(width-cell,0)
 	_objective_toggle.size=Vector2(cell,cell)
-	_objective_toggle.text="+"
+	_objective_toggle.text=""
+	HudArt.set_icon(_objective_toggle,"quest-scroll",32)
 	_objective_toggle.disabled=_modal
 	_objective_toggle.visible=not _modal
-	_weather.position=Vector2(right-350,utilities_y+cell+12)
-	_weather.size=Vector2(350,line)
+	var weather_width:=minf(350,ceilf(_weather.get_theme_font("font").get_string_size(_weather.text,HORIZONTAL_ALIGNMENT_RIGHT,-1,body).x)+12)
+	_weather.position=Vector2(right-weather_width,utilities_y+cell+6)
+	_weather.size=Vector2(weather_width,line)
 	_weather.add_theme_font_size_override("font_size",body)
 	_weather.add_theme_font_override("font",preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2"))
 	_weather_plate.position=_weather.position-Vector2(6,3)
 	_weather_plate.size=_weather.size+Vector2(12,6)
-	_weather_plate.visible=not _weather.text.is_empty()
+	_weather.visible=not _modal
+	_weather_plate.visible=not _modal and not _weather.text.is_empty()
+	_dpad.size=Vector2.ONE*maxf(144,ceilf(100*ratio))
 	_dpad.position=Vector2(margin.x,bottom-_dpad.size.y)
 	var action_side:=maxf(88 if touch_enabled else 76,ceilf(48*ratio))
 	var action_size:=Vector2.ONE*action_side
@@ -439,7 +462,10 @@ func _layout() -> void:
 	_warning_plate.position=_warning.position-Vector2(6,3)
 	_warning_plate.size=_warning.size+Vector2(12,6)
 	_warning_plate.visible=_warning.visible
-	if is_instance_valid(_minimap_shell): _minimap_shell.position=Vector2(viewport.x/2-64,bottom-128)
+	if is_instance_valid(_minimap_shell):
+		var mini_scale:=78*ratio/128 if touch_enabled else 1.0
+		_minimap_shell.scale=Vector2.ONE*mini_scale
+		_minimap_shell.position=Vector2(viewport.x/2-64*mini_scale,bottom-128*mini_scale)
 	_status_panel.position=Vector2(viewport.x/2-210,viewport.y/2-60)
 	_status_panel.size=Vector2(420,120)
 	status_label.size=Vector2(400,100)
@@ -463,10 +489,9 @@ func update_state(state: Dictionary) -> void:
 	var diving := bool(state.get("diving",false))
 	_region.text = str(state.get("area","Bandar Hujung"))
 	_region.tooltip_text = _region.text
-	_resources.text = "%d KOIN" % int(state.get("coins",0))
+	_resources.text = "%d koin" % int(state.get("coins",0))
 	if not diving:
-		_resources.text += "   TAS %.1f / %.1f kg" % [float(state.get("weight",0)),float(state.get("capacity",0))]
-		if touch_enabled: _resources.text="%d koin · %.1f/%.1f kg" % [int(state.get("coins",0)),float(state.get("weight",0)),float(state.get("capacity",0))]
+		_resources.text += " · %s/%s kg" % [String.num(float(state.get("weight",0)),1).trim_suffix(".0"),String.num(float(state.get("capacity",0)),1).trim_suffix(".0")]
 	_weather.text = (str(state.get("clock",""))+"  "+str(state.get("weather",""))).strip_edges()
 	if state.get("authoritative",false):
 		_weather.text="H%d · %s" % [int(state.get("calendarDay",1)),_weather.text]
