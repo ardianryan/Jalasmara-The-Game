@@ -198,7 +198,7 @@ async function routeTo(point, inside = false) {
     await walkTo(x, y);
   await page.waitForTimeout(450);
 }
-async function requestViaKeys(path, predicate, keys) {
+async function requestViaKeys(path, predicate, keys, input = null) {
   const response = page.waitForResponse(
     (r) =>
       r.url().endsWith(`/api/${path}`) &&
@@ -206,10 +206,12 @@ async function requestViaKeys(path, predicate, keys) {
       predicate(r.request().postDataJSON()),
     { timeout: 15000 },
   );
-  for (const key of keys) {
-    await page.keyboard.press(key);
-    await page.waitForTimeout(260);
-  }
+  if (input) await input();
+  else
+    for (const key of keys) {
+      await page.keyboard.press(key);
+      await page.waitForTimeout(260);
+    }
   const result = await response,
     data = await result.json();
   assert(result.ok(), `${path}: ${result.status()} ${JSON.stringify(data)}`);
@@ -222,6 +224,64 @@ async function requestViaKeys(path, predicate, keys) {
   await page.waitForTimeout(600);
   return data;
 }
+async function serviceRectToPage(service, rect) {
+  const canvas = await frame.locator("canvas").boundingBox();
+  assert(
+    canvas &&
+      service.physicalViewport.every(
+        (size) => Number.isFinite(size) && size > 0,
+      ),
+  );
+  assert([...rect.position, ...rect.size].every(Number.isFinite));
+  const result = {
+    x:
+      canvas.x +
+      (canvas.width * rect.position[0]) / service.physicalViewport[0],
+    y:
+      canvas.y +
+      (canvas.height * rect.position[1]) / service.physicalViewport[1],
+    width: (canvas.width * rect.size[0]) / service.physicalViewport[0],
+    height: (canvas.height * rect.size[1]) / service.physicalViewport[1],
+  };
+  assert(
+    result.x >= canvas.x - 1 &&
+      result.y >= canvas.y - 1 &&
+      result.x + result.width <= canvas.x + canvas.width + 1 &&
+      result.y + result.height <= canvas.y + canvas.height + 1,
+  );
+  return result;
+}
+async function tapFocusedServiceRecipe() {
+  const value = await waitState(
+    (value) =>
+      value.service?.focus?.kind === "Button" && value.service.focus.visible,
+  );
+  const service = value.service,
+    focus = service.focus;
+  const canvas = await frame.locator("canvas").boundingBox();
+  const rect = await serviceRectToPage(service, focus);
+  const x = rect.x + rect.width / 2,
+    y = rect.y + rect.height / 2;
+  await shot("01-focused-recipe-before-actual-touch-tap");
+  const cdp = await context.newCDPSession(page);
+  await cdp.send("Input.dispatchTouchEvent", {
+    type: "touchStart",
+    touchPoints: [{ x, y }],
+  });
+  await page.waitForTimeout(100);
+  await cdp.send("Input.dispatchTouchEvent", {
+    type: "touchEnd",
+    touchPoints: [],
+  });
+  observations.push({
+    name: "actual-touch-recipe-geometry",
+    physicalViewport: service.physicalViewport,
+    focus,
+    canvas,
+    point: [x, y],
+  });
+}
+
 async function firstButton() {
   await page.keyboard.press("Enter");
   await page.waitForTimeout(500);
@@ -369,6 +429,11 @@ try {
   assert(content?.catalog, "Published local content required.");
   recipes = content.catalog.recipes.filter((r) => r.day === 1);
   assert(recipes.length > 0);
+  if (serviceOnly)
+    assert(
+      recipes.length >= 2,
+      "Focused service uses separate keyboard and actual touch receipt cases",
+    );
   // Consumed rows disappear, so the first remaining inventory button matches the next customer.
   assert.equal(
     new Set(recipes.map((r) => r.fragmentId)).size,
@@ -564,19 +629,33 @@ try {
     if (serviceOnly) {
       await page.waitForTimeout(1200);
       await shot("00-service-667-pinned-context-before-touch-scroll");
-      const clip = { x: 280, y: 245, width: 300, height: 75 };
+      const beforeLayout = (await snapshot()).service;
+      assert(beforeLayout && Number.isFinite(beforeLayout.scrollOffset));
+      const area = await serviceRectToPage(beforeLayout, beforeLayout.scroll);
+      const clip = {
+        x: Math.ceil(area.x + 4),
+        y: Math.ceil(area.y + 4),
+        width: Math.floor(area.width - 8),
+        height: Math.floor(area.height - 8),
+      };
+      assert(clip.width > 16 && clip.height > 16);
       const before = createHash("sha256")
         .update(await page.screenshot({ clip }))
         .digest("hex");
+      const dragX = area.x + area.width / 2,
+        dragStart = area.y + area.height - 6,
+        dragEnd = area.y + 6;
       const cdp = await context.newCDPSession(page);
       await cdp.send("Input.dispatchTouchEvent", {
         type: "touchStart",
-        touchPoints: [{ x: 500, y: 330 }],
+        touchPoints: [{ x: dragX, y: dragStart }],
       });
       for (let step = 1; step <= 8; step++) {
         await cdp.send("Input.dispatchTouchEvent", {
           type: "touchMove",
-          touchPoints: [{ x: 500, y: 330 - step * 12 }],
+          touchPoints: [
+            { x: dragX, y: dragStart + ((dragEnd - dragStart) * step) / 8 },
+          ],
         });
         await page.waitForTimeout(50);
       }
@@ -595,6 +674,16 @@ try {
       );
       assert(
         (await snapshot()).modal && (await snapshot()).weather.clockPaused,
+      );
+      const afterLayout = (await snapshot()).service;
+      assert(
+        afterLayout.scrollOffset > beforeLayout.scrollOffset,
+        "Real scroll offset must advance after the touch gesture",
+      );
+      assert.deepEqual(
+        afterLayout.header,
+        beforeLayout.header,
+        "Touch scrolling cannot move pinned customer context",
       );
       await shot("00-service-667-options-after-real-touch-scroll");
       checks.push(
@@ -617,7 +706,12 @@ try {
         "kedai/serve",
         (body) => body.recipeId === recipes[i].id,
         keys,
+        serviceOnly && i === 1 ? tapFocusedServiceRecipe : null,
       );
+      if (serviceOnly && i === 1)
+        checks.push(
+          "667-actual-focused-recipe-touch-tap-produces-authoritative-correct-receipt",
+        );
       assert.equal(result.gardenBonus, i === 0 ? 5 : 0);
       assert.equal(
         result.earned,

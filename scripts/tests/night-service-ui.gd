@@ -66,6 +66,16 @@ func run() -> void:
 		check.button_pressed=true
 		select.select(1)
 		var recipe:=find_button(scene,"Benih Hayati")
+		recipe.grab_focus()
+		await settle()
+		var bounds:Dictionary=scene._service_debug_status()
+		var expected:Rect2=root.get_final_transform()*recipe.get_global_rect()
+		assert(bounds.focus.kind=="Button" and bounds.focus.visible)
+		assert(Vector2(bounds.focus.position[0],bounds.focus.position[1]).distance_to(expected.position)<.01)
+		assert(Vector2(bounds.focus.size[0],bounds.focus.size[1]).distance_to(expected.size)<.01)
+		assert(bounds.physicalViewport==[physical.x,physical.y])
+		for record in [bounds.panel,bounds.scroll,bounds.header,bounds.focus]:
+			assert(not record.has("text") and not record.has("answer") and not record.has("account"),"Opt-in service diagnostics contain geometry only")
 		var before:int=api.get("calls").size()
 		recipe.pressed.emit()
 		recipe.pressed.emit()

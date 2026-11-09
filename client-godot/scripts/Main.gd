@@ -486,6 +486,7 @@ func _process(delta: float) -> void:
 		var snapshot := {"x":nala.position.x,"y":nala.position.y,"stage":GameState.player.get("progress",{}).get("stage",""),"modal":modal_open,"nearby":str(nearby.get("id","")),"diving":not GameState.dive.is_empty()}
 		if is_instance_valid(modal) and modal.has_method("debug_state"): snapshot["dialogue"] = modal.debug_state()
 		snapshot["performance"] = preload("res://scripts/Diagnostics.gd").performance_sample(nala)
+		snapshot["service"] = _service_debug_status()
 		snapshot["outfit"] = nala.outfit
 		snapshot["equipment"] = nala.equipment
 		snapshot["audio"] = AudioManager.debug_status()
@@ -756,6 +757,7 @@ func _sync_position() -> bool:
 		var snapshot := {"x":nala.position.x,"y":nala.position.y,"stage":GameState.player.get("progress",{}).get("stage",""),"modal":modal_open,"nearby":str(nearby.get("id","")),"diving":not GameState.dive.is_empty()}
 		if is_instance_valid(modal) and modal.has_method("debug_state"): snapshot["dialogue"] = modal.debug_state()
 		snapshot["performance"] = preload("res://scripts/Diagnostics.gd").performance_sample(nala)
+		snapshot["service"] = _service_debug_status()
 		snapshot["outfit"] = nala.outfit
 		snapshot["equipment"] = nala.equipment
 		snapshot["audio"] = AudioManager.debug_status()
@@ -1122,6 +1124,21 @@ func _npc_interact(name_text: String) -> void:
 			_talk([{"name":"Bu Darmi","text":"Semua catatan dari kebun apung (3/3), Hutan Pesisir Wringin (3/3), dan Hutan Lamun Wringin (3/3) sudah lengkap!"},{"name":"Nala","text":"Begitu kembali dari penyelaman dan malam tiba, aku akan menemui Mbah Wira di Kedai Waras untuk meracik solusinya dengan Benih Hayati."}])
 	else:
 		_talk([{"name":"Inspektur Raka","text":"PT Cakrawala Sintetis menyediakan Kapsul Instan untuk seluruh kebutuhan kerja Anda. Belajar mandiri meningkatkan risiko kesalahan prosedur."},{"name":"Nala","text":"Menarik. Apakah prosedurnya juga menjelaskan pipa yang bocor di bawah kota?"},{"name":"Inspektur Raka","text":"Akses ke fasilitas Sektor Tuban-7 dibatasi. Percakapan ini dicatat."}])
+func _service_debug_status() -> Dictionary:
+	if not is_instance_valid(modal) or not modal.get_meta("service_tray",false): return {}
+	var viewport:=modal.get_viewport()
+	var transform:=viewport.get_final_transform()
+	var scroll:=_modal_scroll(modal)
+	var focused:=viewport.gui_get_focus_owner()
+	var result:Dictionary={"physicalViewport":[viewport.get_window().size.x,viewport.get_window().size.y],"scrollOffset":scroll.scroll_vertical,"focus":{}}
+	for item in [["panel",modal],["scroll",scroll],["header",modal.get_meta("service_header")]]:
+		var rect:Rect2=transform*item[1].get_global_rect()
+		result[item[0]]={"position":[rect.position.x,rect.position.y],"size":[rect.size.x,rect.size.y]}
+	if is_instance_valid(focused) and scroll.is_ancestor_of(focused):
+		var rect:Rect2=transform*focused.get_global_rect()
+		result.focus={"kind":focused.get_class(),"position":[rect.position.x,rect.position.y],"size":[rect.size.x,rect.size.y],"visible":scroll.get_global_rect().grow(1).encloses(focused.get_global_rect())}
+	return result
+
 func _can_resume_kedai(name_text: String) -> bool:
 	# Active shifts reject surface writes; resume only at the already acknowledged Wira point.
 	if name_text!="Mbah Wira" or str(GameState.shift.get("id","")).is_empty(): return false
