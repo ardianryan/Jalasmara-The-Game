@@ -1,6 +1,6 @@
 # Pengiriman awal Rencana 06: hutan, laut, dan dasar rutinitas
 
-9 November 2026. Status kandidat: penerimaan lokal selesai, CI akhir dan staging belum diverifikasi. Runtime terakhir yang berubah ialah `2f7f55129c4bafacbf49449d703f3e7913917de3`; commit sesudahnya menambahkan harness dan bukti. PCK yang diuji memiliki SHA-256 `a9378a52c9fbb64ec96ae579bcef1ced1ab7920962823025e238a453eb8a716b`. Staging masih memakai baseline `efdacba` ketika laporan ini disiapkan. Hasil pipeline baseline atau kandidat awal `1f0d040` tidak dianggap sebagai CI final shader guard.
+9 November 2026. **Paket awal 06-A dan dasar B1 sudah dirilis serta diperiksa di staging** pada source `9ba21c6bdcb86de1b1732fe4d646fc5a27099eec`. Runtime terakhir yang berubah ialah `2f7f55129c4bafacbf49449d703f3e7913917de3`; commit sesudahnya menambahkan harness dan bukti. PCK lokal, image aplikasi, host staging, serta unduhan HTTPS publik cocok pada SHA-256 `a9378a52c9fbb64ec96ae579bcef1ced1ab7920962823025e238a453eb8a716b`. Hasil pipeline baseline atau kandidat awal `1f0d040` tidak dianggap sebagai CI final shader guard.
 
 ## Hasil yang dapat dinilai
 
@@ -24,6 +24,16 @@ Kamera ortografis 35°, terrain bertingkat, ruang 3D, perlengkapan terpisah, lay
 
 Semua pemain uji lokal dibuat khusus dengan UUID dan dibersihkan bersama sesi/receipt miliknya. Akun pengelola tidak dipakai. Pemeriksaan browser memakai Chromium/SwiftShader dan emulasi sentuh, bukan Windows atau Samsung S23 fisik. RAF adalah interval callback browser, bukan timer GPU. Pengukuran memori WASM/VRAM, sesi panjang, thermal dan input latency belum tersedia.
 
+## CI dan staging
+
+[Pipeline 3043718567](https://gitlab.com/ardianryan/jalasmara-the-game/-/pipelines/3043718567) lulus seluruh lima job untuk source rilis `9ba21c6`: verify, ekspor Godot, build, CodeQL dan laporan GitHub. Artefak nyata mencatat 77 tes API tanpa gagal/skip, 14 tes harness performa, 37 pemeriksaan dunia, serta 14 pemeriksaan sintesis SFX. CodeQL menjalankan 201 aturan tanpa temuan; tiga audit dependensi mencatat nol kerentanan. GitHub `ci-reports` menunjuk SHA/pipeline yang sama; Actions tetap nonaktif.
+
+Staging memakai image `sha256:5c5a503d3d228042f457d8ddbe9785a20a7a5b49b035d5ea34f4346d01bf937a`. Build dilakukan terpisah sebelum aktivasi. Hanya container aplikasi diganti; container/volume MongoDB dan Redis, bind `10.1.0.8:3000`, serta konfigurasi lingkungan dipertahankan. Tidak ada reset akun, seed ulang, atau perubahan proxy. Health upstream dan publik berhasil. Lima pemeriksaan [smoke HTTPS](06a-staging-smoke.md) lulus tanpa error browser/API: hash paket, login/ready, gerbang/tajuk, jurnal, serta posisi setelah reload. Fixture publik dan seluruh sesinya dibersihkan; integrator juga memeriksa gambar tajuk 667×375 secara langsung.
+
+Backup `/var/backups/jalasmara/jalasmara-20261109T070111Z.archive.gz` mempunyai SHA-256 `259ff2559672967501aa714ba160237f39297298eb0033a95e1ed6588f1d5d3e`. Restore terpisah memulihkan 29 dokumen tanpa gagal, membandingkan jumlah per koleksi dengan data hidup, lalu menghapus database pemeriksaan. Image rollback `jalasmara:pre-06a-9ba21c6` tetap menunjuk image baseline `b18a2852`.
+
+Percobaan aktivasi awal kembali ke image lama karena probe host mengandalkan `curl`, yang tidak tersedia di VPS. Probe diganti dengan Node di container aplikasi; metadata source host dan hash paket kemudian dicocokkan kembali. Untuk menjalankan probe melalui skrip SSH/stdin, tutup stdin `docker compose exec -T` dengan `</dev/null` agar perintah tersebut tidak mengambil sisa skrip. Status akhir di atas diperiksa sesudah aktivasi dan finalisasi, bukan disimpulkan dari exit code deployment saja.
+
 ## Peninjauan desain oleh integrator
 
 - **Hard Gate PASS dalam ruang lingkup paket:** source visual, hasil build, gambar native dan browser diperiksa; portal, joystick, jurnal, bag dan tidur benar-benar berfungsi. Tidak ada aset, metrik produk, kontrol atau halaman baru. Angka berasal dari hasil run dan state server; tidak ada klaim perangkat yang belum diuji. Perubahan tidak menambah teks UI atau mengganti sistem kontras/font yang sudah diterima.
@@ -33,6 +43,6 @@ Semua pemain uji lokal dibuat khusus dengan UUID dan dibersihkan bersama sesi/re
 
 ## Pekerjaan berikutnya
 
-06-B2 masih terpisah: pilot Ujang untuk telapak yang tertanam, panjang anggota tubuh tetap, arah yang benar, dan pengukuran kontak alat yang independen. Audit menunjukkan tujuh tujuan hujan berada di luar atap fisik; perbaikannya belum masuk paket ini. Pilot Darmi/Sari serta aktivitas tubuh warga berikutnya mengikuti hasil Ujang. [Audit pilot dan shelter](06b2-pilot-preparation.md).
+06-B2 masih terpisah: kandidat mekanik Ujang `f7d3f0d50d5f970c92c53fcddfe0aa21c66b3bad` berada di cabang `work/06b-body-pilot`, tidak digabungkan ke paket publik. Sebanyak 1.074 pemeriksaan kontak/tangga native lulus, tetapi gambar empat arah, siluet langkah, dan kontak genggaman independen belum diterima. Audit menunjukkan tujuh tujuan hujan berada di luar atap fisik; perbaikannya belum masuk paket ini. Pilot Darmi/Sari serta aktivitas tubuh warga berikutnya mengikuti hasil Ujang. [Audit pilot dan shelter](06b2-pilot-preparation.md).
 
-06-C masih terbuka: rumah pribadi lurah, direktur tersendiri dengan kontainer/RV yang sesuai peran, serta Laskar Kognisi beserta rute/dialog. 06-D mencakup perluasan rumah/kebun/keramba/interior dan UI website. [Noxe/PixelDoll](../world/noxe-pixeldoll-reference.md) sudah diperiksa source dan lisensinya; belum ada kode/aset upstream yang disalin. Noxe bukan editor drag-and-drop dan belum mempunyai exporter GLB; PixelDoll memerlukan adapter billboard serta validasi arah, anatomi dan anchor sebelum batch pakaian.
+06-C masih terbuka: rumah pribadi lurah, direktur tersendiri dengan kontainer/RV yang sesuai peran, serta Laskar Kognisi beserta rute/dialog. [Persiapan C](06c-preparation.md) mencatat identitas, lot yang belum sah, serta risiko interaksi dan migrasi; belum menambahkan bangunan/pemeran. 06-D mencakup perluasan rumah/kebun/keramba/interior dan UI website. [Noxe/PixelDoll](../world/noxe-pixeldoll-reference.md) sudah diperiksa source dan lisensinya; belum ada kode/aset upstream yang disalin. Noxe bukan editor drag-and-drop dan belum mempunyai exporter GLB; PixelDoll memerlukan adapter billboard serta validasi arah, anatomi dan anchor sebelum batch pakaian.

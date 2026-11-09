@@ -40,7 +40,7 @@ Pemeriksaan lokal: 77 tes API, 34 pemeriksaan dunia Godot, empat tes bridge, 24 
 
 ## Pengiriman awal Rencana 06
 
-Kandidat gabungan memperjelas Nala di balik tajuk melalui bukaan piksel setempat, menghaluskan tepian patch tanah/rumput, memperlebar sambungan penyangga platform laut 13, serta membentuk relief tepi gua. Kamera 35°, collision, manifest, save, dan ekonomi tetap sama. Rutinitas warga mempertahankan perjalanan pada reduced motion, berhenti saat terhalang, serta mencoba pemulihan rute terbatas. Tujuan hujan yang ada belum mempunyai atap fisik; animasi empat arah dan kontak alat seluruh pilot belum selesai.
+Paket awal `9ba21c6` sudah dirilis ke staging dengan CI lima job dan lima pemeriksaan smoke HTTPS lulus. Paket ini memperjelas Nala di balik tajuk melalui bukaan piksel setempat, menghaluskan tepian patch tanah/rumput, memperlebar sambungan penyangga platform laut 13, serta membentuk relief tepi gua. Kamera 35°, collision, manifest, save, dan ekonomi tetap sama. Rutinitas warga mempertahankan perjalanan pada reduced motion, berhenti saat terhalang, serta mencoba pemulihan rute terbatas. Tujuan hujan yang ada belum mempunyai atap fisik; animasi empat arah dan kontak alat seluruh pilot belum selesai.
 
 Pemeriksaan lokal mencakup 37 pemeriksaan dunia, 77 tes API, 14 tes harness performa, delapan pemeriksaan browser hutan dan tujuh regresi malam. Kontrol paket lama/baru belum membuktikan speedup; SwiftShader bukan GPU Windows atau S23. [Laporan pengiriman](reviews/06a-delivery.md) memisahkan bukti lokal, status CI/staging, serta pekerjaan 06-B2/C/D yang tersisa. Noxe dan PixelDoll sudah diaudit sebagai referensi, belum dipasang sebagai runtime atau dipakai menghasilkan aset batch.
 

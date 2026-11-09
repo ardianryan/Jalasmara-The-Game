@@ -1,6 +1,6 @@
 # Rencana 06: finishing dunia, aktivitas NPC, dan perluasan desa
 
-Tanggal: 9 November 2026. Status: **06-A dan perbaikan dasar 06-B1 sudah digabung dan lolos penerimaan lokal; rilis menunggu CI serta verifikasi staging**. Profiling 06-P sudah mencakup baseline, kandidat, dan kontrol berpasangan; Windows/S23 fisik serta sesi panjang masih terbuka. Pilot kaki Ujang 06-B2 dikerjakan pada cabang terpisah dan belum masuk kandidat ini. Pengguna meminta subagent mulai bekerja sambil audit Noxe/PixelDoll berlangsung. Dokumen ini terpisah dari Rencana 03, Rencana 04, dan pembagian jalur pada Rencana 05. Bukti gabungan tersedia pada [laporan pengiriman awal](../reviews/06a-delivery.md).
+Tanggal: 9 November 2026. Status: **06-A dan perbaikan dasar 06-B1 sudah dirilis ke staging pada source `9ba21c6`, dengan CI akhir dan smoke HTTPS lulus**. Profiling 06-P sudah mencakup baseline, kandidat, dan kontrol berpasangan; Windows/S23 fisik serta sesi panjang masih terbuka. Pilot mekanik kaki Ujang 06-B2 ada pada cabang terpisah, belum diterima sebagai animasi lengkap atau dimasukkan ke paket publik. Pengguna meminta subagent mulai bekerja sambil audit Noxe/PixelDoll berlangsung. Dokumen ini terpisah dari Rencana 03, Rencana 04, dan pembagian jalur pada Rencana 05. Bukti gabungan tersedia pada [laporan pengiriman awal](../reviews/06a-delivery.md).
 
 Baseline: `efdacba0e402f5acc3df174e2c27582381628f53`, sudah terpasang di staging. Pipeline GitLab `3043497430` lulus; pemeriksaan staging mencakup 16 alur tanpa error browser. Keberhasilan baseline bukan bukti bahwa pekerjaan dalam rencana ini sudah selesai.
 
@@ -220,6 +220,6 @@ Tambahan referensi pengguna, 9 November 2026: [audit Noxe dan PixelDoll](../worl
 - [ ] Rumah lurah, direktur dan Laskar yang dirilis mempunyai identitas, lokasi, rute, serta fungsi nyata.
 - [ ] Save lama, kalender, pertumbuhan, kedai dan kemajuan cerita tetap benar setelah perluasan layout.
 - [ ] Pengujian Windows/S23 mencatat perangkat, kondisi, durasi dan metrik yang sebenarnya, atau ditandai belum tersedia.
-- [ ] HUD tetap ringkas, UI dapat dibaca/dioperasikan, CI hijau dan kandidat staging diperiksa melalui alamat publik.
+- [x] HUD paket awal tetap ringkas, UI dapat dibaca/dioperasikan, CI hijau dan kandidat staging diperiksa melalui alamat publik.
 
-Tanda selesai di atas terbatas pada penerimaan lokal 06-A. Dasar rutinitas B1 sudah diperiksa, tetapi tujuh tujuan hujan belum berada di bawah atap fisik sehingga penerimaan aktivitas lengkap tetap terbuka. Tidak ada perluasan layout pada kandidat ini. Catatan pelaksanaan menyebut paket, revisi source, bukti, hasil, serta kekurangan yang masih tersisa.
+Tanda selesai di atas terbatas pada paket awal 06-A/B1 dan regresinya. Dasar rutinitas B1 sudah diperiksa, tetapi tujuh tujuan hujan belum berada di bawah atap fisik sehingga penerimaan aktivitas lengkap tetap terbuka. Tidak ada perluasan layout pada rilis ini. Catatan pelaksanaan menyebut paket, revisi source, bukti, hasil, serta kekurangan yang masih tersisa.
