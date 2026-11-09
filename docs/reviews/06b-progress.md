@@ -22,11 +22,17 @@
 | Build/paket |Export Godot, API dan web lulus. PCK `7f2ac59f0e39bed9ad5d6e47f4836f76a097b89cc2dadf388514cfbd5d02eaf9`,64.289.088B;656payload MD5 sah. Notice MIT Noxe di direktori PCK dibandingkan byte-per-byte dengan source dan cocok. |
 | Website |32checks production,12PNG dan0JS errors; API website fixture. Hasil ini tidak menggantikan browser game/API nyata. |
 | Harness performa |14tes CPU lulus; bukan benchmark GPU/perangkat. Tidak ada klaim FPS Windows/S23 atau speedup. |
-| Browser game nyata |Sedang diuji pada localhost3101/PCK di atas. Run awal membuktikan migrasi, Griya masuk/save, lalu gagal karena predicate harness menunggu HUD luar di interior. Snapshot home aktif;0error produk/API, cleanup UUID/receipt/shift/cache nol. Predicate diperbaiki dan rerun dijadwalkan; jangan mengklaim alur tujuh shelter/hutan/laut selesai dari run ini. [Laporan QA](06b-browser-qa-preparation.md). |
+| Browser game nyata |Run kedua meluluskan17 pemeriksaan pada PCK yang sama: migrasi, Griya masuk/save/reload/keluar, tujuh warga tiba di shelter hujan dan seluruh percakapan, gerbang hutan, reveal/restore tajuk, jurnal/kalender pause, joystick, reload hutan dan kedua jembatan. Berhenti pada batas harness421detik ketika berjalan pulang, bukan collision/API;0JS error/0API gagal, cleanup fixture nol. Laut/pulang/reload akhir tetap menunggu alur lanjutan. Run pertama gagal pada predicate attach interior yang sudah diperbaiki. [Laporan QA](06b-browser-qa-preparation.md). |
 
 Kegagalan selama iterasi disimpan:78/80API pertama karena dua rute memotong tiang, serta36sampel sharp turn yang tak terjangkau. Keduanya diperbaiki pada source dan tes terkait tetap aktif. Fixture kamera delta0 yang belum menerapkan cahaya malam juga diperbaiki menjadi0,5detik. Angka lulus di tabel berasal dari run akhir, bukan menyembunyikan log gagal.
 
 Artefak lokal di worktree integrasi: `.runtime/06b-api-final-aligned.log`, `.runtime/06b-world-final.log`, `.runtime/06b-export-final.log`, `.runtime/06b-left-camera-final.log`, `artifacts/godot/06b-quarter-pilot/`, serta `artifacts/browser/`. Source gambar/prompt Ujang tersedia dalam Git; screenshot pengujian diabaikan agar tidak menjadi aset distribusi.
+
+## CI kandidat, bukan rilis staging
+
+[Pipeline3044026490](https://gitlab.com/ardianryan/jalasmara-the-game/-/pipelines/3044026490) untuk `e0d75b3` lulus empat job branch: verify, godot_web, build dan codeql. Job laporan GitHub khusus default branch tidak dijalankan pada branch ini. Artefak diperiksa langsung:82testcase API tanpa failure/skip;40/40world;201aturan CodeQL dengan0temuan; tiga audit dependensi mencatat0kerentanan. Hasil ini tidak berarti paket sudah aktif di HTTPS.
+
+Pipeline sebelumnya3044000129 mempunyai job CodeQL sukses tetapi satu warning alur jumlah byte HTTP menuju metadata file laporan harness. Field laporan diubah menjadi ukuran pin yang sudah dibandingkan dengan jumlah unduhan dan hash; limit/hash tetap diperiksa, tanpa suppression. SARIF pipeline3044026490 diperiksa kembali dan kosong. Jangan menyebut pipeline pertama bebas warning hanya karena job-nya hijau.
 
 ## Tool terbaru yang dipakai
 
@@ -40,10 +46,11 @@ Artefak lokal di worktree integrasi: `.runtime/06b-api-final-aligned.log`, `.run
 
 ## Berikutnya, menurut prioritas
 
-1. Selesaikan browser game gabungan dan transaksi kedai/tidur; catat screenshot/HUD malam, joystick, reload dan cleanup. Perbaiki bug yang terulang sebelum menyebut paket siap rilis.
+1. Selesaikan bagian browser yang tersisa dan transaksi kedai/tidur.17pemeriksaan prefix yang sudah lulus tetap disimpan; kelompok lanjutan memakai UUID baru dan posisi awal sah, lalu input aktual. Bila bukti memakai dua fixture, laporkan sebagai dua kelompok, bukan satu perjalanan tanpa putus.
 2. Adapter kamera kiri gameplay: inverse layar→map, follow elevasi, visual facing terpisah dari phase gait, canopy-right aktual, billboard/alat dan penanda. Checkpoint `6c534ac` pada `work/06b-view-projection` baru source/CPU640kasus; Camera3D test belum dijalankan. Jangan aktifkan diagonal global dari checkpoint ini saja. Ulang coverage336sampel bila kamera berubah.
-3. Matangkan pilot Darmi/Sari: target siraman Darmi ditemukan berada19,75unit di luar soil bed; fix kosmetik dan test actual mesh sedang disiapkan terpisah. Grip keduanya belum mempunyai anotasi pixel independen dan tidak boleh dilaporkan sebagai error0 yang terukur. Ujang masih memerlukan arah torso/rear limbs lengkap dan penilaian manusia atas keluwesan.
-4. Warga yang belum memakai rig masih terlihat sebagai billboard potret, termasuk latar abu-abu pada malam. Catat sebagai gap B3, bukan kualitas karakter final. Orientasi rumah lain ditinjau per lot/facing; fix Griya tidak otomatis menyelaraskan seluruh bangunan.
-5. Sesudah inti stabil: rumah pribadi lurah, direktur dengan kontainer/RV sendiri, Laskar Kognisi/rute/dialog. Farming/keramba/interior lanjutan mengikuti kontrak server D. Windows/S23 fisik, sesi panjang dan uji bermain manusia tetap terbuka.
+3. Kotak percakapan pada667×375 masih memakai sekitar63%tinggi layar untuk satu baris; root meninjau screenshot Ujang dan menugaskan audit compact layout. Sesuaikan tinggi terhadap isi sambil mempertahankan teks16px/aksi minimal48px, portrait dan fokus keyboard. Bingkai Bahari serta tombol yang berfungsi belum membuktikan ukuran HUD sudah nyaman.
+4. Matangkan pilot Darmi/Sari: target siraman Darmi ditemukan berada19,75unit di luar soil bed; checkpoint `0517cef` pada `work/06b-tool-contact-next` memuat fix dan test actual mesh480sampel, belum dijalankan Godot. Grip keduanya belum mempunyai anotasi pixel independen dan tidak boleh dilaporkan sebagai error0 yang terukur. Ujang masih memerlukan arah torso/rear limbs lengkap dan penilaian manusia atas keluwesan.
+5. Warga yang belum memakai rig masih terlihat sebagai billboard potret, termasuk latar abu-abu pada malam. Catat sebagai gap B3, bukan kualitas karakter final. Orientasi rumah lain ditinjau per lot/facing; fix Griya tidak otomatis menyelaraskan seluruh bangunan.
+6. Sesudah inti stabil: rumah pribadi lurah, direktur dengan kontainer/RV sendiri, Laskar Kognisi/rute/dialog. Farming/keramba/interior lanjutan mengikuti kontrak server D. Windows/S23 fisik, sesi panjang dan uji bermain manusia tetap terbuka.
 
 Gate dokumentasi parsial: Hard Gate PASS, hasil/pending dan rilis dipisahkan tanpa klaim perangkat; Purpose Gate PASS, tiap perubahan menjawab akses/arah/kontak/coverage yang nyata; Liveliness PASS, arah comfy pesisir pengguna dipertahankan; Craftsmanship PASS untuk laporan, source/bukti/tool/lisensi serta47tautan entry diperiksa. **Gate browser game/rilis belum ditutup**; statusnya harus diperbarui setelah rerun, bukan dianggap lulus oleh gate dokumentasi.
