@@ -14,11 +14,20 @@ import {
 } from "../packages/shared/src/index.ts";
 import { WORLD } from "../packages/shared/src/world.ts";
 import { fetchWorld } from "./game-navigation.mjs";
+import { isLandWalkable } from "../packages/shared/src/land.ts";
 import { physicalRoute } from "./plan06-physical-route.mjs";
 import { gameplayFailureDetails } from "./gameplay-api-failure.mjs";
 import { keyboardPulse, corridorTargets } from "./land-view-navigation.mjs";
 
 const homeOnly = process.env.NIGHT_HOME_ONLY === "1";
+const serviceOnly = process.env.NIGHT_SERVICE_ONLY === "1";
+assert(!process.env.NIGHT_SERVICE_ONLY || serviceOnly);
+assert(
+  !(homeOnly && serviceOnly),
+  "Home and service use separate initial fixtures.",
+);
+const compactRequested =
+  serviceOnly || process.env.VERIFY_COMPACT_NIGHT === "1";
 assert(
   !process.env.NIGHT_HOME_ONLY || homeOnly,
   "NIGHT_HOME_ONLY accepts only 1 when set.",
@@ -70,6 +79,8 @@ const tracePaths = new Set([
   "/api/calendar/heartbeat",
 ]);
 let currentPhase = "setup";
+let completed = false,
+  failureStage = null;
 let browser,
   context,
   page,
@@ -234,7 +245,7 @@ async function shot(name) {
 }
 
 async function compactNight(label, expectedModal) {
-  if (process.env.VERIFY_COMPACT_NIGHT !== "1") return;
+  if (!compactRequested) return;
   const cdp = await context.newCDPSession(page);
   for (const [width, height] of [
     [667, 375],
@@ -413,16 +424,21 @@ try {
       createdAt: now,
       updatedAt: now,
     });
-  if (homeOnly) {
+  if (homeOnly || serviceOnly) {
+    const initialPoint = serviceOnly
+      ? WORLD.surface_hub.districts.find((entry) => entry.npc === "Mbah Wira")
+      : WORLD.homestead.door;
+    assert(initialPoint && isLandWalkable(WORLD.landMaps.hub, initialPoint));
     const cache = new Redis(redisUrl);
     try {
       await cache.set(
         `surface:${id}`,
         JSON.stringify({
           area: "hub",
-          ...WORLD.homestead.door,
+          x: initialPoint.x,
+          y: initialPoint.y,
           layoutVersion: WORLD.hub.layoutVersion,
-          playerVersion: 4,
+          playerVersion: homeOnly ? 4 : 0,
           positionAt: Date.now(),
         }),
         "EX",
@@ -441,9 +457,11 @@ try {
     ],
   });
   context = await browser.newContext({
-    viewport: { width: 1440, height: 900 },
-    hasTouch: process.env.VERIFY_COMPACT_NIGHT === "1",
-    isMobile: process.env.VERIFY_COMPACT_NIGHT === "1",
+    viewport: serviceOnly
+      ? { width: 667, height: 375 }
+      : { width: 1440, height: 900 },
+    hasTouch: compactRequested,
+    isMobile: compactRequested,
     deviceScaleFactor: 1,
   });
   page = await context.newPage();
@@ -543,6 +561,46 @@ try {
       recipes.map((r) => r.id),
     );
     await waitState((s) => s.modal);
+    if (serviceOnly) {
+      await page.waitForTimeout(1200);
+      await shot("00-service-667-pinned-context-before-touch-scroll");
+      const clip = { x: 280, y: 245, width: 300, height: 75 };
+      const before = createHash("sha256")
+        .update(await page.screenshot({ clip }))
+        .digest("hex");
+      const cdp = await context.newCDPSession(page);
+      await cdp.send("Input.dispatchTouchEvent", {
+        type: "touchStart",
+        touchPoints: [{ x: 500, y: 330 }],
+      });
+      for (let step = 1; step <= 8; step++) {
+        await cdp.send("Input.dispatchTouchEvent", {
+          type: "touchMove",
+          touchPoints: [{ x: 500, y: 330 - step * 12 }],
+        });
+        await page.waitForTimeout(50);
+      }
+      await cdp.send("Input.dispatchTouchEvent", {
+        type: "touchEnd",
+        touchPoints: [],
+      });
+      await page.waitForTimeout(350);
+      const after = createHash("sha256")
+        .update(await page.screenshot({ clip }))
+        .digest("hex");
+      assert.notEqual(
+        after,
+        before,
+        "Actual touch drag must change the opaque options region, not just water behind the modal.",
+      );
+      assert(
+        (await snapshot()).modal && (await snapshot()).weather.clockPaused,
+      );
+      await shot("00-service-667-options-after-real-touch-scroll");
+      checks.push(
+        "667-service-options-region-changes-after-real-touch-drag-with-world-paused",
+      );
+    }
     for (let i = 0; i < recipes.length; i++) {
       const keys = i === 0 ? ["Space", "Tab", "Enter"] : ["Enter"];
       const result = await requestViaKeys(
@@ -601,113 +659,130 @@ try {
     assert.deepEqual(world.homestead.door, WORLD.homestead.door);
     checks.push("focused-home-fixture-starts-after-closed-shift-at-real-door");
   }
-  await routeTo(world.homestead.door);
-  await waitState((s) => s.nearby === "home_enter");
-  await page.keyboard.press("e");
-  await waitState((s) => s.homePanel);
-  await requestViaKeys("homestead/action", (b) => b.action === "enter", [
-    "Enter",
-  ]);
-  await waitState(
-    (s) => s.area === "home" && s.homestead?.inside && s.renderer?.active,
-  );
-  await frame.locator("canvas").focus();
-  await routeTo({ x: 270, y: 330 }, true);
-  await waitState((s) => s.nearby === "bed");
-  await page.keyboard.press("e");
-  await waitState((s) => s.homePanel);
-  const slept = await requestViaKeys(
-    "homestead/action",
-    (b) => b.action === "sleep",
-    ["Enter"],
-  );
-  assert.equal(slept.player.progress.day, 2);
-  assert.equal(slept.player.progress.stage, "dive");
-  assert.equal(slept.calendar.calendarDay, 2);
-  assert.equal(slept.calendar.minuteOfDay, 360);
-  assert(!slept.homestead.pendingStoryAdvance);
-  await shot("03-sleep-advances-morning");
-  await page.keyboard.press("Enter");
-  await waitState((s) => !s.modal && !s.homePanel);
-  await routeTo(world.homestead.interior.entry, true);
-  await waitState((s) => s.nearby === "exit");
-  const exited = await requestViaKeys(
-    "homestead/action",
-    (b) => b.action === "exit",
-    ["e"],
-  );
-  await waitState((s) => s.area !== "home" && !s.homestead?.inside);
-  await waitState((s) => s.land?.active && s.land.view?.motion);
-  await page.waitForTimeout(3500);
-  let postExitPosition;
-  if (homeOnly) {
-    const from = await snapshot(),
-      afterSequence = trace.length;
-    await routeTo({
-      x: world.homestead.door.x + 45,
-      y: world.homestead.door.y,
-    });
-    postExitPosition = await snapshot();
-    assert(
-      Math.hypot(postExitPosition.x - from.x, postExitPosition.y - from.y) > 20,
+  if (!serviceOnly) {
+    await routeTo(world.homestead.door);
+    await waitState((s) => s.nearby === "home_enter");
+    await page.keyboard.press("e");
+    await waitState((s) => s.homePanel);
+    await requestViaKeys("homestead/action", (b) => b.action === "enter", [
+      "Enter",
+    ]);
+    await waitState(
+      (s) => s.area === "home" && s.homestead?.inside && s.renderer?.active,
     );
-    const deadline = Date.now() + 15000;
-    let acknowledgement;
-    while (!acknowledgement && Date.now() < deadline) {
-      acknowledgement = trace
-        .slice(afterSequence)
-        .find(
-          (entry) =>
-            entry.path === "/api/adventure/surface-position" &&
-            entry.status === 200 &&
-            entry.sent.version === exited.player.version &&
-            entry.surface?.playerVersion === exited.player.version &&
-            Math.hypot(
-              entry.surface.x - postExitPosition.x,
-              entry.surface.y - postExitPosition.y,
-            ) < 15,
-        );
-      if (!acknowledgement) await page.waitForTimeout(150);
+    await frame.locator("canvas").focus();
+    await routeTo({ x: 270, y: 330 }, true);
+    await waitState((s) => s.nearby === "bed");
+    await page.keyboard.press("e");
+    await waitState((s) => s.homePanel);
+    const slept = await requestViaKeys(
+      "homestead/action",
+      (b) => b.action === "sleep",
+      ["Enter"],
+    );
+    assert.equal(slept.player.progress.day, 2);
+    assert.equal(slept.player.progress.stage, "dive");
+    assert.equal(slept.calendar.calendarDay, 2);
+    assert.equal(slept.calendar.minuteOfDay, 360);
+    assert(!slept.homestead.pendingStoryAdvance);
+    await shot("03-sleep-advances-morning");
+    await page.keyboard.press("Enter");
+    await waitState((s) => !s.modal && !s.homePanel);
+    await routeTo(world.homestead.interior.entry, true);
+    await waitState((s) => s.nearby === "exit");
+    const exited = await requestViaKeys(
+      "homestead/action",
+      (b) => b.action === "exit",
+      ["e"],
+    );
+    await waitState((s) => s.area !== "home" && !s.homestead?.inside);
+    await waitState((s) => s.land?.active && s.land.view?.motion);
+    await page.waitForTimeout(3500);
+    let postExitPosition;
+    if (homeOnly) {
+      const from = await snapshot(),
+        afterSequence = trace.length;
+      await routeTo({
+        x: world.homestead.door.x + 45,
+        y: world.homestead.door.y,
+      });
+      postExitPosition = await snapshot();
+      assert(
+        Math.hypot(postExitPosition.x - from.x, postExitPosition.y - from.y) >
+          20,
+      );
+      const deadline = Date.now() + 15000;
+      let acknowledgement;
+      while (!acknowledgement && Date.now() < deadline) {
+        acknowledgement = trace
+          .slice(afterSequence)
+          .find(
+            (entry) =>
+              entry.path === "/api/adventure/surface-position" &&
+              entry.status === 200 &&
+              entry.sent.version === exited.player.version &&
+              entry.surface?.playerVersion === exited.player.version &&
+              Math.hypot(
+                entry.surface.x - postExitPosition.x,
+                entry.surface.y - postExitPosition.y,
+              ) < 15,
+          );
+        if (!acknowledgement) await page.waitForTimeout(150);
+      }
+      assert(
+        acknowledgement,
+        "A real move after home exit must ACK the returned player version.",
+      );
+      checks.push("post-home-exit-walk-acknowledges-exit-player-version");
+      await shot("03-post-exit-walk-acknowledged");
     }
+    await page.reload();
+    await attach();
+    await waitState((s) => s.stage === "dive" && !s.homestead?.inside);
+    if (postExitPosition) {
+      const reloaded = await snapshot();
+      assert(
+        Math.hypot(
+          reloaded.x - postExitPosition.x,
+          reloaded.y - postExitPosition.y,
+        ) < 15,
+      );
+      checks.push("post-home-exit-walk-persists-after-reload");
+    }
+    const persisted = await state();
+    assert.equal(persisted.player.progress.day, 2);
+    assert.equal(persisted.calendar.calendarDay, 2);
     assert(
-      acknowledgement,
-      "A real move after home exit must ACK the returned player version.",
+      persisted.calendar.minuteOfDay >= 360 &&
+        persisted.calendar.minuteOfDay < 390,
     );
-    checks.push("post-home-exit-walk-acknowledges-exit-player-version");
-    await shot("03-post-exit-walk-acknowledged");
-  }
-  await page.reload();
-  await attach();
-  await waitState((s) => s.stage === "dive" && !s.homestead?.inside);
-  if (postExitPosition) {
-    const reloaded = await snapshot();
+    assert.equal(persisted.homestead.pantry.kangkung, 0);
+    assert(!persisted.homestead.pendingStoryAdvance);
+    assert.equal(persisted.homestead.inside, false);
     assert(
-      Math.hypot(
-        reloaded.x - postExitPosition.x,
-        reloaded.y - postExitPosition.y,
-      ) < 15,
+      recipes.every((r) => persisted.player.progress.missions.includes(r.id)),
     );
-    checks.push("post-home-exit-walk-persists-after-reload");
+    checks.push(
+      "home-bed-sleep-advances-story-and-calendar-once-exit-reload-persists",
+    );
+    await shot("04-reloaded-morning");
+  } else {
+    const persisted = await state();
+    assert.equal(persisted.player.progress.day, 1);
+    assert.equal(persisted.homestead.pendingStoryAdvance.storyDay, 1);
+    assert.equal(persisted.homestead.pantry.kangkung, 0);
+    assert(
+      recipes.every((recipe) =>
+        persisted.player.progress.missions.includes(recipe.id),
+      ),
+    );
+    checks.push(
+      "focused-service-receipts-persist-with-story-advance-still-pending-sleep",
+    );
   }
-  const persisted = await state();
-  assert.equal(persisted.player.progress.day, 2);
-  assert.equal(persisted.calendar.calendarDay, 2);
-  assert(
-    persisted.calendar.minuteOfDay >= 360 &&
-      persisted.calendar.minuteOfDay < 390,
-  );
-  assert.equal(persisted.homestead.pantry.kangkung, 0);
-  assert(!persisted.homestead.pendingStoryAdvance);
-  assert.equal(persisted.homestead.inside, false);
-  assert(
-    recipes.every((r) => persisted.player.progress.missions.includes(r.id)),
-  );
-  checks.push(
-    "home-bed-sleep-advances-story-and-calendar-once-exit-reload-persists",
-  );
-  await shot("04-reloaded-morning");
   assert.deepEqual(failures, []);
   assert.deepEqual(errors, []);
+  completed = true;
   console.log(
     JSON.stringify(
       { checks, operations: operations.length, browserErrors: errors.length },
@@ -716,6 +791,7 @@ try {
     ),
   );
 } catch (error) {
+  failureStage = currentPhase;
   if (page) await shot("failure").catch(() => {});
   throw error;
 } finally {
@@ -780,6 +856,9 @@ try {
         {
           origin,
           id,
+          outcome: completed && cleaned ? "passed" : "failed",
+          completed,
+          failureStage,
           candidatePck,
           checks,
           operations,
@@ -789,6 +868,7 @@ try {
           observations,
           trace,
           homeOnly,
+          serviceOnly,
           ownTemporaryPlayerRemoved: cleaned,
           routeElapsedMs: routeStarted ? Date.now() - routeStarted : null,
         },

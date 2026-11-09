@@ -18,3 +18,11 @@ node --experimental-strip-types scripts/performance/recorder-browser.mjs
 ```
 
 Do not use the old public5f5 package: it does not contain the newly integrated recorder/HUD. Do not run this local fixture on staging, on an existing user or through an owner login. Follow this check with the actual night-service keyboard/touch scroll flow and new garden/pen transactions; this harness does not prove those server gameplay loops.
+
+## Focused night service mode: prepared separately
+
+`NIGHT_SERVICE_ONLY=1` on `scripts/night-home-browser.mjs` now selects a separate local fixture at the actual walkable Wira service floor and667×375 coarse-pointer viewport. It retains the real authored day-one recipes, ingredient inventory, pantry prerequisite, keyboard serve receipts/coin/material checks, pending-story guard and owned-record cleanup. It skips unrelated home travel/sleep. This is an explicit initial fixture, never a runtime teleport or a claim that its inventory was earned by gameplay.
+
+Before serving, it sends an actual CDP touch drag through the options scroller and captures both frames. A fixed interior opaque options-region hash must change, followed by the existing Space→Tab→Enter pantry/recipe flow and actual authoritative receipt. The frame-region check supplements mandatory screenshot inspection; it does not measure scroll offset, guarantee all recipe actions are initially visible or replace keyboard/receipt verification. The world remains paused. Existing full/home-only modes remain available. Results now distinguish overall passed/failed completion and include the failing stage even if no API/browser errors were recorded.
+
+This mode is source-prepared and syntax-checked only, pending the new pin/browser grant. Run locally using the same required pin variables, `NIGHT_SERVICE_ONLY=1`, and `node --experimental-strip-types scripts/night-home-browser.mjs`. It does not establish new multi-crop/fish-pen gameplay acceptance.
