@@ -10,6 +10,7 @@ import { join } from "node:path";
 import { gzipSync } from "node:zlib";
 import { withLoadingBridge } from "./game-loading-bridge.mjs";
 import { withTrackedStreamErrors } from "./godot-preloader-stream.mjs";
+import { withWasmInitErrors } from "./godot-wasm-init-errors.mjs";
 const candidates = [
   process.env.GODOT_BIN,
   "godot",
@@ -85,7 +86,7 @@ writeFileSync(htmlPath, html);
 const loaderPath = "apps/web/public/game/index.js";
 writeFileSync(
   loaderPath,
-  withTrackedStreamErrors(readFileSync(loaderPath, "utf8")),
+  withWasmInitErrors(withTrackedStreamErrors(readFileSync(loaderPath, "utf8"))),
 );
 
 function compressGameAssets(directory) {
