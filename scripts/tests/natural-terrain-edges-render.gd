@@ -47,7 +47,7 @@ func run() -> void:
 		assert(renderer._components.get("NaturalTerrainShoulder",0)>0)
 		for entry in cases[area]:
 			player.position=Vector2(entry[1],entry[2])
-			assert(collision.is_walkable(player.position),str(entry[0])+" marker must stand on an actual reachable floor")
+			assert(collision.is_walkable(player.position),str(entry[0])+" marker must stand on an actual clear floor")
 			for setting in [["day",600],["night",1200]]:
 				clock.visual_minutes=setting[1]
 				clock.set("_server_rain",false)
