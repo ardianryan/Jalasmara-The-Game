@@ -48,6 +48,10 @@ func _measure(label:String) -> void:
 	if not bool(pose.reachValid): rejected+=1
 	if not _check(bool(pose.reachValid),"Unreachable Nala leg "+label+" at "+str(player.position)+" drop="+str(pose.requestedDropPixels)): return
 	if not _check(not bool(pose.rootMotion),"Visual rig may not move actor root"): return
+	var upper:Sprite3D=rig.get("_parts").upper
+	var equipment:Node3D=renderer.actors_3d.get("_equipment")
+	var full_body_anchor:Vector3=upper.global_position-renderer.camera_up()*26
+	if not _check(equipment.global_position.distance_to(full_body_anchor)<.003,"Separate equipment must follow actual lowered torso "+label): return
 	for side in ["left","right"]:
 		var entry:Dictionary=pose.contacts.feet[side]
 		var foot:Sprite3D=rig.get("_parts")[side+"_foot"]
@@ -132,7 +136,7 @@ func run() -> void:
 		for reduced in [false,true]:
 			clock.reduced_motion=reduced
 			for heading in range(8):
-				var label:=outfit+"/"+str(reduced)+"/"+str(heading)
+				var label:String=outfit+"/"+str(reduced)+"/"+str(heading)
 				var origin:=Vector2(1000,1360)
 				_reset_case(origin,outfit)
 				await _tick(origin,1.0/30,label+" idle")

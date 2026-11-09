@@ -1,7 +1,7 @@
 extends RefCounted
 
 # This pilot owns visual soles only. Actor coordinates and legacy step audio are untouched.
-const STEP_DISTANCE := 24.0
+const STEP_DISTANCE := 18.0
 const TOE_CLEARANCE := 2.0
 var renderer: Node
 var _feet: Dictionary = {}

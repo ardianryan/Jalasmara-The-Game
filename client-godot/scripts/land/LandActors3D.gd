@@ -158,14 +158,20 @@ func update_actors(delta: float) -> void:
 			var lift:=clampf(float(traversal.get("bodyLift",0)),0,1.6)
 			var nala := _sprite("Nala",_frame(visual.texture,rect),actor.position,cell*visual.scale.abs(),-visual.position.y,visual.flip_h,pivot.y if pivot!=Vector2.ZERO else -1.0,lift)
 			var gear: Dictionary=visual.get_equipment_state() if visual.has_method("get_equipment_state") else {}
-			_update_equipment(nala,gear,false,visual.flip_h)
+			var lower_pose:Dictionary={}
 			if bool(actor.get_meta("nala_lower_body_pilot",false)) and not bool(actor.get("in_water")):
 				if not is_instance_valid(_nala_lower):
 					_nala_lower=preload("res://scripts/NalaLowerBody3D.gd").new()
 					add_child(_nala_lower)
 					_nala_lower.configure(renderer,actor)
-				counts["nalaLowerBody"]=_nala_lower.update_pose(nala,visual,delta)
+				lower_pose=_nala_lower.update_pose(nala,visual,delta)
+				counts["nalaLowerBody"]=lower_pose
 			elif is_instance_valid(_nala_lower): _nala_lower.visible=false
+			if bool(lower_pose.get("enabled",false)):
+				nala.visible=true
+				nala.position+=Vector3(lower_pose.attachmentOffset)
+			_update_equipment(nala,gear,false,visual.flip_h)
+			if bool(lower_pose.get("enabled",false)): nala.visible=false
 			counts.player=1
 	elif "sheet" in actor:
 		var sheet: Texture2D=actor.get("sheet")
