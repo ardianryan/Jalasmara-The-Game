@@ -13,7 +13,7 @@ import {WORLD} from '../../packages/shared/src/world.ts';
 import {isLandWalkable} from '../../packages/shared/src/land.ts';
 import {parseForestPoint} from './forest-point.mjs';
 import {summarizeCapture,scalarMetrics} from './metrics.mjs';
-import {pckSource,isPckRequest} from './pck-source.mjs';
+import {pckSource,isPckRequest,verifyPckOverrideTransport} from './pck-source.mjs';
 
 const origin=process.env.APP_TEST_ORIGIN??'http://localhost:3100';
 const mongoUrl=process.env.MONGO_URL??'mongodb://127.0.0.1:27018/jalasmara?replicaSet=rs0';
@@ -24,6 +24,7 @@ assert(['localhost','127.0.0.1'].includes(new URL(redisUrl).hostname));
 const duration=Number(process.env.PROFILE_SAMPLE_MS??15000),warmup=Number(process.env.PROFILE_WARMUP_MS??8000);
 assert(duration>=1000&&duration<=120000&&warmup>=7000&&warmup<=60000);
 const pck={...pckSource({overridePath:process.env.PROFILE_OVERRIDE_PCK,servedPath:process.env.PROFILE_PCK_FILE,expectedHash:process.env.PROFILE_EXPECTED_PCK_SHA}),interceptedRequests:0};
+await verifyPckOverrideTransport({overridePath:process.env.PROFILE_OVERRIDE_PCK,origin});
 const directory=process.env.PROFILE_OUTPUT??'artifacts/performance/06p-baseline';mkdirSync(directory,{recursive:true});
 assert(!existsSync(`${directory}/results.json`),'Choose a new PROFILE_OUTPUT; existing captures are immutable');
 const forestPoint=parseForestPoint(process.env.PROFILE_FOREST_POINT,(point,margin)=>isLandWalkable(WORLD.landMaps.forest,point,margin));
