@@ -18,6 +18,7 @@ import { WORLD } from "../packages/shared/src/world.ts";
 import { isLandWalkable } from "../packages/shared/src/land.ts";
 import { fetchWorld } from "./game-navigation.mjs";
 import { physicalRoute } from "./plan06-physical-route.mjs";
+import { keyboardPulse, projectLogicalDelta } from "./land-view-navigation.mjs";
 
 const origin = process.env.APP_TEST_ORIGIN ?? "http://localhost:3101";
 const mongoUrl =
@@ -31,7 +32,12 @@ assert(["localhost", "127.0.0.1"].includes(new URL(origin).hostname));
 assert(/^mongodb:\/\/(127\.0\.0\.1|localhost)(:|\/)/.test(mongoUrl));
 assert(["localhost", "127.0.0.1"].includes(new URL(redisUrl).hostname));
 const routeMode = process.env.PLAN06_ROUTE_MODE ?? "full";
-assert(["full", "continuation", "ocean", "dialogue"].includes(routeMode));
+assert(
+  ["full", "continuation", "ocean", "dialogue", "left"].includes(routeMode),
+);
+const routeLimitMs = (routeMode === "left" ? 5 : 10) * 60 * 1000;
+const navigation = { matrixPulses: 0, legacyPulses: 0 };
+const inputProofs = [];
 const fixtureStoryDay = routeMode === "dialogue" ? 1 : 2;
 const expectedPck = process.env.PLAN06_EXPECT_PCK;
 const expectedPckBytes = Number(process.env.PLAN06_EXPECT_PCK_BYTES);
@@ -69,13 +75,13 @@ let browser,
 let candidatePck,
   initialLegacy,
   initialContinuation,
-  initialOcean,
+  initialHub,
   routeStarted,
   fixtureAttempted = false;
 function budget() {
   assert(
-    !routeStarted || Date.now() - routeStarted < 10 * 60 * 1000,
-    "Bounded layout route exceeded ten minutes; preserve partial evidence and clean the fixture.",
+    !routeStarted || Date.now() - routeStarted < routeLimitMs,
+    `Bounded ${routeMode} route exceeded ${routeLimitMs / 60000} minutes; preserve partial evidence and clean the fixture.`,
   );
 }
 const snapshot = () => frame.evaluate(() => window.jalasmaraSnapshot);
@@ -160,14 +166,39 @@ async function walkTo(x, y) {
       `Physical collision blocks ${x},${y}; actual ${value.x},${value.y}`,
     );
     previous = value;
-    const threshold = stuck > 2 ? 3 : 8;
-    const keys = [];
-    if (Math.abs(dx) > threshold) keys.push(dx > 0 ? "d" : "a");
-    if (Math.abs(dy) > threshold) keys.push(dy > 0 ? "s" : "w");
+    const contract =
+      !value.diving && value.area !== "home" && value.land?.active
+        ? value.land.view?.motion
+        : null;
+    if (routeMode === "left")
+      assert(
+        contract,
+        "Left-view navigation requires the actual renderer motion contract.",
+      );
+    let keys, holdMs, releaseMs;
+    if (contract) {
+      const pulse = keyboardPulse([dx, dy], contract, {
+        speed: 100 * (value.traversal?.paceScale ?? 1),
+        acceleration: value.area === "forest" ? 1250 : 850,
+      });
+      ({ keys, holdMs, releaseMs } = pulse);
+      navigation.matrixPulses++;
+    } else {
+      const threshold = stuck > 2 ? 3 : 8;
+      keys = [];
+      if (Math.abs(dx) > threshold) keys.push(dx > 0 ? "d" : "a");
+      if (Math.abs(dy) > threshold) keys.push(dy > 0 ? "s" : "w");
+      holdMs = distance > 150 ? 330 : distance > 50 ? 200 : 90;
+      releaseMs = 90;
+      navigation.legacyPulses++;
+    }
     for (const key of keys) await page.keyboard.down(key);
-    await page.waitForTimeout(distance > 150 ? 330 : distance > 50 ? 200 : 90);
-    for (const key of keys) await page.keyboard.up(key);
-    await page.waitForTimeout(90);
+    try {
+      await page.waitForTimeout(holdMs);
+    } finally {
+      for (const key of keys) await page.keyboard.up(key);
+    }
+    await page.waitForTimeout(releaseMs);
   }
   throw Error(
     `Bounded navigation timed out at ${JSON.stringify(await snapshot())}`,
@@ -422,6 +453,122 @@ async function verifyShelters() {
   }
 }
 
+function assertLeftView(value, area) {
+  assert.equal(value.land?.area, area);
+  assert.equal(value.land.bitmapGround, false);
+  assert.equal(value.land.view?.azimuth, -45);
+  assert.equal(value.land.view?.elevation, 35);
+  assert.equal(value.land.view?.input, "screen-relative");
+  assert.equal(value.land.view?.motion?.schemaVersion, 1);
+  assert.equal(value.land.actors.player, 1);
+  assert(value.land.maxFootError < 0.1);
+}
+function recordScreenRight(before, after, kind) {
+  const logical = [after.x - before.x, after.y - before.y];
+  const projected = projectLogicalDelta(logical, before.land.view.motion);
+  inputProofs.push({
+    kind,
+    logical,
+    projected,
+    area: before.land.area,
+    azimuth: before.land.view.azimuth,
+  });
+  assert(
+    projected[0] > 4,
+    `${kind} must physically move the player toward screen-right.`,
+  );
+  assert(
+    Math.abs(projected[1]) < Math.max(3, projected[0] * 0.35),
+    `${kind} must preserve the intended screen direction.`,
+  );
+}
+async function verifyLeftView() {
+  let value = await snapshot();
+  assertLeftView(value, "hub");
+  await responsive(667, 375, "left-hub-667x375");
+  const keyboardBefore = await snapshot();
+  await page.keyboard.down("d");
+  await page.waitForTimeout(350);
+  await page.keyboard.up("d");
+  await page.waitForTimeout(250);
+  recordScreenRight(keyboardBefore, await snapshot(), "hub-keyboard-right");
+  checks.push("left-hub-keyboard-follows-actual-projected-screen-direction");
+  await routeTo(world.forest.gate, "hub");
+  await waitState((state) => state.nearby === "forest_gate");
+  const travel = await pressAndPost("adventure/travel", null, "e");
+  assert.equal(travel.surface.area, "forest");
+  value = await waitState(
+    (state) => state.area === "forest" && state.land?.actors?.player === 1,
+  );
+  assertLeftView(value, "forest");
+  await shot("left-real-forest-entry");
+  await routeTo({ x: 650, y: 1050 }, "forest");
+  await responsive(844, 390, "left-forest-touch-844x390");
+  const prior = await snapshot();
+  const stick = prior.hud.joystick;
+  const start = await touchPoint(stick.center);
+  const moved = await touchPoint([
+    stick.center[0] + stick.radius * 0.65,
+    stick.center[1],
+  ]);
+  await cdp.send("Input.dispatchTouchEvent", {
+    type: "touchStart",
+    touchPoints: [start],
+  });
+  await cdp.send("Input.dispatchTouchEvent", {
+    type: "touchMove",
+    touchPoints: [moved],
+  });
+  await page.waitForTimeout(350);
+  assert(Math.hypot(...(await snapshot()).hud.joystick.direction) > 0.1);
+  await cdp.send("Input.dispatchTouchEvent", {
+    type: "touchEnd",
+    touchPoints: [],
+  });
+  await page.waitForTimeout(300);
+  const released = await snapshot();
+  assert(Math.hypot(...released.hud.joystick.direction) < 0.01);
+  recordScreenRight(prior, released, "forest-joystick-right");
+  await shot("left-forest-touch-released");
+  checks.push("left-forest-joystick-follows-screen-direction-and-releases");
+  const bridge = world.landMaps.forest.bridges.find(
+    (entry) => entry.id === "bridge_upper",
+  );
+  assert(bridge);
+  const [a, b] = bridge.path;
+  await routeTo({ x: a[0], y: a[1] }, "forest");
+  const before = await snapshot();
+  await walkTo(b[0], b[1]);
+  const after = await snapshot();
+  assert(Math.hypot(after.x - before.x, after.y - before.y) > 250);
+  assert(
+    after.land.bridges[bridge.id]?.oriented &&
+      after.land.bridges[bridge.id].railPosts >= 8,
+  );
+  assertLeftView(after, "forest");
+  await shot("left-bridge-upper-crossed");
+  await waitSaved(after);
+  await page.reload();
+  await attach();
+  const resumed = await waitState(
+    (state) => state.area === "forest" && state.land?.actors?.player === 1,
+  );
+  assertLeftView(resumed, "forest");
+  assert(Math.hypot(resumed.x - after.x, resumed.y - after.y) < 30);
+  const state = await apiState();
+  assert.equal(state.surface.area, "forest");
+  assert.equal(state.player.progress.day, 2);
+  assert.equal(state.player.coins, 200);
+  assert.equal(state.player.inventory.length, 0);
+  assert.equal(state.calendar.dayLengthMs, 36 * 60 * 1000);
+  assert(navigation.matrixPulses > 0);
+  assert.equal(navigation.legacyPulses, 0);
+  await shot("left-forest-position-resumes-after-reload");
+  checks.push(
+    "left-real-gate-bridge-and-position-reload-preserve-server-state",
+  );
+}
+
 async function verifyCompactDialogue() {
   const wira = world.surface_hub.districts.find(
     (entry) => entry.npc === "Mbah Wira",
@@ -431,14 +578,16 @@ async function verifyCompactDialogue() {
   await waitState((value) => value.nearby === wira.id);
   await responsive(667, 375, "compact-dialogue-before-conversation-667x375");
   await page.keyboard.press("e");
-  let current = await waitState(
+  await waitState(
     (value) => value.modal && value.dialogue?.speaker === "Mbah Wira",
   );
   for (const [speaker, tag, cap, minimum, maximum] of [
     ["Mbah Wira", "paragraph", 0.42, 100, 190],
     ["Nala", "short", 0.34, 20, 80],
   ]) {
-    current = await waitState((value) => value.dialogue?.speaker === speaker);
+    let current = await waitState(
+      (value) => value.dialogue?.speaker === speaker,
+    );
     const before = current.dialogue;
     assert(before.total >= minimum && before.total <= maximum);
     assert(before.compact && before.portrait);
@@ -644,16 +793,16 @@ try {
   const fixtureCache = new Redis(redisUrl);
   try {
     let initialSurface;
-    if (["ocean", "dialogue"].includes(routeMode)) {
-      initialOcean = {
+    if (["ocean", "dialogue", "left"].includes(routeMode)) {
+      initialHub = {
         area: "hub",
         ...WORLD.surfaceSpawn,
         layoutVersion: WORLD.hub.layoutVersion,
         playerVersion: 0,
         positionAt: Date.now(),
       };
-      assert(isLandWalkable(WORLD.landMaps.hub, initialOcean));
-      initialSurface = initialOcean;
+      assert(isLandWalkable(WORLD.landMaps.hub, initialHub));
+      initialSurface = initialHub;
     } else if (routeMode === "continuation") {
       const bridge = WORLD.landMaps.forest.bridges.find(
         (entry) => entry.id === "bridge_lower",
@@ -938,7 +1087,7 @@ try {
       "separate-fixture-starts-at-previously-crossed-real-forest-bridge",
     );
   }
-  if (!["ocean", "dialogue"].includes(routeMode)) {
+  if (!["ocean", "dialogue", "left"].includes(routeMode)) {
     await routeTo({ x: 200, y: 1320 }, "forest");
     await waitState((value) => value.nearby === "return");
     const returning = page.waitForResponse(
@@ -972,14 +1121,13 @@ try {
     const initial = await waitState(
       (value) => value.land?.area === "hub" && value.land?.actors?.player === 1,
     );
-    assert(
-      Math.hypot(initial.x - initialOcean.x, initial.y - initialOcean.y) < 30,
-    );
+    assert(Math.hypot(initial.x - initialHub.x, initial.y - initialHub.y) < 30);
     assert.deepEqual(world.surfaceSpawn, WORLD.surfaceSpawn);
-    await shot("ocean-fixture-start-at-actual-hub-spawn");
-    checks.push("separate-ocean-fixture-starts-on-real-hub-floor");
+    await shot(`${routeMode}-fixture-start-at-actual-hub-spawn`);
+    checks.push(`separate-${routeMode}-fixture-starts-on-real-hub-floor`);
   }
-  if (routeMode === "dialogue") await verifyCompactDialogue();
+  if (routeMode === "left") await verifyLeftView();
+  else if (routeMode === "dialogue") await verifyCompactDialogue();
   else await verifyOcean();
   assert.deepEqual(errors, []);
   assert.deepEqual(failures, []);
@@ -1066,9 +1214,11 @@ try {
           origin,
           candidatePck,
           routeMode,
+          navigation,
+          inputProofs,
           initialLegacy,
           initialContinuation,
-          initialOcean,
+          initialHub,
           errors,
           failures,
           operations,
