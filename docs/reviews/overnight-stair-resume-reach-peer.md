@@ -51,3 +51,9 @@ At frozen body84/NW the trailing-left8px threshold occurs around swing phase16.9
 - Frozen-helper results SHA256 `56c8c76d2cc3ae752504008363ba5ee2586aacf3d72b2d988d0ab867d9125cbb`.
 - Later FIRST3 rejection SHA256 `f54fe4bd530822c4ab75591d4383273f6c54b8df2a89969d0703f5b0ad508648`.
 - Character command/log records preserve exits, source7e14c09 and the explicit central reach error. No source guard changed in this peer.
+
+## Independent current-shadow stair-policy counterexample
+
+The character author next proposed testing current-foot shadow ground as the body target, as used for the ramp. I independently replayed the frozen fresh RIGHT72→96 curve through landing with20,000distance subdivisions, original NW right62unique opaque corners/sole markers, identity Q and the actual stair contact embedding. For this authored connector the inverse is `logicalY=(worldY+537*tan55)/(-1/cos55+0.6*tan55)`; actual shadow height is the discrete tread beneath that logical point, not continuous linear elevation. Body starts72, targets the minimum of this current right footprint and the genuine left84support, and remains limited to1world per accepted unit. No future96contact is invented.
+
+The replay ends at body81.9498228271 and trailing-left required drop10.973191445px. Character's separate model ends81.95086/drop10.97361; the small difference is numerical sampling. At the same terminal feet/root the original8px bound permits body baseline≤78.3202263206, leaving3.6295965world too much ascent under the proposed shadow rule. The original left stance horizontal distance is24.9638672. This is a concrete conditional counterexample to treating the current-shadow policy alone as a stair fix. It does not establish an alternate torso trajectory or solve the full common-body/inner-annulus interval. The root and character received the result before any new runtime patch. Hard guards and actual contact order remain unchanged.
