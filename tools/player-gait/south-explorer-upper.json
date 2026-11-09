@@ -1,0 +1,771 @@
+{
+  "schemaVersion": 1,
+  "identity": "male_nusantara",
+  "outfit": "explorer",
+  "view": "south",
+  "sourceFrame": 0,
+  "status": "Original explorer0 ownership and AUTHORED hidden garment/joints proposal only; no contact/gear/runtime acceptance",
+  "sourceSha256": "a429c378400bd5ac60a45124ac48672b4cb1360beb379cc83297b52ea48ae3b9",
+  "case": {
+    "outfit": "explorer",
+    "frame": 0,
+    "parts": {
+      "left": {
+        "upper": [
+          [
+            75,
+            46
+          ],
+          [
+            78,
+            46
+          ],
+          [
+            81,
+            48
+          ],
+          [
+            82,
+            51
+          ],
+          [
+            82,
+            56
+          ],
+          [
+            78,
+            59
+          ],
+          [
+            75,
+            55
+          ]
+        ],
+        "fore": [
+          [
+            77,
+            54
+          ],
+          [
+            82,
+            55
+          ],
+          [
+            83,
+            58
+          ],
+          [
+            80,
+            61
+          ],
+          [
+            77,
+            64
+          ],
+          [
+            74,
+            65
+          ],
+          [
+            72,
+            63
+          ],
+          [
+            72,
+            60
+          ],
+          [
+            75,
+            57
+          ]
+        ],
+        "palm": [
+          [
+            72,
+            58
+          ],
+          [
+            76,
+            58
+          ],
+          [
+            79,
+            61
+          ],
+          [
+            78,
+            64
+          ],
+          [
+            74,
+            65
+          ],
+          [
+            71,
+            64
+          ],
+          [
+            71,
+            59
+          ]
+        ]
+      },
+      "right": {
+        "upper": [
+          [
+            52,
+            45
+          ],
+          [
+            55,
+            45
+          ],
+          [
+            55,
+            49
+          ],
+          [
+            56,
+            52
+          ],
+          [
+            55,
+            54
+          ],
+          [
+            52,
+            57
+          ],
+          [
+            49,
+            54
+          ],
+          [
+            49,
+            49
+          ]
+        ],
+        "fore": [
+          [
+            49,
+            54
+          ],
+          [
+            54,
+            55
+          ],
+          [
+            54,
+            58
+          ],
+          [
+            52,
+            62
+          ],
+          [
+            51,
+            65
+          ],
+          [
+            47,
+            66
+          ],
+          [
+            46,
+            63
+          ],
+          [
+            47,
+            58
+          ]
+        ],
+        "palm": [
+          [
+            47,
+            62
+          ],
+          [
+            51,
+            62
+          ],
+          [
+            53,
+            65
+          ],
+          [
+            52,
+            68
+          ],
+          [
+            49,
+            70
+          ],
+          [
+            46,
+            68
+          ],
+          [
+            45,
+            65
+          ]
+        ]
+      }
+    },
+    "plateOwnedPixels": [
+      {
+        "pixel": [
+          56,
+          51
+        ],
+        "rgba": [
+          132,
+          111,
+          79,
+          255
+        ],
+        "reason": "Visible tan vest edge adjoining original vest x56,y50, not teal sleeve cap"
+      },
+      {
+        "pixel": [
+          56,
+          52
+        ],
+        "rgba": [
+          127,
+          103,
+          74,
+          255
+        ],
+        "reason": "Visible tan vest edge adjoining original vest x56,y50, not teal sleeve cap"
+      }
+    ]
+  },
+  "garmentPolygons": {
+    "vest": [
+      [
+        55,
+        43
+      ],
+      [
+        61,
+        43
+      ],
+      [
+        62,
+        47
+      ],
+      [
+        62,
+        58
+      ],
+      [
+        61,
+        69
+      ],
+      [
+        55,
+        70
+      ],
+      [
+        54,
+        66
+      ],
+      [
+        55,
+        59
+      ]
+    ],
+    "vestRight": [
+      [
+        68,
+        43
+      ],
+      [
+        74,
+        43
+      ],
+      [
+        75,
+        47
+      ],
+      [
+        75,
+        57
+      ],
+      [
+        74,
+        63
+      ],
+      [
+        76,
+        68
+      ],
+      [
+        75,
+        71
+      ],
+      [
+        68,
+        70
+      ],
+      [
+        67,
+        63
+      ],
+      [
+        68,
+        57
+      ]
+    ],
+    "belt": [
+      [
+        54,
+        59
+      ],
+      [
+        75,
+        60
+      ],
+      [
+        75,
+        63
+      ],
+      [
+        72,
+        65
+      ],
+      [
+        72,
+        73
+      ],
+      [
+        68,
+        74
+      ],
+      [
+        67,
+        65
+      ],
+      [
+        54,
+        63
+      ]
+    ],
+    "shirt": [
+      [
+        55,
+        45
+      ],
+      [
+        76,
+        45
+      ],
+      [
+        76,
+        60
+      ],
+      [
+        55,
+        60
+      ]
+    ]
+  },
+  "garmentStatus": "Manual original-pixel garment ownership proposal, one owner per opaque texel. Vest includes sewn pockets; belt/hanging waist strap remains clothing, not new detachable gear.",
+  "bodyRuns": [
+    [
+      44,
+      56,
+      75
+    ],
+    [
+      45,
+      56,
+      75
+    ],
+    [
+      46,
+      56,
+      75
+    ],
+    [
+      47,
+      56,
+      75
+    ],
+    [
+      48,
+      56,
+      75
+    ],
+    [
+      49,
+      56,
+      75
+    ],
+    [
+      50,
+      56,
+      76
+    ],
+    [
+      51,
+      56,
+      76
+    ],
+    [
+      52,
+      56,
+      76
+    ],
+    [
+      53,
+      56,
+      76
+    ],
+    [
+      54,
+      56,
+      76
+    ],
+    [
+      55,
+      56,
+      76
+    ],
+    [
+      56,
+      56,
+      76
+    ],
+    [
+      57,
+      56,
+      76
+    ],
+    [
+      58,
+      56,
+      76
+    ],
+    [
+      59,
+      55,
+      76
+    ],
+    [
+      60,
+      55,
+      76
+    ],
+    [
+      61,
+      55,
+      76
+    ],
+    [
+      62,
+      55,
+      76
+    ],
+    [
+      63,
+      55,
+      76
+    ],
+    [
+      64,
+      55,
+      75
+    ],
+    [
+      65,
+      55,
+      75
+    ],
+    [
+      66,
+      55,
+      75
+    ],
+    [
+      67,
+      55,
+      75
+    ],
+    [
+      68,
+      55,
+      75
+    ],
+    [
+      69,
+      55,
+      75
+    ],
+    [
+      70,
+      55,
+      75
+    ]
+  ],
+  "jointsStatus": "AUTHORED explorer-specific design anchors from visible sleeve/arm silhouette; not source wrist/grip measurements",
+  "joints": {
+    "left": {
+      "shoulder": [
+        78,
+        49
+      ],
+      "elbow": [
+        79,
+        57
+      ],
+      "wrist": [
+        75,
+        61
+      ]
+    },
+    "right": {
+      "shoulder": [
+        53,
+        49
+      ],
+      "elbow": [
+        51,
+        57
+      ],
+      "wrist": [
+        49,
+        64
+      ]
+    }
+  },
+  "poses": [
+    {
+      "name": "original-rest",
+      "left": {
+        "upperDeg": 0,
+        "foreRelativeDeg": 0
+      },
+      "right": {
+        "upperDeg": 0,
+        "foreRelativeDeg": 0
+      },
+      "behindTorso": []
+    },
+    {
+      "name": "authored-opposing-endpoint",
+      "left": {
+        "upperDeg": 0,
+        "foreRelativeDeg": -42
+      },
+      "right": {
+        "upperDeg": 0,
+        "foreRelativeDeg": -62
+      },
+      "behindTorso": [
+        "left"
+      ]
+    }
+  ],
+  "gearContract": {
+    "newNodes": 0,
+    "newSatchelPixels": 0,
+    "atlasVestMeshEnabled": false,
+    "tankNetEnabled": false,
+    "satchel": "Existing separate attachment; no socket/position/visibility changed or validated here"
+  },
+  "sourceRowDonorCandidates": [
+    {
+      "pixel": [
+        73,
+        50
+      ],
+      "rgba": [
+        152,
+        124,
+        82,
+        255
+      ]
+    },
+    {
+      "pixel": [
+        73,
+        51
+      ],
+      "rgba": [
+        130,
+        100,
+        69,
+        255
+      ]
+    },
+    {
+      "pixel": [
+        73,
+        52
+      ],
+      "rgba": [
+        109,
+        82,
+        58,
+        255
+      ]
+    },
+    {
+      "pixel": [
+        73,
+        53
+      ],
+      "rgba": [
+        161,
+        136,
+        95,
+        255
+      ]
+    },
+    {
+      "pixel": [
+        73,
+        54
+      ],
+      "rgba": [
+        173,
+        150,
+        103,
+        255
+      ]
+    },
+    {
+      "pixel": [
+        73,
+        55
+      ],
+      "rgba": [
+        108,
+        88,
+        66,
+        255
+      ]
+    },
+    {
+      "pixel": [
+        73,
+        57
+      ],
+      "rgba": [
+        137,
+        108,
+        73,
+        255
+      ]
+    },
+    {
+      "pixel": [
+        71,
+        58
+      ],
+      "rgba": [
+        92,
+        62,
+        43,
+        255
+      ]
+    },
+    {
+      "pixel": [
+        70,
+        59
+      ],
+      "rgba": [
+        74,
+        49,
+        31,
+        255
+      ]
+    },
+    {
+      "pixel": [
+        70,
+        60
+      ],
+      "rgba": [
+        57,
+        32,
+        24,
+        255
+      ]
+    },
+    {
+      "pixel": [
+        70,
+        61
+      ],
+      "rgba": [
+        60,
+        36,
+        27,
+        255
+      ]
+    },
+    {
+      "pixel": [
+        70,
+        62
+      ],
+      "rgba": [
+        89,
+        64,
+        46,
+        255
+      ]
+    },
+    {
+      "pixel": [
+        70,
+        63
+      ],
+      "rgba": [
+        67,
+        44,
+        32,
+        255
+      ]
+    },
+    {
+      "pixel": [
+        60,
+        64
+      ],
+      "rgba": [
+        80,
+        60,
+        43,
+        255
+      ]
+    },
+    {
+      "pixel": [
+        70,
+        64
+      ],
+      "rgba": [
+        38,
+        18,
+        17,
+        255
+      ]
+    },
+    {
+      "pixel": [
+        73,
+        65
+      ],
+      "rgba": [
+        38,
+        20,
+        15,
+        255
+      ]
+    }
+  ]
+}
