@@ -1,4 +1,4 @@
-// Local layout-9 acceptance with the actual game and physically traversed paths.
+// Local manifest acceptance with the actual game and physically traversed paths.
 // PCK SHA/byte pins are required before the temporary player is created.
 import { chromium } from "@playwright/test";
 import { MongoClient } from "mongodb";
@@ -19,6 +19,10 @@ import { WORLD } from "../packages/shared/src/world.ts";
 import { isLandWalkable } from "../packages/shared/src/land.ts";
 import { fetchWorld } from "./game-navigation.mjs";
 import { physicalRoute } from "./plan06-physical-route.mjs";
+import {
+  deriveCanopyTarget,
+  readCanopyAlpha,
+} from "./canopy-route-fixture.mjs";
 import { watchGameplayFailures } from "./gameplay-api-failure.mjs";
 import {
   keyboardPulse,
@@ -47,10 +51,11 @@ assert(
     "left",
     "shelters",
     "lower",
+    "canopy",
   ].includes(routeMode),
 );
 const routeLimitMs =
-  (["left", "lower"].includes(routeMode) ? 5 : 10) * 60 * 1000;
+  (["left", "lower", "canopy"].includes(routeMode) ? 5 : 10) * 60 * 1000;
 const shelterWaitPosition = { x: 800, y: 1000 };
 function validateShelterWait(world, from) {
   const profiles = [
@@ -197,7 +202,9 @@ let candidatePck,
   initialContinuation,
   initialHub,
   initialLower,
+  initialCanopy,
   routeStarted,
+  runCompleted = false,
   fixtureAttempted = false;
 function budget() {
   assert(
@@ -822,6 +829,88 @@ async function verifyLeftView() {
   );
 }
 
+async function verifyFocusedCanopy() {
+  const start = await snapshot();
+  assertLeftView(start, "forest");
+  assert.equal(
+    world.landMaps.forest.layoutVersion,
+    WORLD.landMaps.forest.layoutVersion,
+  );
+  const fixture = deriveCanopyTarget(
+    world,
+    start,
+    start.land.view,
+    readCanopyAlpha(),
+  );
+  observations.push({ name: "cpu-derived-canopy-target", ...fixture });
+  console.log(JSON.stringify({ phase: "focused-canopy-target", ...fixture }));
+  for (const [x, y] of fixture.route) await walkTo(x, y);
+  await page.waitForTimeout(800);
+  const covered = await snapshot();
+  assert.equal(covered.land.readability.crowns, fixture.crowns);
+  assert(
+    covered.land.readability.revealed > 0 &&
+      covered.land.readability.revealed < fixture.crowns / 4,
+  );
+  assert(
+    covered.land.readability.active.some(
+      (entry) =>
+        entry.index === fixture.crownIndex &&
+        entry.target &&
+        entry.amount > 0.99,
+    ),
+  );
+  assert(covered.land.readability.active.every((entry) => entry.amount > 0.99));
+  assert(covered.land.readability.trunksUntouched);
+  await responsive(667, 375, "focused-canopy-667x375");
+  checks.push("focused-real-alpha-backed-foreground-crown-reveals-locally");
+  const before = await snapshot();
+  await tap("journal");
+  await waitState((value) => value.modal && value.weather.clockPaused);
+  await page.keyboard.down("d");
+  await page.waitForTimeout(350);
+  await page.keyboard.up("d");
+  const paused = await snapshot();
+  assert(Math.hypot(paused.x - before.x, paused.y - before.y) < 1);
+  await shot("focused-canopy-touch-journal-pauses-movement");
+  await page.keyboard.press("Escape");
+  await waitState((value) => !value.modal && !value.weather.clockPaused);
+  checks.push("focused-canopy-touch-journal-pauses-and-resumes");
+  await routeTo({ x: start.x, y: start.y }, "forest");
+  await page.waitForTimeout(800);
+  const restored = await snapshot();
+  assert(
+    !restored.land.readability.active.some(
+      (entry) => entry.index === fixture.crownIndex,
+    ),
+  );
+  assert(restored.land.readability.trunksUntouched);
+  await shot("focused-canopy-entrance-crown-restored");
+  const saved = await waitSaved(restored);
+  await page.reload();
+  await attach();
+  const resumed = await waitState(
+    (value) => value.area === "forest" && value.land?.actors?.player === 1,
+  );
+  assertLeftView(resumed, "forest");
+  assert(Math.hypot(resumed.x - restored.x, resumed.y - restored.y) < 30);
+  const state = await apiState();
+  assert.equal(state.surface.area, "forest");
+  assert.equal(
+    state.surface.layoutVersion,
+    world.landMaps.forest.layoutVersion,
+  );
+  assert.equal(state.player.version, saved.player.version);
+  assert.equal(state.player.coins, 200);
+  assert.equal(state.player.progress.day, 2);
+  assert.deepEqual(state.player.inventory, []);
+  assert.equal(state.calendar.dayLengthMs, 36 * 60 * 1000);
+  assert(navigation.matrixPulses > 0);
+  assert.equal(navigation.legacyPulses, 0);
+  await shot("focused-canopy-physical-position-restored-after-reload");
+  checks.push("focused-canopy-restores-after-exit-and-real-position-reloads");
+}
+
 async function verifyCompactDialogue() {
   const wira = world.surface_hub.districts.find(
     (entry) => entry.npc === "Mbah Wira",
@@ -1062,6 +1151,16 @@ try {
       };
       assert(isLandWalkable(WORLD.landMaps.hub, initialHub));
       initialSurface = initialHub;
+    } else if (routeMode === "canopy") {
+      initialCanopy = {
+        area: "forest",
+        ...WORLD.landMaps.forest.spawn,
+        layoutVersion: WORLD.landMaps.forest.layoutVersion,
+        playerVersion: 0,
+        positionAt: Date.now(),
+      };
+      assert(isLandWalkable(WORLD.landMaps.forest, initialCanopy));
+      initialSurface = initialCanopy;
     } else if (routeMode === "lower") {
       const bridge = WORLD.landMaps.forest.bridges.find(
         (entry) => entry.id === "bridge_lower",
@@ -1171,8 +1270,8 @@ try {
   world = await fetchWorld(context.request, origin);
   assert.equal(
     world.hub.layoutVersion,
-    9,
-    "Running API must include the exported shelter layout.",
+    WORLD.hub.layoutVersion,
+    "Running API must match the checked candidate manifest layout.",
   );
   if (routeMode === "full") {
     const migrated = await apiState();
@@ -1350,7 +1449,11 @@ try {
       "separate-fixture-starts-at-previously-crossed-real-forest-bridge",
     );
   }
-  if (!["ocean", "dialogue", "left", "shelters", "lower"].includes(routeMode)) {
+  if (
+    !["ocean", "dialogue", "left", "shelters", "lower", "canopy"].includes(
+      routeMode,
+    )
+  ) {
     await routeTo({ x: 200, y: 1320 }, "forest");
     await waitState((value) => value.nearby === "return");
     const returning = page.waitForResponse(
@@ -1380,6 +1483,14 @@ try {
     checks.push(
       "physical-return-portal-keeps-story-coins-and-authoritative-surface",
     );
+  } else if (routeMode === "canopy") {
+    const initial = await waitState(
+      (value) => value.area === "forest" && value.land?.actors?.player === 1,
+    );
+    assert(
+      Math.hypot(initial.x - initialCanopy.x, initial.y - initialCanopy.y) < 5,
+    );
+    checks.push("focused-canopy-fixture-starts-on-authored-forest-entry-floor");
   } else if (routeMode === "lower") {
     const initial = await waitState(
       (value) => value.area === "forest" && value.land?.actors?.player === 1,
@@ -1405,11 +1516,13 @@ try {
   if (routeMode === "shelters") await verifyRemainingShelters();
   else if (routeMode === "lower") await verifyLowerBridge();
   else if (routeMode === "left") await verifyLeftView();
+  else if (routeMode === "canopy") await verifyFocusedCanopy();
   else if (routeMode === "dialogue") await verifyCompactDialogue();
   else await verifyOcean();
   assert.deepEqual(errors, []);
   assert.deepEqual(failures, []);
   lastSnapshot = await snapshot();
+  runCompleted = true;
   console.log(
     JSON.stringify(
       {
@@ -1500,6 +1613,9 @@ try {
           initialContinuation,
           initialHub,
           initialLower,
+          initialCanopy,
+          outcome: runCompleted && cleaned ? "completed" : "failed",
+          completed: runCompleted && cleaned,
           errors,
           failures,
           operations,

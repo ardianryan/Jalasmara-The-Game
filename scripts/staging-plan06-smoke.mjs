@@ -9,6 +9,10 @@ import { fetchWorld } from "./game-navigation.mjs";
 import { physicalRoute } from "./plan06-physical-route.mjs";
 import { watchGameplayFailures } from "./gameplay-api-failure.mjs";
 import { keyboardPulse, corridorTargets } from "./land-view-navigation.mjs";
+import {
+  deriveCanopyTarget,
+  readCanopyAlpha,
+} from "./canopy-route-fixture.mjs";
 
 assert.equal(
   process.env.RUN_STAGING_SMOKE,
@@ -488,22 +492,31 @@ try {
   await waitState(
     (value) => value.area === "forest" && value.land?.actors?.player === 1,
   );
-  for (const [x, y] of physicalRoute(
+  const forestReady = await snapshot();
+  const canopyFixture = deriveCanopyTarget(
     world,
-    await snapshot(),
-    { x: 350, y: 1250 },
-    "forest",
-  ))
-    await walkTo(x, y);
+    forestReady,
+    forestReady.land.view,
+    readCanopyAlpha(),
+  );
+  observations.push({ phase: "derived-canopy-fixture", ...canopyFixture });
+  for (const [x, y] of canopyFixture.route) await walkTo(x, y);
   await page.waitForTimeout(800);
   const canopy = await snapshot();
   stage = "settled-canopy-reveal";
   assert.equal(canopy.land.elevationDegrees, 35);
+  assert.equal(canopy.land.readability.crowns, canopyFixture.crowns);
   assert(
     canopy.land.readability.revealed > 0 &&
       canopy.land.readability.revealed < canopy.land.readability.crowns / 4,
   );
   assert(canopy.land.readability.active.every((entry) => entry.amount > 0.99));
+  assert(
+    canopy.land.readability.active.some(
+      (entry) => entry.index === canopyFixture.crownIndex,
+    ),
+    "The alpha-backed predicted foreground crown must actually reveal",
+  );
   assert(canopy.land.readability.trunksUntouched);
   await page.setViewportSize({ width: 667, height: 375 });
   await page.waitForTimeout(1300);
