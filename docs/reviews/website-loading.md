@@ -12,7 +12,7 @@ The harbor and transparent foreground use separate CSS layers. Pointer parallax 
 - Each expected shell hook must occur exactly once. An upstream shell change fails the export instead of silently producing a loader without progress. Non-engine inline scripts pass through unchanged.
 - Loading messages require the exact iframe window, the current origin, protocol version 1, a recognized phase and valid integer byte counts. The existing engine-ready protocol is retained. Preparing cannot regress to downloading after a late transfer message.
 - Thirty seconds without a new progress observation shows an honest stalled notice. No ETA or time-based fake percentage is shown. Returning from a hidden tab resets the stall observation window.
-- Failure and stalled states offer a real reload and direct game link. Reload replaces the single iframe, resets the loading state and uses normal browser asset caching. Old frame messages cannot control the new frame. A load failure never exposes arbitrary technical exception text in the product.
+- Failure and stalled states offer a real reload. Failure also links to the home page, so an expired session has a route back to login; a stalled load retains the direct game link. Reload replaces the single iframe, resets the loading state and uses normal browser asset caching. Old frame messages cannot control the new frame. A load failure never exposes arbitrary technical exception text in the product.
 - Menu, fullscreen, saved quality, safe areas, viewport updates and host pause behavior remain in place. Loading text is at least 16 CSS pixels; recovery controls are at least 48 pixels high.
 
 ## Verification
@@ -56,3 +56,27 @@ Manually inspected the desktop download, portrait download and stalled screen, a
 ## Separate website backlog
 
 Account, landing and admin page redesign are outside this loading request and were not changed. The website lane can own those independently if prioritized. This change does not modify HUD, map, ocean, game scripts, API, authentication, player data or deployment configuration.
+
+## Actual exported game startup follow-up
+
+The new `scripts/loading-live-browser.mjs` runs against a local API/static host after export. It requires a local HTTP origin, local MongoDB and Redis, creates a uniquely identified temporary player and deletes only that exact player plus its own receipts, shift, session and cache keys in `finally`. It never uses an owner or existing browser fixture. Run it with:
+
+```sh
+node --import tsx scripts/loading-live-browser.mjs
+```
+
+The first successful integration run used the actual new game export and served `index-B43wdzrR.js` on `http://localhost:3100`. The browser context was new, service workers were blocked and the network cache was disabled. No engine, game bundle or normal startup API request was mocked. The test observed 11 nonzero version-1 progress callbacks and the real host progress/MB text, a combined engine-reported total of **103,753,450 decoded asset bytes**, one successful GET each for `/game/index.wasm` and `/game/index.pck`, preparation at approximately 3.73 seconds and actual engine ready at approximately 7.02 seconds. The loader then disappeared and one game iframe remained. These are local test observations, not a startup-time promise. Decoded asset-byte accounting is not compressed network-transfer accounting.
+
+The separate negative run retained the real engine and UI while denying only the embedded game's `/api/auth/session` request with HTTP 401; the parent authenticated session remained intact. The engine emitted version-1 `phase: error` at approximately 2.675 seconds into that page, and the host displayed the recovery screen within the test's five-second bound after the denial, rather than waiting for the thirty-second stalled fallback. This expected 401 is recorded separately from the zero errors and zero failed API responses of normal startup. All five integration checks passed, and removal of the isolated temporary player was verified.
+
+This run also found a stale web build: the served JavaScript still rendered the old direct-game link on failure, while source already contained the home-page recovery link. The root agent will rebuild the web bundle and restart its local host after the independent night/home suite releases the shared API, then rerun the final integration assertion for `Halaman utama` → `/`. The test now includes that assertion; its final revision is waiting for this rebuild. No change to the engine export is required for the link.
+
+Actual local integration artifacts:
+
+- `artifacts/browser/website-loading-live/01-real-download.png`
+- `artifacts/browser/website-loading-live/02-preparing.png`
+- `artifacts/browser/website-loading-live/03-ready.png`
+- `artifacts/browser/website-loading-live/04-startup-auth-failure.png`
+- `artifacts/browser/website-loading-live/results.json`
+
+Manual review of the actual auth-failure screenshot confirms readable recovery content and the intact harbor artwork. The initial four-block delivery gate remains satisfied; the independent browser fixtures still establish responsive and reduced-motion behavior. These live integration observations add actual engine bridge and startup evidence, and do not establish Windows or Samsung S23 performance.
