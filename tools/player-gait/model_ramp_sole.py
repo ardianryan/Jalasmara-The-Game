@@ -32,6 +32,7 @@ def main():
     parser.add_argument("--world", type=Path, required=True)
     parser.add_argument("--rejected", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--rotation-rejected", type=Path)
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[2]
     hub = json.loads(args.world.read_text())["landMaps"]["hub"]
@@ -136,6 +137,34 @@ def main():
               "originalFootChecks": rows,
               "notProven": ["airborne support clearance", "ankle continuity across moving rig",
                             "same-source flat/stair/ramp matrix", "native appearance or natural gait"]}
+    if args.rotation_rejected:
+        rotation_run = json.loads(args.rotation_rejected.read_text())
+        foot = rotation_run["pose"]["contacts"]["feet"]["left"]
+        assert foot["footDirection"] == entry["footDirection"] and rotation_run["pose"]["outfit"] == "daily"
+        previous = [row["pose"]["contacts"]["feet"]["left"] for row in rotation_run["recentTrace"]
+                    if row["pose"]["contacts"]["feet"]["left"]["grounded"]][-1]
+        pivot = foot["ankleWorld"]
+        leg = daily["views"][foot["footDirection"]]["legs"]["left"]
+        ankle = [leg["ankle"][0] - leg["parts"]["foot"][0], leg["ankle"][1] - leg["parts"]["foot"][1]]
+        failure = foot["failedOpaqueMaskVertex"]
+        plane = failure["actualTriangleNormal"]
+        anchor = [*failure["world"][:2], failure["actualTriangleHeight"]]
+        def quaternion_point(q, value):
+            return add(value, cross(q[:3], add(cross(q[:3], value), value, q[3])), 2)
+        def minimum_gap(q):
+            gaps = []
+            for pixel in vertices:
+                local = add(tuple(v * (pixel[0] - ankle[0]) for v in right), up, ankle[1] - pixel[1])
+                point = add(pivot, quaternion_point(q, local))
+                height = anchor[2] - (plane[0] * (point[0] - anchor[0]) + plane[1] * (point[1] - anchor[1])) / plane[2]
+                gaps.append(point[2] - height)
+            return min(gaps)
+        old_gap = minimum_gap(previous["footPlane"]["rotation"])
+        failed_gap = minimum_gap(foot["footPlane"]["rotation"])
+        assert old_gap > .02 and failed_gap < -.3
+        result["actualRotationReplay"] = {"ankleWorldHeld": pivot, "originalOpaqueVertices": len(vertices),
+                                          "previousPlaneMinimumGap": old_gap, "failedPlaneMinimumGap": failed_gap,
+                                          "source": str(args.rotation_rejected), "scope": "Same actual ankle and captured local triangle plane; runtime backtracking pending"}
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2) + "\n")
     print(f"RIGID SOLE MODEL: {len(rows)} original feet preserve lengths/plane support; runtime pending")

@@ -88,6 +88,9 @@ func _rotated_shoe_clear(side:String,direction:String,logical:Vector2,world_sole
 	if not _planner.airborne_clear(logical,world_sole): return false
 	var leg:Dictionary=_data.views[direction].legs[side]
 	var sole:=_vec(leg.solePixel)
+	if bool(actor.get_meta("nala_physical_walk_pilot",false)):
+		var geometry:Dictionary={"leg":leg,"vertices":_opaque_vertices[direction+"/"+side],"right":right,"vertical":vertical}
+		return FootPlane.airborne_clear(renderer,logical,geometry,world_sole,_plane(side))
 	for edge in leg.soleEdgePixels:
 		var pixel:=_vec(edge)
 		var world:=world_sole+_plane(side)*(right*(pixel.x-sole.x)+Vector3(0,0,(sole.y-pixel.y)/vertical))
@@ -256,6 +259,18 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 				var foot_leg:Dictionary=_data.views[str(_foot_views[side])].legs[side]
 				var allowance:=moved_distance if moved_distance>.00001 else maxf(0,delta)*24.0
 				var next:Quaternion=FootPlane.advance(current,target,allowance,FootPlane.radius_about_ankle(foot_leg,vertical))
+				var foot_direction:=str(_foot_views[side])
+				var mask:Dictionary={"leg":foot_leg,"vertices":_opaque_vertices[foot_direction+"/"+side],"right":right,"vertical":vertical}
+				var ankle:=Vector3(entry.sole)+correction+_ankle_offset(side,foot_direction,right,vertical,current)
+				var current_clear:=FootPlane.airborne_clear(renderer,entry.logical,mask,ankle-_ankle_offset(side,foot_direction,right,vertical,current),current)
+				var backtracks:=0
+				if not current_clear: next=current
+				else:
+					while backtracks<10 and not FootPlane.airborne_clear(renderer,entry.logical,mask,ankle-_ankle_offset(side,foot_direction,right,vertical,next),next):
+						next=current.slerp(next,.5).normalized()
+						backtracks+=1
+					if backtracks==10 and not FootPlane.airborne_clear(renderer,entry.logical,mask,ankle-_ankle_offset(side,foot_direction,right,vertical,next),next): next=current
+				entry["rotationClearance"]={"currentClear":current_clear,"backtracks":backtracks,"originalOpaqueVertices":mask.vertices.size()}
 				if current.angle_to(next)>.000001:
 					var offset:=_ankle_offset(side,str(_foot_views[side]),right,vertical,current)
 					var pivot:Vector3=Vector3(entry.sole)+correction+offset

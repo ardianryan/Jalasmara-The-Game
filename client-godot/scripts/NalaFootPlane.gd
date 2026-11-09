@@ -41,6 +41,17 @@ static func valid_contact(renderer:Node,logical:Vector2,geometry:Dictionary,lega
 		if gap<-.02 or (absf(float(pixel.y)-sole.y)<.0001 and absf(gap)>.02): return false
 	return not geometry.vertices.is_empty()
 
+static func airborne_clear(renderer:Node,logical:Vector2,geometry:Dictionary,world_sole:Vector3,rotation:Quaternion) -> bool:
+	var sole:=Vector2(float(geometry.leg.solePixel[0]),float(geometry.leg.solePixel[1]))
+	var right:Vector3=geometry.right
+	var vertical:float=geometry.vertical
+	for pixel in geometry.vertices:
+		var offset:=right*(float(pixel.x)-sole.x)+Vector3(0,0,(sole.y-float(pixel.y))/vertical)
+		var point:=world_sole+rotation*offset
+		var actual:=ground_below(renderer,logical,point)
+		if not bool(actual.valid) or point.z<Vector3(actual.ground).z+.02: return false
+	return not geometry.vertices.is_empty()
+
 static func contact_rotation(renderer:Node,logical:Vector2,right:Vector3) -> Quaternion:
 	for profile in renderer.get("_stair_queries"):
 		if str(profile.type)!="ramp" or Traversal.connector_ground(profile,logical).is_empty(): continue
