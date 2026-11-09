@@ -107,7 +107,9 @@ export function GameLoading({ progress, stalled, onRetry }: Props) {
         {(stalled || failed) && (
           <div className="harbor-loading-actions">
             <button onClick={onRetry}>Muat ulang permainan</button>
-            <a href="/game/index.html">Buka di tab ini</a>
+            <a href={failed ? "/" : "/game/index.html"}>
+              {failed ? "Halaman utama" : "Buka di tab ini"}
+            </a>
           </div>
         )}
       </section>

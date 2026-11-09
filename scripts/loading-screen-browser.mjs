@@ -218,9 +218,9 @@ try {
     assert.equal(await page.getByRole("progressbar").count(), 0);
     assert.equal(
       await page
-        .getByRole("link", { name: "Buka di tab ini", exact: true })
+        .getByRole("link", { name: "Halaman utama", exact: true })
         .getAttribute("href"),
-      "/game/index.html",
+      "/",
     );
     await page.screenshot({ path: `${output}/${name}-error.png` });
     await page
