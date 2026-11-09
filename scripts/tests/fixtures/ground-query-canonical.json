@@ -1,0 +1,4296 @@
+{
+  "authority": "packages/shared/src/land.ts landPointInPolygon; float32 controller coordinates, raw scalar manifest polygons",
+  "metadata": {
+    "hub": {
+      "layoutVersion": 11,
+      "surfaceIds": [
+        "wirabhumi_home_terrace",
+        "residential_court",
+        "sasmita_deck",
+        "sasmita_garden_raft",
+        "sasmita_stone_landing",
+        "sasmita_bridge",
+        "dock_main",
+        "lower_court",
+        "upper_court",
+        "garden_wing",
+        "forest_ridge",
+        "dock_gangway_floor",
+        "central_stone_steps_floor",
+        "western_stone_steps_floor",
+        "forest_ridge_steps_floor",
+        "village_footpath_0_0",
+        "village_footpath_0_1",
+        "village_footpath_1_0",
+        "village_footpath_1_1",
+        "village_footpath_1_2",
+        "village_footpath_1_3",
+        "village_footpath_2_0",
+        "village_footpath_2_1",
+        "village_footpath_2_2",
+        "village_footpath_2_3",
+        "village_footpath_2_4",
+        "village_footpath_2_5",
+        "village_footpath_3_0",
+        "hub_edge_grass_0",
+        "hub_edge_grass_1",
+        "hub_edge_grass_2",
+        "hub_edge_grass_3",
+        "hub_edge_grass_4",
+        "hub_edge_grass_5",
+        "hub_edge_grass_6",
+        "hub_edge_grass_7",
+        "hub_ridge_trail_0",
+        "hub_ridge_trail_1",
+        "hub_ridge_trail_2",
+        "hub_ridge_trail_3",
+        "village_dirt_lower_court_join_6_0",
+        "village_dirt_lower_court_segment_5_0",
+        "village_dirt_lower_court_segment_5_1",
+        "village_dirt_lower_court_join_7_0",
+        "village_dirt_lower_court_segment_6_0",
+        "village_dirt_lower_court_segment_6_1",
+        "village_dirt_lower_court_segment_6_2",
+        "village_dirt_lower_court_join_8_0",
+        "village_dirt_lower_court_segment_7_0",
+        "village_dirt_lower_court_segment_7_1",
+        "village_dirt_lower_court_join_9_0",
+        "village_dirt_lower_court_segment_8_0",
+        "village_dirt_lower_court_join_10_0",
+        "village_dirt_lower_court_segment_9_0",
+        "village_dirt_lower_court_join_11_0",
+        "village_dirt_lower_court_segment_12_0",
+        "village_dirt_lower_court_join_14_0",
+        "village_dirt_lower_court_join_48_0",
+        "village_dirt_upper_court_join_12_0",
+        "village_dirt_upper_court_segment_11_0",
+        "village_dirt_upper_court_join_13_0",
+        "village_dirt_upper_court_join_15_0",
+        "village_dirt_upper_court_segment_14_0",
+        "village_dirt_upper_court_join_16_0",
+        "village_dirt_upper_court_segment_15_0",
+        "village_dirt_upper_court_segment_15_1",
+        "village_dirt_upper_court_join_17_0",
+        "village_dirt_upper_court_segment_16_0",
+        "village_dirt_upper_court_segment_16_1",
+        "village_dirt_upper_court_segment_17_0",
+        "village_dirt_upper_court_segment_24_0",
+        "village_dirt_upper_court_segment_24_1",
+        "village_dirt_upper_court_segment_24_2",
+        "village_dirt_upper_court_segment_24_3",
+        "village_dirt_upper_court_join_25_0",
+        "village_dirt_upper_court_segment_38_0",
+        "village_dirt_upper_court_join_41_0",
+        "village_dirt_upper_court_segment_48_0"
+      ]
+    },
+    "forest": {
+      "layoutVersion": 6,
+      "surfaceIds": [
+        "forest_west_land",
+        "forest_east_land",
+        "bridge_upper",
+        "bridge_lower",
+        "forest_trail_0_1",
+        "forest_trail_0_2",
+        "forest_trail_0_3",
+        "forest_trail_0_4",
+        "forest_trail_0_5",
+        "forest_trail_0_6",
+        "forest_trail_0_7",
+        "forest_trail_0_8",
+        "forest_trail_0_9",
+        "forest_trail_0_10",
+        "forest_trail_0_11",
+        "forest_trail_0_12",
+        "forest_trail_1_1",
+        "forest_trail_1_2",
+        "forest_trail_1_3",
+        "forest_trail_1_4",
+        "forest_trail_1_5",
+        "forest_trail_1_6",
+        "forest_trail_1_7",
+        "forest_trail_2_1"
+      ]
+    }
+  },
+  "cases": [
+    {
+      "area": "hub",
+      "point": [
+        1135.271484375,
+        1125
+      ],
+      "matches": [
+        7,
+        11,
+        40,
+        41
+      ],
+      "floorHeight": 0,
+      "groundHeight": 48
+    },
+    {
+      "area": "hub",
+      "point": [
+        1135.271484375,
+        1124.9990234375
+      ],
+      "matches": [
+        7,
+        40,
+        41
+      ],
+      "floorHeight": 48,
+      "groundHeight": 48
+    },
+    {
+      "area": "hub",
+      "point": [
+        1135.271484375,
+        1124.989990234375
+      ],
+      "matches": [
+        7,
+        40,
+        41
+      ],
+      "floorHeight": 48,
+      "groundHeight": 48
+    },
+    {
+      "area": "hub",
+      "point": [
+        70,
+        130
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        300,
+        130
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        530,
+        130
+      ],
+      "matches": [
+        1
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        760,
+        130
+      ],
+      "matches": [
+        1
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        990,
+        130
+      ],
+      "matches": [
+        1
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        1220,
+        130
+      ],
+      "matches": [
+        1
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        1450,
+        130
+      ],
+      "matches": [
+        1
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        1680,
+        130
+      ],
+      "matches": [
+        10
+      ],
+      "floorHeight": 144,
+      "groundHeight": 144
+    },
+    {
+      "area": "hub",
+      "point": [
+        1910,
+        130
+      ],
+      "matches": [
+        10
+      ],
+      "floorHeight": 144,
+      "groundHeight": 144
+    },
+    {
+      "area": "hub",
+      "point": [
+        2140,
+        130
+      ],
+      "matches": [
+        10
+      ],
+      "floorHeight": 144,
+      "groundHeight": 144
+    },
+    {
+      "area": "hub",
+      "point": [
+        2370,
+        130
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        70,
+        310
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        300,
+        310
+      ],
+      "matches": [
+        0,
+        1
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        530,
+        310
+      ],
+      "matches": [
+        1,
+        20
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        760,
+        310
+      ],
+      "matches": [
+        1,
+        17
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        990,
+        310
+      ],
+      "matches": [
+        1,
+        21
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        1220,
+        310
+      ],
+      "matches": [
+        1
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        1450,
+        310
+      ],
+      "matches": [
+        1
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        1680,
+        310
+      ],
+      "matches": [
+        10
+      ],
+      "floorHeight": 144,
+      "groundHeight": 144
+    },
+    {
+      "area": "hub",
+      "point": [
+        1910,
+        310
+      ],
+      "matches": [
+        10,
+        36
+      ],
+      "floorHeight": 144,
+      "groundHeight": 144
+    },
+    {
+      "area": "hub",
+      "point": [
+        2140,
+        310
+      ],
+      "matches": [
+        10,
+        37
+      ],
+      "floorHeight": 144,
+      "groundHeight": 144
+    },
+    {
+      "area": "hub",
+      "point": [
+        2370,
+        310
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        70,
+        490
+      ],
+      "matches": [
+        2
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        300,
+        490
+      ],
+      "matches": [
+        8
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        530,
+        490
+      ],
+      "matches": [
+        8
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        760,
+        490
+      ],
+      "matches": [
+        8
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        990,
+        490
+      ],
+      "matches": [
+        8
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        1220,
+        490
+      ],
+      "matches": [
+        8
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        1450,
+        490
+      ],
+      "matches": [
+        8
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        1680,
+        490
+      ],
+      "matches": [
+        9
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        1910,
+        490
+      ],
+      "matches": [
+        9
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        2140,
+        490
+      ],
+      "matches": [
+        9
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        2370,
+        490
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        70,
+        670
+      ],
+      "matches": [
+        2
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        300,
+        670
+      ],
+      "matches": [
+        8
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        530,
+        670
+      ],
+      "matches": [
+        8,
+        70
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        760,
+        670
+      ],
+      "matches": [
+        8,
+        64
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        990,
+        670
+      ],
+      "matches": [
+        8,
+        67
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        1220,
+        670
+      ],
+      "matches": [
+        8,
+        67
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        1450,
+        670
+      ],
+      "matches": [
+        8
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        1680,
+        670
+      ],
+      "matches": [
+        9
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        1910,
+        670
+      ],
+      "matches": [
+        9
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        2140,
+        670
+      ],
+      "matches": [
+        9
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        2370,
+        670
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        70,
+        850
+      ],
+      "matches": [
+        3
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        300,
+        850
+      ],
+      "matches": [
+        3
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        530,
+        850
+      ],
+      "matches": [
+        7
+      ],
+      "floorHeight": 48,
+      "groundHeight": 48
+    },
+    {
+      "area": "hub",
+      "point": [
+        760,
+        850
+      ],
+      "matches": [
+        7
+      ],
+      "floorHeight": 48,
+      "groundHeight": 48
+    },
+    {
+      "area": "hub",
+      "point": [
+        990,
+        850
+      ],
+      "matches": [
+        7
+      ],
+      "floorHeight": 48,
+      "groundHeight": 48
+    },
+    {
+      "area": "hub",
+      "point": [
+        1220,
+        850
+      ],
+      "matches": [
+        7
+      ],
+      "floorHeight": 48,
+      "groundHeight": 48
+    },
+    {
+      "area": "hub",
+      "point": [
+        1450,
+        850
+      ],
+      "matches": [
+        7
+      ],
+      "floorHeight": 48,
+      "groundHeight": 48
+    },
+    {
+      "area": "hub",
+      "point": [
+        1680,
+        850
+      ],
+      "matches": [
+        7
+      ],
+      "floorHeight": 48,
+      "groundHeight": 48
+    },
+    {
+      "area": "hub",
+      "point": [
+        1910,
+        850
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        2140,
+        850
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        2370,
+        850
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        70,
+        1030
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        300,
+        1030
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        530,
+        1030
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        760,
+        1030
+      ],
+      "matches": [
+        7
+      ],
+      "floorHeight": 48,
+      "groundHeight": 48
+    },
+    {
+      "area": "hub",
+      "point": [
+        990,
+        1030
+      ],
+      "matches": [
+        7
+      ],
+      "floorHeight": 48,
+      "groundHeight": 48
+    },
+    {
+      "area": "hub",
+      "point": [
+        1220,
+        1030
+      ],
+      "matches": [
+        7
+      ],
+      "floorHeight": 48,
+      "groundHeight": 48
+    },
+    {
+      "area": "hub",
+      "point": [
+        1450,
+        1030
+      ],
+      "matches": [
+        7
+      ],
+      "floorHeight": 48,
+      "groundHeight": 48
+    },
+    {
+      "area": "hub",
+      "point": [
+        1680,
+        1030
+      ],
+      "matches": [
+        7
+      ],
+      "floorHeight": 48,
+      "groundHeight": 48
+    },
+    {
+      "area": "hub",
+      "point": [
+        1910,
+        1030
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        2140,
+        1030
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        2370,
+        1030
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        70,
+        1210
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        300,
+        1210
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        530,
+        1210
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        760,
+        1210
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        990,
+        1210
+      ],
+      "matches": [
+        6
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        1220,
+        1210
+      ],
+      "matches": [
+        6
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        1450,
+        1210
+      ],
+      "matches": [
+        6
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        1680,
+        1210
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        1910,
+        1210
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        2140,
+        1210
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        2370,
+        1210
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        70,
+        1390
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        300,
+        1390
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        530,
+        1390
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        760,
+        1390
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        990,
+        1390
+      ],
+      "matches": [
+        6
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        1220,
+        1390
+      ],
+      "matches": [
+        6
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        1450,
+        1390
+      ],
+      "matches": [
+        6
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        1680,
+        1390
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        1910,
+        1390
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        2140,
+        1390
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        2370,
+        1390
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        70,
+        1570
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        300,
+        1570
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        530,
+        1570
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        760,
+        1570
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        990,
+        1570
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        1220,
+        1570
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        1450,
+        1570
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        1680,
+        1570
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        1910,
+        1570
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        2140,
+        1570
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        2370,
+        1570
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        1046.5,
+        1189.989990234375
+      ],
+      "matches": [
+        6,
+        11
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0.007391826923076923
+    },
+    {
+      "area": "hub",
+      "point": [
+        1046.5,
+        1189.9990234375
+      ],
+      "matches": [
+        6,
+        11
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0.0007211538461538462
+    },
+    {
+      "area": "hub",
+      "point": [
+        1046.5,
+        1190
+      ],
+      "matches": [
+        6,
+        11
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        1046.5,
+        1190.0009765625
+      ],
+      "matches": [
+        6
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        1046.5,
+        1190.010009765625
+      ],
+      "matches": [
+        6
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        1120,
+        1189.989990234375
+      ],
+      "matches": [
+        6,
+        11
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0.007391826923076923
+    },
+    {
+      "area": "hub",
+      "point": [
+        1120,
+        1189.9990234375
+      ],
+      "matches": [
+        6,
+        11
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0.0007211538461538462
+    },
+    {
+      "area": "hub",
+      "point": [
+        1120,
+        1190
+      ],
+      "matches": [
+        6,
+        11
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        1120,
+        1190.0009765625
+      ],
+      "matches": [
+        6
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        1120,
+        1190.010009765625
+      ],
+      "matches": [
+        6
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        1193.5,
+        1189.989990234375
+      ],
+      "matches": [
+        6,
+        11
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0.007391826923076923
+    },
+    {
+      "area": "hub",
+      "point": [
+        1193.5,
+        1189.9990234375
+      ],
+      "matches": [
+        6,
+        11
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0.0007211538461538462
+    },
+    {
+      "area": "hub",
+      "point": [
+        1193.5,
+        1190
+      ],
+      "matches": [
+        6,
+        11
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        1193.5,
+        1190.0009765625
+      ],
+      "matches": [
+        6
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        1193.5,
+        1190.010009765625
+      ],
+      "matches": [
+        6
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "hub",
+      "point": [
+        1046.5,
+        1124.989990234375
+      ],
+      "matches": [
+        7
+      ],
+      "floorHeight": 48,
+      "groundHeight": 48
+    },
+    {
+      "area": "hub",
+      "point": [
+        1046.5,
+        1124.9990234375
+      ],
+      "matches": [
+        7
+      ],
+      "floorHeight": 48,
+      "groundHeight": 48
+    },
+    {
+      "area": "hub",
+      "point": [
+        1046.5,
+        1125
+      ],
+      "matches": [
+        7,
+        11
+      ],
+      "floorHeight": 0,
+      "groundHeight": 48
+    },
+    {
+      "area": "hub",
+      "point": [
+        1046.5,
+        1125.0009765625
+      ],
+      "matches": [
+        11
+      ],
+      "floorHeight": 0,
+      "groundHeight": 47.99927884615384
+    },
+    {
+      "area": "hub",
+      "point": [
+        1046.5,
+        1125.010009765625
+      ],
+      "matches": [
+        11
+      ],
+      "floorHeight": 0,
+      "groundHeight": 47.992608173076924
+    },
+    {
+      "area": "hub",
+      "point": [
+        1120,
+        1124.989990234375
+      ],
+      "matches": [
+        7,
+        40,
+        41
+      ],
+      "floorHeight": 48,
+      "groundHeight": 48
+    },
+    {
+      "area": "hub",
+      "point": [
+        1120,
+        1124.9990234375
+      ],
+      "matches": [
+        7,
+        40,
+        41
+      ],
+      "floorHeight": 48,
+      "groundHeight": 48
+    },
+    {
+      "area": "hub",
+      "point": [
+        1120,
+        1125
+      ],
+      "matches": [
+        7,
+        11,
+        40,
+        41
+      ],
+      "floorHeight": 0,
+      "groundHeight": 48
+    },
+    {
+      "area": "hub",
+      "point": [
+        1120,
+        1125.0009765625
+      ],
+      "matches": [
+        11
+      ],
+      "floorHeight": 0,
+      "groundHeight": 47.99927884615384
+    },
+    {
+      "area": "hub",
+      "point": [
+        1120,
+        1125.010009765625
+      ],
+      "matches": [
+        11
+      ],
+      "floorHeight": 0,
+      "groundHeight": 47.992608173076924
+    },
+    {
+      "area": "hub",
+      "point": [
+        1193.5,
+        1124.989990234375
+      ],
+      "matches": [
+        7
+      ],
+      "floorHeight": 48,
+      "groundHeight": 48
+    },
+    {
+      "area": "hub",
+      "point": [
+        1193.5,
+        1124.9990234375
+      ],
+      "matches": [
+        7
+      ],
+      "floorHeight": 48,
+      "groundHeight": 48
+    },
+    {
+      "area": "hub",
+      "point": [
+        1193.5,
+        1125
+      ],
+      "matches": [
+        7,
+        11
+      ],
+      "floorHeight": 0,
+      "groundHeight": 48
+    },
+    {
+      "area": "hub",
+      "point": [
+        1193.5,
+        1125.0009765625
+      ],
+      "matches": [
+        11
+      ],
+      "floorHeight": 0,
+      "groundHeight": 47.99927884615384
+    },
+    {
+      "area": "hub",
+      "point": [
+        1193.5,
+        1125.010009765625
+      ],
+      "matches": [
+        11
+      ],
+      "floorHeight": 0,
+      "groundHeight": 47.992608173076924
+    },
+    {
+      "area": "hub",
+      "point": [
+        1311.199951171875,
+        814.989990234375
+      ],
+      "matches": [
+        12
+      ],
+      "floorHeight": 48,
+      "groundHeight": 60
+    },
+    {
+      "area": "hub",
+      "point": [
+        1311.199951171875,
+        814.9990234375
+      ],
+      "matches": [
+        12
+      ],
+      "floorHeight": 48,
+      "groundHeight": 60
+    },
+    {
+      "area": "hub",
+      "point": [
+        1311.199951171875,
+        815
+      ],
+      "matches": [
+        7,
+        12
+      ],
+      "floorHeight": 48,
+      "groundHeight": 60
+    },
+    {
+      "area": "hub",
+      "point": [
+        1311.199951171875,
+        815.0009765625
+      ],
+      "matches": [
+        7
+      ],
+      "floorHeight": 48,
+      "groundHeight": 48
+    },
+    {
+      "area": "hub",
+      "point": [
+        1311.199951171875,
+        815.010009765625
+      ],
+      "matches": [
+        7
+      ],
+      "floorHeight": 48,
+      "groundHeight": 48
+    },
+    {
+      "area": "hub",
+      "point": [
+        1370,
+        814.989990234375
+      ],
+      "matches": [
+        12
+      ],
+      "floorHeight": 48,
+      "groundHeight": 60
+    },
+    {
+      "area": "hub",
+      "point": [
+        1370,
+        814.9990234375
+      ],
+      "matches": [
+        12
+      ],
+      "floorHeight": 48,
+      "groundHeight": 60
+    },
+    {
+      "area": "hub",
+      "point": [
+        1370,
+        815
+      ],
+      "matches": [
+        7,
+        12,
+        53,
+        54
+      ],
+      "floorHeight": 48,
+      "groundHeight": 60
+    },
+    {
+      "area": "hub",
+      "point": [
+        1370,
+        815.0009765625
+      ],
+      "matches": [
+        7,
+        53,
+        54
+      ],
+      "floorHeight": 48,
+      "groundHeight": 48
+    },
+    {
+      "area": "hub",
+      "point": [
+        1370,
+        815.010009765625
+      ],
+      "matches": [
+        7,
+        53,
+        54
+      ],
+      "floorHeight": 48,
+      "groundHeight": 48
+    },
+    {
+      "area": "hub",
+      "point": [
+        1428.800048828125,
+        814.989990234375
+      ],
+      "matches": [
+        12
+      ],
+      "floorHeight": 48,
+      "groundHeight": 60
+    },
+    {
+      "area": "hub",
+      "point": [
+        1428.800048828125,
+        814.9990234375
+      ],
+      "matches": [
+        12
+      ],
+      "floorHeight": 48,
+      "groundHeight": 60
+    },
+    {
+      "area": "hub",
+      "point": [
+        1428.800048828125,
+        815
+      ],
+      "matches": [
+        7,
+        12
+      ],
+      "floorHeight": 48,
+      "groundHeight": 60
+    },
+    {
+      "area": "hub",
+      "point": [
+        1428.800048828125,
+        815.0009765625
+      ],
+      "matches": [
+        7
+      ],
+      "floorHeight": 48,
+      "groundHeight": 48
+    },
+    {
+      "area": "hub",
+      "point": [
+        1428.800048828125,
+        815.010009765625
+      ],
+      "matches": [
+        7
+      ],
+      "floorHeight": 48,
+      "groundHeight": 48
+    },
+    {
+      "area": "hub",
+      "point": [
+        1311.199951171875,
+        734.989990234375
+      ],
+      "matches": [
+        8
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        1311.199951171875,
+        734.9990234375
+      ],
+      "matches": [
+        8
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        1311.199951171875,
+        735
+      ],
+      "matches": [
+        8,
+        12
+      ],
+      "floorHeight": 48,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        1311.199951171875,
+        735.0009765625
+      ],
+      "matches": [
+        12
+      ],
+      "floorHeight": 48,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        1311.199951171875,
+        735.010009765625
+      ],
+      "matches": [
+        12
+      ],
+      "floorHeight": 48,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        1370,
+        734.989990234375
+      ],
+      "matches": [
+        8,
+        58,
+        59
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        1370,
+        734.9990234375
+      ],
+      "matches": [
+        8,
+        58,
+        59
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        1370,
+        735
+      ],
+      "matches": [
+        8,
+        12,
+        58,
+        59
+      ],
+      "floorHeight": 48,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        1370,
+        735.0009765625
+      ],
+      "matches": [
+        12
+      ],
+      "floorHeight": 48,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        1370,
+        735.010009765625
+      ],
+      "matches": [
+        12
+      ],
+      "floorHeight": 48,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        1428.800048828125,
+        734.989990234375
+      ],
+      "matches": [
+        8
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        1428.800048828125,
+        734.9990234375
+      ],
+      "matches": [
+        8
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        1428.800048828125,
+        735
+      ],
+      "matches": [
+        8,
+        12
+      ],
+      "floorHeight": 48,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        1428.800048828125,
+        735.0009765625
+      ],
+      "matches": [
+        12
+      ],
+      "floorHeight": 48,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        1428.800048828125,
+        735.010009765625
+      ],
+      "matches": [
+        12
+      ],
+      "floorHeight": 48,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        541.2000122070312,
+        814.989990234375
+      ],
+      "matches": [
+        13
+      ],
+      "floorHeight": 48,
+      "groundHeight": 60
+    },
+    {
+      "area": "hub",
+      "point": [
+        541.2000122070312,
+        814.9990234375
+      ],
+      "matches": [
+        13
+      ],
+      "floorHeight": 48,
+      "groundHeight": 60
+    },
+    {
+      "area": "hub",
+      "point": [
+        541.2000122070312,
+        815
+      ],
+      "matches": [
+        7,
+        13
+      ],
+      "floorHeight": 48,
+      "groundHeight": 60
+    },
+    {
+      "area": "hub",
+      "point": [
+        541.2000122070312,
+        815.0009765625
+      ],
+      "matches": [
+        7
+      ],
+      "floorHeight": 48,
+      "groundHeight": 48
+    },
+    {
+      "area": "hub",
+      "point": [
+        541.2000122070312,
+        815.010009765625
+      ],
+      "matches": [
+        7
+      ],
+      "floorHeight": 48,
+      "groundHeight": 48
+    },
+    {
+      "area": "hub",
+      "point": [
+        600,
+        814.989990234375
+      ],
+      "matches": [
+        13
+      ],
+      "floorHeight": 48,
+      "groundHeight": 60
+    },
+    {
+      "area": "hub",
+      "point": [
+        600,
+        814.9990234375
+      ],
+      "matches": [
+        13
+      ],
+      "floorHeight": 48,
+      "groundHeight": 60
+    },
+    {
+      "area": "hub",
+      "point": [
+        600,
+        815
+      ],
+      "matches": [
+        7,
+        13,
+        55,
+        56
+      ],
+      "floorHeight": 48,
+      "groundHeight": 60
+    },
+    {
+      "area": "hub",
+      "point": [
+        600,
+        815.0009765625
+      ],
+      "matches": [
+        7,
+        55,
+        56
+      ],
+      "floorHeight": 48,
+      "groundHeight": 48
+    },
+    {
+      "area": "hub",
+      "point": [
+        600,
+        815.010009765625
+      ],
+      "matches": [
+        7,
+        55,
+        56
+      ],
+      "floorHeight": 48,
+      "groundHeight": 48
+    },
+    {
+      "area": "hub",
+      "point": [
+        658.7999877929688,
+        814.989990234375
+      ],
+      "matches": [
+        13
+      ],
+      "floorHeight": 48,
+      "groundHeight": 60
+    },
+    {
+      "area": "hub",
+      "point": [
+        658.7999877929688,
+        814.9990234375
+      ],
+      "matches": [
+        13
+      ],
+      "floorHeight": 48,
+      "groundHeight": 60
+    },
+    {
+      "area": "hub",
+      "point": [
+        658.7999877929688,
+        815
+      ],
+      "matches": [
+        7,
+        13
+      ],
+      "floorHeight": 48,
+      "groundHeight": 60
+    },
+    {
+      "area": "hub",
+      "point": [
+        658.7999877929688,
+        815.0009765625
+      ],
+      "matches": [
+        7
+      ],
+      "floorHeight": 48,
+      "groundHeight": 48
+    },
+    {
+      "area": "hub",
+      "point": [
+        658.7999877929688,
+        815.010009765625
+      ],
+      "matches": [
+        7
+      ],
+      "floorHeight": 48,
+      "groundHeight": 48
+    },
+    {
+      "area": "hub",
+      "point": [
+        541.2000122070312,
+        734.989990234375
+      ],
+      "matches": [
+        8
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        541.2000122070312,
+        734.9990234375
+      ],
+      "matches": [
+        8
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        541.2000122070312,
+        735
+      ],
+      "matches": [
+        8,
+        13
+      ],
+      "floorHeight": 48,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        541.2000122070312,
+        735.0009765625
+      ],
+      "matches": [
+        13
+      ],
+      "floorHeight": 48,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        541.2000122070312,
+        735.010009765625
+      ],
+      "matches": [
+        13
+      ],
+      "floorHeight": 48,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        600,
+        734.989990234375
+      ],
+      "matches": [
+        8,
+        61,
+        62
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        600,
+        734.9990234375
+      ],
+      "matches": [
+        8,
+        61,
+        62
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        600,
+        735
+      ],
+      "matches": [
+        8,
+        13,
+        61,
+        62
+      ],
+      "floorHeight": 48,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        600,
+        735.0009765625
+      ],
+      "matches": [
+        13
+      ],
+      "floorHeight": 48,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        600,
+        735.010009765625
+      ],
+      "matches": [
+        13
+      ],
+      "floorHeight": 48,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        658.7999877929688,
+        734.989990234375
+      ],
+      "matches": [
+        8
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        658.7999877929688,
+        734.9990234375
+      ],
+      "matches": [
+        8
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        658.7999877929688,
+        735
+      ],
+      "matches": [
+        8,
+        13
+      ],
+      "floorHeight": 48,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        658.7999877929688,
+        735.0009765625
+      ],
+      "matches": [
+        13
+      ],
+      "floorHeight": 48,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        658.7999877929688,
+        735.010009765625
+      ],
+      "matches": [
+        13
+      ],
+      "floorHeight": 48,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        1726.0999755859375,
+        449.989990234375
+      ],
+      "matches": [
+        14
+      ],
+      "floorHeight": 96,
+      "groundHeight": 112
+    },
+    {
+      "area": "hub",
+      "point": [
+        1726.0999755859375,
+        449.9989929199219
+      ],
+      "matches": [
+        14
+      ],
+      "floorHeight": 96,
+      "groundHeight": 112
+    },
+    {
+      "area": "hub",
+      "point": [
+        1726.0999755859375,
+        450
+      ],
+      "matches": [
+        9,
+        14
+      ],
+      "floorHeight": 96,
+      "groundHeight": 112
+    },
+    {
+      "area": "hub",
+      "point": [
+        1726.0999755859375,
+        450.0010070800781
+      ],
+      "matches": [
+        9
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        1726.0999755859375,
+        450.010009765625
+      ],
+      "matches": [
+        9
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        1780,
+        449.989990234375
+      ],
+      "matches": [
+        14
+      ],
+      "floorHeight": 96,
+      "groundHeight": 112
+    },
+    {
+      "area": "hub",
+      "point": [
+        1780,
+        449.9989929199219
+      ],
+      "matches": [
+        14
+      ],
+      "floorHeight": 96,
+      "groundHeight": 112
+    },
+    {
+      "area": "hub",
+      "point": [
+        1780,
+        450
+      ],
+      "matches": [
+        9,
+        14
+      ],
+      "floorHeight": 96,
+      "groundHeight": 112
+    },
+    {
+      "area": "hub",
+      "point": [
+        1780,
+        450.0010070800781
+      ],
+      "matches": [
+        9
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        1780,
+        450.010009765625
+      ],
+      "matches": [
+        9
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        1833.9000244140625,
+        449.989990234375
+      ],
+      "matches": [
+        14
+      ],
+      "floorHeight": 96,
+      "groundHeight": 112
+    },
+    {
+      "area": "hub",
+      "point": [
+        1833.9000244140625,
+        449.9989929199219
+      ],
+      "matches": [
+        14
+      ],
+      "floorHeight": 96,
+      "groundHeight": 112
+    },
+    {
+      "area": "hub",
+      "point": [
+        1833.9000244140625,
+        450
+      ],
+      "matches": [
+        9,
+        14
+      ],
+      "floorHeight": 96,
+      "groundHeight": 112
+    },
+    {
+      "area": "hub",
+      "point": [
+        1833.9000244140625,
+        450.0010070800781
+      ],
+      "matches": [
+        9
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        1833.9000244140625,
+        450.010009765625
+      ],
+      "matches": [
+        9
+      ],
+      "floorHeight": 96,
+      "groundHeight": 96
+    },
+    {
+      "area": "hub",
+      "point": [
+        1726.0999755859375,
+        389.989990234375
+      ],
+      "matches": [
+        10
+      ],
+      "floorHeight": 144,
+      "groundHeight": 144
+    },
+    {
+      "area": "hub",
+      "point": [
+        1726.0999755859375,
+        389.9989929199219
+      ],
+      "matches": [
+        10
+      ],
+      "floorHeight": 144,
+      "groundHeight": 144
+    },
+    {
+      "area": "hub",
+      "point": [
+        1726.0999755859375,
+        390
+      ],
+      "matches": [
+        10,
+        14
+      ],
+      "floorHeight": 96,
+      "groundHeight": 144
+    },
+    {
+      "area": "hub",
+      "point": [
+        1726.0999755859375,
+        390.0010070800781
+      ],
+      "matches": [
+        14
+      ],
+      "floorHeight": 96,
+      "groundHeight": 144
+    },
+    {
+      "area": "hub",
+      "point": [
+        1726.0999755859375,
+        390.010009765625
+      ],
+      "matches": [
+        14
+      ],
+      "floorHeight": 96,
+      "groundHeight": 144
+    },
+    {
+      "area": "hub",
+      "point": [
+        1780,
+        389.989990234375
+      ],
+      "matches": [
+        10,
+        36
+      ],
+      "floorHeight": 144,
+      "groundHeight": 144
+    },
+    {
+      "area": "hub",
+      "point": [
+        1780,
+        389.9989929199219
+      ],
+      "matches": [
+        10,
+        36
+      ],
+      "floorHeight": 144,
+      "groundHeight": 144
+    },
+    {
+      "area": "hub",
+      "point": [
+        1780,
+        390
+      ],
+      "matches": [
+        10,
+        14,
+        36
+      ],
+      "floorHeight": 96,
+      "groundHeight": 144
+    },
+    {
+      "area": "hub",
+      "point": [
+        1780,
+        390.0010070800781
+      ],
+      "matches": [
+        14
+      ],
+      "floorHeight": 96,
+      "groundHeight": 144
+    },
+    {
+      "area": "hub",
+      "point": [
+        1780,
+        390.010009765625
+      ],
+      "matches": [
+        14
+      ],
+      "floorHeight": 96,
+      "groundHeight": 144
+    },
+    {
+      "area": "hub",
+      "point": [
+        1833.9000244140625,
+        389.989990234375
+      ],
+      "matches": [
+        10,
+        36
+      ],
+      "floorHeight": 144,
+      "groundHeight": 144
+    },
+    {
+      "area": "hub",
+      "point": [
+        1833.9000244140625,
+        389.9989929199219
+      ],
+      "matches": [
+        10,
+        36
+      ],
+      "floorHeight": 144,
+      "groundHeight": 144
+    },
+    {
+      "area": "hub",
+      "point": [
+        1833.9000244140625,
+        390
+      ],
+      "matches": [
+        10,
+        14,
+        36
+      ],
+      "floorHeight": 96,
+      "groundHeight": 144
+    },
+    {
+      "area": "hub",
+      "point": [
+        1833.9000244140625,
+        390.0010070800781
+      ],
+      "matches": [
+        14,
+        36
+      ],
+      "floorHeight": 96,
+      "groundHeight": 144
+    },
+    {
+      "area": "hub",
+      "point": [
+        1833.9000244140625,
+        390.010009765625
+      ],
+      "matches": [
+        14,
+        36
+      ],
+      "floorHeight": 96,
+      "groundHeight": 144
+    },
+    {
+      "area": "forest",
+      "point": [
+        1135.271484375,
+        1125
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1135.271484375,
+        1124.9990234375
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1135.271484375,
+        1124.989990234375
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        70,
+        130
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        300,
+        130
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        530,
+        130
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        760,
+        130
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        990,
+        130
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1220,
+        130
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1450,
+        130
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1680,
+        130
+      ],
+      "matches": [
+        1
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1910,
+        130
+      ],
+      "matches": [
+        1
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        2140,
+        130
+      ],
+      "matches": [
+        1
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        2370,
+        130
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        70,
+        310
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        300,
+        310
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        530,
+        310
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        760,
+        310
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        990,
+        310
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1220,
+        310
+      ],
+      "matches": [
+        0,
+        23
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1450,
+        310
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1680,
+        310
+      ],
+      "matches": [
+        1
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1910,
+        310
+      ],
+      "matches": [
+        1
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        2140,
+        310
+      ],
+      "matches": [
+        1
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        2370,
+        310
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        70,
+        490
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        300,
+        490
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        530,
+        490
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        760,
+        490
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        990,
+        490
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1220,
+        490
+      ],
+      "matches": [
+        0,
+        23
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1450,
+        490
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1680,
+        490
+      ],
+      "matches": [
+        1
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1910,
+        490
+      ],
+      "matches": [
+        1,
+        15
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        2140,
+        490
+      ],
+      "matches": [
+        1
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        2370,
+        490
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        70,
+        670
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        300,
+        670
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        530,
+        670
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        760,
+        670
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        990,
+        670
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1220,
+        670
+      ],
+      "matches": [
+        0,
+        10,
+        23
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1450,
+        670
+      ],
+      "matches": [
+        2,
+        12
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1680,
+        670
+      ],
+      "matches": [
+        1
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1910,
+        670
+      ],
+      "matches": [
+        1
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        2140,
+        670
+      ],
+      "matches": [
+        1
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        2370,
+        670
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        70,
+        850
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        300,
+        850
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        530,
+        850
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        760,
+        850
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        990,
+        850
+      ],
+      "matches": [
+        0,
+        9
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1220,
+        850
+      ],
+      "matches": [
+        0,
+        16
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1450,
+        850
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1680,
+        850
+      ],
+      "matches": [
+        1
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1910,
+        850
+      ],
+      "matches": [
+        1
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        2140,
+        850
+      ],
+      "matches": [
+        1
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        2370,
+        850
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        70,
+        1030
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        300,
+        1030
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        530,
+        1030
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        760,
+        1030
+      ],
+      "matches": [
+        0,
+        8
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        990,
+        1030
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1220,
+        1030
+      ],
+      "matches": [
+        0,
+        17
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1450,
+        1030
+      ],
+      "matches": [
+        3,
+        19
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1680,
+        1030
+      ],
+      "matches": [
+        1,
+        20
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1910,
+        1030
+      ],
+      "matches": [
+        1,
+        21
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        2140,
+        1030
+      ],
+      "matches": [
+        1,
+        21,
+        22
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        2370,
+        1030
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        70,
+        1210
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        300,
+        1210
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        530,
+        1210
+      ],
+      "matches": [
+        0,
+        7
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        760,
+        1210
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        990,
+        1210
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1220,
+        1210
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1450,
+        1210
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1680,
+        1210
+      ],
+      "matches": [
+        1
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1910,
+        1210
+      ],
+      "matches": [
+        1
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        2140,
+        1210
+      ],
+      "matches": [
+        1
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        2370,
+        1210
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        70,
+        1390
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        300,
+        1390
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        530,
+        1390
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        760,
+        1390
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        990,
+        1390
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1220,
+        1390
+      ],
+      "matches": [
+        0
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1450,
+        1390
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1680,
+        1390
+      ],
+      "matches": [
+        1
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1910,
+        1390
+      ],
+      "matches": [
+        1
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        2140,
+        1390
+      ],
+      "matches": [
+        1
+      ],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        2370,
+        1390
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        70,
+        1570
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        300,
+        1570
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        530,
+        1570
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        760,
+        1570
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        990,
+        1570
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1220,
+        1570
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1450,
+        1570
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1680,
+        1570
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        1910,
+        1570
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        2140,
+        1570
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    },
+    {
+      "area": "forest",
+      "point": [
+        2370,
+        1570
+      ],
+      "matches": [],
+      "floorHeight": 0,
+      "groundHeight": 0
+    }
+  ],
+  "polygonCases": [
+    {
+      "polygon": [
+        [
+          0,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          0,
+          2
+        ]
+      ],
+      "point": [
+        1,
+        1
+      ],
+      "inside": true
+    },
+    {
+      "polygon": [
+        [
+          0,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          0,
+          2
+        ]
+      ],
+      "point": [
+        0,
+        1
+      ],
+      "inside": true
+    },
+    {
+      "polygon": [
+        [
+          0,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          0,
+          2
+        ]
+      ],
+      "point": [
+        -5.000000058430487e-8,
+        1
+      ],
+      "inside": true
+    },
+    {
+      "polygon": [
+        [
+          0,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          0,
+          2
+        ]
+      ],
+      "point": [
+        -2.0000000233721948e-7,
+        1
+      ],
+      "inside": false
+    },
+    {
+      "polygon": [
+        [
+          0,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          0,
+          2
+        ]
+      ],
+      "point": [
+        2.0000009536743164,
+        1
+      ],
+      "inside": false
+    },
+    {
+      "polygon": [
+        [
+          0,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          0,
+          2
+        ]
+      ],
+      "point": [
+        2,
+        2
+      ],
+      "inside": true
+    },
+    {
+      "polygon": [
+        [
+          0,
+          0
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          0,
+          4
+        ]
+      ],
+      "point": [
+        0.5,
+        3
+      ],
+      "inside": true
+    },
+    {
+      "polygon": [
+        [
+          0,
+          0
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          0,
+          4
+        ]
+      ],
+      "point": [
+        3,
+        3
+      ],
+      "inside": false
+    },
+    {
+      "polygon": [
+        [
+          0,
+          0
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          0,
+          4
+        ]
+      ],
+      "point": [
+        1,
+        1
+      ],
+      "inside": true
+    },
+    {
+      "polygon": [
+        [
+          0,
+          0
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          4
+        ],
+        [
+          0,
+          4
+        ]
+      ],
+      "point": [
+        3,
+        0.5
+      ],
+      "inside": true
+    },
+    {
+      "polygon": [
+        [
+          1.00000001,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          1.00000001,
+          2
+        ]
+      ],
+      "point": [
+        1,
+        1
+      ],
+      "inside": true
+    },
+    {
+      "polygon": [
+        [
+          1.00000001,
+          0
+        ],
+        [
+          2,
+          0
+        ],
+        [
+          2,
+          2
+        ],
+        [
+          1.00000001,
+          2
+        ]
+      ],
+      "point": [
+        1.000000238418579,
+        1
+      ],
+      "inside": true
+    }
+  ]
+}
