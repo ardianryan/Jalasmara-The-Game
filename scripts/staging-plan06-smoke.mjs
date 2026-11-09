@@ -10,6 +10,7 @@ import { physicalRoute } from "./plan06-physical-route.mjs";
 import { watchGameplayFailures } from "./gameplay-api-failure.mjs";
 import { keyboardPulse, corridorTargets } from "./land-view-navigation.mjs";
 import { calendarResumeProof } from "./calendar-resume-proof.mjs";
+import { isAdminChunkUrl, publicAcceptance } from "./public-smoke-scope.mjs";
 import {
   deriveCanopyTarget,
   readCanopyAlpha,
@@ -48,6 +49,15 @@ const checks = [],
   assetTransfers = [];
 const startupTrace = process.env.STAGING_STARTUP_TRACE === "1";
 const http1Diagnostic = process.env.STAGING_HTTP1_DIAGNOSTIC === "1";
+const hostOnly = process.env.STAGING_HOST_ONLY === "1";
+assert(
+  !process.env.STAGING_HOST_ONLY || hostOnly,
+  "STAGING_HOST_ONLY must be1 or unset",
+);
+assert(
+  !hostOnly || !http1Diagnostic,
+  "Host acceptance requires the default browser protocol",
+);
 assert(
   !http1Diagnostic || startupTrace,
   "HTTP1 diagnostic requires startup trace.",
@@ -60,14 +70,18 @@ let browser,
   cleanup,
   publicPck,
   routeStarted,
+  browserClosed = false,
   completed = false,
   failureSummary = null,
   stage = "release-preflight";
 const navigation = { matrixPulses: 0 };
+const playerScriptRequests = [];
 function budget() {
   assert(
-    !routeStarted || Date.now() - routeStarted < 8 * 60 * 1000,
-    "Public physical route exceeded eight minutes.",
+    !routeStarted || Date.now() - routeStarted < (hostOnly ? 3 : 8) * 60 * 1000,
+    hostOnly
+      ? "Public host component exceeded three minutes."
+      : "Public physical route exceeded eight minutes.",
   );
 }
 
@@ -403,138 +417,161 @@ async function verifyReloadCalendar() {
   }
 }
 
-try {
-  const health = await fetch(`${origin}/api/health`, {
-    signal: AbortSignal.timeout(15000),
+async function verifyOwnerChunkFixture() {
+  const fixture = await browser.newContext({
+    viewport: { width: 1440, height: 900 },
+    serviceWorkers: "block",
   });
-  assert(health.ok, `Public health ${health.status}`);
-  assert.equal((await health.json()).status, "ok");
-  const response = await fetch(`${origin}/game/index.pck`, {
-    signal: AbortSignal.timeout(180000),
-  });
-  assert(response.ok);
-  const hash = createHash("sha256");
-  let decodedBytes = 0;
-  for await (const bytes of response.body) {
-    hash.update(bytes);
-    decodedBytes += bytes.length;
-    assert(
-      decodedBytes <= expectedPckBytes,
-      "Public PCK exceeds pinned release size",
-    );
-  }
-  assert.equal(
-    hash.digest("hex"),
-    expectedPck,
-    "Public release PCK must match before creating an account",
-  );
-  assert.equal(
-    decodedBytes,
-    expectedPckBytes,
-    "Public PCK size must match release",
-  );
-  // Only validated release metadata reaches the report, never downloaded content.
-  publicPck = { sha256: expectedPck, decodedBytes: expectedPckBytes };
-  checks.push("public-health-and-downloaded-pck-match-release");
-  fixtureAttempted = true;
-  stage = "fixture-create";
-  await remote("create");
-  stage = "browser-startup";
-  browser = await chromium.launch({
-    args: [
-      "--enable-webgl",
-      "--use-gl=angle",
-      "--use-angle=swiftshader",
-      "--enable-unsafe-swiftshader",
-      ...(http1Diagnostic ? ["--disable-http2"] : []),
-    ],
-  });
-  context = await browser.newContext({
-    viewport: { width: 844, height: 390 },
-    hasTouch: true,
-    isMobile: true,
-    deviceScaleFactor: 1,
-  });
-  page = await context.newPage();
-  page.setDefaultTimeout(60000);
-  if (startupTrace) {
-    const network = await context.newCDPSession(page),
-      tracked = new Map();
-    await network.send("Network.enable");
-    network.on("Network.requestWillBeSent", (event) => {
-      const url = new URL(event.request.url);
-      if (url.origin !== origin || !url.pathname.startsWith("/game/")) return;
-      const transfer = {
-        path: url.pathname,
-        startedAt: Date.now(),
-        reportedDataLength: 0,
-        reportedEncodedDataLength: 0,
+  const result = {
+    name: "isolated-owner-role-compiled-chunk-fixture",
+    scope:
+      "HTTPS compiled module delivery only; ALL API responses mocked, no real owner authentication or authorization proof",
+    api: [],
+    errors: [],
+    gameRequests: [],
+  };
+  observations.push(result);
+  try {
+    await fixture.route("**/api/**", async (route) => {
+      const request = route.request(),
+        path = new URL(request.url()).pathname;
+      result.api.push({ path, method: request.method(), mocked: true });
+      const bodies = {
+        "/api/auth/session": {
+          user: {
+            id: "host-chunk-fixture",
+            name: "Fixture modul pengelola",
+            role: "owner",
+          },
+          csrf: "chunk-fixture",
+          oidcEnabled: false,
+          oidcLabel: "",
+          linked: false,
+        },
+        "/api/admin/players": { players: [], total: 0 },
+        "/api/admin/content": { versions: [] },
+        "/api/admin/audit": { audits: [], total: 0 },
+        "/api/game/state": {
+          catalog: {
+            questions: [],
+            fragments: [],
+            abilities: [],
+            recipes: [],
+            balance: { starMultipliers: [0.5, 1, 1.5] },
+          },
+        },
       };
-      tracked.set(event.requestId, transfer);
-      assetTransfers.push(transfer);
-    });
-    network.on("Network.responseReceived", (event) => {
-      const transfer = tracked.get(event.requestId);
-      if (transfer)
-        Object.assign(transfer, {
-          responseAt: Date.now(),
-          status: event.response.status,
-          protocol: event.response.protocol,
-          remoteIPAddress: event.response.remoteIPAddress,
-          remotePort: event.response.remotePort,
-          mimeType: event.response.mimeType,
-          fromDiskCache: event.response.fromDiskCache,
-          fromServiceWorker: event.response.fromServiceWorker,
-        });
-    });
-    network.on("Network.dataReceived", (event) => {
-      const transfer = tracked.get(event.requestId);
-      if (transfer) {
-        transfer.reportedDataLength += event.dataLength;
-        transfer.reportedEncodedDataLength += event.encodedDataLength;
+      if (request.method() !== "GET" || !Object.hasOwn(bodies, path)) {
+        result.errors.push("Unexpected mocked API method/path");
+        await route.abort();
+        return;
       }
+      await route.fulfill({ json: bodies[path] });
     });
-    network.on("Network.loadingFinished", (event) => {
-      const transfer = tracked.get(event.requestId);
-      if (transfer)
-        Object.assign(transfer, {
-          finishedAt: Date.now(),
-          finishedEncodedDataLength: event.encodedDataLength,
-        });
+    await fixture.route(`${origin}/game/**`, async (route) => {
+      result.gameRequests.push(new URL(route.request().url()).pathname);
+      await route.abort();
     });
-    network.on("Network.loadingFailed", (event) => {
-      const transfer = tracked.get(event.requestId);
-      if (transfer)
-        Object.assign(transfer, {
-          failedAt: Date.now(),
-          failure: event.errorText,
-          cancelled: event.canceled,
-        });
+    const ownerPage = await fixture.newPage();
+    ownerPage.on("pageerror", () =>
+      result.errors.push("Compiled admin page script error"),
+    );
+    const [response] = await Promise.all([
+      ownerPage.waitForResponse(
+        (value) =>
+          isAdminChunkUrl(value.url(), origin) &&
+          value.request().resourceType() === "script",
+        { timeout: 20000 },
+      ),
+      ownerPage.goto(`${origin}/admin`, { timeout: 20000 }),
+    ]);
+    assert(response.ok(), "Actual HTTPS admin chunk delivery must succeed");
+    assert(
+      /javascript|ecmascript/i.test(response.headers()["content-type"] ?? ""),
+    );
+    const body = await response.body();
+    assert(
+      body.length > 1000,
+      "Compiled module must not be an empty or HTML fallback",
+    );
+    result.chunk = {
+      path: new URL(response.url()).pathname,
+      status: response.status(),
+      decodedBytes: body.length,
+      sha256: createHash("sha256").update(body).digest("hex"),
+    };
+    await ownerPage
+      .getByRole("heading", { name: "Pemain", exact: true })
+      .waitFor({ timeout: 10000 });
+    await ownerPage
+      .getByText("0 akun ·", { exact: false })
+      .waitFor({ timeout: 10000 });
+    assert.deepEqual(result.errors, []);
+    assert.deepEqual(result.gameRequests, []);
+    assert(result.api.some((value) => value.path === "/api/auth/session"));
+    await ownerPage.screenshot({
+      path: `${directory}/04-host-https-admin-chunk-fixture.png`,
+      timeout: 5000,
     });
+    checks.push(
+      "public-HTTPS-admin-chunk-renders-with-all-API-mocked-owner-role-fixture",
+    );
+  } finally {
+    await fixture.close();
   }
-  await page.addInitScript(() => {
-    window.jalasmaraDiagnostics = true;
-  });
-  page.on("pageerror", (error) => errors.push(error.message));
-  page.on("console", (message) => {
-    if (message.type() === "error") errors.push(message.text());
-  });
-  watchGameplayFailures(page, origin, failures);
-  await page.goto(`${origin}/login`);
-  await page.getByLabel("Email", { exact: true }).fill(email);
-  await page.getByLabel("Password", { exact: true }).fill(password);
-  await page.getByRole("button", { name: "Masuk ke Jalasmara" }).click();
-  await page.waitForURL("**/play");
-  stage = "game-startup";
-  await attach();
-  stage = "login-and-ready";
-  const auth = (await context.cookies()).find(
-    (cookie) => cookie.name === "__Host-jalasmara",
+}
+
+async function verifyHostOnly() {
+  stage = "host-hub-reload";
+  const before = await snapshot(),
+    initial = await apiState();
+  assert.equal(initial.surface.area, "hub");
+  assert.equal(before.land.area, "hub");
+  assert(
+    Math.hypot(before.x - initial.surface.x, before.y - initial.surface.y) < 25,
   );
-  assert(auth?.secure && auth.httpOnly && auth.sameSite === "Lax");
-  assert.equal((await snapshot()).land.actors.player, 1);
-  await shot("01-public-ready-hub");
-  checks.push("public-form-login-secure-cookie-and-real-game-ready");
+  await page.reload();
+  await attach();
+  const resumed = await waitState(
+    (value) => value.land?.area === "hub" && value.land?.actors?.player === 1,
+  );
+  assert(Math.hypot(resumed.x - before.x, resumed.y - before.y) < 30);
+  await shot("02-host-real-game-reloads-hub");
+  stage = "host-post-reload-calendar-writer";
+  await verifyReloadCalendar();
+  await shot("03-host-real-calendar-resumes");
+  checks.push("public-host-reloaded-game-regains-clock-writer-and-active-time");
+  const finalState = await apiState();
+  assert.equal(finalState.surface.area, "hub");
+  assert.equal(finalState.player.version, initial.player.version);
+  assert.equal(finalState.player.coins, 200);
+  assert.equal(finalState.player.progress.day, 1);
+  assert.deepEqual(finalState.player.inventory, []);
+  assert.equal(finalState.calendar.dayLengthMs, 36 * 60 * 1000);
+  checks.push(
+    "public-host-hub-reload-preserves-player-position-story-and-coins",
+  );
+  assert(
+    playerScriptRequests.some((path) =>
+      /^\/assets\/index-[A-Za-z0-9_-]+\.js$/.test(path),
+    ),
+  );
+  assert(
+    !playerScriptRequests.some((path) => isAdminChunkUrl(path, origin)),
+    "Guest/player must not download the admin module",
+  );
+  checks.push(
+    "public-guest-and-real-player-script-requests-exclude-admin-chunk",
+  );
+  stage = "host-isolated-owner-module-fixture";
+  await verifyOwnerChunkFixture();
+  budget();
+  assert.deepEqual(errors, []);
+  assert.deepEqual(failures, []);
+  completed = true;
+}
+
+async function verifyFullRoute() {
   stage = "physical-forest-route";
   const world = await fetchWorld(context.request, origin);
   for (const [x, y] of physicalRoute(
@@ -655,6 +692,148 @@ try {
   assert.deepEqual(failures, []);
   checks.push("public-server-position-reloads-without-story-or-reward-change");
   completed = true;
+}
+
+try {
+  const health = await fetch(`${origin}/api/health`, {
+    signal: AbortSignal.timeout(15000),
+  });
+  assert(health.ok, `Public health ${health.status}`);
+  assert.equal((await health.json()).status, "ok");
+  const response = await fetch(`${origin}/game/index.pck`, {
+    signal: AbortSignal.timeout(180000),
+  });
+  assert(response.ok);
+  const hash = createHash("sha256");
+  let decodedBytes = 0;
+  for await (const bytes of response.body) {
+    hash.update(bytes);
+    decodedBytes += bytes.length;
+    assert(
+      decodedBytes <= expectedPckBytes,
+      "Public PCK exceeds pinned release size",
+    );
+  }
+  assert.equal(
+    hash.digest("hex"),
+    expectedPck,
+    "Public release PCK must match before creating an account",
+  );
+  assert.equal(
+    decodedBytes,
+    expectedPckBytes,
+    "Public PCK size must match release",
+  );
+  // Only validated release metadata reaches the report, never downloaded content.
+  publicPck = { sha256: expectedPck, decodedBytes: expectedPckBytes };
+  checks.push("public-health-and-downloaded-pck-match-release");
+  fixtureAttempted = true;
+  stage = "fixture-create";
+  await remote("create");
+  stage = "browser-startup";
+  browser = await chromium.launch({
+    args: [
+      "--enable-webgl",
+      "--use-gl=angle",
+      "--use-angle=swiftshader",
+      "--enable-unsafe-swiftshader",
+      ...(http1Diagnostic ? ["--disable-http2"] : []),
+    ],
+  });
+  context = await browser.newContext({
+    viewport: { width: 844, height: 390 },
+    hasTouch: true,
+    isMobile: true,
+    deviceScaleFactor: 1,
+  });
+  page = await context.newPage();
+  page.setDefaultTimeout(60000);
+  if (startupTrace) {
+    const network = await context.newCDPSession(page),
+      tracked = new Map();
+    await network.send("Network.enable");
+    network.on("Network.requestWillBeSent", (event) => {
+      const url = new URL(event.request.url);
+      if (url.origin !== origin || !url.pathname.startsWith("/game/")) return;
+      const transfer = {
+        path: url.pathname,
+        startedAt: Date.now(),
+        reportedDataLength: 0,
+        reportedEncodedDataLength: 0,
+      };
+      tracked.set(event.requestId, transfer);
+      assetTransfers.push(transfer);
+    });
+    network.on("Network.responseReceived", (event) => {
+      const transfer = tracked.get(event.requestId);
+      if (transfer)
+        Object.assign(transfer, {
+          responseAt: Date.now(),
+          status: event.response.status,
+          protocol: event.response.protocol,
+          remoteIPAddress: event.response.remoteIPAddress,
+          remotePort: event.response.remotePort,
+          mimeType: event.response.mimeType,
+          fromDiskCache: event.response.fromDiskCache,
+          fromServiceWorker: event.response.fromServiceWorker,
+        });
+    });
+    network.on("Network.dataReceived", (event) => {
+      const transfer = tracked.get(event.requestId);
+      if (transfer) {
+        transfer.reportedDataLength += event.dataLength;
+        transfer.reportedEncodedDataLength += event.encodedDataLength;
+      }
+    });
+    network.on("Network.loadingFinished", (event) => {
+      const transfer = tracked.get(event.requestId);
+      if (transfer)
+        Object.assign(transfer, {
+          finishedAt: Date.now(),
+          finishedEncodedDataLength: event.encodedDataLength,
+        });
+    });
+    network.on("Network.loadingFailed", (event) => {
+      const transfer = tracked.get(event.requestId);
+      if (transfer)
+        Object.assign(transfer, {
+          failedAt: Date.now(),
+          failure: event.errorText,
+          cancelled: event.canceled,
+        });
+    });
+  }
+  await page.addInitScript(() => {
+    window.jalasmaraDiagnostics = true;
+  });
+  page.on("pageerror", (error) => errors.push(error.message));
+  if (hostOnly)
+    page.on("request", (request) => {
+      const url = new URL(request.url());
+      if (request.resourceType() === "script" && url.origin === origin)
+        playerScriptRequests.push(url.pathname);
+    });
+  page.on("console", (message) => {
+    if (message.type() === "error") errors.push(message.text());
+  });
+  watchGameplayFailures(page, origin, failures);
+  await page.goto(`${origin}/login`);
+  await page.getByLabel("Email", { exact: true }).fill(email);
+  await page.getByLabel("Password", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Masuk ke Jalasmara" }).click();
+  await page.waitForURL("**/play");
+  stage = "game-startup";
+  await attach();
+  stage = "login-and-ready";
+  const auth = (await context.cookies()).find(
+    (cookie) => cookie.name === "__Host-jalasmara",
+  );
+  assert(auth?.secure && auth.httpOnly && auth.sameSite === "Lax");
+  assert.equal((await snapshot()).land.actors.player, 1);
+  await shot("01-public-ready-hub");
+  checks.push("public-form-login-secure-cookie-and-real-game-ready");
+  if (hostOnly) await verifyHostOnly();
+  else await verifyFullRoute();
 } catch (error) {
   failureSummary = {
     stage,
@@ -670,7 +849,17 @@ try {
   throw error;
 } finally {
   const cookies = context ? await context.cookies().catch(() => []) : [];
-  if (browser) await browser.close();
+  try {
+    if (browser) {
+      await browser.close();
+      browserClosed = true;
+    }
+  } catch {
+    completed = false;
+    process.exitCode = 1;
+    failureSummary ??= { stage: "browser-shutdown", name: "Error" };
+    errors.push("Browser shutdown failed; own fixture cleanup still attempted");
+  }
   try {
     if (fixtureAttempted)
       cleanup = await remote(
@@ -685,7 +874,7 @@ try {
       );
   } finally {
     const outcome = completed && cleanup?.ok === true ? "completed" : "failed";
-    const defaultPublicAccepted = outcome === "completed" && !http1Diagnostic;
+    const acceptance = publicAcceptance(outcome, http1Diagnostic, hostOnly);
     writeFileSync(
       `${directory}/results.json`,
       JSON.stringify(
@@ -693,7 +882,10 @@ try {
           origin,
           outcome,
           completed: outcome === "completed",
-          defaultPublicAccepted,
+          ...acceptance,
+          hostOnly,
+          browserClosed,
+          playerScriptRequests,
           failureSummary,
           expectedPck,
           publicPck,
@@ -718,7 +910,8 @@ try {
         {
           directory,
           outcome,
-          defaultPublicAccepted,
+          ...acceptance,
+          hostOnly,
           http1Diagnostic,
           failureSummary,
           checks,
