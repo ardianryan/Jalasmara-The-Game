@@ -10,9 +10,28 @@ var flat_floor_normals:=0
 func _initialize() -> void: call_deferred("run")
 func _v2(value: Array) -> Vector2: return Vector2(float(value[0]),float(value[1]))
 
+func _authored_floor_tops(renderer: Node) -> Array[Dictionary]:
+	var result: Array[Dictionary]=[]
+	for surface in renderer.map.get("surfaces",[]):
+		if str(surface.get("material","")) not in ["dirt","grass"]: continue
+		var polygon:=PackedVector2Array()
+		for point in surface.get("polygon",[]): polygon.append(_v2(point))
+		if polygon.size()<3: continue
+		var height:=float(surface.get("heightPixels",float(surface.get("elevation",0))*renderer.LEVEL_HEIGHT))+float(surface.get("priority",0))*.018
+		result.append({"id":str(surface.id),"height":height,"polygon":polygon})
+	return result
+
+func _authored_top_at(renderer: Node,point: Vector3,surfaces: Array[Dictionary]) -> String:
+	var logical: Vector2=renderer.ground_projection(point)
+	for surface in surfaces:
+		if absf(point.z-float(surface.height))<.025 and Geometry2D.is_point_in_polygon(logical,surface.polygon):
+			return str(surface.id)
+	return ""
+
 func _index_meshes(renderer: Node) -> void:
 	var dirt: Color=renderer._materials.get_material("dirt").get_shader_parameter("base_color")
 	var grass: Color=renderer._materials.get_material("grass").get_shader_parameter("base_color")
+	var authored_tops:=_authored_floor_tops(renderer)
 	for instance in renderer._geometry.find_children("*","MeshInstance3D",true,false):
 		if not str(instance.name).begins_with("StaticMaterialBatch_"): continue
 		var material: Material=instance.material_override
@@ -31,11 +50,13 @@ func _index_meshes(renderer: Node) -> void:
 				var triangle: Array[Vector3]=[]
 				for corner in range(3): triangle.append(instance.to_global(vertices[indices[index+corner] if not indices.is_empty() else index+corner]))
 				var geometric: Vector3=(triangle[1]-triangle[0]).cross(triangle[2]-triangle[0]).normalized()
-				if floor_material and absf(geometric.z)>.99:
+				var centroid: Vector3=(triangle[0]+triangle[1]+triangle[2])/3.0
+				var authored_top:=_authored_top_at(renderer,centroid,authored_tops) if floor_material and absf(geometric.z)>.99 else ""
+				if not authored_top.is_empty():
 					for corner in range(3):
 						var at:=indices[index+corner] if not indices.is_empty() else index+corner
 						var normal: Vector3=(instance.global_basis.inverse().transposed()*normals[at]).normalized()
-						assert(normal.dot(Vector3(0,0,1))>.99999,"Actual batched flat dirt/grass vertex normal must face up in both the shadow pass and fragment lighting")
+						assert(normal.dot(Vector3(0,0,1))>.99999,"Actual authored floor top must face up in shadow and lighting passes: surface="+authored_top+" centroid="+str(centroid)+" batch="+str(instance.name)+" vertex="+str(at)+" normal="+str(normal))
 						flat_floor_normals+=1
 				if absf(geometric.z)<.2: continue
 				var low:=Vector2(minf(triangle[0].x,minf(triangle[1].x,triangle[2].x)),minf(triangle[0].y,minf(triangle[1].y,triangle[2].y)))
