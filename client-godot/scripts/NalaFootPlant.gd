@@ -268,6 +268,16 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 			_feet[_swing].fromWorld=_feet[_swing].sole
 			_distance=0.0
 			_landing_distance=_turn_distance
+		elif _physical_contract and _swing!="":
+			var old_world:=_world_motion(at,_heading)
+			var requested_world:=_world_motion(at,next_heading)
+			var prior:=Vector2(old_world.x,old_world.y).normalized()
+			var requested:=Vector2(requested_world.x,requested_world.y).normalized()
+			var lever:=maxf(1.0,_landing_distance-_distance+_landing_lead)
+			# Tiny accepted float deltas must not swing a distant landing target.
+			var angle:=clampf(prior.angle_to(requested),-physical/lever,physical/lever)
+			var limited:=prior.rotated(angle)
+			next_heading=_logical_offset(at,Vector3(limited.x,limited.y,0.0)).normalized()
 		_heading=next_heading
 		var origin:=_last_at
 		var consumed:=0.0
