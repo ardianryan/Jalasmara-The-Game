@@ -31,6 +31,7 @@ import {
   validateGatewayMeshes,
 } from "./gateway-route-fixture.mjs";
 import { watchGameplayFailures } from "./gameplay-api-failure.mjs";
+import { deriveSarasFixture } from "./saras-alpha-fixture.mjs";
 import {
   keyboardPulse,
   corridorTargets,
@@ -61,10 +62,11 @@ assert(
     "lower",
     "canopy",
     "gateways",
+    "saras",
   ].includes(routeMode),
 );
 const routeLimitMs =
-  (["left", "lower", "canopy", "gateways"].includes(routeMode) ? 5 : 10) *
+  (["left", "lower", "canopy", "gateways", "saras"].includes(routeMode) ? 5 : 10) *
   60 *
   1000;
 const shelterWaitPosition = { x: 800, y: 1000 };
@@ -92,6 +94,8 @@ function validateShelterWait(world, from) {
   return physicalRoute(world, from, shelterWaitPosition, "hub");
 }
 if (routeMode === "shelters") validateShelterWait(WORLD, WORLD.surfaceSpawn);
+assert(!process.env.PLAN06_SARAS_MINUTE || routeMode === "saras");
+const sarasFixture = routeMode === "saras" ? deriveSarasFixture(WORLD, Number(process.env.PLAN06_SARAS_MINUTE ?? 1200)) : null;
 const navigation = { matrixPulses: 0, legacyPulses: 0 };
 const inputProofs = [];
 const fixtureStoryDay = routeMode === "dialogue" ? 1 : 2;
@@ -192,7 +196,7 @@ if (routeMode === "gateways")
 let id;
 do {
   id = randomUUID();
-} while (!calendarRain(id, 2));
+} while (calendarRain(id, 2) !== (routeMode !== "saras"));
 const directory = `artifacts/browser/plan06-layout-${id}`;
 mkdirSync(directory, { recursive: true });
 const email = `plan06-layout-${id}@test.invalid`,
@@ -1104,6 +1108,44 @@ async function verifyFocusedCanopy() {
   checks.push("focused-canopy-restores-after-exit-and-real-position-reloads");
 }
 
+async function verifySaras() {
+  const fixture = deriveSarasFixture(world, sarasFixture.minute);
+  assert.deepEqual(fixture, sarasFixture);
+  observations.push({ name: "source-derived-saras-alpha-fixture", ...fixture });
+  console.log(JSON.stringify({ phase: "waiting-for-real-saras-station", fixture }));
+  const ready = await waitState((value) => {
+    const resident = value.land?.actors?.residentStates?.Saras;
+    return resident?.phase === fixture.phase && resident.atStation;
+  }, 90000);
+  assert(ready.weather.rain < 0.05 && ready.weather.night === (fixture.minute >= 1110));
+  assert.deepEqual(ready.land.actors.residentStates.Saras.destination, [fixture.station.x, fixture.station.y]);
+  checks.push("saras-real-clear-weather-schedule-reaches-authored-station-without-attention-stall");
+  for (const [index, point] of fixture.viewpoints.entries()) {
+    await routeTo(point, "hub");
+    const current = await waitState((value) => value.nearby === "Saras");
+    const delta = [fixture.station.x - current.x, fixture.station.y - current.y];
+    assert(Math.hypot(...delta) > 50 && Math.hypot(...delta) < 80);
+    assert(Math.abs(projectLogicalDelta(delta, current.land.view.motion)[0]) > 50,
+      "The portrait and player need independently measurable screen-horizontal separation");
+    assert(current.land.actors.residentStates.Saras.atStation);
+    await page.waitForTimeout(500);
+    await shot(`saras-${fixture.phase}-view-${index + 1}-before-conversation-needs-image-review`);
+    await page.keyboard.press("e");
+    await waitState((value) => value.modal && value.dialogue?.speaker === "Saras" && value.weather.clockPaused);
+    await shot(`saras-${fixture.phase}-view-${index + 1}-actual-conversation`);
+    await closeDialogue();
+    await waitState((value) => !value.modal && !value.weather.clockPaused);
+  }
+  const state = await apiState();
+  assert.equal(state.player.progress.day, 2);
+  assert.equal(state.player.coins, 200);
+  assert.deepEqual(state.player.inventory, []);
+  assert.deepEqual(state.player.progress.missions, []);
+  assert.equal(navigation.legacyPulses, 0);
+  assert(navigation.matrixPulses > 0);
+  checks.push("two-physically-reached-separated-saras-viewpoints-open-real-dialogue-without-rewards");
+}
+
 async function verifyCompactDialogue() {
   const wira = world.surface_hub.districts.find(
     (entry) => entry.npc === "Mbah Wira",
@@ -1322,7 +1364,7 @@ try {
         ...freshCalendar(),
         calendarDay: 2,
         lastSettledDay: 2,
-        minuteOfDay: 1110,
+        minuteOfDay: sarasFixture?.minute ?? 1110,
       },
       homestead: freshHomestead(fixtureStoryDay),
       version: 0,
@@ -1335,13 +1377,13 @@ try {
   try {
     let initialSurface;
     if (
-      ["ocean", "dialogue", "left", "shelters", "gateways"].includes(routeMode)
+      ["ocean", "dialogue", "left", "shelters", "gateways", "saras"].includes(routeMode)
     ) {
       initialHub = {
         area: "hub",
         ...(routeMode === "gateways"
           ? gatewayFixtureApproach
-          : (shelterPredecessor?.point ?? WORLD.surfaceSpawn)),
+          : (sarasFixture?.quiet ?? shelterPredecessor?.point ?? WORLD.surfaceSpawn)),
         layoutVersion: WORLD.hub.layoutVersion,
         playerVersion: 0,
         positionAt: Date.now(),
@@ -1655,6 +1697,7 @@ try {
       "lower",
       "canopy",
       "gateways",
+      "saras",
     ].includes(routeMode)
   ) {
     await routeTo({ x: 200, y: 1320 }, "forest");
@@ -1712,6 +1755,8 @@ try {
     await shot(
       shelterPredecessor
         ? "shelter-continuation-start-at-previously-reached-quiet-point"
+        : routeMode === "saras"
+          ? "saras-fixture-start-on-checked-quiet-floor"
         : routeMode === "gateways"
           ? "gateways-fixture-start-at-previously-reached-hub-approach"
           : `${routeMode}-fixture-start-at-actual-hub-spawn`,
@@ -1724,6 +1769,7 @@ try {
   else if (routeMode === "canopy") await verifyFocusedCanopy();
   else if (routeMode === "gateways") await verifyFocusedGateways();
   else if (routeMode === "dialogue") await verifyCompactDialogue();
+  else if (routeMode === "saras") await verifySaras();
   else await verifyOcean();
   assert.deepEqual(errors, []);
   assert.deepEqual(failures, []);
