@@ -1,6 +1,10 @@
 # Penyelesaian delapan jalur malam ini
 
-## Checkpoint aktif 10 November, 03.15 WIB
+## Checkpoint aktif 10 November, 04.10 WIB
+
+[Host e171734/imagea9](overnight-admin-host-release.md) aktif dan smoke khusus host6/6 PASS; PCK73d tetap. Pemain tidak mengunduh Admin, modul Admin actualHTTPS dirender pada konteks fixture API terpisah. Browser compiled9/9 dan backup restore/count42/0 lulus. [Jahe empat hari](overnight-jahe-four-day-gate.md)10/10 actualbrowser/19POST dan [bilik pakaian](overnight-wardrobe-gear-audit.md)4/4 actualbrowser selesai; gear tertutup bilik belum visual penuh. Context sementara dan image superseded dibersihkan sesudah penerimaan, aktif+satu rollback tetap. Nala lower-body OFF: d014f4e firstdock masih gagal fullmask pada transisi ramp-flat; perbaikan CPU dan peer berjalan. Prototipe WEST delapanframe/9tes CPU belum runtime. CI build sebelumnya gagal sebelum memperoleh runner; [bukti penjadwalan](overnight-ci-build-runner.md). Perangkat fisik belum diuji. Semua delapan jalur belum selesai; lanjut core sesuai handoff. Catatan berikut historis.
+
+## Checkpoint sebelumnya 10 November, 03.15 WIB
 
 [Ekspor ketiga](overnight-export3-integration.md) image2036254/PCK73d45630 sudah aktif dan sehat, termasuk predicate/AABB/cache lantai konsisten, admin35 dan loading pendek16. Full63lokal serta CI63world/120API/CodeQL lulus; job CI build aplikasi masih pending. Smoke publik enam pemeriksaan lulus, termasuk writerbaru dan waktuotoritatifmajusetelahreload. Hutan lokal3/3 joystick–jembatan–reload lulus; rute kiri panjang sebelumnya berhenti pada budget dan tidak disembunyikan. Backup baru42dokumen/0gagal lulus restore. Pilot Nala tetapOFF; datar32 dan tread pusat terarah lulus, tetapi fullterrain16 belum selesai karena opaque sole di ramp. Lengan tujuh arah dan dua native sequence masih terbuka. Perangkat fisik menunggu pengguna; seluruh delapan jalur belum selesai. Catatan di bawah adalah riwayat.
 

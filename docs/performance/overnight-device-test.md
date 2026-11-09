@@ -7,10 +7,10 @@ Status 10 November 2026: pengguna bersedia menjalankan pengujian pada perangkat 
 | Data | Nilai sebelum pengujian |
 |---|---|
 | URL kandidat | https://staging-jalasmara.ardianryan.com |
-| Commit sumber runtime | `d63a10b1269f44b0721d3d0766087821ebd57435` (image/API), eksporGodotb0f2ef8 |
+| Commit sumber runtime | `e17173436e1adbdd11ee29e340f3bb5b48769c61` (image/API/host), eksporGodotb0f2ef8 tetap |
 | SHA-256 PCK dan ukuran | `73d45630ab69033ac36a64740ecc73ecdb7363c9f99805222b6a9237dcb2d18b`,64.494.656byte |
-| Tanggal dan jam aktivasi | 10November2026, 03.04WIB |
-| Hasil startup browser publik | Lulus6pemeriksaan, HTTP/2default, gerak/jurnal/reload/pemulihan jam dan cleanup; [laporan](../reviews/overnight-export3-public-smoke.md) |
+| Tanggal dan jam aktivasi | 10November2026, 03.36:45WIB |
+| Hasil startup browser publik | Host a9 lulus6pemeriksaan khusus login/READY/reload/clock serta pemisahan modul Admin, HTTP/2default; [laporan host](../reviews/overnight-lazy-admin-public-host.md). Gerak/jurnal/rute dunia6/6 sebelumnya pada host203 dengan PCK sama; [laporan dunia](../reviews/overnight-export3-public-smoke.md) |
 
 Integrator memverifikasi pin dan startup publik sebelum meminta pengguna menguji. Hasil recorder lokal pada PCK `1d3c94a5…` memakai SwiftShader dan tidak menjadi pengukuran Windows atau S23.
 
