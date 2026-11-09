@@ -557,7 +557,7 @@ func _layout_portrait_instrument(ratio:float,instrument_scale:float,available_wi
 
 static func fit_region_name(full_name: String,font: Font,font_size: int,width: float) -> String:
 	if font.get_string_size(full_name,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size).x<=width: return full_name
-	var ellipsis := "…"
+	var ellipsis := "..."
 	if font.get_string_size(ellipsis,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size).x>width: return ""
 	var boundaries:=TextServerManager.get_primary_interface().string_get_character_breaks(full_name)
 	for index in range(boundaries.size()-1,-1,-1):
