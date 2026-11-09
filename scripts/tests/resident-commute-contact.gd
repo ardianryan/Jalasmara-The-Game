@@ -214,7 +214,7 @@ func _run() -> void:
 			renderer.actors_3d._scan()
 			renderer.actors_3d.update_actors(0)
 			await process_frame
-	if not _check(reports.size()==12 and stair_samples>10,"All6 normal/reduced actual commutes must include real stairs"): return
+	if not _check(reports.size()==12 and stair_samples+ramp_samples>10,"All6 normal/reduced actual commutes must include emitted connector contacts"): return
 	if not _check(immutable==JSON.stringify({"world":state.world,"player":state.player,"dive":state.dive}),"Cosmetic commute changed canonical gameplay state"): return
 	FileAccess.open("res://../.runtime/resident-commute-results.json",FileAccess.WRITE).store_string(JSON.stringify({"reports":reports,"samples":checked,"stairs":stair_samples,"ramps":ramp_samples,"maxPelvisDrop":max_drop,"maxStanceDrift":max_drift,"durationMs":Time.get_ticks_msec()-started},"  "))
 	source.free()

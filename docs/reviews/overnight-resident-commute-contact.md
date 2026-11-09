@@ -11,3 +11,6 @@ Run awal actual combined root: exit1 pada sampel669, Bagas work→rest di[900,64
 
 
 Candidate berikut hanya membatasi3perubahan: walking arm mempertahankan clip/phase ketika paused; handover distance6 ikut stepScale (default6 tetap); discontinuity physical threshold kembali STRIDE25/2 seperti legacy, bukan stride anak/2. Actual moved>50 guard tidak diubah, toleransi fixture tidak diubah, source hips/artwork/stride asli tidak diubah. Belum diterima sampai before meaningful pause dan after actual all6 commutes dijalankan.
+
+
+Root menjalankan before meaningful pause: FAIL sampel24 pada direktur, lengan kembali rest ketika feet/clip masih walk (log `.runtime/overnight-resident-commute-before-root.log`). Root setelah6f334d1 maju6766 sampel: pause dan turn Bagas sebelumnya lolos; kini Gito di[1122.163,1191.442] ujung ramp perlu pelvis6.538343 > bound6.3, reset0. Tidak mengubah bound. Sampai titik itu actual authored commutes tercatat stairs0/ramp26. Guard akhir yang mengasumsikan stair>10 dikoreksi menjadi connector contacts>10, tetap melaporkan stairs/ramp terpisah. Tidak mengarang rute tangga untuk menyebut coverage yang tidak dilalui.
