@@ -49,3 +49,27 @@ The subsequent standalone benchmark did not run: nested LegacyFoley's direct Gam
 The second attempt on38e5e85 still failed: eager nested inheritance compiled the base WorldFoley before autoload identifiers were available (`WorldFoley.gd:68`). The dependent-script/invalid-configure error aborted the run and left the SceneTree idle. Its exact own PID25264 was stopped with TERM/exit143; log `.runtime/ground-consumers-ab-cached-state.log` is preserved. There are still **no benchmark timing results** from either attempt; consumer5+10 correctness remains valid.
 
 The next benchmark-only source correction stores the two original method bodies in separate static fixture scripts, loaded inside deferred `_run` after autoload setup, and fails immediately if either Script cannot instantiate. Cached-state access remains outside the timed loop; no dynamic source generation or per-query root lookup was introduced. CPU comparison confirmed the surface body exactly equals4795d28 and the Foley body exactly equals it after the single declared cached-state-alias normalization. `run-ground-consumer-benchmark.py` uses OS `subprocess.run(timeout=20)`, reaps a timed-out child, preserves a new log exclusively, and rejects SCRIPT ERROR/ERROR or missing COMPLETE even if Godot exits0. Python AST/CLI and diff checks passed. Engine execution of this corrected tooling still awaits the next grant.
+
+## Completed actual A/B result
+
+After the next exclusive grant, the OS-bound wrapper ran integrationb0f2ef8 on Godot4.7.2 headless: **COMPLETE, exit0, no SCRIPT ERROR/ERROR**,24 complete records (8 cohorts ×3 AB/BA pairs),19,440 timed queries across the frozen324 positions. Wall time was1,207,509µs, below17s internal and20s OS budgets. Cache preparation and traversal-state preparation were outside timing; partial pairs would be excluded but none occurred.
+
+| Area / point-query body | Original packed medianµs | Exact canonical cache medianµs | Differenceµs |
+| --- | ---: | ---: | ---: |
+| Hub SurfaceTraversal `_surface_at` | 73.852 | 82.438 | +8.586 |
+| Hub WorldFoley `material_at` | 53.639 | 60.405 | +6.767 |
+| Forest SurfaceTraversal `_surface_at` | 21.076 | 30.347 | +9.271 |
+| Forest WorldFoley `material_at` | 22.675 | 32.722 | +10.047 |
+
+The exact mutable cache adds about6.8–10.1µs per measured query against the original incorrect native predicate. **This is a correctness tradeoff, not a performance improvement.** It is not the uncached scalar208µs regression reported for the separate renderer experiment. Full traversal sample cost, aggregate frame cost, cache rebuilding under mutations, rendered FPS, Windows and S23 performance are not measured by this benchmark. No further optimization is proposed from these numbers.
+
+Actual command from integration:
+
+```sh
+python3 scripts/run-ground-consumer-benchmark.py \
+  --godot /Users/ardianryan/Documents/Jalasmara/.runtime/godot/Godot.app/Contents/MacOS/Godot \
+  --project-dir client-godot \
+  --log .runtime/ground-consumers-ab-deferred-static.log
+```
+
+Final raw JSON `artifacts/godot/ground-consumers-benchmark-1794252521-79135/results.json`, SHA256 `363ac0d7b09152286b8d2b26c5f34eb546dbc83f474b88d2b2a7af97096867a3`; wrapper log `.runtime/ground-consumers-ab-deferred-wrapper.log`. The actual5+10 correctness JSON above has SHA256 `a6fe4a6a887ae6af448a5b8180b92ad2fd0fb44f1ead2fc426b1e8d7d9e1b226`. These are source/native component results; they do not claim the correction is present in an exported or public runtime. Engine slot was released after the process and log inspection; no child remained running. Both earlier benchmark failures remain documented and preserved.
