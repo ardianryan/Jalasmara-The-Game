@@ -4,6 +4,7 @@ var renderer:Node2D
 var player:CharacterBody2D
 var clock:Node
 var triangles:Array=[]
+var _last_floor_height:=-INF
 var checks:=0
 var rejected:=0
 var drift_max:=0.0
@@ -40,6 +41,7 @@ func _on_mesh(sole:Vector3) -> bool:
 	for triangle in triangles:
 		var hit=Geometry3D.ray_intersects_triangle(sole+Vector3(0,0,256),Vector3(0,0,-1),triangle[0],triangle[1],triangle[2])
 		if hit!=null: highest=maxf(highest,float(hit.z))
+	_last_floor_height=highest
 	return absf(highest-sole.z)<.3
 
 func _measure(label:String) -> void:
@@ -71,7 +73,7 @@ func _measure(label:String) -> void:
 			length_max=maxf(length_max,error)
 			if not _check(error<.003,"Actual Sprite3D bone length changed "+label): return
 		if entry.grounded:
-			if not _check(_on_mesh(actual),"Actual sole misses rendered triangle "+label+" side="+side+" sole="+str(actual)): return
+			if not _check(_on_mesh(actual),"Actual sole misses rendered triangle "+label+" side="+side+" sole="+str(actual)+" highest="+str(_last_floor_height)): return
 			if previous.has(side) and previous[side].grounded and Vector3(previous[side].plant).distance_to(entry.plant)<.001:
 				var drift:=actual.distance_to(previous[side].actual)
 				drift_max=maxf(drift_max,drift)
@@ -124,7 +126,7 @@ func run() -> void:
 	player.set_physics_process(false)
 	player.hybrid_visual=true
 	player.set_meta("nala_lower_body_pilot",true)
-	player.position=Vector2(1000,1360)
+	player.position=Vector2(1000,1325)
 	player.swim_sprite.call("set_appearance","male_nusantara")
 	var camera:=Camera2D.new()
 	camera.zoom=Vector2(1.5,1.5)
@@ -140,7 +142,7 @@ func run() -> void:
 			clock.reduced_motion=reduced
 			for heading in range(8):
 				var label:String=outfit+"/"+str(reduced)+"/"+str(heading)
-				var origin:=Vector2(1000,1360)
+				var origin:=Vector2(1000,1325)
 				_reset_case(origin,outfit)
 				await _tick(origin,1.0/30,label+" idle")
 				var direction:=Vector2.from_angle(heading*PI*.25)
