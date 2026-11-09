@@ -1162,5 +1162,39 @@
       ],
       "status": "AUTHORED ownership of original dark arm outline beside51,55 cap/52,56 upper, not fixed torso; sourceRGBA preserved"
     }
+  ],
+  "authoredJointOverlap": [
+    {
+      "side": "left",
+      "targetPart": "fore",
+      "originalOwner": "left/upper",
+      "pixel": [
+        55,
+        58
+      ],
+      "rgba": [
+        222,
+        178,
+        135,
+        255
+      ],
+      "status": "AUTHORED hidden fore-root overlap surface at original upper-owned coordinate. Same original palette/RGBA; not exclusive source ownership or recovered anatomy."
+    },
+    {
+      "side": "left",
+      "targetPart": "fore",
+      "originalOwner": "left/upper",
+      "pixel": [
+        56,
+        58
+      ],
+      "rgba": [
+        217,
+        171,
+        128,
+        255
+      ],
+      "status": "AUTHORED hidden fore-root overlap surface at original upper-owned coordinate. Same original palette/RGBA; not exclusive source ownership or recovered anatomy."
+    }
   ]
 }

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Source-specific, offline NW explorer ownership and authored two-pose rig proposal."""
 import argparse
+import copy
 import hashlib
 import importlib.util
 import json
@@ -92,6 +93,18 @@ def prepare(spec):
     rest=body.copy()
     for im in arms.values():rest.alpha_composite(im)
     require(rest.tobytes()==source.tobytes(),'Authored source arrangement rest must reconstruct exactly')
+    overlaps={};overlap_points=set()
+    for record in spec.get('authoredJointOverlap',[]):
+        p=record['pixel']
+        require(isinstance(p,list) and len(p)==2 and all(type(v) is int for v in p)
+                and 0<=p[0]<128 and 43<=p[1]<76 and record['side']=='left'
+                and record['targetPart']=='fore' and record['originalOwner']=='left/upper'
+                and 'AUTHORED' in record['status'],'Unsupported authored fore-root overlap')
+        q=tuple(p);rgba=source.getpixel(q);key='left/fore'
+        require(q not in overlap_points and list(rgba)==record['rgba'] and rgba[3]==255
+                and arms['left/upper'].getpixel(q)==rgba and not arms[key].getpixel(q)[3],
+                'Overlap must copy unchanged upper-owned RGBA into an explicitly authored hidden surface')
+        overlaps.setdefault(key,Image.new('RGBA',source.size)).putpixel(q,rgba);overlap_points.add(q)
     poses=[]
     for pose in spec['poses']:
         transformed={};matrices={}
@@ -101,7 +114,11 @@ def prepare(spec):
             fore=ops.chain_transform(upper,ops.joint_rotation(joints['elbow'],motion['foreRelativeDeg']))
             matrices[side]={'cap':upper,'upper':upper,'fore':fore,'hand':fore}
             arm=Image.new('RGBA',source.size)
-            for part in ('cap','upper','fore','hand'):arm.alpha_composite(ops.moved_cutout(arms[side+'/'+part],matrices[side][part]))
+            for part in ('cap','upper','fore','hand'):
+                key=side+'/'+part;layer=arms[key]
+                if key in overlaps:
+                    layer=layer.copy();layer.alpha_composite(overlaps[key])
+                arm.alpha_composite(ops.moved_cutout(layer,matrices[side][part]))
             transformed[side]=arm
         final=Image.new('RGBA',source.size)
         for side in pose['behindTorso']:final.alpha_composite(transformed[side])
@@ -137,6 +154,23 @@ def export(spec,output):
     for side in ('left','right'):
         for pose in poses:im.append(pose['arms'][side]);labels.append(side+' '+pose['name'])
     sheet(im,labels,2).save(output/'nw-explorer-isolated-arm-endpoints.png')
+    if spec.get('authoredJointOverlap'):
+        predecessor=copy.deepcopy(spec);predecessor['authoredJointOverlap']=[]
+        before=prepare(predecessor)[-1][1]['arms']['left']
+        palette_patch=Image.new('RGBA',source.size)
+        for r in spec['authoredJointOverlap']:palette_patch.putpixel(tuple(r['pixel']),tuple(r['rgba']))
+        sheet([source,before,poses[1]['arms']['left'],palette_patch],
+              ['Original upper-owned55/56,58 source','BEFORE: actual square elbow notch','AFTER: 2 AUTHORED hidden overlaps','AUTHORED overlap sourcecoords/RGBA'],2).save(output/'nw-explorer-elbow-overlap-before-after.png')
+        labelled=Image.new('RGB',(3*350,330),(20,38,43));draw=ImageDraw.Draw(labelled)
+        for i,(im,label) in enumerate([(source,'SOURCE upper-owned55/56,58'),(before,'BEFORE alpha gap55/56,59/60'),(poses[1]['arms']['left'],'AFTER authored overlap')]):
+            x,y=i*350+40,44
+            crop=im.crop((50,54,60,63)).resize((280,252),Image.Resampling.NEAREST)
+            labelled.paste(crop,(x,y),crop);draw.text((i*350+8,8),label,fill='white')
+            for px in range(50,60):
+                sx=x+(px-50)*28;draw.line((sx,y,sx,y+252),fill=(68,82,82));draw.text((sx,y-14),str(px),fill='white')
+            for py in range(54,63):
+                sy=y+(py-54)*28;draw.line((x,sy,x+280,sy),fill=(68,82,82));draw.text((x-24,sy),str(py),fill='white')
+        labelled.save(output/'nw-explorer-elbow-labelled-grid.png')
     body.save(output/'authored-neutral-body.png')
     for pose in poses:pose['image'].save(output/(pose['name']+'.png'))
     manifest={'status':spec['status'],'sourceArrangementRgbaSha256':digest(source.tobytes()),
@@ -146,6 +180,8 @@ def export(spec,output):
               'sourceArms':{k:ops.row_runs(im) for k,im in arms.items()},'sourceGarments':{k:ops.row_runs(im) for k,im in garments.items()},
               'authoredHiddenFill':repairs,'poses':[{'name':p['name'],'matrices':p['matrices'],'rgbaSha256':digest(p['image'].tobytes())} for p in poses],
               'sourceBoundaryAssignments':spec.get('sourceBoundaryAssignments',[]),
+              'authoredJointOverlap':spec.get('authoredJointOverlap',[]),
+              'ownershipScope':'Original source partition remains exclusive; authoredJointOverlap deliberately adds separately labelled hidden surface copies, not original source ownership',
               'bodyComponents43Plus':[{'opaquePixels':len(c),'pixels':c if len(c)<12 else None} for c in components(body)],
               'armComponents':[{'pose':p['name'],'parts':{s:[len(c) for c in components(im)] for s,im in p['arms'].items()}} for p in poses],
               'gearContract':spec['gearContract']}

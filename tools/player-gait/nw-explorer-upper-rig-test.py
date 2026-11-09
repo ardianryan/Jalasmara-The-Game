@@ -60,6 +60,36 @@ class NWRig(unittest.TestCase):
         self.assertEqual(arms['left/cap'].getpixel((56,50)),source.getpixel((56,50)))
         self.assertEqual(arms['right/cap'].getpixel((74,50)),source.getpixel((74,50)))
 
+    def test_authored_overlap_fills_only_three_actual_notch_pixels_and_keeps_source_ownership(self):
+        source,plate,arms,garments,body,repairs,poses=self.data
+        self.assertEqual([(r['pixel'],r['rgba']) for r in self.spec['authoredJointOverlap']],
+                         [([55,58],[222,178,135,255]),([56,58],[217,171,128,255])])
+        predecessor=copy.deepcopy(self.spec);predecessor['authoredJointOverlap']=[]
+        old_source,old_plate,old_arms,old_garments,old_body,old_repairs,old_poses=tool.prepare(predecessor)
+        self.assertEqual(source.tobytes(),old_source.tobytes());self.assertEqual(body.tobytes(),old_body.tobytes())
+        self.assertEqual(repairs,old_repairs)
+        self.assertTrue(all(im.tobytes()==old_arms[k].tobytes() for k,im in arms.items()))
+        self.assertTrue(all(im.tobytes()==old_garments[k].tobytes() for k,im in garments.items()))
+        self.assertEqual(poses[0]['image'].tobytes(),old_poses[0]['image'].tobytes())
+        before,after=old_poses[1]['image'],poses[1]['image']
+        changed={(x,y) for y in range(76) for x in range(128) if before.getpixel((x,y))!=after.getpixel((x,y))}
+        self.assertEqual(changed,{(55,59),(56,59),(56,60)})
+        for q in changed:self.assertEqual(before.getpixel(q)[3],0);self.assertEqual(after.getpixel(q)[3],255)
+        self.assertEqual(poses[1]['matrices'],old_poses[1]['matrices'])
+        self.assertEqual(self.spec['joints']['left']['elbow'],[54,59])
+        for r in self.spec['authoredJointOverlap']:
+            q=tuple(r['pixel']);self.assertEqual(arms['left/upper'].getpixel(q),tuple(r['rgba']))
+            self.assertEqual(arms['left/fore'].getpixel(q)[3],0)
+
+    def test_changed_duplicate_or_unlabelled_authored_overlap_is_rejected(self):
+        for mutation in ('rgba','duplicate','status','owner'):
+            spec=copy.deepcopy(self.spec)
+            if mutation=='rgba':spec['authoredJointOverlap'][0]['rgba'][0]^=1
+            if mutation=='duplicate':spec['authoredJointOverlap'].append(copy.deepcopy(spec['authoredJointOverlap'][0]))
+            if mutation=='status':spec['authoredJointOverlap'][0]['status']='original measured forearm source'
+            if mutation=='owner':spec['authoredJointOverlap'][0]['originalOwner']='left/cap'
+            with self.assertRaises(ValueError):tool.prepare(spec)
+
     def test_authored_mapping_never_promotes_source_wrist_grip_or_contact(self):
         self.assertEqual(self.spec['sourceMeasurement'],{'anatomicalSide':'unknown','wrist':None,'grip':None})
         self.assertIn('AUTHORED',self.spec['authoredConvention']['status'])
