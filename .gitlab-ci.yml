@@ -31,7 +31,7 @@ verify:
     TEST_MONGO_URL: 'mongodb://mongo:27018/jalasmara_ci?replicaSet=rs0'
     TEST_REDIS_URL: 'redis://redis:6379/14'
   script:
-    - apt-get update -qq && apt-get install -y -qq python3 python3-pil
+    - apt-get update -qq && apt-get install -y -qq python3 python3-pil git
     - npm ci
     - node ci/init-mongo.mjs
     - npm run typecheck
@@ -43,6 +43,7 @@ verify:
     - node --test scripts/own-fixture-auth.test.mjs
     - node --test scripts/performance/*.test.mjs
     - python3 tools/npc-rig/test_resident_parts.py
+    - python3 scripts/test_package_web_release.py -v
     - npm run check:worldkit
     - npm ci --prefix tools/image-to-pixel --ignore-scripts
     - node --test tools/image-to-pixel/convert.test.mjs
