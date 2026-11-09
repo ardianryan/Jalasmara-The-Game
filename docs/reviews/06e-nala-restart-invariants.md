@@ -31,7 +31,7 @@ Sebagai **proxy gambar**, bottom opaque row atlas daily idle berada pada y103,x6
 
 ## Bukti yang diperlukan sebelum patch resumption
 
-- Anotasi toe/heel/support tiap pose pilot daily/explorer dan pandangan yang dipakai, dengan pixel pada artwork yang sudah dilihat. Bedakan projected foot位置 dari body pivot64,104. Jangan menyebut semua arah siap jika baru east yang diperiksa.
+- Anotasi toe/heel/support tiap pose pilot daily/explorer dan pandangan yang dipakai, dengan pixel pada artwork yang sudah dilihat. Bedakan posisi telapak terproyeksi dari body pivot64,104. Jangan menyebut semua arah siap jika baru east yang diperiksa.
 - Repro actual Player dari diam dengan akselerasi850, bukan hanya input konstan100 seperti fixture komponen. Sampel stop di delapan phase, restart lurus/reverse90/reverse180, collision tepat sesudah restart, pause/resume serta reduced motion. Setidaknya ukur arah depan/belakang dan kamera kiri pada lantai legal.
 - Jumlah event langkah harus identik dengan baseline untuk accepted path yang sama; rawphase/travel tidak diubah. Gambar yang baru diberi label contact harus cocok dengan kontak yang benar-benar terlihat, bukan hanya JSON assertion.
 - Native rangkaian berurutan pada ukuran main, ditambah2× lembar inspeksi telapak/gear, lalu browser aktual. Pose komponen di dokumen ini tidak mengukur triangle lantai3D atau FPS Windows/S23.
