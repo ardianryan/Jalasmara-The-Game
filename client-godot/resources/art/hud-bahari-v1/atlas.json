@@ -1,0 +1,1105 @@
+{
+  "grid": [
+    4,
+    4
+  ],
+  "filter": "nearest",
+  "alphaThreshold": 128,
+  "artwork": "Original built-in image generation from verbal Jalasmara nautical/Nusantara art direction; no third-party pack image inputs.",
+  "assets": [
+    {
+      "name": "icon-map",
+      "size": [
+        48,
+        48
+      ],
+      "atlasRegion": [
+        0,
+        0,
+        316,
+        312
+      ],
+      "alphaBoundsWithinCell": [
+        16,
+        71,
+        307,
+        310
+      ],
+      "ninePatchMargins": null,
+      "sha256": "ced9cc3f40b3e3145e656996327d9b691172f0365fa6fefe3d0792322cc9e31b"
+    },
+    {
+      "name": "icon-map-32",
+      "size": [
+        32,
+        32
+      ],
+      "atlasRegion": [
+        0,
+        0,
+        316,
+        312
+      ],
+      "alphaBoundsWithinCell": [
+        16,
+        71,
+        307,
+        310
+      ],
+      "ninePatchMargins": null,
+      "sha256": "61e02b83baaf11a92487ad61fca22b5c233646b2e53434acfc52b56694241d08"
+    },
+    {
+      "name": "icon-journal",
+      "size": [
+        48,
+        48
+      ],
+      "atlasRegion": [
+        316,
+        0,
+        632,
+        312
+      ],
+      "alphaBoundsWithinCell": [
+        20,
+        57,
+        285,
+        312
+      ],
+      "ninePatchMargins": null,
+      "sha256": "87ecbead38588291b1bfaf52d48a98cdd8ade27863c4ca3de5fcda64f1bdf858"
+    },
+    {
+      "name": "icon-journal-32",
+      "size": [
+        32,
+        32
+      ],
+      "atlasRegion": [
+        316,
+        0,
+        632,
+        312
+      ],
+      "alphaBoundsWithinCell": [
+        20,
+        57,
+        285,
+        312
+      ],
+      "ninePatchMargins": null,
+      "sha256": "4a064ae3bbc01174f12a707b1742f2be7188e2998ab69a3a430b44fcbc4384dd"
+    },
+    {
+      "name": "icon-satchel",
+      "size": [
+        48,
+        48
+      ],
+      "atlasRegion": [
+        632,
+        0,
+        947,
+        312
+      ],
+      "alphaBoundsWithinCell": [
+        11,
+        67,
+        282,
+        312
+      ],
+      "ninePatchMargins": null,
+      "sha256": "9e2d90f8031a87b50e268307d0f098aaa6bd6500c6d02572e3f1ac996b06f383"
+    },
+    {
+      "name": "icon-satchel-32",
+      "size": [
+        32,
+        32
+      ],
+      "atlasRegion": [
+        632,
+        0,
+        947,
+        312
+      ],
+      "alphaBoundsWithinCell": [
+        11,
+        67,
+        282,
+        312
+      ],
+      "ninePatchMargins": null,
+      "sha256": "5d8da5ed77c9c051116ce410776e3ff91883d03560de1e22d825f7c906a2922a"
+    },
+    {
+      "name": "icon-character",
+      "size": [
+        48,
+        48
+      ],
+      "atlasRegion": [
+        947,
+        0,
+        1263,
+        312
+      ],
+      "alphaBoundsWithinCell": [
+        4,
+        52,
+        292,
+        312
+      ],
+      "ninePatchMargins": null,
+      "sha256": "136c48533ce84f0e332585f45b0ff9699a1e2ed84f7d24dbffa8540a214a296e"
+    },
+    {
+      "name": "icon-character-32",
+      "size": [
+        32,
+        32
+      ],
+      "atlasRegion": [
+        947,
+        0,
+        1263,
+        312
+      ],
+      "alphaBoundsWithinCell": [
+        4,
+        52,
+        292,
+        312
+      ],
+      "ninePatchMargins": null,
+      "sha256": "e84c08bfb7d1471f203c46a943d89b30a2c68e29abe89a082fd8f13332510fe6"
+    },
+    {
+      "name": "icon-speaker-on",
+      "size": [
+        48,
+        48
+      ],
+      "atlasRegion": [
+        0,
+        312,
+        316,
+        623
+      ],
+      "alphaBoundsWithinCell": [
+        39,
+        70,
+        303,
+        295
+      ],
+      "ninePatchMargins": null,
+      "sha256": "dc5281e777bf6196306b11c79276bdb95a22b647a5db6d559636d73b9671826f"
+    },
+    {
+      "name": "icon-speaker-on-32",
+      "size": [
+        32,
+        32
+      ],
+      "atlasRegion": [
+        0,
+        312,
+        316,
+        623
+      ],
+      "alphaBoundsWithinCell": [
+        39,
+        70,
+        303,
+        295
+      ],
+      "ninePatchMargins": null,
+      "sha256": "703be85a430ddb8198b303bfede1ce09beafa248db7c9fc9428307f8d32259ed"
+    },
+    {
+      "name": "icon-speaker-off",
+      "size": [
+        48,
+        48
+      ],
+      "atlasRegion": [
+        316,
+        312,
+        632,
+        623
+      ],
+      "alphaBoundsWithinCell": [
+        36,
+        70,
+        259,
+        295
+      ],
+      "ninePatchMargins": null,
+      "sha256": "6f6fc051f57d1f9893c5833d052d40d8c5ed21288fdb8c34c39c1b6ea3a5dd1f"
+    },
+    {
+      "name": "icon-speaker-off-32",
+      "size": [
+        32,
+        32
+      ],
+      "atlasRegion": [
+        316,
+        312,
+        632,
+        623
+      ],
+      "alphaBoundsWithinCell": [
+        36,
+        70,
+        259,
+        295
+      ],
+      "ninePatchMargins": null,
+      "sha256": "f2c3c5bcbc536dab7eed0f2c6cc68b992597705a45927bf6d0ac2b3bc4ff079b"
+    },
+    {
+      "name": "icon-oxygen-tank",
+      "size": [
+        48,
+        48
+      ],
+      "atlasRegion": [
+        632,
+        312,
+        947,
+        623
+      ],
+      "alphaBoundsWithinCell": [
+        34,
+        35,
+        223,
+        311
+      ],
+      "ninePatchMargins": null,
+      "sha256": "13b0fbb604a0eb3b97849b1a4dc501a68c5e5a5fc859a4b061e741d4c69204fc"
+    },
+    {
+      "name": "icon-oxygen-tank-32",
+      "size": [
+        32,
+        32
+      ],
+      "atlasRegion": [
+        632,
+        312,
+        947,
+        623
+      ],
+      "alphaBoundsWithinCell": [
+        34,
+        35,
+        223,
+        311
+      ],
+      "ninePatchMargins": null,
+      "sha256": "cd5f64a38c118cc33380e0848e06f742db2f0b45f02767c5cac5a68b493c1a1c"
+    },
+    {
+      "name": "icon-depth-anchor",
+      "size": [
+        48,
+        48
+      ],
+      "atlasRegion": [
+        947,
+        312,
+        1263,
+        623
+      ],
+      "alphaBoundsWithinCell": [
+        10,
+        42,
+        283,
+        311
+      ],
+      "ninePatchMargins": null,
+      "sha256": "bc819aa27b737faab33d587333516f5714b16f520ecfec6dde052f3cdb3f7408"
+    },
+    {
+      "name": "icon-depth-anchor-32",
+      "size": [
+        32,
+        32
+      ],
+      "atlasRegion": [
+        947,
+        312,
+        1263,
+        623
+      ],
+      "alphaBoundsWithinCell": [
+        10,
+        42,
+        283,
+        311
+      ],
+      "ninePatchMargins": null,
+      "sha256": "d9722c03ebfd34cd0c59398bb8258a7a63a14159e5949a32e9770564aff6c4d5"
+    },
+    {
+      "name": "icon-coin",
+      "size": [
+        48,
+        48
+      ],
+      "atlasRegion": [
+        0,
+        623,
+        316,
+        934
+      ],
+      "alphaBoundsWithinCell": [
+        43,
+        43,
+        278,
+        286
+      ],
+      "ninePatchMargins": null,
+      "sha256": "e5a7167b3e07d2aaa75b2c113e9c37aee6042f7942924c27887887a495654936"
+    },
+    {
+      "name": "icon-coin-32",
+      "size": [
+        32,
+        32
+      ],
+      "atlasRegion": [
+        0,
+        623,
+        316,
+        934
+      ],
+      "alphaBoundsWithinCell": [
+        43,
+        43,
+        278,
+        286
+      ],
+      "ninePatchMargins": null,
+      "sha256": "d3e13733db033b2b3709463a9828091b2445a4144dc2dda28de4578edc225a7a"
+    },
+    {
+      "name": "icon-jala-net",
+      "size": [
+        48,
+        48
+      ],
+      "atlasRegion": [
+        316,
+        623,
+        632,
+        934
+      ],
+      "alphaBoundsWithinCell": [
+        0,
+        20,
+        282,
+        309
+      ],
+      "ninePatchMargins": null,
+      "sha256": "d47c13d7db7eca7c6cf4bdd57bd8a6b69fb23f964857a83c7b5daea179e7fcfd"
+    },
+    {
+      "name": "icon-jala-net-32",
+      "size": [
+        32,
+        32
+      ],
+      "atlasRegion": [
+        316,
+        623,
+        632,
+        934
+      ],
+      "alphaBoundsWithinCell": [
+        0,
+        20,
+        282,
+        309
+      ],
+      "ninePatchMargins": null,
+      "sha256": "e8c360abb94f8b6ff7e447ff13c2fd70c188d5aa41359646c722a68db39c6647"
+    },
+    {
+      "name": "icon-interact-hand",
+      "size": [
+        48,
+        48
+      ],
+      "atlasRegion": [
+        632,
+        623,
+        947,
+        934
+      ],
+      "alphaBoundsWithinCell": [
+        0,
+        45,
+        283,
+        300
+      ],
+      "ninePatchMargins": null,
+      "sha256": "50ea7635de3bc9572585c54fb5673e854712e49ee2cfa5d1d8410b31fedb65bb"
+    },
+    {
+      "name": "icon-interact-hand-32",
+      "size": [
+        32,
+        32
+      ],
+      "atlasRegion": [
+        632,
+        623,
+        947,
+        934
+      ],
+      "alphaBoundsWithinCell": [
+        0,
+        45,
+        283,
+        300
+      ],
+      "ninePatchMargins": null,
+      "sha256": "86a41fe2d29b7993e55981a9d6d603620c1d61ec61c76703c4a1abb7098679d6"
+    },
+    {
+      "name": "icon-quest-scroll",
+      "size": [
+        48,
+        48
+      ],
+      "atlasRegion": [
+        947,
+        623,
+        1263,
+        934
+      ],
+      "alphaBoundsWithinCell": [
+        0,
+        38,
+        289,
+        287
+      ],
+      "ninePatchMargins": null,
+      "sha256": "f59d1bac6e5d07634ecc2ebc5ebfaa33af0a13bc702cbc418c4b151820a2cabf"
+    },
+    {
+      "name": "icon-quest-scroll-32",
+      "size": [
+        32,
+        32
+      ],
+      "atlasRegion": [
+        947,
+        623,
+        1263,
+        934
+      ],
+      "alphaBoundsWithinCell": [
+        0,
+        38,
+        289,
+        287
+      ],
+      "ninePatchMargins": null,
+      "sha256": "d81e316fb5a34740893c3230459c8ffa11ba5cb524067ee627f385e03f40bdcc"
+    },
+    {
+      "name": "icon-settings",
+      "size": [
+        48,
+        48
+      ],
+      "atlasRegion": [
+        0,
+        934,
+        316,
+        1246
+      ],
+      "alphaBoundsWithinCell": [
+        36,
+        17,
+        292,
+        277
+      ],
+      "ninePatchMargins": null,
+      "sha256": "7160ad37c3e4c3cf5e8505d592d12f1b6bad5ff887b871405f75c4f06cf6e85e"
+    },
+    {
+      "name": "icon-settings-32",
+      "size": [
+        32,
+        32
+      ],
+      "atlasRegion": [
+        0,
+        934,
+        316,
+        1246
+      ],
+      "alphaBoundsWithinCell": [
+        36,
+        17,
+        292,
+        277
+      ],
+      "ninePatchMargins": null,
+      "sha256": "383502fa81ae3add14f44e70b834129e39625c366b06d0ec5e16f3adb7cb9cb5"
+    },
+    {
+      "name": "icon-fullscreen",
+      "size": [
+        48,
+        48
+      ],
+      "atlasRegion": [
+        316,
+        934,
+        632,
+        1246
+      ],
+      "alphaBoundsWithinCell": [
+        38,
+        41,
+        273,
+        260
+      ],
+      "ninePatchMargins": null,
+      "sha256": "808089eb9affd641c9c3695e69d7cb09e2ccc8fc8f6d7c2b030fecd49366047f"
+    },
+    {
+      "name": "icon-fullscreen-32",
+      "size": [
+        32,
+        32
+      ],
+      "atlasRegion": [
+        316,
+        934,
+        632,
+        1246
+      ],
+      "alphaBoundsWithinCell": [
+        38,
+        41,
+        273,
+        260
+      ],
+      "ninePatchMargins": null,
+      "sha256": "6d583e1c2242113e0698b8d5dc02f32afb3c8fb9c36dbad69b24ff5b8e19b21d"
+    },
+    {
+      "name": "icon-close",
+      "size": [
+        48,
+        48
+      ],
+      "atlasRegion": [
+        632,
+        934,
+        947,
+        1246
+      ],
+      "alphaBoundsWithinCell": [
+        31,
+        37,
+        247,
+        260
+      ],
+      "ninePatchMargins": null,
+      "sha256": "e42854decadc97c19c0a04e122d97163d9e988ccfb8b5492e8b20e1d780f3ccb"
+    },
+    {
+      "name": "icon-close-32",
+      "size": [
+        32,
+        32
+      ],
+      "atlasRegion": [
+        632,
+        934,
+        947,
+        1246
+      ],
+      "alphaBoundsWithinCell": [
+        31,
+        37,
+        247,
+        260
+      ],
+      "ninePatchMargins": null,
+      "sha256": "dbfa4b12a52442c5ea1d7565ef8c0a0c190ca88f08bc9b744117f47935be7f43"
+    },
+    {
+      "name": "icon-compass",
+      "size": [
+        48,
+        48
+      ],
+      "atlasRegion": [
+        947,
+        934,
+        1263,
+        1246
+      ],
+      "alphaBoundsWithinCell": [
+        11,
+        4,
+        246,
+        277
+      ],
+      "ninePatchMargins": null,
+      "sha256": "eb26f90a4ae57d08b704a9e0e5bfbf37ab3a4276b61ed00312d78a4f19842706"
+    },
+    {
+      "name": "icon-compass-32",
+      "size": [
+        32,
+        32
+      ],
+      "atlasRegion": [
+        947,
+        934,
+        1263,
+        1246
+      ],
+      "alphaBoundsWithinCell": [
+        11,
+        4,
+        246,
+        277
+      ],
+      "ninePatchMargins": null,
+      "sha256": "434fc4d764bc6d6e3da02ec807fe4e2c9f6c9b94273d88a54b2c39937bda594d"
+    },
+    {
+      "name": "button-normal",
+      "size": [
+        64,
+        64
+      ],
+      "atlasRegion": [
+        0,
+        0,
+        316,
+        311
+      ],
+      "alphaBoundsWithinCell": [
+        41,
+        35,
+        290,
+        282
+      ],
+      "ninePatchMargins": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "sha256": "44b1dd558577d2f8ebd7674287b0ddcf1c1d3c087c61d2c6e1f25c5505f837ba"
+    },
+    {
+      "name": "button-hover",
+      "size": [
+        64,
+        64
+      ],
+      "atlasRegion": [
+        316,
+        0,
+        633,
+        311
+      ],
+      "alphaBoundsWithinCell": [
+        36,
+        35,
+        285,
+        282
+      ],
+      "ninePatchMargins": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "sha256": "24cd3c476a120de22defc5238e3323f281385b43b8d83dd5f9e83e9018d68bdf"
+    },
+    {
+      "name": "button-pressed",
+      "size": [
+        64,
+        64
+      ],
+      "atlasRegion": [
+        633,
+        0,
+        950,
+        311
+      ],
+      "alphaBoundsWithinCell": [
+        31,
+        35,
+        281,
+        282
+      ],
+      "ninePatchMargins": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "sha256": "aaffcc6f38d05a36b5e8080e6d79cb947435b34194b4c4641e036af86eb4b532"
+    },
+    {
+      "name": "button-selected",
+      "size": [
+        64,
+        64
+      ],
+      "atlasRegion": [
+        950,
+        0,
+        1266,
+        311
+      ],
+      "alphaBoundsWithinCell": [
+        27,
+        35,
+        276,
+        282
+      ],
+      "ninePatchMargins": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "sha256": "93d7c9428187f3428f5a4d0338355b4d68958ce34c4a92987f101f5387fcab64"
+    },
+    {
+      "name": "panel-dark",
+      "size": [
+        128,
+        128
+      ],
+      "atlasRegion": [
+        0,
+        311,
+        316,
+        622
+      ],
+      "alphaBoundsWithinCell": [
+        25,
+        27,
+        311,
+        290
+      ],
+      "ninePatchMargins": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "sha256": "e0f5128c9e32f9b1ff67ad04482a74f0e9ed70b07462f8ed6cfeb22b81519294"
+    },
+    {
+      "name": "panel-parchment",
+      "size": [
+        128,
+        128
+      ],
+      "atlasRegion": [
+        316,
+        311,
+        633,
+        622
+      ],
+      "alphaBoundsWithinCell": [
+        16,
+        28,
+        302,
+        290
+      ],
+      "ninePatchMargins": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "sha256": "2b4e4893a5dc2b13065c188c3a144f8923591f40626bb64e9f9bcfdba62729fa"
+    },
+    {
+      "name": "inventory-slot",
+      "size": [
+        64,
+        64
+      ],
+      "atlasRegion": [
+        633,
+        311,
+        950,
+        622
+      ],
+      "alphaBoundsWithinCell": [
+        17,
+        53,
+        236,
+        268
+      ],
+      "ninePatchMargins": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "sha256": "03eaa7dd9722d74d7bb0047e05399331700d728c502e356dcb08e865f58d164b"
+    },
+    {
+      "name": "title-plaque",
+      "size": [
+        256,
+        64
+      ],
+      "atlasRegion": [
+        886,
+        311,
+        1266,
+        622
+      ],
+      "alphaBoundsWithinCell": [
+        6,
+        83,
+        369,
+        245
+      ],
+      "ninePatchMargins": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "sha256": "51bc6a11cf84e29416c18672945008b5e59b5a4e1fd4e004867bd535775c8733"
+    },
+    {
+      "name": "portrait-frame",
+      "size": [
+        96,
+        96
+      ],
+      "atlasRegion": [
+        0,
+        622,
+        316,
+        932
+      ],
+      "alphaBoundsWithinCell": [
+        28,
+        26,
+        303,
+        302
+      ],
+      "ninePatchMargins": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "sha256": "f1f32a0d11afbb7d52f9bdbb5345116a1cf12be4e1a42094a5fcbac0a4a23805"
+    },
+    {
+      "name": "minimap-rim",
+      "size": [
+        128,
+        128
+      ],
+      "atlasRegion": [
+        316,
+        622,
+        633,
+        932
+      ],
+      "alphaBoundsWithinCell": [
+        27,
+        25,
+        299,
+        298
+      ],
+      "ninePatchMargins": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "sha256": "5f4ca4a2bb4819d725be719535ee3575330aaaf3a0384c73401e080a1a6c14c9"
+    },
+    {
+      "name": "joystick-ring",
+      "size": [
+        128,
+        128
+      ],
+      "atlasRegion": [
+        633,
+        622,
+        950,
+        932
+      ],
+      "alphaBoundsWithinCell": [
+        17,
+        23,
+        289,
+        301
+      ],
+      "ninePatchMargins": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "sha256": "9462f45e3f1273a4f80717493e1991fcfb674c06be82f90b30430be7e987679b"
+    },
+    {
+      "name": "joystick-thumb",
+      "size": [
+        64,
+        64
+      ],
+      "atlasRegion": [
+        950,
+        622,
+        1266,
+        932
+      ],
+      "alphaBoundsWithinCell": [
+        78,
+        95,
+        223,
+        245
+      ],
+      "ninePatchMargins": [
+        8,
+        8,
+        8,
+        8
+      ],
+      "sha256": "328f114a3c1c6df7f6923840869db7e7e8d492af7d729a1dbd140a3e1fa5bbba"
+    },
+    {
+      "name": "bar-frame",
+      "size": [
+        256,
+        48
+      ],
+      "atlasRegion": [
+        0,
+        932,
+        316,
+        1243
+      ],
+      "alphaBoundsWithinCell": [
+        12,
+        104,
+        315,
+        206
+      ],
+      "ninePatchMargins": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "sha256": "70dbccef2017e51c4e07d32bcaaaa8e4c21a59bb8fe293bdf785ff0c5e85e408"
+    },
+    {
+      "name": "bar-fill",
+      "size": [
+        224,
+        24
+      ],
+      "atlasRegion": [
+        316,
+        932,
+        633,
+        1243
+      ],
+      "alphaBoundsWithinCell": [
+        22,
+        122,
+        282,
+        185
+      ],
+      "ninePatchMargins": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "sha256": "a73aaedca20d5ed9589647da14b487b5a8108215e5cee5aac0a2c2ca3f31fe08"
+    },
+    {
+      "name": "coin-chip",
+      "size": [
+        128,
+        48
+      ],
+      "atlasRegion": [
+        633,
+        932,
+        950,
+        1243
+      ],
+      "alphaBoundsWithinCell": [
+        0,
+        96,
+        236,
+        209
+      ],
+      "ninePatchMargins": [
+        12,
+        12,
+        12,
+        12
+      ],
+      "sha256": "49028e00fef428939b3042e35941006e80c5656cdc0ebb90529cb96310fbcce2"
+    },
+    {
+      "name": "dialogue-frame",
+      "size": [
+        320,
+        128
+      ],
+      "atlasRegion": [
+        886,
+        932,
+        1266,
+        1243
+      ],
+      "alphaBoundsWithinCell": [
+        1,
+        47,
+        369,
+        253
+      ],
+      "ninePatchMargins": [
+        20,
+        20,
+        20,
+        20
+      ],
+      "sha256": "f72971ce4a9f4d3c487c870f74041eb78c316f7ed8f047d0f091725f67402e9b"
+    }
+  ],
+  "aliases": {
+    "panel-paper": "panel-parchment",
+    "slot": "inventory-slot",
+    "icon-bag": "icon-satchel",
+    "icon-oxygen": "icon-oxygen-tank"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "authoring": "Built-in image_gen tool, new original artwork from verbal project direction only",
+  "reference": "https://indigolay.itch.io/pixel-hud-ui",
+  "referenceUse": "Quality/function inspiration only; no commercial pixels downloaded or supplied to image generation",
+  "sources": [
+    {
+      "path": "icons-original.png",
+      "sha256": "ab8f1ee48aba33507a935ff3d48a99cb9768ae998f25e77ae2ee146391d56c8a"
+    },
+    {
+      "path": "frames-original.png",
+      "sha256": "89e8aa0f9e603de4407850209f747a075f4bb9555f916c0a9889858926da3c17"
+    },
+    {
+      "path": "prompts.json",
+      "sha256": "5bd2333944538f554c8162484e7161c0e3a8cf17241edfeccbf5bf56454a1994"
+    }
+  ],
+  "preparation": "tools/hud-bahari/prepare.py; alpha threshold128, connected-component cleanup for neighboring-cell fragments, nearest resize; no vector replacements",
+  "runtime": "client-godot/resources/art/hud-bahari-v1",
+  "thirdPartySpriteInputs": false
+}
