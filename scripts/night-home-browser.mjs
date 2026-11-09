@@ -691,7 +691,24 @@ try {
       );
       // Reopen through the real interaction to restore the authored first keyboard focus.
       await page.keyboard.press("Escape");
-      await waitState((value) => !value.modal);
+      const closedService = await waitState((value) => !value.modal);
+      const movementTraceStart = trace.length;
+      await page.keyboard.down("ArrowRight");
+      try {
+        await page.waitForTimeout(450);
+      } finally {
+        await page.keyboard.up("ArrowRight");
+      }
+      const lockedService = await snapshot();
+      assert(
+        Math.hypot(lockedService.x - closedService.x, lockedService.y - closedService.y) < 0.5,
+        "Closing an active shift must retain the acknowledged service point despite real movement input",
+      );
+      assert(
+        !trace.slice(movementTraceStart).some((entry) => entry.path === "/api/adventure/surface-position"),
+        "Active-shift movement cannot generate a forbidden surface write",
+      );
+      checks.push("active-shift-escape-retains-service-point-despite-real-movement-input");
       const reopened = await requestViaKeys("kedai/start", () => true, ["e"]);
       assert.equal(reopened.shift.id, shift.shift.id);
       assert.deepEqual(reopened.shift.served, []);
