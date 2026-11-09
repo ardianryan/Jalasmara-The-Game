@@ -37,6 +37,43 @@ export function assertEquipmentNodeSnapshot(snapshot, outfit) {
     satchel: false,
     vest: false,
   };
+  return assertActualGearReport(snapshot, expected);
+}
+
+export function explorerNodeMode(flag, routeMode, pck) {
+  assert(
+    flag === undefined || flag === "1",
+    "PLAN06_EXPLORER_NODES accepts only explicit1",
+  );
+  if (flag === undefined) return false;
+  assert.equal(
+    routeMode,
+    "left-forest",
+    "Explorer node proof is a separate focused forest fixture",
+  );
+  assert(/^[a-f0-9]{64}$/.test(pck ?? ""));
+  assert.notEqual(
+    pck,
+    REQUESTED_ONLY_WARDROBE_PCK,
+    "Historical73d forest proof has requested gear only; use the diagnostic-capable export",
+  );
+  return true;
+}
+
+export function assertExplorerNodeSnapshot(snapshot) {
+  assert.equal(snapshot.area, "forest");
+  assert.equal(snapshot.land?.area, "forest");
+  assert.notEqual(snapshot.diving, true);
+  assert.equal(snapshot.outfit, "explorer");
+  return assertActualGearReport(snapshot, {
+    tank: false,
+    net: false,
+    satchel: true,
+    vest: false,
+  });
+}
+
+function assertActualGearReport(snapshot, expected) {
   for (const key of ["tank", "net", "satchel"])
     assert.equal(
       snapshot.equipment?.[key],

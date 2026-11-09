@@ -4,6 +4,8 @@ import {
   wardrobeNodeMode,
   REQUESTED_ONLY_WARDROBE_PCK,
   assertEquipmentNodeSnapshot,
+  explorerNodeMode,
+  assertExplorerNodeSnapshot,
 } from "./equipment-node-proof.mjs";
 function snapshot(outfit, diving = false) {
   const on = outfit === "diving";
@@ -81,4 +83,55 @@ test("requested flags cannot conceal missing schema, inherited hiding, missing m
     () => assertEquipmentNodeSnapshot(snapshot("daily"), "explorer"),
     /forest explorer/,
   );
+});
+
+test("explorer node mode is a separate explicit forest-only entry and rejects historical pins", () => {
+  assert.equal(
+    explorerNodeMode(undefined, "left-forest", REQUESTED_ONLY_WARDROBE_PCK),
+    false,
+  );
+  assert.equal(explorerNodeMode("1", "left-forest", "b".repeat(64)), true);
+  assert.throws(
+    () => explorerNodeMode("1", "wardrobe", "b".repeat(64)),
+    /separate focused forest/,
+  );
+  assert.throws(
+    () => explorerNodeMode("1", "left-forest", REQUESTED_ONLY_WARDROBE_PCK),
+    /Historical73d/,
+  );
+  assert.throws(() => explorerNodeMode("0", "left-forest", "b".repeat(64)));
+});
+
+test("explicit explorer entry requires an actual forest satchel and hidden tank/net/duplicate vest", () => {
+  const state = snapshot("daily");
+  state.area = "forest";
+  state.land.area = "forest";
+  state.outfit = "explorer";
+  state.equipment.satchel = true;
+  Object.assign(state.land.actors.gearNodes.nodes.satchel, {
+    visible: true,
+    visibleInTree: true,
+    visibleMeshCount: 4,
+  });
+  const before = structuredClone(state);
+  assertExplorerNodeSnapshot(state);
+  assert.deepEqual(state, before);
+  assert.throws(
+    () => assertEquipmentNodeSnapshot(state, "explorer"),
+    /forest explorer/,
+  );
+  for (const mutate of [
+    (s) => (s.area = "hub"),
+    (s) => (s.outfit = "daily"),
+    (s) => (s.equipment.satchel = false),
+    (s) => (s.land.actors.gearNodes.nodes.satchel.visibleInTree = false),
+    (s) => (s.land.actors.gearNodes.nodes.satchel.visibleMeshCount = 3),
+    (s) => (s.land.actors.gearNodes.nodes.vest.visible = true),
+    (s) => (s.land.actors.gearNodes.nodes.tank.visibleMeshCount = 6),
+    (s) => delete s.land.actors.gearNodes,
+  ]) {
+    const invalid = structuredClone(state);
+    mutate(invalid);
+    assert.throws(() => assertExplorerNodeSnapshot(invalid));
+  }
 });

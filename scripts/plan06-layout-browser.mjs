@@ -34,7 +34,7 @@ import { watchGameplayFailures } from "./gameplay-api-failure.mjs";
 import { deriveSarasFixture } from "./saras-alpha-fixture.mjs";
 import { deriveLeftForestFixture } from "./left-forest-fixture.mjs";
 import { deriveWardrobeFixture } from "./wardrobe-route-fixture.mjs";
-import { wardrobeNodeMode, assertEquipmentNodeSnapshot } from "./equipment-node-proof.mjs";
+import { wardrobeNodeMode, assertEquipmentNodeSnapshot, explorerNodeMode, assertExplorerNodeSnapshot } from "./equipment-node-proof.mjs";
 import { deriveWardrobeVisibilityFixture, projectedWardrobeClear } from "./wardrobe-visibility-fixture.mjs";
 import {
   keyboardPulse,
@@ -131,6 +131,7 @@ assert(
   "Set PLAN06_EXPECT_PCK_BYTES to the exact exported PCK size.",
 );
 const wardrobeNodeProof = wardrobeNodeMode(process.env.PLAN06_WARDROBE_NODES, routeMode, expectedPck);
+const explorerNodeProof = explorerNodeMode(process.env.PLAN06_EXPLORER_NODES, routeMode, expectedPck);
 const wardrobeVisibilitySource = wardrobeNodeProof ? readFileSync(new URL("../client-godot/scripts/land/LandWorld3D.gd", import.meta.url), "utf8") : null;
 let shelterPredecessor;
 assert(
@@ -806,8 +807,17 @@ async function verifyLeftView() {
   await verifyLeftForestRemainder();
 }
 
+function recordExplorerNodes(value, name) {
+  const actual = assertExplorerNodeSnapshot(value);
+  observations.push({ name, point: {x: value.x, y: value.y}, outfit: value.outfit, equipment: value.equipment, actual });
+}
+
 async function verifyLeftForestRemainder(focused = false) {
   assertLeftView(await snapshot(), "forest");
+  if (explorerNodeProof) {
+    recordExplorerNodes(await snapshot(), "explorer-initial-actual-node-preflight");
+    checks.push("explicit-new-export-forest-explorer-has-visible-satchel-nodes-without-tank-net-or-duplicate-vest");
+  }
   if (!focused) await routeTo({ x: 650, y: 1050 }, "forest");
   await responsive(844, 390, "left-forest-touch-844x390");
   const prior = await snapshot();
@@ -852,6 +862,7 @@ async function verifyLeftForestRemainder(focused = false) {
       after.land.bridges[bridge.id].railPosts >= 8,
   );
   assertLeftView(after, "forest");
+  if (explorerNodeProof) recordExplorerNodes(after, "explorer-upper-bridge-actual-nodes");
   await shot("left-bridge-upper-crossed");
   await waitSaved(after);
   await page.reload();
@@ -860,6 +871,10 @@ async function verifyLeftForestRemainder(focused = false) {
     (state) => state.area === "forest" && state.land?.actors?.player === 1,
   );
   assertLeftView(resumed, "forest");
+  if (explorerNodeProof) {
+    recordExplorerNodes(resumed, "explorer-reload-actual-node-visibility");
+    checks.push("actual-explorer-satchel-persists-across-joystick-bridge-and-reload-without-injected-outfit-or-nodes");
+  }
   assert(Math.hypot(resumed.x - after.x, resumed.y - after.y) < 30);
   const state = await apiState();
   assert.equal(state.surface.area, "forest");
@@ -2080,6 +2095,7 @@ try {
           leftForestFixture,
           wardrobeFixture,
           ...(wardrobeNodeProof ? { wardrobeNodeProof: { enabled: true, scope: "actual-node-tree-visibility-plus-booth-projection-needs-image-review", historicalRequestedOnlyProof: false } } : {}),
+          ...(explorerNodeProof ? { explorerNodeProof: {enabled: true, scope: "separate-forest-satchel-node-tree-joystick-bridge-reload-needs-image-review", historicalRequestedOnlyProof: false} } : {}),
           outcome: runCompleted && cleaned ? "completed" : "failed",
           completed: runCompleted && cleaned,
           errors,
