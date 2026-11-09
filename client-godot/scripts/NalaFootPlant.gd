@@ -223,7 +223,8 @@ func _begin(side:String,at:Vector2,hips:Dictionary,right:Vector3) -> void:
 	var entry:Dictionary=_feet[side]
 	if _physical_contract and _transition_next:
 		var heading:=_world_motion(at,_heading).normalized()
-		var projection:float=(Vector3(entry.sole)-_ground(at)).dot(heading)
+		var target_base:=_base(at,float(hips[side]),right)
+		var projection:float=(Vector3(entry.sole)-_ground(target_base)).dot(heading)
 		# A cubic trajectory peaks at 1.5 times average speed. Reserve one of the
 		# existing five-world continuity units for changing the lateral foot lane.
 		_landing_distance=maxf(_start_distance,ceilf(1.5*(_landing_lead-projection)/2.5))
