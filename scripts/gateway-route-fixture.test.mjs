@@ -11,6 +11,7 @@ import {
   gatewayCoordinates,
   gatewayPostClearance,
   validateGatewayMeshes,
+  validateGatewayMetadata,
 } from "./gateway-route-fixture.mjs";
 const world = WORLD;
 for (const area of ["hub", "forest"]) {
@@ -81,4 +82,20 @@ test("metadata alone is not accepted as evidence of emitted gate geometry", () =
     () => validateGatewayMeshes(gate, { ...gate, meshes: [] }),
     /Actual emitted/,
   );
+});
+
+test("Godot JSON coordinate rounding preserves geometry while changed corners and collider IDs fail", () => {
+  const gate = world.landMaps.hub.gateways[0];
+  const rounded = JSON.parse(
+    JSON.stringify(gate, (_, value) =>
+      typeof value === "number" ? Number(value.toPrecision(15)) : value,
+    ),
+  );
+  validateGatewayMetadata(gate, rounded);
+  const changed = structuredClone(rounded);
+  changed.postFootprints[0][0][1] += 0.001;
+  assert.throws(() => validateGatewayMetadata(gate, changed), /postFootprints/);
+  const wrongId = structuredClone(rounded);
+  wrongId.colliderIds[0] += "_other";
+  assert.throws(() => validateGatewayMetadata(gate, wrongId));
 });
