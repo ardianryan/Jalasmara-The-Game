@@ -11,6 +11,7 @@ import {
   freshProgress,
   freshCalendar,
   freshHomestead,
+  calendarRain,
 } from "../packages/shared/src/index.ts";
 import { WORLD } from "../packages/shared/src/world.ts";
 import { fetchWorld } from "./game-navigation.mjs";
@@ -42,8 +43,9 @@ assert(
   Number.isSafeInteger(expectedBytes) && expectedBytes > 0,
   "Exact candidate PCK bytes are mandatory",
 );
-const id = randomUUID(),
-  email = `garden-pen-${id}@test.invalid`,
+let id = randomUUID();
+while (calendarRain(id, 2)) id = randomUUID();
+const email = `garden-pen-${id}@test.invalid`,
   password = randomBytes(24).toString("base64url");
 const artifacts = `artifacts/browser/garden-pen-${id}`;
 mkdirSync(artifacts, { recursive: true });
@@ -452,15 +454,12 @@ try {
   const cache = created ? new Redis(redisUrl) : null;
   try {
     if (created) {
-      await mongo
-        .db()
-        .collection("players")
-        .deleteOne({
-          id,
-          email,
-          role: "player",
-          name: "Nala Uji Kebun Keramba",
-        });
+      await mongo.db().collection("players").deleteOne({
+        id,
+        email,
+        role: "player",
+        name: "Nala Uji Kebun Keramba",
+      });
       await mongo
         .db()
         .collection("receipts")
@@ -514,6 +513,7 @@ try {
           fixture: {
             storyDay: 2,
             calendarDay: 2,
+            raining: calendarRain(id, 2),
             permit: true,
             seeds: { benih_jahe: 1 },
             produce: { jahe: 1 },
