@@ -26,6 +26,7 @@ var _pose_walking := false
 var _pose_frozen := false
 var _settle_frames: Array[int] = []
 var _settle_elapsed := 0.0
+var _resume_contact := -1.0
 const TURN_DISTANCE := 4.0
 const SETTLE_FRAME_SECONDS := 0.05
 var _last_horizontal := 1
@@ -41,6 +42,7 @@ func set_appearance(id: String) -> void:
 		return
 	appearance = id
 	_settle_frames.clear()
+	_resume_contact=-1.0
 	var stem := "res://resources/art/"+id.replace("_","-")
 	modular_ready = ResourceLoader.exists(stem+"-base-v1.png")
 	var path := stem+("-base-v1.png" if modular_ready else ".png")
@@ -60,6 +62,7 @@ func set_outfit(id: String) -> void:
 	if outfit==chosen: return
 	outfit=chosen
 	_settle_frames.clear()
+	_resume_contact=-1.0
 	_load_directional()
 
 func _load_directional() -> void:
@@ -105,6 +108,7 @@ func set_locomotion(velocity: Vector2,delta: float,visual_velocity := Vector2.IN
 	_pose_frozen=not _in_water and ((is_instance_valid(environment) and bool(environment.get("clock_paused"))) or (is_instance_valid(host) and bool(host.get("host_paused"))) or (is_instance_valid(parent) and "frozen" in parent and bool(parent.get("frozen"))))
 	if _pose_frozen or delta<=0: return
 	if _speed<.1 or _in_water:
+		_resume_contact=-1.0
 		if _in_water:
 			_settle_frames.clear()
 			_pose_walking=false
@@ -121,6 +125,10 @@ func set_locomotion(velocity: Vector2,delta: float,visual_velocity := Vector2.IN
 			_settle_elapsed=0.0
 		_advance_settle(delta)
 		return
+	var facing_velocity:=velocity if not visual_velocity.is_finite() else visual_velocity
+	# Source-reviewed east support: limit the first displayed step, without changing raw travel.
+	if previous_speed<.1 and not _pose_walking and directional_pilot_active() and appearance=="male_nusantara" and outfit in ["daily","explorer"] and _artwork_direction=="east" and _requested_direction=="east" and floori(fposmod(_travel/_stride(),1.0)*8)==3 and facing_velocity.x>0 and absf(facing_velocity.y)<=facing_velocity.length()*.01 and facing_velocity.length()*delta<=4.0:
+		_resume_contact=(floorf(_travel/(_stride()*.5))+1.0)*_stride()*.5
 	_settle_frames.clear()
 	_settle_elapsed=0.0
 	var stride:=_stride()
@@ -130,7 +138,6 @@ func set_locomotion(velocity: Vector2,delta: float,visual_velocity := Vector2.IN
 	for contact in range(before+1,mini(after,before+4)+1):
 		_foot_contacts.append({"side":"left" if contact%2==0 else "right","distance":contact*stride*.5,"phase":0.0 if contact%2==0 else .5})
 		if _foot_contacts.size()>8: _foot_contacts.pop_front()
-	var facing_velocity:=velocity if not visual_velocity.is_finite() else visual_velocity
 	if not facing_velocity.is_zero_approx():
 		if absf(facing_velocity.x)>.1: _last_horizontal=1 if facing_velocity.x>0 else -1
 		var octant:=posmod(roundi(facing_velocity.angle()/(PI*.25)),8)
@@ -140,6 +147,10 @@ func set_locomotion(velocity: Vector2,delta: float,visual_velocity := Vector2.IN
 	_advance_facing(_speed*delta)
 	_pose_phase=fposmod(_travel/stride,1.0)
 	_pose_frame=floori(_pose_phase*8)%8
+	if _travel>=_resume_contact or _artwork_direction!="east" or _requested_direction!="east" or facing_velocity.x<=0 or absf(facing_velocity.y)>facing_velocity.length()*.01: _resume_contact=-1.0
+	if _resume_contact>=0:
+		_pose_frame=2
+		_pose_phase=.25
 	_pose_walking=true
 
 func _advance_facing(distance:float) -> void:

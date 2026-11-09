@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "identity": "male_nusantara",
+  "direction": "east",
+  "cellSize": 128,
+  "pivot": [64, 104],
+  "supportRole": "visible lower supporting shin in east neutral and first-half poses2/3",
+  "physicalSide": "unassigned: whole bitmap does not independently identify left/right",
+  "coordinates": "opaque pixel indices; model uses pixel centres, not alpha centroids",
+  "scope": "source review only; not an independent 3D foot socket or world lock",
+  "outfits": {
+    "daily": {
+      "idleSha256": "6b5e6f8b3bf19acbd5dbfe1a84429894d2f4de4fd985dc16c024a6bf1f44c054",
+      "walkSha256": "342724d1724490279cd0f65c0340c5b35cdf366ecc36a99af716c51f751b8fc3",
+      "poses": {
+        "idle": {"heel": [60, 103], "toe": [75, 103]},
+        "2": {"heel": [56, 103], "toe": [71, 103]},
+        "3": {"heel": [54, 103], "toe": [62, 103]}
+      }
+    },
+    "explorer": {
+      "idleSha256": "68fad4626665bb75f41c61c8e950091f3f927428ca0e81090fffa6834c411f3f",
+      "walkSha256": "a429c378400bd5ac60a45124ac48672b4cb1360beb379cc83297b52ea48ae3b9",
+      "poses": {
+        "idle": {"heel": [60, 103], "toe": [74, 103]},
+        "2": {"heel": [57, 103], "toe": [72, 103]},
+        "3": {"heel": [54, 104], "toe": [61, 104]}
+      }
+    }
+  }
+}

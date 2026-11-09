@@ -122,8 +122,133 @@ func _transition_checks() -> void:
 			visual.free()
 			owner.free()
 	clock.reduced_motion=false
-	if _capture: FileAccess.open(OUTPUT+"/results.json",FileAccess.WRITE).store_string(JSON.stringify(_sequence,"  "))
 	print("NALA TRANSITIONS PASS: ",checked," stop/turn samples, daily/explorer drawn lowering poses3-2-1 and7-6-5; adjacent-view180/90 turns, gear-row agreement, frozen landing, unchanged distance/step events, normal/reduced. Component sequence is not a world-sole-lock claim")
+
+func _restart_checks() -> void:
+	var clock:=root.get_node("EnvironmentState")
+	var checked:=0
+	for outfit in ["daily","explorer"]:
+		for reduced in [false,true]:
+			clock.reduced_motion=reduced
+			for cadence in [1.0/60,1.0/30]:
+				var visual:Sprite2D=load("res://scripts/CharacterVisual.gd").new()
+				root.add_child(visual)
+				visual.set_appearance("male_nusantara")
+				visual.set_outfit(outfit)
+				await _walk_to_frame(visual,3)
+				for tick in range(12): await _step(visual,Vector2.ZERO,1.0/60,"restart-settled")
+				var before:float=visual.locomotion_state().distance
+				var next_contact:float=(floorf(before/32)+1)*32
+				visual.consume_foot_contacts()
+				var speed:=0.0
+				var contacts:=0
+				for tick in range(12):
+					speed=minf(100,speed+850*cadence)
+					var state:=await _step(visual,Vector2(speed,0),cadence,"restart-low-%0.3f"%cadence)
+					contacts+=visual.consume_foot_contacts().size()
+					assert(is_equal_approx(state.distance,before+speed*cadence),"Restart may not alter accepted displacement")
+					before=state.distance
+					assert(state.artworkDirection=="east" and not visual.flip_h)
+					if state.distance<next_contact:
+						assert(state.frame==2 and is_equal_approx(state.posePhase,.25),"Supported east restart must stay low instead of jumping from neutral to knee-high3")
+						if tick==0:
+							clock.clock_paused=true
+							var held:=await _step(visual,Vector2.ZERO,.2,"restart-low-paused")
+							assert(held.poseFrozen and held.frame==state.frame and held.distance==state.distance and visual.consume_foot_contacts().is_empty())
+							clock.clock_paused=false
+					else:
+						assert(state.frame==floori(state.phase*8) and contacts==1,"Resume original pose only at actual half-stride handover, with one physical contact")
+						break
+					var gear:Dictionary=visual.get_equipment_state()
+					assert(gear.gaitPhase==state.posePhase and gear.facingDirection==state.artworkDirection)
+					checked+=1
+				assert(contacts==1)
+				visual.free()
+	# A reverse, an unreviewed identity and a large first step keep the existing fallback.
+	for variant in ["reverse","identity","large-step","second-half"]:
+		var visual:Sprite2D=load("res://scripts/CharacterVisual.gd").new()
+		root.add_child(visual)
+		visual.set_appearance("male_default" if variant=="identity" else "male_nusantara")
+		visual.set_locomotion(Vector2(100,0),.56 if variant=="second-half" else .24)
+		visual.animate(true,false,1,0)
+		await _step(visual,Vector2.ZERO,.4,"restart-fallback-idle-"+variant)
+		var state:=await _step(visual,Vector2(-100,0) if variant=="reverse" else Vector2(100,0),.06 if variant=="large-step" else .02,"restart-fallback-"+variant)
+		assert(state.frame==floori(state.phase*8),"Unreviewed views/identity/halfcycle or first-step>4 must not inherit the east low-pose pilot")
+		visual.free()
+	clock.reduced_motion=false
+	var interrupted:Sprite2D=load("res://scripts/CharacterVisual.gd").new()
+	root.add_child(interrupted)
+	interrupted.set_appearance("male_nusantara")
+	interrupted.set_locomotion(Vector2(100,0),.24)
+	interrupted.animate(true,false,1,0)
+	await _step(interrupted,Vector2.ZERO,.4,"restart-collision-idle")
+	var low:=await _step(interrupted,Vector2(100,0),.02,"restart-before-collision")
+	interrupted.consume_foot_contacts()
+	var blocked:=await _step(interrupted,Vector2.ZERO,.4,"restart-collision-stop")
+	assert(low.frame==2 and not blocked.poseWalking and blocked.distance==low.distance and interrupted.consume_foot_contacts().is_empty(),"Collision/zero accepted travel must stop the low restart with no artificial contact")
+	interrupted.free()
+	print("NALA RESTART PILOT PASS: ",checked," pre-contact component samples; normal/reduced daily/explorer,850 acceleration at30/60Hz, true32 handover and four explicit fallbacks. Physical L/R is unassigned")
+
+func _controller_restart_check() -> void:
+	var game:=root.get_node("GameState")
+	game.world=JSON.parse_string(FileAccess.get_file_as_string("res://../.runtime/world-map.json"))
+	game.player={"appearance":"male_nusantara","progress":{"day":1,"stage":"dive"}}
+	game.dive={}
+	var clock:=root.get_node("EnvironmentState")
+	clock.set_process(false)
+	clock.clock_paused=false
+	var collision:Node2D=load("res://scripts/land/LandCollision.gd").new()
+	collision.configure(game.world.landMaps.hub)
+	root.add_child(collision)
+	var player:CharacterBody2D=load("res://scripts/Player.gd").new()
+	player.position=Vector2(850,550)
+	player.land_mask=Callable(collision,"is_walkable")
+	var view:RefCounted=load("res://scripts/land/LandViewProjection.gd").new()
+	var camera_script:Script=load("res://scripts/land/LandCameraPose.gd")
+	view.configure(camera_script.pose(Vector3.ZERO,-45,55,2000,720,270),720,Vector2i(480,270))
+	player.input_transform=func(input:Vector2,_at:Vector2)->Vector2: return view.input_motion(input)
+	player.visual_motion_transform=func(previous:Vector2,next:Vector2,delta:float)->Vector2: return view.logical_motion_to_view((next-previous)/delta)
+	root.add_child(player)
+	player.touch=Vector2.RIGHT
+	for tick in range(60):
+		await physics_frame
+		player.land_path.acknowledge(player.land_path.snapshot(player.position).ticket)
+		if player.swim_sprite.locomotion_state().distance>=24: break
+	player.touch=Vector2.ZERO
+	for tick in range(30):
+		await physics_frame
+		player.land_path.acknowledge(player.land_path.snapshot(player.position).ticket)
+	var before:Dictionary=player.swim_sprite.locomotion_state()
+	assert(before.frame==0 and not before.poseWalking and floori(before.phase*8)==3,"Actual850 deceleration must reach the reviewed settled restart window")
+	var before_position:=player.position
+	player.swim_sprite.consume_foot_contacts()
+	player.touch=Vector2.RIGHT
+	var contacts:=0
+	var low_seen:=false
+	for tick in range(30):
+		await physics_frame
+		player.land_path.acknowledge(player.land_path.snapshot(player.position).ticket)
+		var state:Dictionary=player.swim_sprite.locomotion_state()
+		contacts+=player.swim_sprite.consume_foot_contacts().size()
+		if state.distance==before.distance: continue
+		assert(is_equal_approx(state.distance-before.distance,player.position.distance_to(before_position)),"Actual collider displacement and accepted animation distance must agree")
+		assert(collision.is_walkable(player.position))
+		if state.distance<32:
+			assert(state.frame==2)
+			low_seen=true
+		else:
+			assert(state.frame==floori(state.phase*8) and contacts==1)
+			break
+	assert(low_seen and contacts==1)
+	player.touch=Vector2.ZERO
+	player.frozen=true
+	var held:Dictionary=player.swim_sprite.locomotion_state()
+	var held_position:=player.position
+	for tick in range(3): await physics_frame
+	assert(player.position==held_position and player.swim_sprite.locomotion_state().distance==held.distance and player.swim_sprite.consume_foot_contacts().is_empty())
+	player.free()
+	collision.free()
+	print("NALA CONTROLLER RESTART PASS: actual Player850 acceleration/deceleration on hub collision fixture, left-camera input inverse, low restart/real32 contact, matching root distance, owner pause; flat projection only")
 
 func _run() -> void:
 	_capture=OS.get_environment("NALA_GAIT_CAPTURE")=="1"
@@ -197,5 +322,8 @@ func _run() -> void:
 	assert(visual.hframes==3 and visual.frame>=3)
 	visual.free()
 	await _transition_checks()
+	await _restart_checks()
+	await _controller_restart_check()
+	if _capture: FileAccess.open(OUTPUT+"/results.json",FileAccess.WRITE).store_string(JSON.stringify(_sequence,"  "))
 	print("PLAYER LOCOMOTION PASS:12 outfits x8 drawn directions,175 displacement phase, neutral idle, once-only contacts, water isolation, directional modular gear")
 	quit()
