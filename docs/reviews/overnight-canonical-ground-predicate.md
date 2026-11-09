@@ -24,3 +24,17 @@ Port adalah kode proyek sendiri dari shared yang sudah ada; tidak menambahkan de
 Pemeriksaan CPU yang dijalankan: generator berhasil324+12, `node --check`, `git diff --check`. Belum ada kelulusan Godot dari langkah ini.
 
 Usulan registrasi root: tambahkan `scripts/tests/ground-query-canonical.gd` dekat `land-renderer`/`surface-traversal` dalam `scripts/verify-living-world.mjs`. Root memegang runner. Setelah grant: parse/focused scalar corpus, actual character input-only dock+side; ulang ground/tread/renderer/left-controller suites dan fullworld bila kandidat diterima. Jalankan native/browser paket baru sebelum menyebut perbaikan ada di rilis.
+
+## Focused pertama pada integrasi
+
+Root menggabungkan source sebagai `75b866a` dan memberi slot headless≤30detik. Godot4.7.2 menjalankan fixture pada cache integrasi yang sudah ada. Log `.runtime/ground-query-canonical-first.log` **FAIL** pada perbandingan membership di `(1135.271484375,1125)`, frozen indices `[7,11,40,41]` dibaca sebagai float JSON. Parse source berhasil; ini belum kelulusan predicate. Fixture berhenti lebih dini sebelum renderer dibebaskan sehingga log juga memuat leak/resource errors; kegagalan tersebut tidak disembunyikan.
+
+Revisi fixture `08d2c64` menormalkan expected dan actual index menjadi `Array[int]` sebelum perbandingan tepat, menampilkan kedua array bila gagal, serta membebaskan renderer pada exit gagal. Predicate runtime tidak berubah. Normalisasi tipe adalah hipotesis penyebab perbandingan pertama; rerun actual masih diperlukan untuk membuktikannya. Engine dilepas ke root setelah run pertama, tidak mengulang tanpa grant.
+
+## Rerun actual diterima pada scope focused
+
+Root menggabungkan revisi fixture sebagai `cf28881`, kemudian memberikan slot eksklusif ulang≤30detik. Godot4.7.2 headless pada worktree/cache integrasi menghasilkan **PASS, exit0:324 posisi ground aktual +12 kasus scalar independen,991 pemeriksaan**. Terdapat **64 perbedaan membership Geometry2D lama** terhadap predicate scalar/server; jumlah itu dipertahankan sebagai diagnosis, bukan disembunyikan dengan epsilon baru.
+
+Log lengkap `.runtime/ground-query-canonical-typed-rerun.log` hanya berisi versi engine dan baris PASS; tidak ada SCRIPT ERROR, ERROR, warning, atau leak. Titik aktual `(1135.271484375,1124.9990234375)` dan dua tetangganya kini dipastikan ground_height48 melalui method renderer produksi, selain corpus membership/priority/connector. Ini mengonfirmasi runtime predicate, bukan hanya perbaikan tipe fixture.
+
+Tidak menjalankan suite lebih luas/export/browser. Engine selesai dan slot dilepas eksplisit, pgrep Godot kosong. Perubahan belum menjadi bukti gait/connector traversal aktual atau paket staging baru; character/root melanjutkan gate tersebut dan registrasi runner.
