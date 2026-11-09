@@ -177,6 +177,7 @@ func _run() -> void:
 			visual.set_locomotion(Vector2(-100,0),.01)
 			visual.animate(true,false,-1,0)
 			var turn_stop_distance:float=visual.locomotion_state().distance
+			await process_frame
 			for tick in range(4):
 				visual.set_locomotion(Vector2.ZERO,.1)
 				visual.animate(false,false,-1,0)
