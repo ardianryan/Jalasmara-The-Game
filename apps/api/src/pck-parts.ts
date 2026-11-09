@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
-import { createReadStream, existsSync } from "node:fs";
-import { readFile, stat } from "node:fs/promises";
+import { createReadStream } from "node:fs";
+import { open, stat } from "node:fs/promises";
 import { resolve } from "node:path";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
@@ -22,14 +22,37 @@ const manifestSchema = z
   })
   .strict();
 
+async function readManifest(path: string) {
+  const file = await open(path, "r").catch((error: NodeJS.ErrnoException) => {
+    if (error.code === "ENOENT") return undefined;
+    throw error;
+  });
+  if (!file) return undefined;
+  try {
+    const bytes = Buffer.alloc(40 * 1024 + 1);
+    let length = 0;
+    while (length < bytes.length) {
+      const { bytesRead } = await file.read(
+        bytes,
+        length,
+        bytes.length - length,
+        length,
+      );
+      if (!bytesRead) break;
+      length += bytesRead;
+    }
+    if (length > 40 * 1024)
+      throw new Error("PCK manifest exceeds its bounded size");
+    return bytes.subarray(0, length).toString("utf8");
+  } finally {
+    await file.close();
+  }
+}
+
 export async function registerPckParts(app: FastifyInstance, root: string) {
-  const manifestPath = resolve(root, "game/pck-manifest.json");
-  if (!existsSync(manifestPath)) return;
-  if ((await stat(manifestPath)).size > 40 * 1024)
-    throw new Error("PCK manifest exceeds its bounded size");
-  const manifest = manifestSchema.parse(
-    JSON.parse(await readFile(manifestPath, "utf8")),
-  );
+  const input = await readManifest(resolve(root, "game/pck-manifest.json"));
+  if (input === undefined) return;
+  const manifest = manifestSchema.parse(JSON.parse(input));
   const file = resolve(root, "game/index.pck");
   if (
     (await stat(file)).size !== manifest.bytes ||

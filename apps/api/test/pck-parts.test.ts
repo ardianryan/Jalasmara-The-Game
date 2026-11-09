@@ -95,6 +95,30 @@ test("legacy exports without manifests do not install the segmented route", asyn
   }, null);
 });
 
+test("manifest reads accept the exact40KiB budget and reject the first excess byte", async () => {
+  await fixture(async (app, root) => {
+    writeFileSync(
+      join(root, "game/pck-manifest.json"),
+      JSON.stringify(manifest).padEnd(40 * 1024, " "),
+    );
+    await registerPckParts(app, root);
+    assert.equal(
+      (await app.inject(`/game/pck/${manifest.sha256}/0`)).statusCode,
+      200,
+    );
+  });
+  await fixture(async (app, root) => {
+    writeFileSync(
+      join(root, "game/pck-manifest.json"),
+      JSON.stringify(manifest).padEnd(40 * 1024 + 1, " "),
+    );
+    await assert.rejects(
+      registerPckParts(app, root),
+      /exceeds its bounded size/,
+    );
+  });
+});
+
 for (const [name, invalid] of [
   ["source checksum", { ...manifest, sha256: "a".repeat(64) }],
   ["source length", { ...manifest, bytes: 12 }],

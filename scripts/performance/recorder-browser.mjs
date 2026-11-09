@@ -272,7 +272,6 @@ try {
   assert.deepEqual(errors, []);
   assert.deepEqual(apiFailures, []);
   completed = true;
-  phase = "complete";
 } catch (error) {
   failureStage = phase;
   if (page) await shot("failure").catch(() => {});
