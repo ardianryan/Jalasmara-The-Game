@@ -71,7 +71,7 @@ func _measure(label:String) -> void:
 	for side in ["left","right"]:
 		var entry:Dictionary=pose.contacts.feet[side]
 		var foot:Sprite3D=rig.get("_parts")[side+"_foot"]
-		var direction:Dictionary=rig.get("_data").views[pose.direction]
+		var direction:Dictionary=rig.get("_data").views[str(entry.footDirection)]
 		var sole:Array=direction.legs[side].solePixel
 		var actual:=foot.to_global(Vector3(float(sole[0])-foot.texture.get_width()*.5,foot.texture.get_height()*.5-float(sole[1]),0))
 		if not _check(actual.distance_to(entry.sole)<.002,"Actual foot pixel must meet world sole "+label): return
@@ -83,16 +83,20 @@ func _measure(label:String) -> void:
 			var error:=absf(first.distance_to(second)-expected)
 			length_max=maxf(length_max,error)
 			if not _check(error<.003,"Actual Sprite3D bone length changed "+label): return
+		var endpoints:Array[Vector3]=[]
 		if entry.grounded:
 			if not _check(_on_mesh(actual),"Actual sole misses rendered triangle "+label+" side="+side+" sole="+str(actual)+" highest="+str(_last_floor_height)): return
 			for pixel in direction.legs[side].soleEdgePixels:
 				var endpoint:=foot.to_global(Vector3(float(pixel[0])-foot.texture.get_width()*.5,foot.texture.get_height()*.5-float(pixel[1]),0))
+				endpoints.append(endpoint)
 				if not _check(_on_mesh(endpoint),"Actual heel/toe source pixel misses tread "+label+" side="+side+" pixel="+str(pixel)+" highest="+str(_last_floor_height)): return
 			if previous.has(side) and previous[side].grounded and Vector3(previous[side].plant).distance_to(entry.plant)<.001:
 				var drift:=actual.distance_to(previous[side].actual)
 				drift_max=maxf(drift_max,drift)
 				if not _check(drift<.002,"Planted source-pixel sole slides "+label): return
-		previous[side]={"grounded":entry.grounded,"plant":entry.plant,"actual":actual}
+				for index in range(2):
+					if not _check(endpoints[index].distance_to(previous[side].endpoints[index])<.002,"Planted heel/toe pixel rotates or slides "+label): return
+		previous[side]={"grounded":entry.grounded,"plant":entry.plant,"actual":actual,"endpoints":endpoints if entry.grounded else []}
 	checks+=1
 
 func _tick(target:Vector2,delta:float,label:String) -> void:

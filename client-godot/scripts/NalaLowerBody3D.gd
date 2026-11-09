@@ -12,6 +12,7 @@ var _planner:RefCounted
 var _last:Dictionary={}
 var _direction:=""
 var _facing_frame:=-1
+var _foot_views:Dictionary={}
 const DIRECTIONS:=["east","south_east","south","south_west","west","north_west","north","north_east"]
 
 func configure(owner_renderer:Node,person:Node2D) -> void:
@@ -75,8 +76,10 @@ func _anatomy(view:Dictionary,feet:Dictionary,at:Vector2,right:Vector3,vertical:
 	for side in ["left","right"]:
 		var leg:Dictionary=view.legs[side]
 		var sole_pixel:=_vec(leg.solePixel)
-		var foot:Array=leg.parts.foot
-		var ankle_source:=_vec(leg.ankle)-Vector2(float(foot[0]),float(foot[1]))
+		var foot_leg:Dictionary=_data.views[str(_foot_views.get(side,_direction))].legs[side]
+		sole_pixel=_vec(foot_leg.solePixel)
+		var foot:Array=foot_leg.parts.foot
+		var ankle_source:=_vec(foot_leg.ankle)-Vector2(float(foot[0]),float(foot[1]))
 		var ankle:Vector3=Vector3(feet[side].sole)+right*(ankle_source.x-sole_pixel.x)+Vector3(0,0,(sole_pixel.y-ankle_source.y)/vertical)
 		ankles[side]=ankle
 		var first:=_vec(leg.hip).distance_to(_vec(leg.knee))/vertical
@@ -104,6 +107,7 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 	var state:Dictionary=visual.locomotion_state()
 	var desired:=str(state.artworkDirection)
 	if _direction=="": _direction=desired
+	if _foot_views.is_empty(): _foot_views={"left":_direction,"right":_direction}
 	var stored:Dictionary=_planner.snapshot()
 	if not bool(state.poseFrozen) and _direction!=desired and not stored.feet.is_empty() and _facing_frame!=Engine.get_process_frames():
 		var index:=DIRECTIONS.find(_direction)
@@ -134,6 +138,9 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 	if frozen and not _last.is_empty():
 		proxy.visible=false
 		return _last.duplicate(true)
+	for side in ["left","right"]:
+		if not bool(pose.feet[side].grounded): _foot_views[side]=direction
+		pose.feet[side]["footDirection"]=str(_foot_views[side])
 	var ground:Vector3=renderer.ground_point(actor.position)
 	var root_hip:=ground+Vector3(0,0,28.0/vertical)
 	var anatomy:=_anatomy(view,pose.feet,actor.position,right,vertical)
@@ -161,7 +168,7 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 		actor.set_meta("nala_last_world_heading",heading)
 	for side in ["left","right"]:
 		var leg:Dictionary=view.legs[side]
-		for name in ["thigh","shin","foot"]:
+		for name in ["thigh","shin"]:
 			var rect:Array=leg.parts[name]
 			_parts[side+"_"+name].texture=_texture(_atlas,Rect2(Vector2(float(view.sourceColumn)*128+float(rect[0]),float(rect[1])),Vector2(float(rect[2]),float(rect[3]))))
 		var hip:=root_hip+right*float(hips[side])
@@ -172,7 +179,11 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 		_fixed_bone(_parts[side+"_shin"],knee,ankle,camera,proxy.modulate)
 		max_length_error=maxf(max_length_error,maxf(absf(hip.distance_to(knee)-size.x),absf(knee.distance_to(ankle)-size.y)))
 		var sprite:Sprite3D=_parts[side+"_foot"]
-		var sole:=_vec(leg.solePixel)
+		var foot_view:Dictionary=_data.views[str(_foot_views[side])]
+		var foot_leg:Dictionary=foot_view.legs[side]
+		var foot_rect:Array=foot_leg.parts.foot
+		sprite.texture=_texture(_atlas,Rect2(Vector2(float(foot_view.sourceColumn)*128+float(foot_rect[0]),float(foot_rect[1])),Vector2(float(foot_rect[2]),float(foot_rect[3]))))
+		var sole:=_vec(foot_leg.solePixel)
 		var foot_basis:=Basis(right,Vector3(0,0,1)/vertical,right.cross(Vector3(0,0,1)).normalized())
 		var pixel_offset:=foot_basis*Vector3(sole.x-sprite.texture.get_width()*.5,sprite.texture.get_height()*.5-sole.y,0)
 		sprite.transform=Transform3D(foot_basis,Vector3(pose.feet[side].sole)-pixel_offset)
