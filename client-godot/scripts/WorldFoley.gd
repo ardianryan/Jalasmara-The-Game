@@ -24,6 +24,7 @@ var _last_water_sfx := ""
 var _emitter_phases: Dictionary = {}
 var _water_fields: Dictionary = {}
 var _map_signatures: Dictionary = {}
+var _surface_polygons: Dictionary = {}
 
 const FOOTSTEPS := {
 	"dock":"footstep_dock", "bridge":"footstep_bridge", "sand":"footstep_sand",
@@ -39,6 +40,7 @@ func configure(player: Node2D, place := "hub") -> void:
 	_ambience = 0
 	_wave_cooldown = 0.0
 	_emitter_phases.clear()
+	_surface_polygons.clear()
 	_has_traversal = false
 	for property in actor.get_property_list():
 		if str(property.name) == "traversal_state": _has_traversal = true
@@ -83,10 +85,14 @@ func material_at(point: Vector2) -> String:
 	var selected := ""
 	var priority := -INF
 	var elevation := -INF
-	for surface in map.get("surfaces",[]):
-		var polygon := PackedVector2Array()
-		for vertex in surface.get("polygon",[]): polygon.append(Vector2(float(vertex[0]),float(vertex[1])))
-		if polygon.size()<3 or not Geometry2D.is_point_in_polygon(point,polygon): continue
+	if not _surface_polygons.has(area):
+		_surface_polygons[area] = preload("res://scripts/land/LandSurfaceQueryCache.gd").new()
+	var queries:RefCounted = _surface_polygons[area]
+	var surfaces:Array = map.get("surfaces",[])
+	for index in range(surfaces.size()):
+		var surface:Dictionary = surfaces[index]
+		var polygon:Array = surface.get("polygon",[])
+		if polygon.size()<3 or not queries.contains(point,polygon,index): continue
 		var candidate := str(surface.get("material",""))
 		var candidate_priority := float(surface.get("priority",0))
 		var candidate_elevation := float(surface.get("elevation",0))

@@ -1,6 +1,7 @@
 extends RefCounted
 
 const LEVEL_HEIGHT := 48.0
+var _surface_polygons = preload("res://scripts/land/LandSurfaceQueryCache.gd").new()
 var _hub: Dictionary = {}
 var _connectors: Array[Dictionary] = []
 var _last: Dictionary = {}
@@ -14,6 +15,9 @@ func configure(hub: Dictionary) -> void:
 	_elevation = -1
 	_previous = Vector2.INF
 	_connectors.clear()
+	_surface_polygons.clear()
+	for index in range(hub.get("surfaces",[]).size()):
+		_surface_polygons.prepare(index,hub.surfaces[index].get("polygon",[]))
 	for stair in hub.get("stairs",[]):
 		if stair.get("path",[]).size()<2: continue
 		_connectors.append(connector_profile(stair,_floor_elevation(str(stair.from))*LEVEL_HEIGHT,_floor_elevation(str(stair.to))*LEVEL_HEIGHT))
@@ -96,10 +100,10 @@ func sample(feet: Vector2, velocity := Vector2.ZERO, _delta := 0.0, paused := fa
 
 func _surface_at(point: Vector2) -> Dictionary:
 	var selected: Dictionary = {}
-	for surface in _hub.get("surfaces",[]):
-		var polygon := PackedVector2Array()
-		for vertex in surface.get("polygon",[]): polygon.append(Vector2(float(vertex[0]),float(vertex[1])))
-		if Geometry2D.is_point_in_polygon(point,polygon) and (selected.is_empty() or int(surface.get("priority",0))>=int(selected.get("priority",0))): selected = surface
+	var surfaces:Array = _hub.get("surfaces",[])
+	for index in range(surfaces.size()):
+		var surface:Dictionary = surfaces[index]
+		if _surface_polygons.contains(point,surface.get("polygon",[]),index) and (selected.is_empty() or int(surface.get("priority",0))>=int(selected.get("priority",0))): selected = surface
 	return selected
 
 func _floor_at_point(point: Vector2) -> float:
