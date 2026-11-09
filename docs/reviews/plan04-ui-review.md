@@ -18,6 +18,10 @@ Pengguna menilai HUD baru masih terlalu besar, terutama malam hari. Pada tindak 
 
 Bukti sebelum/sesudah tersedia di `artifacts/godot/hud-bahari/compact/`: kontrol Godot asli di atas capture dunia malam milik Jalasmara, bukan simulasi layanan kedai melalui API. Capture `after-667x375-night-modal.png` membuktikan identitas, resource, cuaca, utilitas, minimap, dan kontrol dunia tersembunyi ketika modal terbuka. Pengujian geometri mempertahankan ambang/peringatan oksigen dan menambah batas tinggi panel, area tengah pemain yang bebas pada darat, misi lengkap melalui tombol, modal siang/malam, serta resource bingkai yang tidak dibuat ulang setiap polling. Pengujian GUI malam menyeluruh tetap menjadi verifikasi integrasi berikutnya.
 
+### Hasil racikan malam yang mengikuti isi
+
+Panel hasil singkat Kedai Waras kini memilih mode ringkas secara eksplisit, dengan lebar maksimum 680 logis dan tinggi dari ukuran VBox setelah teks membungkus. Quiz dan halaman bacaan panjang tetap memakai layout penuh; konten yang melebihi layar tetap dapat digulir mengikuti fokus. Panel generik memakai tekstur kertas kit Bahari. Pada capture pembanding malam 1440×900, ukuran hasil turun dari 832×488 menjadi 680×287 logis. Bukti native sebelum/sesudah tersedia di `artifacts/godot/hud-bahari/kedai-result/` (fixture di atas capture dunia malam, bukan sesi ekonomi produksi). `kedai-result-layout.gd` menguji presenter hasil asli, tombol pelanggan berikutnya, fokus, pause, teks 16 px, target 56 px, serta layar 1440/667/390; regresi quiz dan fokus kedai juga lulus. Perubahan ini tidak mengubah upah, konsumsi fragmen, atau transaksi kedai.
+
 ## Bukti dan batas pemeriksaan
 
 - Capture komponen native tersedia di `artifacts/godot/plan04-ui/`: ukuran fisik 960×540, 667×375, dan 390×844. Capture menggunakan kontrol Godot nyata di atas tangkapan dunia milik Jalasmara sebagai latar fixture. Ini bukan rekaman sesi dunia yang sedang berjalan dan bukan pengukuran FPS.

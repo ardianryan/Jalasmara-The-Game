@@ -77,10 +77,12 @@ func _ready() -> void:
 	var auth: Dictionary = await ApiClient.get_api("/auth/session")
 	if auth.get("user") == null:
 		_show_message("Silakan masuk", "Buka Jalasmara melalui halaman login terlebih dahulu.")
+		_report_startup_failure()
 		return
 	var result: Dictionary = await GameState.refresh()
 	if not result.get("ok",false):
 		_show_message("Koneksi belum tersambung",str(result.get("error","Coba muat ulang halaman.")))
+		_report_startup_failure()
 		return
 	if GameState.homestead.get("inside",false) and GameState.dive.is_empty():
 		get_tree().change_scene_to_file("res://scenes/homestead.tscn")
@@ -207,6 +209,11 @@ func _build_ui() -> void:
 		if not GameState.dive.is_empty():
 			ApiClient.call_api("/dive/reading",{"diveId":GameState.dive.id,"paused":paused or modal_open})
 	)
+func _report_startup_failure() -> void:
+	if not OS.has_feature("web"): return
+	var window=JavaScriptBridge.get_interface("window")
+	window.parent.postMessage(JavaScriptBridge.get_interface("JSON").parse('{"type":"jalasmara:loading","version":1,"phase":"error","downloadedBytes":0,"totalBytes":null}'),str(window.location.origin))
+
 func _ui_font() -> int:
 	return preload("res://scripts/UiMetrics.gd").body(self,hud)
 func _ui_target() -> float:
@@ -232,7 +239,7 @@ func _label(parent: Node,text: String,size := 16) -> Label:
 	if size<=19: label.add_theme_font_override("font",BODY_FONT)
 	parent.add_child(label)
 	return label
-func _open(title: String, pause_reading := true) -> VBoxContainer:
+func _open(title: String, pause_reading := true, compact := false) -> VBoxContainer:
 	if modal:
 		modal.queue_free()
 	modal_open = true
@@ -244,16 +251,8 @@ func _open(title: String, pause_reading := true) -> VBoxContainer:
 	modal.theme.set_color("default_color","RichTextLabel",Color("302d2a"))
 	modal.position = Vector2(155,84)
 	modal.size = Vector2(650,420)
-	var bg := StyleBoxFlat.new()
-	bg.bg_color = Color("f1e1bc")
-	bg.content_margin_left = 25
-	bg.content_margin_right = 25
-	bg.content_margin_top = 20
-	bg.content_margin_bottom = 20
-	bg.set_corner_radius_all(2)
-	bg.border_color = Color("654733")
-	bg.set_border_width_all(2)
-	modal.add_theme_stylebox_override("panel",bg)
+	modal.set_meta("compact_result",compact)
+	modal.add_theme_stylebox_override("panel",preload("res://scripts/HudSkin.gd").panel("paper"))
 	ui.add_child(modal)
 	call_deferred("_layout_modal")
 	var scroll := ScrollContainer.new()
@@ -279,7 +278,7 @@ func _layout_modal() -> void:
 	var ratio:=preload("res://scripts/UiMetrics.gd").ratio(self,hud)
 	var safe:=ViewportLayout.insets()
 	var top:=ceilf(60*ratio)+safe.y
-	var dimensions:=Vector2(minf(900,view.x-32-safe.x-safe.z),minf(800 if view.x<800 else 520,view.y-top-16-safe.w))
+	var dimensions:=Vector2(minf(680 if modal.get_meta("compact_result",false) else 900,view.x-32-safe.x-safe.z),minf(800 if view.x<800 else 520,view.y-top-16-safe.w))
 	modal.size=dimensions
 	modal.position=Vector2((view.x-dimensions.x)/2,top)
 	if modal.get_child_count()>0 and modal.get_child(0) is ScrollContainer:
@@ -293,6 +292,24 @@ func _layout_modal() -> void:
 		button.add_theme_font_size_override("font_size",_ui_font())
 	for grid in modal.find_children("*","GridContainer",true,false):
 		if grid.get_meta("quiz_answers",false): _layout_quiz_answers(grid,dimensions.x-50)
+	if modal.get_meta("compact_result",false):
+		modal.set_meta("fit_max_height",dimensions.y)
+		_fit_compact_modal.call_deferred(modal)
+func _fit_compact_modal(target: PanelContainer) -> void:
+	# Wrapped labels need the final container width before their height is meaningful.
+	if not is_instance_valid(target) or not target.is_inside_tree(): return
+	var tree:=target.get_tree()
+	await tree.process_frame
+	await tree.process_frame
+	if not is_instance_valid(target) or target!=modal or not target.is_inside_tree(): return
+	var frame:StyleBox=target.get_theme_stylebox("panel")
+	var content_height:=modal_box.get_combined_minimum_size().y+frame.get_margin(SIDE_TOP)+frame.get_margin(SIDE_BOTTOM)
+	var maximum:=float(target.get_meta("fit_max_height",target.size.y))
+	target.size.y=minf(maximum,content_height)
+	var view:=target.get_viewport().get_visible_rect().size
+	var top:=ceilf(60*preload("res://scripts/UiMetrics.gd").ratio(self,hud))+ViewportLayout.insets().y
+	target.position.y=top+maxf(0,(view.y-top-16-ViewportLayout.insets().w-target.size.y)/2)
+
 func _layout_quiz_answers(answers: GridContainer,width: float) -> void:
 	var view:=preload("res://scripts/UiMetrics.gd").viewport(self,hud).get_visible_rect().size
 	answers.columns=1 if view.x<800 else 2
@@ -315,7 +332,7 @@ func _close() -> void:
 	if not GameState.dive.is_empty():
 		ApiClient.call_api("/dive/reading",{"diveId":GameState.dive.id,"paused":ViewportLayout.host_paused})
 func _show_message(title: String, text: String) -> void:
-	var box := _open(title)
+	var box := _open(title,true,text.length()<=240 and text.count("\n")<=3)
 	_label(box,text)
 	_button(box,"Kembali",_close).grab_focus()
 func _talk(lines: Array, done := Callable()) -> void:
@@ -1094,12 +1111,7 @@ func _kedai_customer() -> void:
 					GameState.player = r.player
 					GameState.shift = r.shift
 					GameState.apply_result(r)
-					var result_box := _open("Racikan Berhasil · "+str(current.customer))
-					_label(result_box,str(r.solution),16)
-					if str(current.id) == "akar":
-						_label(result_box,"Dampak ke Rakit Tani Tanggulangen:\n• Malam ini: PERAWATAN DIMULAI — Bu Darmi memasang penyangga aerasi bambu dan membuka saluran pembuangan pasang agar akar kembali bernapas.\n• Hari berikutnya: PULIH BERTAHAP — Pucuk hijau dan bunga kebun apung akan tumbuh kembali.",14)
-					_label(result_box,"Upah racikan: +%d koin" % int(r.earned),16)
-					_button(result_box,"Pelanggan berikutnya",_kedai_customer).grab_focus.call_deferred()
+					_show_kedai_result(current,r)
 					_update_hud()
 				else:
 					AudioManager.play_sfx("ui_Toggle_off")
@@ -1127,6 +1139,14 @@ func _close_shift(abandon: bool) -> void:
 		status.text = str(r.get("error","Giliran belum selesai."))
 func _show_inventory() -> void:
 	_open_field_panel(preload("res://scripts/InventoryView.gd").new())
+
+func _show_kedai_result(current: Dictionary,r: Dictionary) -> void:
+	var result_box := _open("Racikan Berhasil · "+str(current.customer),true,true)
+	_label(result_box,str(r.solution),16)
+	if str(current.id) == "akar":
+		_label(result_box,"Dampak ke Rakit Tani Tanggulangen:\n• Malam ini: PERAWATAN DIMULAI — Bu Darmi memasang penyangga aerasi bambu dan membuka saluran pembuangan pasang agar akar kembali bernapas.\n• Hari berikutnya: PULIH BERTAHAP — Pucuk hijau dan bunga kebun apung akan tumbuh kembali.",14)
+	_label(result_box,"Upah racikan: +%d koin" % int(r.earned),16)
+	_button(result_box,"Pelanggan berikutnya",_kedai_customer).grab_focus.call_deferred()
 
 func _open_field_panel(panel: Control) -> void:
 	if is_instance_valid(field_panel): field_panel.queue_free()
