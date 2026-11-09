@@ -1,0 +1,690 @@
+{
+  "identity": "male_nusantara",
+  "outfit": "explorer",
+  "cell": [
+    128,
+    128
+  ],
+  "pivot": [
+    64,
+    104
+  ],
+  "source": "res://resources/art/player-gait/male-nusantara-explorer-idle-8way-v1.png",
+  "sourceSha256": "68fad4626665bb75f41c61c8e950091f3f927428ca0e81090fffa6834c411f3f",
+  "method": "explicit original idle rectangle cutouts; overlapping profile leg reused; no fill, mirror, recolor or generated pixels",
+  "status": "opt-in articulation candidate, native review required",
+  "views": {
+    "east": {
+      "sourceColumn": 0,
+      "upperCutY": 76,
+      "legs": {
+        "left": {
+          "hip": [
+            65,
+            76
+          ],
+          "knee": [
+            65,
+            88
+          ],
+          "ankle": [
+            65,
+            99
+          ],
+          "parts": {
+            "thigh": [
+              61,
+              76,
+              8,
+              12
+            ],
+            "shin": [
+              61,
+              88,
+              8,
+              11
+            ],
+            "foot": [
+              59,
+              98,
+              14,
+              6
+            ]
+          },
+          "solePixel": [
+            7.583333333333333,
+            6
+          ],
+          "occludedReuse": true
+        },
+        "right": {
+          "hip": [
+            68,
+            76
+          ],
+          "knee": [
+            68,
+            88
+          ],
+          "ankle": [
+            68,
+            99
+          ],
+          "parts": {
+            "thigh": [
+              64,
+              76,
+              8,
+              12
+            ],
+            "shin": [
+              64,
+              88,
+              8,
+              11
+            ],
+            "foot": [
+              62,
+              98,
+              14,
+              6
+            ]
+          },
+          "solePixel": [
+            6.75,
+            6
+          ],
+          "occludedReuse": true
+        }
+      }
+    },
+    "south_east": {
+      "sourceColumn": 1,
+      "upperCutY": 76,
+      "legs": {
+        "left": {
+          "hip": [
+            70,
+            76
+          ],
+          "knee": [
+            70,
+            88
+          ],
+          "ankle": [
+            70,
+            99
+          ],
+          "parts": {
+            "thigh": [
+              66,
+              76,
+              8,
+              12
+            ],
+            "shin": [
+              66,
+              88,
+              8,
+              11
+            ],
+            "foot": [
+              64,
+              98,
+              14,
+              6
+            ]
+          },
+          "solePixel": [
+            7.75,
+            6
+          ],
+          "occludedReuse": false
+        },
+        "right": {
+          "hip": [
+            59,
+            76
+          ],
+          "knee": [
+            59,
+            88
+          ],
+          "ankle": [
+            59,
+            99
+          ],
+          "parts": {
+            "thigh": [
+              55,
+              76,
+              8,
+              12
+            ],
+            "shin": [
+              55,
+              88,
+              8,
+              11
+            ],
+            "foot": [
+              53,
+              98,
+              14,
+              6
+            ]
+          },
+          "solePixel": [
+            6.5,
+            6
+          ],
+          "occludedReuse": false
+        }
+      }
+    },
+    "south": {
+      "sourceColumn": 2,
+      "upperCutY": 76,
+      "legs": {
+        "left": {
+          "hip": [
+            71,
+            76
+          ],
+          "knee": [
+            71,
+            88
+          ],
+          "ankle": [
+            71,
+            99
+          ],
+          "parts": {
+            "thigh": [
+              67,
+              76,
+              8,
+              12
+            ],
+            "shin": [
+              67,
+              88,
+              8,
+              11
+            ],
+            "foot": [
+              65,
+              98,
+              14,
+              6
+            ]
+          },
+          "solePixel": [
+            7.0,
+            6
+          ],
+          "occludedReuse": false
+        },
+        "right": {
+          "hip": [
+            58,
+            76
+          ],
+          "knee": [
+            58,
+            88
+          ],
+          "ankle": [
+            58,
+            99
+          ],
+          "parts": {
+            "thigh": [
+              54,
+              76,
+              8,
+              12
+            ],
+            "shin": [
+              54,
+              88,
+              8,
+              11
+            ],
+            "foot": [
+              52,
+              98,
+              14,
+              6
+            ]
+          },
+          "solePixel": [
+            4.5,
+            6
+          ],
+          "occludedReuse": false
+        }
+      }
+    },
+    "south_west": {
+      "sourceColumn": 3,
+      "upperCutY": 76,
+      "legs": {
+        "left": {
+          "hip": [
+            68,
+            76
+          ],
+          "knee": [
+            68,
+            88
+          ],
+          "ankle": [
+            68,
+            99
+          ],
+          "parts": {
+            "thigh": [
+              64,
+              76,
+              8,
+              12
+            ],
+            "shin": [
+              64,
+              88,
+              8,
+              11
+            ],
+            "foot": [
+              62,
+              98,
+              14,
+              6
+            ]
+          },
+          "solePixel": [
+            5.1,
+            6
+          ],
+          "occludedReuse": false
+        },
+        "right": {
+          "hip": [
+            58,
+            76
+          ],
+          "knee": [
+            58,
+            88
+          ],
+          "ankle": [
+            58,
+            99
+          ],
+          "parts": {
+            "thigh": [
+              54,
+              76,
+              8,
+              12
+            ],
+            "shin": [
+              54,
+              88,
+              8,
+              11
+            ],
+            "foot": [
+              52,
+              98,
+              14,
+              6
+            ]
+          },
+          "solePixel": [
+            12.0,
+            6
+          ],
+          "occludedReuse": false
+        }
+      }
+    },
+    "west": {
+      "sourceColumn": 4,
+      "upperCutY": 76,
+      "legs": {
+        "left": {
+          "hip": [
+            61,
+            76
+          ],
+          "knee": [
+            61,
+            88
+          ],
+          "ankle": [
+            61,
+            99
+          ],
+          "parts": {
+            "thigh": [
+              57,
+              76,
+              8,
+              12
+            ],
+            "shin": [
+              57,
+              88,
+              8,
+              11
+            ],
+            "foot": [
+              55,
+              98,
+              14,
+              6
+            ]
+          },
+          "solePixel": [
+            7.0,
+            6
+          ],
+          "occludedReuse": true
+        },
+        "right": {
+          "hip": [
+            64,
+            76
+          ],
+          "knee": [
+            64,
+            88
+          ],
+          "ankle": [
+            64,
+            99
+          ],
+          "parts": {
+            "thigh": [
+              60,
+              76,
+              8,
+              12
+            ],
+            "shin": [
+              60,
+              88,
+              8,
+              11
+            ],
+            "foot": [
+              58,
+              98,
+              14,
+              6
+            ]
+          },
+          "solePixel": [
+            5.5,
+            6
+          ],
+          "occludedReuse": true
+        }
+      }
+    },
+    "north_west": {
+      "sourceColumn": 5,
+      "upperCutY": 76,
+      "legs": {
+        "left": {
+          "hip": [
+            59,
+            76
+          ],
+          "knee": [
+            59,
+            88
+          ],
+          "ankle": [
+            59,
+            99
+          ],
+          "parts": {
+            "thigh": [
+              55,
+              76,
+              8,
+              12
+            ],
+            "shin": [
+              55,
+              88,
+              8,
+              11
+            ],
+            "foot": [
+              53,
+              98,
+              14,
+              6
+            ]
+          },
+          "solePixel": [
+            6.277777777777778,
+            6
+          ],
+          "occludedReuse": false
+        },
+        "right": {
+          "hip": [
+            70,
+            76
+          ],
+          "knee": [
+            70,
+            88
+          ],
+          "ankle": [
+            70,
+            99
+          ],
+          "parts": {
+            "thigh": [
+              66,
+              76,
+              8,
+              12
+            ],
+            "shin": [
+              66,
+              88,
+              8,
+              11
+            ],
+            "foot": [
+              64,
+              98,
+              14,
+              6
+            ]
+          },
+          "solePixel": [
+            7.5,
+            6
+          ],
+          "occludedReuse": false
+        }
+      }
+    },
+    "north": {
+      "sourceColumn": 6,
+      "upperCutY": 76,
+      "legs": {
+        "left": {
+          "hip": [
+            58,
+            76
+          ],
+          "knee": [
+            58,
+            88
+          ],
+          "ankle": [
+            58,
+            99
+          ],
+          "parts": {
+            "thigh": [
+              54,
+              76,
+              8,
+              12
+            ],
+            "shin": [
+              54,
+              88,
+              8,
+              11
+            ],
+            "foot": [
+              52,
+              98,
+              14,
+              6
+            ]
+          },
+          "solePixel": [
+            5.5,
+            6
+          ],
+          "occludedReuse": false
+        },
+        "right": {
+          "hip": [
+            71,
+            76
+          ],
+          "knee": [
+            71,
+            88
+          ],
+          "ankle": [
+            71,
+            99
+          ],
+          "parts": {
+            "thigh": [
+              67,
+              76,
+              8,
+              12
+            ],
+            "shin": [
+              67,
+              88,
+              8,
+              11
+            ],
+            "foot": [
+              65,
+              98,
+              14,
+              6
+            ]
+          },
+          "solePixel": [
+            6.5,
+            6
+          ],
+          "occludedReuse": false
+        }
+      }
+    },
+    "north_east": {
+      "sourceColumn": 7,
+      "upperCutY": 76,
+      "legs": {
+        "left": {
+          "hip": [
+            61,
+            76
+          ],
+          "knee": [
+            61,
+            88
+          ],
+          "ankle": [
+            61,
+            99
+          ],
+          "parts": {
+            "thigh": [
+              57,
+              76,
+              8,
+              12
+            ],
+            "shin": [
+              57,
+              88,
+              8,
+              11
+            ],
+            "foot": [
+              55,
+              98,
+              14,
+              6
+            ]
+          },
+          "solePixel": [
+            12.5,
+            6
+          ],
+          "occludedReuse": false
+        },
+        "right": {
+          "hip": [
+            71,
+            76
+          ],
+          "knee": [
+            71,
+            88
+          ],
+          "ankle": [
+            71,
+            99
+          ],
+          "parts": {
+            "thigh": [
+              67,
+              76,
+              8,
+              12
+            ],
+            "shin": [
+              67,
+              88,
+              8,
+              11
+            ],
+            "foot": [
+              65,
+              98,
+              14,
+              6
+            ]
+          },
+          "solePixel": [
+            5.0,
+            6
+          ],
+          "occludedReuse": false
+        }
+      }
+    }
+  }
+}

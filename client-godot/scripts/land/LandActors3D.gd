@@ -17,6 +17,7 @@ var _equipment: Node3D
 var _activities: Node3D
 var _body_rigs: Dictionary={}
 var _wet_effects: MultiMeshInstance3D
+var _nala_lower:Node3D
 
 func configure(owner_renderer: Node, scene: Node2D, player: Node2D) -> void:
 	renderer=owner_renderer
@@ -158,6 +159,13 @@ func update_actors(delta: float) -> void:
 			var nala := _sprite("Nala",_frame(visual.texture,rect),actor.position,cell*visual.scale.abs(),-visual.position.y,visual.flip_h,pivot.y if pivot!=Vector2.ZERO else -1.0,lift)
 			var gear: Dictionary=visual.get_equipment_state() if visual.has_method("get_equipment_state") else {}
 			_update_equipment(nala,gear,false,visual.flip_h)
+			if bool(actor.get_meta("nala_lower_body_pilot",false)) and not bool(actor.get("in_water")):
+				if not is_instance_valid(_nala_lower):
+					_nala_lower=preload("res://scripts/NalaLowerBody3D.gd").new()
+					add_child(_nala_lower)
+					_nala_lower.configure(renderer,actor)
+				counts["nalaLowerBody"]=_nala_lower.update_pose(nala,visual,delta)
+			elif is_instance_valid(_nala_lower): _nala_lower.visible=false
 			counts.player=1
 	elif "sheet" in actor:
 		var sheet: Texture2D=actor.get("sheet")
