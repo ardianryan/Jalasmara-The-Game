@@ -27,7 +27,10 @@ const expectedBytes = Number(process.env.PLAN06_EXPECT_PCK_BYTES);
 assert(/^[a-f0-9]{64}$/.test(expected ?? ""));
 assert(Number.isSafeInteger(expectedBytes) && expectedBytes > 0);
 const recorderMode = process.env.PERFORMANCE_RECORDER_MODE ?? "manual";
-assert(["manual", "auto30"].includes(recorderMode), "PERFORMANCE_RECORDER_MODE must be manual or auto30");
+assert(
+  ["manual", "auto30"].includes(recorderMode),
+  "PERFORMANCE_RECORDER_MODE must be manual or auto30",
+);
 const id = randomUUID();
 const email = `recorder-${id}@test.invalid`;
 const password = randomBytes(24).toString("base64url");
@@ -207,15 +210,26 @@ try {
   await page.waitForTimeout(2200);
   if (recorderMode === "auto30") {
     phase = "automatic-duration-expiry";
-    await page.locator('.play-menu-toggle[data-capture="ready"]').waitFor({ timeout: 40000 });
-    assert.equal(await page.getByRole("dialog").count(), 0,
-      "Automatic completion must leave actual gameplay visible without opening the host menu");
-    assert.equal(await frame.evaluate(() => window.jalasmaraSnapshot == null), true,
-      "Automatic expiry cannot enable the full diagnostics/account snapshot");
+    await page
+      .locator('.play-menu-toggle[data-capture="ready"]')
+      .waitFor({ timeout: 40000 });
+    assert.equal(
+      await page.getByRole("dialog").count(),
+      0,
+      "Automatic completion must leave actual gameplay visible without opening the host menu",
+    );
+    assert.equal(
+      await frame.evaluate(() => window.jalasmaraSnapshot == null),
+      true,
+      "Automatic expiry cannot enable the full diagnostics/account snapshot",
+    );
     await shot("auto30-ready-during-actual-gameplay");
     await page.getByRole("button", { name: "Menu", exact: true }).click();
-    assert.equal(await page.getByRole("button", { name: "Hentikan rekaman" }).count(), 0,
-      "The completed capture cannot still expose an active Stop action");
+    assert.equal(
+      await page.getByRole("button", { name: "Hentikan rekaman" }).count(),
+      0,
+      "The completed capture cannot still expose an active Stop action",
+    );
   } else {
     await page.getByRole("button", { name: "Menu", exact: true }).click();
     await page.getByRole("button", { name: "Hentikan rekaman" }).click();
@@ -234,11 +248,19 @@ try {
   assert.equal(report.kind, "jalasmara-device-performance");
   assert.equal(report.schemaVersion, 1);
   assert.equal(report.session.durationMs, 30000);
-  assert.equal(report.session.reason, recorderMode === "auto30" ? "duration-completed" : "user-stopped");
+  assert.equal(
+    report.session.reason,
+    recorderMode === "auto30" ? "duration-completed" : "user-stopped",
+  );
   if (recorderMode === "auto30") {
-    assert(report.session.elapsedMs >= 30000 && report.session.elapsedMs < 45000,
-      "Automatic completion must reach the actual30s host deadline under the bounded foreground acceptance window");
-  } else assert(report.session.elapsedMs >= 6500 && report.session.elapsedMs < 30000);
+    assert(
+      report.session.elapsedMs >= 30000 && report.session.elapsedMs < 45000,
+      "Automatic completion must reach the actual30s host deadline under the bounded foreground acceptance window",
+    );
+  } else
+    assert(
+      report.session.elapsedMs >= 6500 && report.session.elapsedMs < 30000,
+    );
   assert(
     report.frameScheduling.intervalsMs.count > 0 &&
       report.frameScheduling.pausedCallbacks > 0,
@@ -366,7 +388,10 @@ try {
           origin,
           recorderMode,
           candidatePck: { sha256: expected, decodedBytes: expectedBytes },
-          outcome: completed && cleaned && shutdownErrors.length === 0 ? "passed" : "failed",
+          outcome:
+            completed && cleaned && shutdownErrors.length === 0
+              ? "passed"
+              : "failed",
           completed,
           failureStage,
           checks,
