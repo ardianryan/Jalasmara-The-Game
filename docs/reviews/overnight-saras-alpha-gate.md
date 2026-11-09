@@ -23,3 +23,13 @@ APP_TEST_ORIGIN=http://localhost:3111 PLAN06_EXPECT_PCK=1315f34672b0fc5694a5f736
 ```
 
 No production renderer/Main/CharacterVisual, proxy, UI feature, account, asset or license was changed.
+
+## Actual night rest-site result: behavior passes, visual gate remains open
+
+The granted actual run on the pinned1315 package completed three behavior checks with zero API/browser errors. UUID `5102932f-9cda-4131-8c85-a4368a72154e` was independently cleaned, including its player/receipts/shifts/exact Redis/session keys. Actual route time was228,842ms, with273camera-matrix pulses, zero legacy pulses, and119surface-position acknowledgements. Saras reached her real clear-night rest station before Nala physically approached; no clock, weather, NPC, runtime position or economy override occurred.
+
+Both real conversations identified Saras. The pre-dialog player points were `(1072.1615,344.6782)` and `(1048.6583,367.1101)`, sufficiently separated from the authored station and each checked against the actual renderer motion matrix. The automatic checks correctly assert schedule/interaction/no rewards. The original PNGs were inspected at their actual844×390 resolution: foreground palm foliage still covers important silhouette boundaries. These captures therefore **do not establish correct complete silhouette compositing or resolve the historical gray-quad report**. There is no justified alpha-mode, chroma-key or artwork workaround from this result.
+
+Evidence is in integration `artifacts/browser/plan06-layout-5102932f-9cda-4131-8c85-a4368a72154e/`: `results.json`, two `saras-rest-view-*-before-conversation-needs-image-review.png`, two actual-dialogue PNGs, and the checked quiet-spawn PNG. Log `.runtime/overnight-saras-night-browser.log`. The exclusive browser slot was released immediately after completion. This real local Chromium/SwiftShader result is not a physical-device performance measurement or public acceptance.
+
+A follow-up approved by root will use a separate legitimate20:00 fixture with Nala already near Saras's authored work spawn. Existing player attention will hold her there through normal HubActor behavior; no NPC override or new renderer mechanism is needed. This avoids repeating the long commute and uses the same unobscured work-site composition previously measured natively, now through actual Main/browser night lighting. It remains a prepared gate until its original images are inspected.
