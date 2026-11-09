@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "status": "AUTHORED SOUTH daily upper-body loop proposal; no measured wrist, grip or foot-contact mapping",
+  "identity": "male_nusantara",
+  "outfit": "daily",
+  "view": "south",
+  "sourceFrame": 0,
+  "ownershipSpecSha256": "0d7481aabf52fbd61b2db02130d2d89f1dc7adc91abf69a83c7068f316183639",
+  "frameCount": 8,
+  "previewFrameMs": 100,
+  "anatomicalConvention": "SOUTH anatomical LEFT is viewer-right; RIGHT is viewer-left. This is not a near/far convention for other views.",
+  "jointsStatus": "AUTHORED design anchors copied from reviewed v7 proposal; not measured source joints or grip sockets",
+  "phaseStatus": "Independent authored phase only. No Lower/contact event, distance or locomotion timing is connected.",
+  "motion": {
+    "left": {
+      "upperSinDeg": -3,
+      "foreMeanDeg": -30,
+      "foreCosDeg": -25
+    },
+    "right": {
+      "upperSinDeg": 3,
+      "foreMeanDeg": -35,
+      "foreCosDeg": -30
+    }
+  },
+  "behindTorso": [
+    "left"
+  ],
+  "armBoundaryOwnershipProposal": [
+    {
+      "side": "right",
+      "part": "fore",
+      "pixel": [
+        54,
+        59
+      ],
+      "rgba": [
+        35,
+        26,
+        20,
+        255
+      ],
+      "status": "AUTHORED ownership of original dark boundary; outside intended neutral shirt contour, adjacent original forearm. Original anatomical ownership remains uncertain."
+    },
+    {
+      "side": "right",
+      "part": "fore",
+      "pixel": [
+        55,
+        59
+      ],
+      "rgba": [
+        83,
+        73,
+        63,
+        255
+      ],
+      "status": "AUTHORED ownership of original dark boundary; outside intended neutral shirt contour, adjacent original forearm. Original anatomical ownership remains uncertain."
+    },
+    {
+      "side": "right",
+      "part": "fore",
+      "pixel": [
+        54,
+        60
+      ],
+      "rgba": [
+        55,
+        40,
+        36,
+        255
+      ],
+      "status": "AUTHORED ownership of original dark boundary; outside intended neutral shirt contour, adjacent original forearm. Original anatomical ownership remains uncertain."
+    },
+    {
+      "side": "right",
+      "part": "fore",
+      "pixel": [
+        55,
+        62
+      ],
+      "rgba": [
+        55,
+        38,
+        35,
+        255
+      ],
+      "status": "AUTHORED ownership of original dark boundary; outside intended neutral shirt contour, adjacent original forearm. Original anatomical ownership remains uncertain."
+    },
+    {
+      "side": "right",
+      "part": "fore",
+      "pixel": [
+        55,
+        63
+      ],
+      "rgba": [
+        59,
+        45,
+        39,
+        255
+      ],
+      "status": "AUTHORED ownership of original dark boundary; outside intended neutral shirt contour, adjacent original forearm. Original anatomical ownership remains uncertain."
+    },
+    {
+      "side": "right",
+      "part": "fore",
+      "pixel": [
+        55,
+        64
+      ],
+      "rgba": [
+        61,
+        44,
+        37,
+        255
+      ],
+      "status": "AUTHORED ownership of original dark boundary; outside intended neutral shirt contour, adjacent original forearm. Original anatomical ownership remains uncertain."
+    }
+  ],
+  "authoredOutputPixels": [],
+  "outputPixelStatus": "None: explicit original arm-boundary ownership closes the raster seam without adding output pixels. Hidden body repair remains the separately authored93texels from v7."
+}
