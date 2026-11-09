@@ -77,6 +77,16 @@ func _ankle_offset(side:String,direction:String,right:Vector3,vertical:float) ->
 	var ankle:=_vec(leg.ankle)-Vector2(float(rect[0]),float(rect[1]))
 	return right*(ankle.x-sole.x)+Vector3(0,0,(sole.y-ankle.y)/vertical)
 
+func _rotated_shoe_clear(side:String,direction:String,logical:Vector2,world_sole:Vector3,right:Vector3,vertical:float) -> bool:
+	if not _planner.airborne_clear(logical,world_sole): return false
+	var leg:Dictionary=_data.views[direction].legs[side]
+	var sole:=_vec(leg.solePixel)
+	for edge in leg.soleEdgePixels:
+		var pixel:=_vec(edge)
+		var world:=world_sole+right*(pixel.x-sole.x)+Vector3(0,0,(sole.y-pixel.y)/vertical)
+		if not _planner.airborne_clear(logical,world): return false
+	return true
+
 func _anatomy(view:Dictionary,feet:Dictionary,at:Vector2,right:Vector3,vertical:float,body_height:float=NAN) -> Dictionary:
 	var ground:Vector3=renderer.ground_point(at)
 	var root_hip:Vector3=ground+Vector3(0,0,28.0/vertical+(body_height-ground.z if not is_nan(body_height) else 0.0))
@@ -175,8 +185,7 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 			var candidate:String=DIRECTIONS[posmod(index+(1 if forward<=4 else -1),8)] if direction!=previous_direction else previous_direction
 			if candidate!=previous_direction and float(pose.swingDistance)<float(pose.landingDistance)*.85:
 				var rotated:=correction+_ankle_offset(side,previous_direction,right,vertical)-_ankle_offset(side,candidate,right,vertical)
-				var floor:Vector3=renderer.ground_point(entry.logical)
-				if Vector3(entry.sole).z+rotated.z>=floor.z+.02:
+				if _rotated_shoe_clear(side,candidate,entry.logical,Vector3(entry.sole)+rotated,right,vertical):
 					var pivot:Vector3=Vector3(entry.sole)+correction+_ankle_offset(side,previous_direction,right,vertical)
 					entry["rotationAnchorWorld"]=[pivot.x,pivot.y,pivot.z]
 					correction=rotated

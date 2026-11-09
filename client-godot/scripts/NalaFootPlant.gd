@@ -138,6 +138,16 @@ func _stair_path_point(from:Vector2,to:Vector2,progress:float) -> Vector2:
 func _base(at:Vector2,hip_x:float,right:Vector3) -> Vector2:
 	return at+_logical_offset(at,right*hip_x)
 
+func airborne_clear(logical:Vector2,world:Vector3) -> bool:
+	var sample:=logical
+	for iteration in range(3):
+		var ground:=_ground(sample)
+		var offset:=world-ground
+		offset.z=0
+		if offset.length_squared()<.000001: break
+		sample+=_logical_offset(sample,offset)
+	return world.z>=_ground(sample).z+.02
+
 func _on_stairs(at:Vector2) -> bool:
 	for profile in _stairs:
 		if not Traversal.connector_ground(profile,at).is_empty(): return true
