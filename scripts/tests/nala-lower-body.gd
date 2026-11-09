@@ -18,7 +18,7 @@ var capture:=false
 var last_delta:=0.0
 var capture_stride:=4
 var trace:Array=[]
-const OUTPUT:="res://../artifacts/godot/overnight-nala-lower"
+var output:=""
 
 func _initialize() -> void: call_deferred("run")
 func _check(valid:bool,message:String) -> bool:
@@ -143,7 +143,7 @@ func _tick(target:Vector2,delta:float,label:String) -> void:
 	if capture and checks%capture_stride==0:
 		RenderingServer.force_draw(false)
 		var index:=frames.size()
-		renderer.viewport_3d.get_texture().get_image().save_png(OUTPUT+"/%04d.png"%index)
+		renderer.viewport_3d.get_texture().get_image().save_png(output+"/%04d.png"%index)
 		frames.append({"frame":index,"case":label,"position":[target.x,target.y],"pose":renderer.actors_3d.counts.nalaLowerBody.duplicate(true)})
 
 func _reset_case(at:Vector2,outfit:String) -> void:
@@ -160,7 +160,12 @@ func run() -> void:
 	capture_stride=clampi(int(OS.get_environment("NALA_LOWER_CAPTURE_STRIDE")) if OS.has_environment("NALA_LOWER_CAPTURE_STRIDE") else 4,1,24)
 	if capture:
 		root.size=Vector2i(1440,810)
-		DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(OUTPUT))
+		output=OS.get_environment("NALA_LOWER_OUTPUT") if OS.has_environment("NALA_LOWER_OUTPUT") else "res://../artifacts/godot/overnight-nala-lower-"+str(int(Time.get_unix_time_from_system()))
+		if not _check(not DirAccess.dir_exists_absolute(ProjectSettings.globalize_path(output)),"Capture output already exists; preserve prior native proof"): return
+		DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(output))
+		var source_hashes:Dictionary={}
+		for path in ["res://scripts/NalaFootPlant.gd","res://scripts/NalaLowerBody3D.gd","res://scripts/CharacterVisual.gd","res://scripts/land/LandActors3D.gd","res://../scripts/tests/nala-lower-body.gd"]: source_hashes[path]=FileAccess.get_sha256(path)
+		FileAccess.open(output+"/source.json",FileAccess.WRITE).store_string(JSON.stringify({"files":source_hashes,"flatOnly":OS.get_environment("NALA_LOWER_FLAT_ONLY")=="1","captureStride":capture_stride,"nativeAcceptance":"pending visual review; never full gait by geometry alone"},"  "))
 	var state:=root.get_node("GameState")
 	state.world=JSON.parse_string(FileAccess.get_file_as_string("res://../.runtime/world-map.json"))
 	state.player={"appearance":"male_nusantara","progress":{"day":2,"stage":"dive"}}
@@ -206,7 +211,7 @@ func run() -> void:
 				if not _check(settled_pose.direction==settled_pose.desiredDirection,"Cutout facing failed to converge after walk+stop "+label): return
 				for index in range(12): await _tick(stopped-direction*(index+1)*2,1.0/30,label+" restart turn")
 	if OS.get_environment("NALA_LOWER_FLAT_ONLY")=="1":
-		if capture: FileAccess.open(OUTPUT+"/flat-results.json",FileAccess.WRITE).store_string(JSON.stringify(frames,"  "))
+		if capture: FileAccess.open(output+"/flat-results.json",FileAccess.WRITE).store_string(JSON.stringify(frames,"  "))
 		print("NALA LOWER BODY FLAT ONLY PASS: ",checks," actual sprite samples; stairs and full natural gait NOT accepted")
 		stage.free()
 		quit()
@@ -229,7 +234,7 @@ func run() -> void:
 	await _tick(player.position,.1,"pause")
 	if not _check(renderer.actors_3d.counts.nalaLowerBody==before_pose,"Pause retains exact rig state"): return
 	if not _check(JSON.stringify({"world":state.world,"player":state.player})==unchanged,"Visual candidate mutated server state"): return
-	if capture: FileAccess.open(OUTPUT+"/results.json",FileAccess.WRITE).store_string(JSON.stringify(frames,"  "))
+	if capture: FileAccess.open(output+"/results.json",FileAccess.WRITE).store_string(JSON.stringify(frames,"  "))
 	print("NALA LOWER BODY PASS: ",checks," actual sprite sole/limb samples, 8 headings, daily/explorer, normal/reduced, stop/restart/turn, real stair triangles, pause; stance drift=",drift_max," limb error=",length_max," rejected=",rejected)
 	stage.free()
 	quit()
