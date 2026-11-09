@@ -53,6 +53,7 @@ var _cloth: Array[Dictionary] = []
 var _canopy_readability = preload("res://scripts/land/CanopyReadability3D.gd").new()
 var _soft_ground_patches := 0
 var _soft_ground_vertices := 0
+var _shelter_architecture = preload("res://scripts/land/ShelterArchitecture3D.gd").new()
 
 func _compute_garden_state() -> int:
 	var progress: Dictionary = GameState.player.get("progress",{})
@@ -177,6 +178,7 @@ func set_area(place: String) -> void:
 	for stair in map.get("stairs",[]): _build_stair(stair)
 	for obstacle in map.get("obstacles",[]): _build_obstacle(obstacle)
 	_build_corridor_landmarks()
+	_shelter_architecture.build(self)
 	_build_ground_details()
 	_build_wet_banks()
 	_batch_static_geometry()
@@ -1022,7 +1024,7 @@ func _home_plot(entry: Dictionary, rect: Rect2, center: Vector3) -> void:
 				for side in [-1.0,1.0]: _box("HomeHarvestLeaf",plant+Vector3(side*7,0,tall-2),Vector3(16,9,3),material)
 
 func _fence(_entry: Dictionary,rect: Rect2,center: Vector3) -> void:
-	if str(_entry.get("variant",""))=="changing_booth": return
+	if str(_entry.get("variant","")) in ["changing_booth","shelter_post"]: return
 	if str(_entry.get("variant",""))=="bridge_rail":
 		_bridge_rail(_entry)
 		return
@@ -1202,6 +1204,7 @@ func _process(delta: float) -> void:
 		var panel: Node3D=cloth.node
 		panel.rotation.y=sin(float(Time.get_ticks_msec())*.0014+float(cloth.phase))*.035*sway
 	_canopy_readability.update(map_point(actor.position,ground_height(actor.position)),camera_up(),camera_forward(),delta)
+	_shelter_architecture.update(self,delta)
 	_weather_clock+=delta
 	if _weather_clock>.25:
 		_weather_clock=0

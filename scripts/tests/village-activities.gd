@@ -49,7 +49,7 @@ func _run() -> void:
 		clock.visual_minutes=float(profile.activity.endMinute)
 		actor.call("_process",0.0)
 		assert(actor.position==original,"Schedule changes cannot teleport")
-		assert(str(actor.activity_state().phase).begins_with("walking_rest"))
+		assert(str(actor.activity_state().phase).begins_with("walking_rest"),str(profile.name)+" requires a connected home route: "+str(actor.activity_state()))
 		var destination:=Vector2(float(profile.activity.rest[0]),float(profile.activity.rest[1]))
 		var iterations:=0
 		while actor.position.distance_to(destination)>2 and iterations<3000:

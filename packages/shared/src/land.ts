@@ -55,6 +55,17 @@ export type LandMap = {
   bridges?: LandBridge[];
   terraces: { id: string; elevation: number }[];
   routes: LandPoint[][];
+  shelters?: LandShelter[];
+};
+export type LandShelter = {
+  id: string;
+  buildingId: string;
+  roof: LandPoint[];
+  posts: LandPoint[];
+  elevation: number;
+  attachmentHeight: number;
+  outerHeight: number;
+  existing?: boolean;
 };
 export type LandPosition = { x: number; y: number };
 const rectangle = (
@@ -409,10 +420,13 @@ hubRoutes.push(
     [595, 650],
     [400, 720],
     [265, 720],
+    [200, 700],
+    [160, 660],
     [160, 615],
   ],
   [
     [160, 615],
+    [160, 660],
     [230, 700],
     [230, 740],
     [280, 740],
@@ -427,13 +441,19 @@ hubRoutes.push(
   ],
   [
     [940, 310],
+    [760, 350],
+    [640, 350],
     [640, 320],
     [465, 320],
   ],
   [
     [940, 310],
     [1150, 320],
-    [1325, 300],
+    [1150, 360],
+    [1240, 365],
+    [1305, 360],
+    [1305, 300],
+    [1375, 300],
   ],
   [
     [1120, 1000],
@@ -519,6 +539,91 @@ const hubObstacles: LandObstacle[] = [
   obstacle("forest_gate_west", "fence", 2240, 80, 25, 110, 80, "bamboo", 3),
   obstacle("forest_gate_east", "fence", 2325, 80, 25, 110, 80, "bamboo", 3),
 ];
+function attachedShelter(buildingId: string, reach: number): LandShelter {
+  const house = hubObstacles.find((entry) => entry.id === buildingId)!;
+  const [backLeft, , frontRight, frontLeft] = house.footprint;
+  const alongLength = Math.hypot(
+    frontRight[0] - frontLeft[0],
+    frontRight[1] - frontLeft[1],
+  );
+  const outLength = Math.hypot(
+    frontLeft[0] - backLeft[0],
+    frontLeft[1] - backLeft[1],
+  );
+  const along = [
+    (frontRight[0] - frontLeft[0]) / alongLength,
+    (frontRight[1] - frontLeft[1]) / alongLength,
+  ];
+  const outward = [
+    (frontLeft[0] - backLeft[0]) / outLength,
+    (frontLeft[1] - backLeft[1]) / outLength,
+  ];
+  const offset = (point: LandPoint, side: number, out: number): LandPoint => [
+    point[0] + along[0] * side + outward[0] * out,
+    point[1] + along[1] * side + outward[1] * out,
+  ];
+  const widthMargin = buildingId === "balai_lurah" ? 24 : 16;
+  return {
+    id: `${buildingId}_serambi`,
+    buildingId,
+    roof: [
+      offset(frontLeft, -widthMargin, -8),
+      offset(frontRight, widthMargin, -8),
+      offset(frontRight, widthMargin, reach),
+      offset(frontLeft, -widthMargin, reach),
+    ],
+    posts: [
+      offset(frontLeft, 8, reach - 12),
+      offset(frontRight, -8, reach - 12),
+    ],
+    elevation: house.elevation ?? 0,
+    attachmentHeight:
+      house.variant === "balai" ? 126 : house.height3d * 0.7 + 22,
+    outerHeight: house.variant === "balai" ? 108 : house.height3d * 0.7 + 8,
+  };
+}
+const hubShelters = [
+  attachedShelter("balai_lurah", 112),
+  attachedShelter("rumah_ratih", 112),
+  attachedShelter("rumah_sari", 105),
+  attachedShelter("rumah_tedi", 100),
+  attachedShelter("griya_sasmita", 90),
+];
+for (const shelter of hubShelters) {
+  for (const [index, point] of shelter.posts.entries()) {
+    hubObstacles.push(
+      obstacle(
+        `${shelter.id}_post_${index}`,
+        "fence",
+        point[0] - 5,
+        point[1] - 5,
+        10,
+        10,
+        shelter.outerHeight,
+        "shelter_post",
+        shelter.elevation,
+      ),
+    );
+  }
+}
+hubShelters.push({
+  id: "changing_booth_shade",
+  buildingId: "changing_booth",
+  existing: true,
+  roof: [
+    [1392, 1200],
+    [1468, 1200],
+    [1468, 1380],
+    [1392, 1380],
+  ],
+  posts: [
+    [1430, 1200],
+    [1430, 1380],
+  ],
+  elevation: 0,
+  attachmentHeight: 120,
+  outerHeight: 120,
+});
 const forestRoutes: LandPoint[][] = [
   [
     [200, 1320],
@@ -714,7 +819,7 @@ for (const [i, x, y] of [
 export const LAND_MAPS: Record<"hub" | "forest", LandMap> = {
   hub: {
     id: "hub",
-    layoutVersion: 8,
+    layoutVersion: 9,
     landmass: [
       [240, 80],
       [680, 60],
@@ -743,6 +848,7 @@ export const LAND_MAPS: Record<"hub" | "forest", LandMap> = {
     spawn: { x: 1120, y: 1230 },
     surfaces: hubSurfaces,
     obstacles: hubObstacles,
+    shelters: hubShelters,
     stairs: hubStairs,
     bridges: [
       {
