@@ -190,7 +190,14 @@ try {
     );
     await page.getByText("Pemain fixture", { exact: true }).waitFor();
     await page.evaluate(() => document.fonts.ready);
-    assert(await page.evaluate(() => document.fonts.check('400 16px "Nunito Sans"') && document.fonts.check('600 16px "Lora"')), "Local website fonts must load before captures");
+    assert(
+      await page.evaluate(
+        () =>
+          document.fonts.check('400 16px "Nunito Sans"') &&
+          document.fonts.check('600 16px "Lora"'),
+      ),
+      "Local website fonts must load before captures",
+    );
     await fits(page, `admin ${viewport.width}`);
     const table = page.getByRole("region", { name: /Daftar pemain/ });
     await table.focus();
@@ -232,8 +239,12 @@ try {
       );
       checks.push({ label: "new search from page 2 requests only page 1" });
       state.slowActive = true;
-      await page.getByRole("combobox", { name: /^Status/ }).selectOption("active");
-      await page.getByRole("combobox", { name: /^Status/ }).selectOption("blocked");
+      await page
+        .getByRole("combobox", { name: /^Status/ })
+        .selectOption("active");
+      await page
+        .getByRole("combobox", { name: /^Status/ })
+        .selectOption("blocked");
       await page.getByText("Hasil diblokir terbaru", { exact: true }).waitFor();
       await page.waitForTimeout(650);
       assert.equal(
@@ -291,6 +302,39 @@ try {
       checks.push({
         label:
           "unsaved draft survives canceled tab change and discards only after confirmation",
+      });
+      await page
+        .getByRole("button", { name: "Konten permainan", exact: true })
+        .click();
+      await page.getByRole("button", { name: "Buka", exact: true }).click();
+      await page
+        .getByLabel("Pertanyaan", { exact: true })
+        .fill("Draft sebelum kembali ke daftar versi.");
+      assert(
+        await page.evaluate(() => {
+          const event = new Event("beforeunload", { cancelable: true });
+          dispatchEvent(event);
+          return event.defaultPrevented;
+        }),
+        "A dirty draft registers the navigation guard",
+      );
+      page.once("dialog", (dialog) => dialog.accept());
+      await page
+        .getByRole("button", { name: "Kembali ke versi", exact: true })
+        .click();
+      await page.getByRole("button", { name: "Buka", exact: true }).waitFor();
+      assert.equal(
+        await page.evaluate(() => {
+          const event = new Event("beforeunload", { cancelable: true });
+          dispatchEvent(event);
+          return event.defaultPrevented;
+        }),
+        false,
+        "Discarding through Kembali ke versi removes the dirty navigation guard",
+      );
+      checks.push({
+        label:
+          "return to versions clears the dirty draft guard after confirmed discard",
       });
     }
     await page.goto(`${origin}/settings`);
