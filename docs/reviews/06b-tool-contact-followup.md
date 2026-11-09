@@ -30,6 +30,12 @@ Darmi and Sari still use the earlier screen-space gait with a heuristic knee and
 
 ## Verification status
 
-CPU reproduction and `git diff --check` pass. Engine execution is pending the root's next slot after the final website/browser work; no runtime PASS is claimed yet.
+CPU reproduction and `git diff --check` pass. After the root granted a focused serialized engine slot, Godot 4.7.2 headless ran the new actual-world test and the Ujang regression. No native or browser capture was added in this follow-up.
 
-The new `scripts/tests/village-tool-contact.gd` is prepared to build the actual `LandWorld3D` and run 480 Darmi/Sari work samples. It checks target intersection with emitted soil triangles, the old miss against those same meshes, pour/reduced visibility, above-soil drop paths, pause transform stability, unknown unannotated grips, clearing hidden tool metrics, and unchanged WORLD/player/economy snapshots. It must pass before considering integration. It is not registered in the main world runner at this pending checkpoint.
+`scripts/tests/village-tool-contact.gd` **PASS**: actual `LandWorld3D`, 480 Darmi/Sari work samples and 260 visible drop samples. The new destination intersects emitted soil triangles; the original destination misses those same meshes. Pour/reduced visibility, above-soil drop paths, pause transform stability, unknown unannotated grips, clearing hidden tool metrics and unchanged WORLD/player/economy snapshots all pass.
+
+`ujang-foot-contact.gd` **PASS** unchanged: 1,242 contact samples including 168 sharp turns, plus 26 independently measured west grip poses. Maximum sole drift remains 0.000306342, knee join 0.000272985, pelvis 7.04096 below the bound 8, grip error 0.01538721.
+
+The first import in this new worktree logged missing cached font data before reimport. Import was repeated after assets finished importing; the final import and both final test logs were scanned in full and contain zero `SCRIPT ERROR`, `ERROR:` or assertion failures. Logs are ignored under `.runtime/tool-import-final.log`, `.runtime/tool-contact.log` and `.runtime/ujang-regression.log`. All Godot processes were closed before releasing the slot.
+
+This test is not yet registered in the main world runner at this isolated checkpoint. Root integration should register it if the runtime follow-up is accepted. No claim is made that the native visual appearance or physical mobile performance was rechecked here.
