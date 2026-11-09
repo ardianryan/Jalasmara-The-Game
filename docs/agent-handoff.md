@@ -1,12 +1,12 @@
 # Handoff aktif agent
 
-Checkpoint 10 November 2026, sekitar03.07 WIB. Runtime tetap Godot4.7.2 Compatibility Web single-thread dengan host React/Vite dan Fastify/Mongo/Redis. Pengguna meminta pekerjaan diteruskan hingga08.00WIB, memaksimalkan tiga subagent+integrator; jangan berhenti hanya setelah membuat rencana. Pengguna siap membantu pengujian Samsung S23/Windows nanti, tetapi belum ada hasil perangkat fisik.
+Checkpoint 10 November 2026, sekitar03.15 WIB. Runtime tetap Godot4.7.2 Compatibility Web single-thread dengan host React/Vite dan Fastify/Mongo/Redis. Pengguna meminta pekerjaan diteruskan hingga08.00WIB, memaksimalkan tiga subagent+integrator; jangan berhenti hanya setelah membuat rencana. Pengguna siap membantu pengujian Samsung S23/Windows nanti, tetapi belum ada hasil perangkat fisik.
 
 ## Workspace dan aturan bersama
 
 - Root bekerja di `/Users/ardianryan/Documents/Jalasmara-overnight-integration`, branch `work/overnight-integration`. Main/original workspace tetap `d070a7b`; jangan menimpanya atau menganggap ekspor main ikut berubah.
 - Character: `Jalasmara-overnight-character`; shelter: `Jalasmara-overnight-resident-art`; website kini mengerjakan consumer ground di `Jalasmara-overnight-ground-consumers`, sumber host sebelumnya di `Jalasmara-overnight-hud-perf`.
-- Semua Godot import/export/headless/native/browser/WebGL/GPU wajib serial dengan grant root dan RELEASE. CPU/source/API independen boleh paralel. Periksa pesan slot sebelum menjalankan engine; pada checkpoint ini website memiliki slot browser smoke publik enam pemeriksaan, character hanya CPU/source.
+- Semua Godot import/export/headless/native/browser/WebGL/GPU wajib serial dengan grant root dan RELEASE. CPU/source/API independen boleh paralel. Periksa pesan slot sebelum menjalankan engine; pada checkpoint ini character memiliki window debuggingengine≤5menit setelahwebsiteRELEASE; website menyiapkan harnessjahe4hari CPU/source.
 - Symlink `node_modules`, `.runtime`, dump/artefak mentah dan kredensial tidak boleh distage. Jangan menggunakan akun owner, reseed, menghapus volume/data/backup, atau mengubah shared proxy.
 - GitLab CE dibatalkan. Remote `github` dan `gitlab` tetap; branch terakhir dipush sampai `3af35a6`. Commit sesudahnya belum otomatis dipublikasi. Tidak ada PR/merge main baru.
 - Kamera kiri→kanan3/4, azimut−45/elevasi35; satu hari36menit aktif; pakaian daily/explorer/diving dan gear modular tetap. Gagal reach/sole/ankle tidak boleh ditutup dengan memperpanjang kaki atau menaikkan toleransi.
@@ -29,7 +29,7 @@ VPS SSH `dev-jalasmara`, aplikasi `/opt/jalasmara`, bind10.1.0.8:3000. Tidak ada
 
 Backup `/var/backups/jalasmara/jalasmara-20261109T195656Z.archive.gz`, SHAff3f806acae7821c17a1c7ff5fbe08ecd924da539ba1dd9cd2c99d9b70172d17, direstore42dokumen/0gagal ke database pemeriksaan terpisah lalu dibersihkan. Jangan seed saat update reguler.
 
-[Ekspor ketiga](reviews/overnight-export3-integration.md) aktif, tetapi smoke publik enam pemeriksaan sedang berjalan: UUIDd07e56d3-965b-4d90-b251-72626c6cc6a4, defaultH2. Belum hasil akhir; kalender setelah reload sekarang mensyaratkan writer baru dan waktu otoritatif benar-benar maju. Bukti [smoke sebelumnya5/5](reviews/overnight-public-release.md) tetap khusus798/PCK1315, bukan dipindahkan ke paket baru.
+[Ekspor ketiga](reviews/overnight-export3-integration.md) aktif dan smoke publik enam pemeriksaan PASS: UUIDd07e56d3-965b-4d90-b251-72626c6cc6a4, defaultH2. Hasil381.635ms/560pulsa/0error,cleanupnol; writerbaru/revision65→66 dan waktuotoritatifmajusetara5.285ms terbukti. Bukti [smoke sebelumnya5/5](reviews/overnight-public-release.md) tetap khusus798/PCK1315, bukan dipindahkan ke paket baru.
 
 
 ## Source gabungan lokal dan bukti
@@ -37,7 +37,7 @@ Backup `/var/backups/jalasmara/jalasmara-20261109T195656Z.archive.gz`, SHAff3f80
 - Paket publik mencakup HUD malam ringkas,13rutinitas, rumah pribadi lurah/direkturRV/Laskar, jahe/keramba, serta tiga ikan dekoratif Fish Gen. Sepuluh spesies gameplay tetap. Commute enam warga11.826pose/ramp158/stairs0 lulus; jangan mengklaim seluruh tangga/delapan arah artwork warga.
 - PCK1315 lokal: kedai11, kebun5, PCKfault4, WASMfault3, recorder otomatis30detik4 pemeriksaan lulus. Recorder30.103ms/28sampel memakai SwiftShader; bukan FPS S23/Windows. [Panduan perangkat](performance/overnight-device-test.md) sudah mematok rilis798/PCK1315.
 - [Akuisisi induk sampai panen](reviews/overnight-live-parent-cycle-actual.md) **8/8** actualbrowser, UUID2fe51904-6362-40d0-80f7-303f799df9d3: dua tangkapan Bintang3 asli→ekstraksi→stok2induk→pakan/tidur dua hari→panen1anak→reload sama. Tidak menyuntik induk/hasil;0error, fixture dibersihkan. Bukan bukti pembukaan izin/benih atau pertumbuhan jahe4hari penuh.
-- [Admin](reviews/overnight-admin-array-drafts.md) **35** pemeriksaan React/fixtureAPI pada1440/667/390/320; invalid JSON dipertahankan dan memblokir simpan, impor tidak menghapus draft lain. [Loading pendek](reviews/overnight-loading-short-landscape.md) **16** pemeriksaan host pada844×320/932×280, sentuh/scroll/Menu/Escape/retry; root meninjau gambar. Host build terbaru/typecheck lulus dan61asset compiled identik dengan build yang diuji. **Sudah masuk image2036254; smoke publik paket baru belum selesai.**
+- [Admin](reviews/overnight-admin-array-drafts.md) **35** pemeriksaan React/fixtureAPI pada1440/667/390/320; invalid JSON dipertahankan dan memblokir simpan, impor tidak menghapus draft lain. [Loading pendek](reviews/overnight-loading-short-landscape.md) **16** pemeriksaan host pada844×320/932×280, sentuh/scroll/Menu/Escape/retry; root meninjau gambar. Host build terbaru/typecheck lulus dan61asset compiled identik dengan build yang diuji. **Sudah masuk image2036254; smoke publik paket baru6/6PASS.**
 - [Predicate lantai](reviews/overnight-canonical-ground-predicate.md) root75b866a/cf28881 memperbaiki ghost dockfloor0 di1124.999023; server dan renderer kini48. Root full62 tanpa AABB lulus179.811ms,10spesies/722frame. Kegagalan awal tipe fixture disimpan.
 - [AABB4795d28](reviews/overnight-ground-query-aabb.md) mempertahankan rawfloat64+boundarystrict1e−7:324titik+20kasus/20.783pemeriksaan lulus. Benchmark query hub208,067→32,231µs dan forest81,044→16,121µs; checksum/counts sama. Masih2,13×/3,21× baseline native lama. Tidak mengklaim FPS.
 - [Consumer query](reviews/overnight-canonical-ground-peer-review.md): cache rawpolygon/AABB mendeteksi same-count mutation/reorder/replacement; actual5titik+10mutasi lulus. Overhead query konsistensi6,8–10,1µs, bukan perbaikanFPS. Sudah didaftarkan sebagai kasus63.
@@ -69,13 +69,13 @@ Root melihat upper8×8 asli: view4neararm selalu di depan, phase+.5 tidak menyel
 
 ## Berikutnya dan storage
 
-1. Selesaikan smoke publik6 padaimage203/PCK73d, periksa cleanup dan kalenderwriterbaru; setelahPASS perbarui pin panduan perangkat/galeri dan retensi active+rollbackd044. CIbuildpending tetap dilaporkan.
+1. Smoke publik6 image203/PCK73d sudahPASS, panduanperangkat/galeri diperbarui. Aktif+rollbackd044 dipertahankan, d60/contextsementara dihapus setelahpenerimaan; CIbuildpending tetapdilaporkan. Website menyiapkanjahe4hari actualbrowserberikutnya.
 2. Character lanjut rigidsole-plane ramp dengan invariant ketat, lalu full16/freshflat32/dua native movingsequences. Slotengine hanya sesudahwebsiterelease; jangan longgarkan anatomi atau collision.
 3. Shelter memperbarui runbook image-based dan mengusulkan registrasi tes CPU baru; root menggabungkan dokumentasi/runner setelah tes lulus. Push branch ketika pipelinepending ditangani tanpa menyembunyikan statusnya.
 4. Interior lurah baru [proposal](reviews/overnight-lurah-interior-proposal.md), belum implementasi. Jahe4hari penuh/perangkatS23/Windows masih terbuka. Pengguna sudah bersedia membantu perangkat; jangan tanyakan ulang kesiapan.
 
 
-[Pembersihan](reviews/overnight-storage-cleanup.md): lima output265.089.024allocatedbyte, arsip lokal276.832.256allocatedbyte, output/image supersededVPS dibuang setelah penerimaan. VPSfree44.030.980.096byte, setelahpembersihanterdahulu; kiniaktif203+rollbackd044, d60belumdibersihkan sampai smoke baruPASS. Source/hasil gagal/backup/volume/cache worktree aktif dipertahankan. Untuk build berikutnya source Docker context tracked hanya sekitar4,1MB; hindari mengunggah ulang seluruh repo265MB bila aset wasm lama yang hash-nya cocok dapat dipakai ulang. Packageroriginal `scripts/package-web-release.py` kini5tes/7peerprobePASS; context69.191.680byte denganWASMreusehashverified, jangan hapus context sebelum smokePASS.
+[Pembersihan](reviews/overnight-storage-cleanup.md): lima output265.089.024allocatedbyte, arsip lokal276.832.256allocatedbyte, output/image supersededVPS dibuang setelah penerimaan. VPSfree44.030.980.096byte, setelahpembersihanterdahulu; kiniaktif203+rollbackd044, d60/contextsementara sudahdibersihkan sesudah smoke baruPASS. Source/hasil gagal/backup/volume/cache worktree aktif dipertahankan. Untuk build berikutnya source Docker context tracked hanya sekitar4,1MB; hindari mengunggah ulang seluruh repo265MB bila aset wasm lama yang hash-nya cocok dapat dipakai ulang. Packageroriginal `scripts/package-web-release.py` kini5tes/7peerprobePASS; context69.191.680byte denganWASMreusehashverified, contextarsiplokal69.193.728allocatedbyte danremote188.108.800allocatedbyte sudahdibersihkan setelahsmokePASS, manifest/log tetap.
 
 ## Tool, lisensi dan riwayat
 

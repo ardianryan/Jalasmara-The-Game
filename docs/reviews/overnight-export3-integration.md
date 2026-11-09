@@ -1,6 +1,6 @@
 # Integrasi dan aktivasi ekspor ketiga
 
-Checkpoint 10 November 2026, 03.06 WIB. Image baru sudah aktif dan sehat di staging; penerimaan browser publik enam pemeriksaan sedang berjalan, belum dinyatakan lulus.
+Checkpoint 10 November 2026, 03.15 WIB. Image baru aktif sejak03.04WIB, sehat dan [lulus6/6 browser publik default](overnight-export3-public-smoke.md).
 
 ## Perubahan dan identitas
 
@@ -41,6 +41,13 @@ Aktivasi hanya mengganti tag `jalasmara:current` dan service app melalui compose
 
 ## Berikutnya
 
-Tutup smoke publik default termasuk kalender setelah reload sebelum retensi image lama dikurangi atau pin panduan perangkat diubah. Pilot Nala tetap OFF: flat 32 kasus lulus, urutan tread pusat terarah lulus, tetapi full terrain 16 kasus berhenti pada opaque sole di ramp. Dua sequence native bergerak dan lengan tujuh arah belum selesai. Samsung S23/Windows fisik menunggu sesi pengguna yang sudah bersedia membantu.
+Smoke publik default sudah lulus381.635ms/560pulsa/0error dan cleanup nol; iframe baru memegang writer dan kalender maju5.285ms setara waktu aktif. Pin panduan perangkat sudah diperbarui; konteks sementara dan image dua rilis lalu dihapus sesudah penerimaan. Pilot Nala tetap OFF: flat 32 kasus lulus, urutan tread pusat terarah lulus, tetapi full terrain 16 kasus berhenti pada opaque sole di ramp. Dua sequence native bergerak dan lengan tujuh arah belum selesai. Samsung S23/Windows fisik menunggu sesi pengguna yang sudah bersedia membantu.
 
 Tool: Godot 4.7.2 Compatibility, Node/tsx, Python, Playwright Chromium, Git/glab, SSH/Docker dan packager original proyek. [Peer packager](overnight-web-release-packager-peer.md) 5 tes/7 probe/14 aset PASS. Tidak ada library/aset upstream baru atau Sprite AI dipakai dalam paket ini; lisensi yang sudah tercatat tetap berlaku.
+
+
+## Pembersihan sesudah penerimaan publik
+
+Arsip lokal context69.191.680byte (69.193.728allocated) dihapus setelah SHA dan tanpa handle terbuka diperiksa. Manifest/log tetap disimpan. Direktori sementara VPS `/tmp/jalasmara-ground3-d63a10b`187.784.703logicalbyte/188.108.800allocatedbyte dihapus; salinan manifest/prepared kecil disimpan bersama catatan backup. Dua tag image lama d60 dihapus setelah dipastikan tidak dipakai container; build aktif203 dan satu rollbackd044 tetap tersedia.
+
+Ruang bebas VPS teramati42.829.238.272→43.300.188.160byte (bertambah470.949.888byte). Ruang bebas lokal teramati11.837.214.720→11.906.404.352byte; perubahan free disk tidak identik dengan ukuran arsip karena aktivitas filesystem lain. Setelah cleanup, health dan SHA seluruhPCK73d tetap cocok, `.env` serta container data tetap. Tidak menjalankan prunevolume atau menghapus source/cache worktree aktif. Log `.runtime/overnight-release3-cleanup.log` dan `.runtime/overnight-release3-local-cleanup.json`.

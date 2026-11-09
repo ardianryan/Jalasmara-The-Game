@@ -1,6 +1,6 @@
 # Jalasmara visual evidence
 
-Ten original evidence images, copied without cropping, recoloring, recompression or new image generation. This is a small review gallery, not an asset kit or a complete acceptance report. Total PNG payload: **2,280,689 bytes** (about 2.18 MiB).
+Twelve original evidence images, copied without cropping, recoloring, recompression or new image generation. This is a small review gallery, not an asset kit or a complete acceptance report. Total PNG payload: **2,735,910 bytes**.
 
 ## Accepted local world and loader package
 
@@ -104,3 +104,19 @@ Source image798a47b, export593dc79, PCK1315f346/64,491,320bytes. The default HTT
 | `overnight-public-forest.png` | same UUID, `02-public-physical-canopy-667x375.png` | 667×375 | 252,870 | `3378a8eceb7967968fb594aa4dfd06a94b3da09a99123e0fe1274d2e81a5fa6e` |
 
 Both PNGs are byte-identical copies, visually reviewed without credentials/account email. These new public results supersede historical gallery statements that default startup remained open; older images retain their original candidate status. FishGen and resident art are included in the new release, while the failed modular Nala lower-body pilot stays disabled. The same original-art and third-party license boundaries apply.
+
+
+## Export3 accepted public build — 10 November 2026
+
+![Actual public hub with compact maritime badge HUD and separate analog controls.](export3-public-hub.png)
+
+![Actual public forest after reload, local canopy reveal and authoritative clock recovery.](export3-public-forest-clock.png)
+
+These two original, uncropped screenshots came from the actual default HTTP/2 public run UUID `d07e56d3-965b-4d90-b251-72626c6cc6a4`. Image2036254, Docker sourced63a10b, exportb0f2ef8, PCK73d45630/64,494,656 bytes. [Six actual checks passed](../reviews/overnight-export3-public-smoke.md), including the new iframe regaining its clock writer and authoritative time advancing. This package includes the canonical ground/cache fix and short landscape loading host; no experimental Nala lower-body adoption or physical S23/Windows performance is implied.
+
+Root reviewed both originals for exposed credentials/account details; no email/password/cookie/token appears and PNG text metadata is absent. Exact source files are `artifacts/browser/staging-plan06-d07e56d3-965b-4d90-b251-72626c6cc6a4/01-public-ready-hub.png` and `05-public-calendar-writer-resumes-after-reload.png`. Project artwork terms above remain in force.
+
+| File | Dimensions | Bytes | SHA-256 |
+| --- | --- | ---: | --- |
+| `export3-public-hub.png` | 844×390 | 202,769 | `81936735bf9f7c97d544b1e1226bf7f9b18cf5f5929ee91cbcd03e0e2fba9696` |
+| `export3-public-forest-clock.png` | 667×375 | 252,452 | `4c385d15b10d6a3833a438c445a61116a0a19cc9f6624f2055c32082f83fafc4` |
