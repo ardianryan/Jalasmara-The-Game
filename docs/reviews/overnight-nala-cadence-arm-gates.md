@@ -22,3 +22,16 @@ The native prescribed fixture uses two logical units per simulated 1/30-second t
 Use actual `Player._physics_process`, its unchanged screen-relative input transform, LandCollision, accepted displacement and a fixed physics clock. Record input, real delta, accepted logical/physical travel, original source frame, anatomical swing state and modular gear state. Capture moving sequences at a declared rate, including start, steady walk, stop, restart and direction changes, at both outfits and both motion settings. Preserve full context frames as well as nearest-neighbor crops; flush exact pose metadata during capture so failures remain reviewable. Stills alone do not close cadence or arm opposition.
 
 The last native sheet keeps identity coherent and makes support more grounded than the original high-knee poses, but calf/short seams still need visual review. Original joint-pixel overlap masks may repair actual gaps; do not install decorative raster changes or claim a four-view art expansion from reused profile pixels. All other identities and diving remain unchanged.
+
+
+## Actual desired-facing audit
+
+
+
+`tools/player-gait/check_facing_recovery.py` independently audits the actual JSONL body and both original shoe views against **actual desired artwork**, rather than comparing shoes only with an already held body. It records continuous wrong-facing seconds and accepted distance, desired direction changes, free-foot observation opportunities, explicit recoveries and terminal actual/desired views. Adjacent desired changes do not erase a continuous mismatch; paused observations do not accumulate movement hold. Missing pose fields, partial case sets and original `rejected.json` evidence prohibit overall acceptance. Seven CPU regressions cover held-body masking, real recovery, changing targets, pause, incomplete poses/cases and retained original rejection.
+
+On the current standalone descent, all three terminal views match but the requested 16-case set has 15 missing observed cases, so overall recovery remains unaccepted. On the failed full run, two cases were observed but only one completed; the last valid descent sample has NORTH_WEST body/feet versus SOUTH_WEST desired artwork, and the later original reach rejection is retained. These observation counts deliberately differ from the contact checker's 15 missing **completed** cases. Audits are saved as `artifacts/godot/nala-ramp-sole-cpu/facing-{standalone-down,partial-full16}-6704e21.json`. This checker makes failure visible; it does not establish natural motion, enough future opportunities or live full-32 recovery.
+
+Adoption additionally requires actual module CPU cost on the target class of device after correctness: support-envelope queries over original corners, repeated ground inverses and bounded Newton backtracking can be expensive. Fixture process wall time and pose counts are not module cost or FPS. No optimization, performance claim or default activation is included.
+
+Detailed isolated-character history is retained in [the geometry investigation log](overnight-nala-geometry-investigation.md). These source candidates remain outside the production runtime.
