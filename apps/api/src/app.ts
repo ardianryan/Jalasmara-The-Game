@@ -10,6 +10,7 @@ import { type Store, AppError } from "./db.js";
 import { authRoutes, guards } from "./auth.js";
 import { gameRoutes } from "./game.js";
 import { adminRoutes } from "./admin.js";
+import { homesteadRoutes } from "./homestead.js";
 import { adventureRoutes } from "./adventure.js";
 export async function buildApp(s: Store, logging = true) {
   const app = Fastify({
@@ -109,6 +110,7 @@ export async function buildApp(s: Store, logging = true) {
   await authRoutes(app, s, g);
   await gameRoutes(app, s, g);
   await adventureRoutes(app, s, g);
+  await homesteadRoutes(app, s, g);
   await adminRoutes(app, s, g);
   const root = resolve(process.env.WEB_DIST ?? "apps/web/dist");
   if (existsSync(root)) {

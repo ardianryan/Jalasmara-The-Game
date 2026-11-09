@@ -28,11 +28,15 @@ var _activity_path := PackedVector2Array()
 var _activity_index := 0
 var _activity_target := Vector2.ZERO
 var _schedule_clock := 1.0
+var _body_animation := preload("res://scripts/NpcAnimationState.gd").new()
+var moved_velocity := Vector2.ZERO
 
 func configure_activity(profile: Dictionary) -> void:
 	activity_profile=profile.get("activity",{}).duplicate(true)
 	if activity_profile.is_empty(): return
 	activity_kind=str(activity_profile.get("kind","idle"))
+	if activity_kind=="fishing": _body_animation.direction="west"
+	elif activity_kind in ["gardening","weaving"]: _body_animation.direction="east"
 	var paths: Array=GameState.world.get("landMaps",{}).get("hub",{}).get("routes",[]).duplicate(true)
 	for resident in GameState.world.get("surface_hub",{}).get("residents",[]):
 		var commute: Array=resident.get("activity",{}).get("commute",[])
@@ -51,6 +55,7 @@ func _activity_update(delta: float,nearby: bool) -> void:
 	var open:=minute>=float(activity_profile.get("startMinute",420)) and minute<float(activity_profile.get("endMinute",1080))
 	var desired:="shelter" if float(weather.get("rain",0))>.42 else "work" if open else "rest"
 	_schedule_clock+=delta
+	if desired!=_activity_goal and activity_phase=="work": _body_animation.begin_departure()
 	if desired!=_activity_goal or (_activity_path.is_empty() and _schedule_clock>3.0):
 		_schedule_clock=0
 		_activity_goal=desired
@@ -61,7 +66,7 @@ func _activity_update(delta: float,nearby: bool) -> void:
 	var arrived:=position.distance_to(_activity_target)<2.0
 	activity_phase=desired if arrived else "walking_"+desired if not _activity_path.is_empty() else "blocked_"+desired
 	activity_motion=0.0 if EnvironmentState.reduced_motion or EnvironmentState.clock_paused else sin(_elapsed*1.8)
-	if arrived or nearby or EnvironmentState.clock_paused or EnvironmentState.reduced_motion: return
+	if arrived or nearby or EnvironmentState.clock_paused or EnvironmentState.reduced_motion or _body_animation.movement_locked: return
 	if _activity_index>=_activity_path.size(): return
 	var target:=_activity_path[_activity_index]
 	var candidate:=position.move_toward(target,delta*26.0)
@@ -79,7 +84,14 @@ func activity_state() -> Dictionary:
 	return {"kind":activity_kind,"phase":activity_phase,"moving":moving,"atStation":not moving and position.distance_to(_activity_target)<2,"destination":[_activity_target.x,_activity_target.y],"remaining":maxi(0,_activity_path.size()-_activity_index),"minute":EnvironmentState.visual_minutes,"reducedMotion":EnvironmentState.reduced_motion}
 
 
+func body_animation_state() -> Dictionary:
+	var result: Dictionary=_body_animation.snapshot()
+	result["layered"]=bool(get_meta("body_layered",false))
+	result["hands"]=get_meta("body_hands",{})
+	return result
+
 func _process(delta: float) -> void:
+	var previous_position:=position
 	if not _anchored and position != Vector2.ZERO:
 		_anchor = position
 		_anchored = true
@@ -124,6 +136,15 @@ func _process(delta: float) -> void:
 		position = next_pos
 	if nearby and absf(player.position.x-position.x)>12:
 		_facing = 1.0 if player.position.x>position.x else -1.0
+	moved_velocity=(position-previous_position)/maxf(delta,.00001) if delta>0 else Vector2.ZERO
+	var talking:=nearby and EnvironmentState.clock_paused
+	if talking and is_instance_valid(player) and _body_animation.clip not in ["start_work","work_loop","end_work"]:
+		var look:=player.position-position
+		_body_animation.direction=("east" if look.x>0 else "west") if absf(look.x)>absf(look.y)*.8 else ("south" if look.y>0 else "north")
+	_body_animation.update(delta,moved_velocity,activity_phase=="work",activity_phase in ["rest","shelter"],talking,EnvironmentState.clock_paused,EnvironmentState.reduced_motion,activity_kind)
+	if is_instance_valid(player) and player.position.distance_to(position)<420 and GameState.dive.is_empty() and not EnvironmentState.clock_paused and not EnvironmentState.reduced_motion:
+		for event in _body_animation.events:
+			if event in ["cast","water_drop"]: AudioManager.play_sfx("water_splash",1.1,-23.0)
 	var frame := int(_elapsed*8)
 	if frame != _frame:
 		_frame = frame

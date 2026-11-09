@@ -84,7 +84,7 @@ async function walkTo(frame, x, y, tolerance = 22, accept = null) {
           }),
       );
     const keys = [];
-    const threshold = tolerance < 22 ? tolerance / 2 : 14;
+    const threshold = stalled >= 2 ? 3 : tolerance < 22 ? tolerance / 2 : 14;
     if (Math.abs(dx) > threshold) keys.push(dx > 0 ? "d" : "a");
     if (Math.abs(dy) > threshold) keys.push(dy > 0 ? "s" : "w");
     for (const key of keys) await page.keyboard.down(key);
@@ -398,8 +398,8 @@ try {
       );
       assert(!inside([architecture.x, architecture.y], house.footprint));
       assert(
-        architecture.land.houses === 7 &&
-          architecture.land.components?.LimasRoof === 3 &&
+        architecture.land.houses === 8 &&
+          architecture.land.components?.LimasRoof === 4 &&
           architecture.land.components?.GabledHomeRoof === 2 &&
           architecture.land.components?.BalaiLowerRoof === 1 &&
           architecture.land.components?.BalaiUpperRoof === 1 &&
@@ -408,7 +408,7 @@ try {
           architecture.land.components?.CorporateServiceWindow === 1,
         "Resident roofs, two-tier village hall and corporate container must actually be emitted",
       );
-      const garden = maps.hub.obstacles.find((item) => item.kind === "garden");
+      const garden = maps.hub.obstacles.find((item) => item.id === "kebun_darmi");
       assert(garden);
       await go(maps.hub, { x: garden.x - 70, y: garden.y + garden.height / 2 });
       const beforeGarden = await snapshot(frame);

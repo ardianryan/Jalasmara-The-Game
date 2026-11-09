@@ -2,7 +2,7 @@
 
 # Jalasmara · Menjaring Ingatan
 
-Petualangan 2D pixel art di Kota Apung Bandar Hujung dan Palung Smara. Nala berenang, menjelajahi reruntuhan, menemukan pengetahuan, dan membantu warga melalui Kedai Waras. Pembelajaran hadir dari lingkungan, penemuan, dan tantangan kontekstual.
+Petualangan pixel art dengan daratan 3D tiga perempat dan penyelaman 2.5D di Kota Apung Bandar Hujung serta Palung Smara. Nala berenang, menjelajahi reruntuhan, menemukan pengetahuan, dan membantu warga melalui Kedai Waras. Pembelajaran hadir dari lingkungan, penemuan, dan tantangan kontekstual.
 
 Dibangun dengan **Godot 4.7.2** untuk permainan, **React + Vite** untuk akun dan panel admin, **Fastify** untuk API, **MongoDB** untuk progres, dan **Redis** untuk sesi. Ekspor browser memakai renderer Compatibility dan single thread.
 
@@ -12,6 +12,8 @@ Dibangun dengan **Godot 4.7.2** untuk permainan, **React + Vite** untuk akun dan
 - [Laporan CI GitLab yang dikirim ke GitHub](https://github.com/ardianryan/Jalasmara-The-Game/tree/ci-reports)
 
 Lihat [status pengembangan dan bukti pengujian](docs/development-status.md). Versi ini masih prototipe; pemolesan visual, uji bermain manusia, dan pengujian HP fisik belum selesai.
+
+Nala dapat memasuki Griya Sasmita, menyimpan fragmen, merawat dua petak kangkung, membeli bibit, dan membawa panen ke kedai. Kalender akun memakai satu hari selama 36 menit aktif; tidur menyelesaikan pagi berikutnya tanpa melewati syarat cerita. Tiga warga memakai animasi tubuh berlapis dengan alat terpisah. Rincian serta batas implementasi ada di [Rencana 03](docs/plans/03-desa-hidup-dan-siklus-harian.md).
 
 ## Menjalankan lokal
 
@@ -39,16 +41,17 @@ Jika Godot tidak ada di PATH, isi `GODOT_BIN` dengan path executable. Hasil eksp
 
 ## Isi proyek
 
-| Bagian | Fungsi |
-| --- | --- |
-| `client-godot/` | Dunia permainan, karakter, gerakan, eksplorasi, dan HUD |
-| `apps/web/` | Akun, undangan, pengaturan, serta panel admin |
-| `apps/api/` | Validasi permainan, autentikasi, ekonomi, dan audit |
-| `packages/shared/` | Kontrak data, konten awal, dan definisi wilayah |
-| `assets/brand/` | Kit identitas Jala Muara |
-| `ci/` | Build Godot, CodeQL, dan pengiriman laporan |
-| `tools/worldkit/` | Adapter offline peta dan validator lantai, elevasi, serta portal |
-| `tools/pixel-snapper/`, `tools/image-to-pixel/` | Persiapan grid dan palet aset offline dengan atribusi upstream |
+| Bagian                                          | Fungsi                                                           |
+| ----------------------------------------------- | ---------------------------------------------------------------- |
+| `client-godot/`                                 | Dunia permainan, karakter, gerakan, eksplorasi, dan HUD          |
+| `apps/web/`                                     | Akun, undangan, pengaturan, serta panel admin                    |
+| `apps/api/`                                     | Validasi permainan, autentikasi, ekonomi, dan audit              |
+| `packages/shared/`                              | Kontrak data, konten awal, dan definisi wilayah                  |
+| `assets/brand/`                                 | Kit identitas Jalasmara                                          |
+| `ci/`                                           | Build Godot, CodeQL, dan pengiriman laporan                      |
+| `tools/npc-rig/`                                | Generator bagian tubuh NPC dari artwork orisinal proyek          |
+| `tools/worldkit/`                               | Adapter offline peta dan validator lantai, elevasi, serta portal |
+| `tools/pixel-snapper/`, `tools/image-to-pixel/` | Persiapan grid dan palet aset offline dengan atribusi upstream   |
 
 ## Jalasmara WorldKit
 
@@ -66,6 +69,7 @@ OIDC opsional melalui ZITADEL. Pemain menautkan identitas eksternal dari akun lo
 
 ## Dokumentasi
 
+- [Rencana 03: desa hidup, rumah Nala, dan siklus harian](docs/plans/03-desa-hidup-dan-siklus-harian.md): animasi warga, Griya Sasmita, kalender, kebun, pasar/balai, dan finishing.
 - [Referensi teknis dan status integrasi](docs/reference-integrations.md): Polyfork, Strata, Procedural Pixel Creatures, img2threejs, SpriteCook, Ark Pixel Font, dan Pixelbolt.
 - [Operasi dan deployment](docs/operations.md), termasuk upstream reverse proxy **10.1.0.8:3000**.
 - [Kontrak API](docs/api.md).

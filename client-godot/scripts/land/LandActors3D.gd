@@ -15,6 +15,7 @@ var _shadow_material: ShaderMaterial
 var max_foot_error:=0.0
 var _equipment: Node3D
 var _activities: Node3D
+var _body_rigs: Dictionary={}
 
 func configure(owner_renderer: Node, scene: Node2D, player: Node2D) -> void:
 	renderer=owner_renderer
@@ -133,6 +134,12 @@ func update_actors(delta: float) -> void:
 		_activities.configure(renderer)
 	_activities.begin_frame()
 	var resident_states: Dictionary={}
+	var body_clips: Dictionary={}
+	for id in _body_rigs.keys():
+		var old_rig: Node3D=_body_rigs[id]
+		if not is_instance_valid(old_rig.actor) or old_rig.actor.is_queued_for_deletion():
+			old_rig.queue_free()
+			_body_rigs.erase(id)
 	if "swim_sprite" in actor:
 		var visual: Sprite2D=actor.get("swim_sprite")
 		if visual!=null and visual.texture!=null:
@@ -180,10 +187,16 @@ func update_actors(delta: float) -> void:
 		var flip_npc := false if bool(npc.crate) else float(npc.get("_facing")) < 0.0
 		var npc_sprite:=_sprite("NPC_"+key,frame,npc.position,Vector2(70,70) if bool(npc.crate) else Vector2(100,100),30 if bool(npc.crate) else 36,flip_npc)
 		if "custom_tint" in npc: npc_sprite.modulate*=npc.get("custom_tint")
+		var rig: Node3D=_body_rig(npc)
+		if rig!=null:
+			rig.update_pose(npc_sprite.modulate)
+			npc_sprite.visible=false
+			body_clips[key]=rig.pose_snapshot()
 		_activities.update_actor(npc,npc_sprite)
 		if npc.has_method("activity_state") and str(npc.activity_kind)!="idle": resident_states[key]=npc.activity_state()
 		counts.npcs=int(counts.npcs)+1
 
+	counts["bodyClips"]=body_clips
 	counts["activities"]=_activities.debug_status()
 	counts["residentStates"]=resident_states
 	for creature in _creatures:
@@ -214,3 +227,16 @@ func _update_equipment(sprite: Sprite3D,gear: Dictionary,in_water: bool,flip: bo
 		_equipment=preload("res://scripts/CharacterEquipment3D.gd").new()
 		add_child(_equipment)
 	_equipment.update_attachment(sprite,gear,in_water,flip)
+
+func _body_rig(actor: Node2D) -> Node3D:
+	if not actor.has_method("body_animation_state"): return null
+	var id:=actor.get_instance_id()
+	if _body_rigs.has(id): return _body_rigs[id]
+	if not preload("res://scripts/NpcBodyRig3D.gd").IDS.has(str(actor.actor_name)): return null
+	var rig:=preload("res://scripts/NpcBodyRig3D.gd").new()
+	add_child(rig)
+	if not rig.configure(renderer,actor):
+		rig.queue_free()
+		return null
+	_body_rigs[id]=rig
+	return rig

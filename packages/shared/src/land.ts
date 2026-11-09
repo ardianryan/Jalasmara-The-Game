@@ -43,7 +43,7 @@ export type LandBridge = {
   railIds: string[];
 };
 export type LandMap = {
-  id: "hub" | "forest";
+  id: "hub" | "forest" | "home";
   layoutVersion: number;
   landmass?: LandPoint[];
   width: number;
@@ -256,6 +256,35 @@ const hubSurfaces: LandSurface[] = [
     "grass",
     2,
   ),
+  floor("sasmita_deck", rectangle(40, 385, 240, 350), "wood", 2),
+  floor("sasmita_garden_raft", rectangle(40, 735, 275, 140), "wood", 2),
+  {
+    ...floor(
+      "sasmita_stone_landing",
+      [
+        [385, 692],
+        [415, 688],
+        [448, 708],
+        [445, 735],
+        [395, 735],
+        [378, 720],
+      ],
+      "stone",
+      2,
+      9,
+    ),
+    walkable: false,
+  },
+  {
+    ...floor(
+      "sasmita_bridge",
+      strip([265, 720], [400, 720], 80),
+      "bridge",
+      2,
+      30,
+    ),
+    bridgeId: "sasmita_bridge",
+  },
   floor("dock_main", rectangle(850, 1160, 700, 240), "dock", 0),
   floor(
     "lower_court",
@@ -377,6 +406,21 @@ const hubRoutes: LandPoint[][] = [
 ];
 hubRoutes.push(
   [
+    [595, 650],
+    [400, 720],
+    [265, 720],
+    [160, 615],
+  ],
+  [
+    [160, 615],
+    [230, 700],
+    [230, 740],
+    [280, 740],
+    [280, 850],
+    [205, 850],
+    [105, 850],
+  ],
+  [
     [900, 650],
     [900, 350],
     [940, 310],
@@ -414,6 +458,31 @@ const hubObstacles: LandObstacle[] = [
   obstacle("kedai_waras", "house", 360, 420, 400, 175, 155, "thatch", 2),
   obstacle("galangan_beno", "house", 1090, 390, 420, 170, 125, "workshop", 2),
   obstacle("pos_cakrawala", "house", 1840, 140, 300, 105, 135, "metal", 3),
+  obstacle("griya_sasmita", "house", 60, 420, 200, 145, 122, "sasmita", 2),
+  obstacle("home_plot_1", "garden", 65, 760, 80, 70, 24, "home_plot", 2),
+  obstacle("home_plot_2", "garden", 165, 760, 80, 70, 24, "home_plot", 2),
+  obstacle(
+    "sasmita_bridge_north",
+    "fence",
+    320,
+    686,
+    80,
+    8,
+    44,
+    "bridge_rail",
+    2,
+  ),
+  obstacle(
+    "sasmita_bridge_south",
+    "fence",
+    320,
+    754,
+    80,
+    8,
+    44,
+    "bridge_rail",
+    2,
+  ),
   obstacle("balai_lurah", "house", 750, 120, 380, 145, 165, "balai", 2),
   obstacle("rumah_ratih", "house", 350, 150, 230, 125, 108, "home_pelana", 2),
   obstacle("rumah_sari", "house", 1210, 120, 230, 125, 112, "home_limas", 2),
@@ -645,7 +714,7 @@ for (const [i, x, y] of [
 export const LAND_MAPS: Record<"hub" | "forest", LandMap> = {
   hub: {
     id: "hub",
-    layoutVersion: 7,
+    layoutVersion: 8,
     landmass: [
       [240, 80],
       [680, 60],
@@ -675,6 +744,18 @@ export const LAND_MAPS: Record<"hub" | "forest", LandMap> = {
     surfaces: hubSurfaces,
     obstacles: hubObstacles,
     stairs: hubStairs,
+    bridges: [
+      {
+        id: "sasmita_bridge",
+        path: [
+          [265, 720],
+          [400, 720],
+        ],
+        width: 80,
+        elevation: 2,
+        railIds: ["sasmita_bridge_north", "sasmita_bridge_south"],
+      },
+    ],
     terraces: [
       { id: "dock", elevation: 0 },
       { id: "lower_court", elevation: 1 },
@@ -1038,3 +1119,57 @@ export function nearestSafeLandPoint(
     }
   return { ...map.spawn };
 }
+
+export const HOMESTEAD_INTERIOR: LandMap & {
+  entry: LandPosition;
+  exit: LandPosition;
+  bed: LandPosition;
+  chest: LandPosition;
+  archive: LandPosition;
+  display: LandPosition;
+} = {
+  id: "home",
+  layoutVersion: 1,
+  width: 960,
+  height: 720,
+  spawn: { x: 480, y: 580 },
+  entry: { x: 480, y: 580 },
+  exit: { x: 480, y: 625 },
+  bed: { x: 270, y: 250 },
+  chest: { x: 700, y: 340 },
+  archive: { x: 650, y: 210 },
+  display: { x: 420, y: 175 },
+  surfaces: [floor("home_floor", rectangle(80, 150, 800, 490), "wood", 0)],
+  obstacles: [
+    obstacle("home_bed", "crate", 170, 185, 180, 100, 34, "rattan_bed"),
+    obstacle("home_archive", "crate", 590, 180, 140, 75, 68, "archive_desk"),
+    obstacle("home_chest", "crate", 655, 315, 100, 65, 42, "storage_chest"),
+    obstacle("home_display", "crate", 380, 150, 100, 48, 85, "display_shelf"),
+  ],
+  stairs: [],
+  terraces: [{ id: "home_floor", elevation: 0 }],
+  routes: [
+    [
+      [480, 580],
+      [480, 420],
+      [270, 330],
+    ],
+    [
+      [480, 420],
+      [700, 425],
+    ],
+    [
+      [480, 420],
+      [520, 300],
+      [650, 280],
+    ],
+    [
+      [480, 420],
+      [420, 280],
+    ],
+    [
+      [480, 580],
+      [480, 625],
+    ],
+  ],
+};

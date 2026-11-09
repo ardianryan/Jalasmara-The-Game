@@ -1,5 +1,6 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import argon2 from "argon2";
+import { dailyUser } from "./daily.js";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
 import * as oidc from "openid-client";
@@ -142,8 +143,9 @@ export async function authRoutes(app: FastifyInstance, s: Store, g: Guards) {
       if (!u || !valid || u.status !== "active")
         fail("Email atau password tidak sesuai, atau akses belum aktif.", 401);
       if (req.sessionId) await s.redis.del(`auth:${req.sessionId}`);
-      const auth = await g.issue(u!, reply);
-      return { user: publicUser(u!), csrf: auth.csrf };
+      const initialized = await dailyUser(s, u!.id);
+      const auth = await g.issue(initialized, reply);
+      return { user: publicUser(initialized), csrf: auth.csrf };
     },
   );
   app.post("/api/auth/logout", async (req, reply) => {

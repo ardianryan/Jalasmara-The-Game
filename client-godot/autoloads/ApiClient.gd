@@ -7,7 +7,7 @@ var _callbacks: Array = []
 func _ready() -> void:
 	if OS.has_feature("web"):
 		origin = str(JavaScriptBridge.get_interface("window").location.origin)
-func call_api(path: String, body: Variant = null, method := HTTPClient.METHOD_POST) -> Dictionary:
+func call_api(path: String, body: Variant = null, method := HTTPClient.METHOD_POST, operation_key := "") -> Dictionary:
 	serial += 1
 	var request_id := serial
 	var http := HTTPRequest.new()
@@ -15,7 +15,7 @@ func call_api(path: String, body: Variant = null, method := HTTPClient.METHOD_PO
 	http.accept_gzip = not OS.has_feature("web")
 	add_child(http)
 	http.timeout = 15.0
-	var headers := PackedStringArray(["Content-Type: application/json", "X-CSRF-Token: " + csrf, "Idempotency-Key: " + _uuid()])
+	var headers := PackedStringArray(["Content-Type: application/json", "X-CSRF-Token: " + csrf, "Idempotency-Key: " + (_uuid() if operation_key.is_empty() else operation_key)])
 	var payload := "" if body == null else JSON.stringify(body)
 	var endpoint := origin + "/api" + path
 	var err := http.request(endpoint, headers, method, payload)

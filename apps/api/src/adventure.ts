@@ -118,6 +118,8 @@ export async function adventureRoutes(
   const surfacePlayer = async (id: string) => {
     const p = await s.users.findOne({ id });
     if (!p || p.status !== "active") return fail("Akun tidak aktif.", 403);
+    if (p.homestead?.inside)
+      fail("Keluar dari rumah terlebih dahulu.", 409, "HOME_INSIDE");
     const raw = await s.redis.get(`dive:${id}`);
     if (raw) {
       const dive = JSON.parse(raw);

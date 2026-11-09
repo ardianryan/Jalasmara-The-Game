@@ -1,0 +1,274 @@
+{
+  "id": "darmi",
+  "name": "Bu Darmi",
+  "atlas": "res://resources/art/npc-rigs/darmi.png",
+  "cellSize": 64,
+  "grid": [
+    5,
+    4
+  ],
+  "bodyHeight": 100,
+  "footPivot": [
+    0,
+    0
+  ],
+  "parts": {
+    "torso": {
+      "cell": 0,
+      "size": [
+        39,
+        39
+      ],
+      "origin": [
+        12,
+        12
+      ],
+      "center": [
+        -5.078125,
+        -50.68359375
+      ]
+    },
+    "head": {
+      "cell": 1,
+      "size": [
+        29,
+        25
+      ],
+      "origin": [
+        17,
+        19
+      ],
+      "center": [
+        -1.7578125,
+        -79.4921875
+      ]
+    },
+    "upper_arm_left": {
+      "cell": 2,
+      "size": [
+        7,
+        9
+      ],
+      "origin": [
+        28,
+        27
+      ],
+      "pivot": [
+        3.5,
+        0
+      ]
+    },
+    "lower_arm_left": {
+      "cell": 3,
+      "size": [
+        5,
+        16
+      ],
+      "origin": [
+        29,
+        24
+      ],
+      "pivot": [
+        2.5,
+        0
+      ]
+    },
+    "hand_left": {
+      "cell": 4,
+      "size": [
+        5,
+        5
+      ],
+      "origin": [
+        29,
+        29
+      ],
+      "pivot": [
+        2.5,
+        0
+      ]
+    },
+    "upper_arm_right": {
+      "cell": 5,
+      "size": [
+        7,
+        7
+      ],
+      "origin": [
+        28,
+        28
+      ],
+      "pivot": [
+        3.5,
+        0
+      ]
+    },
+    "lower_arm_right": {
+      "cell": 6,
+      "size": [
+        5,
+        6
+      ],
+      "origin": [
+        29,
+        29
+      ],
+      "pivot": [
+        2.5,
+        0
+      ]
+    },
+    "hand_right": {
+      "cell": 7,
+      "size": [
+        5,
+        5
+      ],
+      "origin": [
+        29,
+        29
+      ],
+      "pivot": [
+        2.5,
+        0
+      ]
+    },
+    "upper_leg_left": {
+      "cell": 8,
+      "size": [
+        13,
+        13
+      ],
+      "origin": [
+        25,
+        25
+      ],
+      "pivot": [
+        6.5,
+        0
+      ]
+    },
+    "lower_leg_left": {
+      "cell": 9,
+      "size": [
+        11,
+        13
+      ],
+      "origin": [
+        26,
+        25
+      ],
+      "pivot": [
+        5.5,
+        0
+      ]
+    },
+    "foot_left": {
+      "cell": 10,
+      "size": [
+        12,
+        9
+      ],
+      "origin": [
+        26,
+        27
+      ],
+      "pivot": [
+        6.0,
+        0
+      ]
+    },
+    "upper_leg_right": {
+      "cell": 11,
+      "size": [
+        13,
+        13
+      ],
+      "origin": [
+        25,
+        25
+      ],
+      "pivot": [
+        6.5,
+        0
+      ]
+    },
+    "lower_leg_right": {
+      "cell": 12,
+      "size": [
+        11,
+        12
+      ],
+      "origin": [
+        26,
+        26
+      ],
+      "pivot": [
+        5.5,
+        0
+      ]
+    },
+    "foot_right": {
+      "cell": 13,
+      "size": [
+        14,
+        8
+      ],
+      "origin": [
+        25,
+        28
+      ],
+      "pivot": [
+        7.0,
+        0
+      ]
+    },
+    "head_back": {
+      "cell": 14,
+      "size": [
+        29,
+        25
+      ],
+      "origin": [
+        17,
+        19
+      ]
+    },
+    "torso_back": {
+      "cell": 15,
+      "size": [
+        39,
+        39
+      ],
+      "origin": [
+        12,
+        12
+      ]
+    }
+  },
+  "joints": {
+    "leftShoulder": [
+      -9.1796875,
+      -61.328125
+    ],
+    "rightShoulder": [
+      7.8125,
+      -62.3046875
+    ],
+    "leftHip": [
+      -4.296875,
+      -31.640625
+    ],
+    "rightHip": [
+      4.8828125,
+      -32.03125
+    ]
+  },
+  "source": "npc-atlas.png",
+  "sourceSha256": "82d946a0df5ecb98eb5d4daa48856e8cf36644103b39f80d39d17e361ff56aec",
+  "method": "original portrait cutouts; covered cloth patched from same portrait; back view simplified from sampled palette",
+  "neck": [
+    0.5859375,
+    -68.1640625
+  ]
+}

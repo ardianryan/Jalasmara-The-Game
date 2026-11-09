@@ -39,6 +39,9 @@ var _components: Dictionary={}
 var _bridges: Dictionary={}
 var _garden_state := 0
 var _stream_cleared := false
+var _map_override: Dictionary = {}
+var _homestead_state: Dictionary = {}
+var _homestead_dirty := false
 var _cloth: Array[Dictionary] = []
 
 func _compute_garden_state() -> int:
@@ -55,11 +58,14 @@ func _compute_garden_state() -> int:
 func _compute_stream_cleared() -> bool:
 	return GameState.adventure.get("discoveries",[]).has("forest_stream")
 
-func setup(scene: Node2D, player: Node2D, camera: Camera2D, place: String) -> void:
+func setup(scene: Node2D, player: Node2D, camera: Camera2D, place: String, override_map: Dictionary = {}) -> void:
 	source=scene
 	actor=player
 	source_camera=camera
 	area=place
+	_map_override=override_map
+	if "homestead" in GameState: _homestead_state=GameState.get("homestead").duplicate(true)
+	if not GameState.changed.is_connected(_refresh_homestead): GameState.changed.connect(_refresh_homestead)
 	if is_instance_valid(viewport_3d): return
 	screen_layer=CanvasLayer.new()
 	screen_layer.layer=-1
@@ -117,7 +123,7 @@ func setup(scene: Node2D, player: Node2D, camera: Camera2D, place: String) -> vo
 
 func set_area(place: String) -> void:
 	area=place
-	map=GameState.world.get("landMaps",{}).get(area,{})
+	map=_map_override if not _map_override.is_empty() else GameState.world.get("landMaps",{}).get(area,{})
 	if map.is_empty() or not is_instance_valid(world_root): return
 	if is_instance_valid(_geometry):
 		world_root.remove_child(_geometry)
@@ -161,6 +167,15 @@ func set_area(place: String) -> void:
 	world_root.add_child(actors_3d)
 	actors_3d.configure(self,source,actor)
 	_built=true
+
+
+func _refresh_homestead() -> void:
+	if "homestead" in GameState: set_homestead_state(GameState.get("homestead"))
+
+func set_homestead_state(home: Dictionary) -> void:
+	var changed:=JSON.stringify(_homestead_state.get("plots",[]))!=JSON.stringify(home.get("plots",[]))
+	_homestead_state=home.duplicate(true)
+	if changed and _built: _homestead_dirty=true
 
 func camera_up() -> Vector3:
 	return Vector3(0,cos(TILT),sin(TILT))
@@ -328,6 +343,10 @@ func _build_surface_geometry(surface: Dictionary) -> void:
 			indices[i+1]=indices[i+2]
 			indices[i+2]=swap
 	_mesh(str(surface.id),vertices,indices,_materials.get_material(str(surface.material)))
+	if str(surface.id) in ["sasmita_deck","sasmita_garden_raft"]:
+		for point in polygon:
+			var at:=map_point(point,height)
+			_column(at-Vector3(0,0,height+25),at,5,_materials.get_material("wood"))
 	if int(surface.get("priority",0))>0: return
 	var edge_material: Material=_materials.get_material("wood" if str(surface.material) in ["dock","wood","bridge"] else "stone")
 	var surface_id:=str(surface.id)
@@ -796,6 +815,9 @@ func _rock(entry: Dictionary, rect: Rect2, center: Vector3) -> void:
 	_models+=1
 
 func _garden(_entry: Dictionary,rect: Rect2,center: Vector3) -> void:
+	if str(_entry.get("variant",""))=="home_plot":
+		_home_plot(_entry,rect,center)
+		return
 	var wood: Material=_materials.get_material("wood")
 	var dirt: Material=_materials.get_material("dirt")
 	var leaves: Material=_materials.get_material("leaves")
@@ -847,6 +869,31 @@ func _garden(_entry: Dictionary,rect: Rect2,center: Vector3) -> void:
 		_box("GardenChannelDebris",channel_marker+Vector3(0,0,15),Vector3(22,12,8),thatch)
 	else:
 		_column(channel_marker+Vector3(-14,0,14),channel_marker+Vector3(14,0,14),2.4,bamboo)
+
+
+func _home_plot(entry: Dictionary, rect: Rect2, center: Vector3) -> void:
+	var stage:="empty"
+	var needs_care:=false
+	var plot_id:=str(entry.id).trim_prefix("home_")
+	for plot in _homestead_state.get("plots",[]):
+		if str(plot.get("id",""))==plot_id:
+			stage=str(plot.get("stage","empty"))
+			needs_care=bool(plot.get("needsCare",false))
+	_box("HomeGardenBed",center+Vector3(0,0,10),Vector3(rect.size.x,rect.size.y/cos(TILT),20),_materials.get_material("wood"))
+	_box("HomeGardenSoil",center+Vector3(0,0,21),Vector3(rect.size.x-8,rect.size.y/cos(TILT)-8,3),_materials.get_material("dirt"))
+	if stage in ["empty","locked"]: return
+	for index in range(4):
+		var plant:=center+Vector3((index%2*2-1)*18,(floori(float(index)/2.0)*2-1)*20,24)
+		if stage in ["seed","seeded","planted"]:
+			_box("HomeSeedMound",plant,Vector3(7,6,2),_materials.get_material("sand"))
+		else:
+			var mature:=stage in ["ready","harvestable","mature"]
+			var tall:=12.0 if stage in ["sprout","seedling"] else 31.0 if mature else 23.0
+			var material:Material=_materials.get_material("thatch" if needs_care or stage in ["needs_care","needsCare","wilted"] else "leaves")
+			_column(plant,plant+Vector3(0,0,tall),1.5,material)
+			_box("HomeCropLeaves",plant+Vector3(0,0,tall*.7),Vector3(tall*.7,10,4),material)
+			if mature:
+				for side in [-1.0,1.0]: _box("HomeHarvestLeaf",plant+Vector3(side*7,0,tall-2),Vector3(16,9,3),material)
 
 func _fence(_entry: Dictionary,rect: Rect2,center: Vector3) -> void:
 	if str(_entry.get("variant",""))=="changing_booth": return
@@ -995,6 +1042,9 @@ func _batch_static_geometry() -> void:
 
 func _process(delta: float) -> void:
 	if not _built or not is_instance_valid(actor) or not is_instance_valid(source_camera): return
+	if _homestead_dirty:
+		_homestead_dirty=false
+		set_area(area)
 	if (area=="hub" and _garden_state!=_compute_garden_state()) or (area=="forest" and _stream_cleared!=_compute_stream_cleared()):
 		set_area(area)
 	active=area=="forest" or GameState.dive.is_empty()
@@ -1029,8 +1079,8 @@ func _process(delta: float) -> void:
 		sunlight.shadow_enabled=daylight>.15
 		for lantern in _lanterns: lantern.light_energy=lerpf(280.0,28.0,daylight)
 		if _glow_material: _glow_material.emission_energy_multiplier=lerpf(.85,.14,daylight)
-		environment.ambient_light_energy=lerpf(.50,.55,daylight)
-		environment.ambient_light_color=Color("8da4a8").lerp(Color("bdc0b5"),daylight)
+		environment.ambient_light_energy=lerpf(.65,.57,daylight) if area=="home" else lerpf(.50,.55,daylight)
+		environment.ambient_light_color=(Color("9faeae") if area=="home" else Color("8da4a8")).lerp(Color("bdc0b5"),daylight)
 
 func debug_status() -> Dictionary:
 	return {"active":active,"area":area,"renderer":"LandSubViewport3D","viewport":[480,270],"tilt":55,"elevationDegrees":35,"meshes":_meshes,"houses":_houses,"trees":_trees,"glbModels":_models,"stairTreads":_stair_treads,"surfaces":map.get("surfaces",[]).size(),"obstacles":map.get("obstacles",[]).size(),"actors":actors_3d.counts if is_instance_valid(actors_3d) else {},"maxFootError":actors_3d.max_foot_error if is_instance_valid(actors_3d) else 0,"camera":[_center.x,_center.y],"warmLanterns":_lanterns.size(),"gardenState":_garden_state,"streamCleared":_stream_cleared,"components":_components.duplicate(),"bridges":_bridges.duplicate(true),"bitmapGround":false,"water":water_node.debug_status() if is_instance_valid(water_node) else {}}
@@ -1240,6 +1290,9 @@ func _build_corridor_landmarks() -> void:
 	var bamboo: Material=_materials.get_material("bamboo")
 	var stone: Material=_materials.get_material("stone")
 	if area=="hub":
+		var welcome:=map_point(Vector2(160,615),2.0*LEVEL_HEIGHT)+Vector3(0,0,.7)
+		_box("SasmitaPorchMat",welcome,Vector3(60,38/cos(TILT),1.2),_materials.get_material("woven_teal"))
+		for x in [-25.0,25.0]: _box("SasmitaMatTrim",welcome+Vector3(x,0,.8),Vector3(3,38/cos(TILT),.5),_materials.get_material("cloth_cream"))
 		var booth_a:=map_point(Vector2(1430,1200),0)
 		var booth_b:=map_point(Vector2(1430,1380),0)
 		for post_at in [booth_a,booth_b]:

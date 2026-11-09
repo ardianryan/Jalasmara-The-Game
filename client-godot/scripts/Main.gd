@@ -45,6 +45,7 @@ var surface_actors: Array[Node2D] = []
 var hybrid: Node2D
 var world_foley: Node
 var previous_outfit := "daily"
+var homestead_ui: CanvasLayer
 func _ready() -> void:
 	y_sort_enabled = true
 	_setup_input()
@@ -80,6 +81,9 @@ func _ready() -> void:
 	if not result.get("ok",false):
 		_show_message("Koneksi belum tersambung",str(result.get("error","Coba muat ulang halaman.")))
 		return
+	if GameState.homestead.get("inside",false) and GameState.dive.is_empty():
+		get_tree().change_scene_to_file("res://scenes/homestead.tscn")
+		return
 	add_child(terrain)
 	move_child(terrain,0)
 	nala.surface_traversal.configure(GameState.world.get("landMaps",{}).get("hub",{}))
@@ -112,6 +116,9 @@ func _ready() -> void:
 	land_renderer = preload("res://scripts/land/LandWorld3D.gd").new()
 	add_child(land_renderer)
 	land_renderer.setup(self,nala,camera,"hub")
+	homestead_ui=preload("res://scripts/HomesteadUI.gd").new()
+	add_child(homestead_ui)
+	homestead_ui.configure(self,false)
 	if not GameState.dive.is_empty():
 		await ApiClient.call_api("/dive/reading",{"diveId":GameState.dive.id,"paused":false})
 		_enter_water(GameState.dive)
@@ -156,6 +163,15 @@ func _ensure_residents() -> void:
 		actor.set_meta("evening_conversation",resident.evening)
 		add_child(actor)
 		surface_actors.append(actor)
+
+func set_interaction_modal(active: bool) -> void:
+	modal_open=active
+	if is_instance_valid(hud): hud.set_modal(active)
+	if is_instance_valid(nala):
+		nala.frozen=active
+		if active:
+			nala.velocity=Vector2.ZERO
+			nala.touch=Vector2.ZERO
 
 func _setup_input() -> void:
 	var bindings = {"left":[KEY_A,KEY_LEFT],"right":[KEY_D,KEY_RIGHT],"up":[KEY_W,KEY_UP],"down":[KEY_S,KEY_DOWN],"interact":[KEY_E],"net":[KEY_SPACE],"map":[KEY_M],"journal":[KEY_J],"inventory":[KEY_I],"character":[KEY_C]}
@@ -346,6 +362,9 @@ func _process(delta: float) -> void:
 		snapshot["audio"] = AudioManager.debug_status()
 		snapshot["flashlight2d"] = _flashlight_status_2d()
 		snapshot["weather"] = EnvironmentState.snapshot()
+		snapshot["homestead"] = GameState.homestead
+		snapshot["calendar"] = GameState.calendar
+		snapshot["homePanel"] = homestead_ui.is_open if is_instance_valid(homestead_ui) else false
 		snapshot["land"] = land_renderer.debug_status() if is_instance_valid(land_renderer) else {}
 		snapshot["traversal"] = nala.traversal_state
 		snapshot["occlusion"] = terrain.scenery.debug_status() if is_instance_valid(terrain) and is_instance_valid(terrain.scenery) and terrain.scenery.has_method("debug_status") else {}
@@ -417,6 +436,10 @@ func _draw() -> void:
 	if flash>0 and nala:
 		draw_circle(nala.position,28,Color(0.9,0.4,0.3,.25))
 func _unhandled_key_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel") and is_instance_valid(homestead_ui) and homestead_ui.is_open:
+		homestead_ui.close()
+		get_viewport().set_input_as_handled()
+		return
 	if OS.is_debug_build() and event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_F6 and is_instance_valid(hybrid):
 		hybrid.enabled = not hybrid.enabled
 	if event.is_action_pressed("ui_cancel") and modal_open and chain_lines.is_empty() and not GameState.dive.has("challenge"):
@@ -426,6 +449,16 @@ func _find_nearby() -> void:
 	var best := 140.0
 	var objects: Array = []
 	if GameState.dive.is_empty():
+		var home: Dictionary=GameState.world.get("homestead",{})
+		if home.get("door") is Dictionary:
+			objects.append({"id":"home_enter","kind":"homestead","name":"Griya Sasmita","x":home.door.x,"y":home.door.y,"radius":100.0})
+		for plot in home.get("gardenPlots",[]):
+			var at: Dictionary=plot.get("interaction",{})
+			objects.append({"id":str(plot.id),"kind":"homestead","name":"Petak Kebun Nala","x":at.get("x",0),"y":at.get("y",0),"radius":75.0})
+		if home.get("permitBoard") is Dictionary:
+			objects.append({"id":"balai","kind":"homestead","name":"Papan Balai Wirabhumi","x":home.permitBoard.x,"y":home.permitBoard.y,"radius":100.0})
+		if home.get("market") is Dictionary:
+			objects.append({"id":"market","kind":"homestead","name":"Pasar Bibit Ratih","x":home.market.x,"y":home.market.y,"radius":100.0})
 		for actor in surface_actors:
 			if actor.has_meta("conversation"):
 				var text: String = actor.get_meta("evening_conversation") if float(EnvironmentState.snapshot().daylight)<.45 else actor.get_meta("conversation")
@@ -489,6 +522,8 @@ func _action_label(obj: Dictionary) -> String:
 	var label_name := str(obj.get("name",""))
 	var found: Array = GameState.adventure.get("discoveries",[])
 	match kind:
+		"homestead":
+			return "Periksa: "+label_name
 		"npc", "resident":
 			return "Bicara: " + label_name
 		"surface_landmark":
@@ -540,7 +575,9 @@ func _update_hud() -> void:
 	var stage := str(p.progress.stage)
 	var counts := _mission_counts()
 	var goal := "Layani warga di Kedai Waras."
-	if stage == "night":
+	if GameState.homestead.get("pendingStoryAdvance")!=null:
+		goal="Pulang ke Griya Sasmita di barat desa dan tidur di dipan."
+	elif stage == "night":
 		goal = "Buka Kedai Waras bersama Mbah Wira & racik solusi warga malam ini."
 	elif stage == "boss":
 		goal = "Pulihkan Gajah Mina di Tamansari."
@@ -619,10 +656,16 @@ func _interact() -> void:
 		return
 	var obj: Dictionary = nearby.duplicate()
 	match str(obj.kind):
+		"homestead":
+			homestead_ui.open_for(str(obj.id))
 		"resident":
-			_talk([{"name":str(obj.name),"text":str(obj.text)}])
+			if str(obj.name)=="Mbok Ratih" and nala.position.distance_to(Vector2(float(GameState.world.homestead.market.x),float(GameState.world.homestead.market.y)))<=100:
+				homestead_ui.open_for("market")
+			else: _talk([{"name":str(obj.name),"text":str(obj.text)}])
 		"npc":
-			_npc_interact(str(obj.name))
+			if str(obj.name)=="Mbah Wira" and int(GameState.homestead.get("produce",{}).get("kangkung",0))>0:
+				homestead_ui.open_for("wira")
+			else: _npc_interact(str(obj.name))
 		"surface_landmark":
 			_surface_discover(obj)
 		"forest":
@@ -885,7 +928,9 @@ func _npc_interact(name_text: String) -> void:
 	var stage := str(progress.get("stage","dive"))
 	var counts := _mission_counts()
 	if name_text=="Mbah Wira":
-		if stage=="night":
+		if GameState.homestead.get("pendingStoryAdvance")!=null:
+			_talk([{"name":"Mbah Wira","text":"Pelayanan malam ini sudah selesai. Pulang ke Griya Sasmita dan tidur di dipan. Besok kita melanjutkan dari hasil kerja hari ini."}])
+		elif stage=="night":
 			_open_kedai()
 		elif stage=="boss":
 			_talk([{"name":"Babak 4 · Sabotase di Kedai Waras","text":"Inspektur Raka menuntut kedai ditutup: pengetahuan tanpa lisensi, katanya. Lalu gempa mengguncang dermaga. Pipa raksasa di Tamansari pecah, dan sesuatu menarik jangkar kota."},{"name":"Nala","text":"Dia kabur sebelum selesai membacakan pasalnya. Aku anggap itu izin menyelam."},{"name":"Mbah Wira","text":"Gajah Mina sedang kesakitan. Netralisasi lapisan racunnya dalam simulasi alatmu, lepaskan pipa, dan pulihkan inti ingatannya. Jangan lukai sang penjaga. Tabung dan jala level tiga harus siap."}])
@@ -947,7 +992,7 @@ func _kedai_customer() -> void:
 			break
 	if current.is_empty():
 		_label(box,"Semua pelanggan mulai mengingat kembali. Mbah Wira menutup buku racikan malam ini.")
-		_button(box,"Tutup kedai · lanjutkan cerita",func(): await _close_shift(false))
+		_button(box,"Tutup kedai · pulang beristirahat",func(): await _close_shift(false))
 	else:
 		var counts := _mission_counts()
 		_label(box,"Pelanggan: "+str(current.customer),20)
@@ -957,6 +1002,13 @@ func _kedai_customer() -> void:
 		elif str(current.id) == "daun_kuning":
 			_label(box,"Petunjuk Meja Racik: Gejala daun menguning berkaitan dengan biologi sel tumbuhan, klorofil, dan kesehatan akar (Benih Hayati).",13)
 		_label(box,"Pilih Fragmen Ingatan dari Tas untuk Meracik Seduhan Solusi:",14)
+		var garden_ingredient:=CheckButton.new()
+		garden_ingredient.text="Pakai pelengkap kangkung · stok %d" % int(GameState.homestead.get("pantry",{}).get("kangkung",0))
+		garden_ingredient.disabled=int(GameState.homestead.get("pantry",{}).get("kangkung",0))<=0
+		garden_ingredient.custom_minimum_size.y=82
+		garden_ingredient.add_theme_font_override("font",BODY_FONT)
+		garden_ingredient.add_theme_font_size_override("font_size",24)
+		box.add_child(garden_ingredient)
 		var feedback_label := _label(box,"",13)
 		feedback_label.modulate = Color("8c2d19")
 		var any := false
@@ -968,19 +1020,20 @@ func _kedai_customer() -> void:
 			var frag_id := str(item.fragmentId)
 			var scope := "Biologi Tumbuhan: akar, osmosis, nitrogen, & fotosintesis" if frag_id=="klorofil" else "Lingkungan & Ekosistem Pesisir" if frag_id=="ekosistem" else "Matematika: rasio, debit, & kapasitas" if frag_id=="rasio" else "Kimia: larutan & netralisasi"
 			_button(box,"%s (%s) · %d bintang · %d buah" % [GameState.fragment_name(frag_id),scope,int(item.stars),int(item.quantity)],func():
-				var r: Dictionary = await ApiClient.call_api("/kedai/serve",{"shiftId":GameState.shift.id,"recipeId":current.id,"fragmentId":selected.fragmentId,"stars":int(selected.stars)})
+				var r: Dictionary = await ApiClient.call_api("/kedai/serve",{"shiftId":GameState.shift.id,"recipeId":current.id,"fragmentId":selected.fragmentId,"stars":int(selected.stars),"gardenIngredient":garden_ingredient.button_pressed})
 				if r.get("ok",false):
 					AudioManager.play_sfx("recipe_cooked")
 					if str(current.id) == "akar":
 						AudioManager.play_sfx("quest_complete")
 					GameState.player = r.player
 					GameState.shift = r.shift
+					GameState.apply_result(r)
 					var result_box := _open("Racikan Berhasil · "+str(current.customer))
 					_label(result_box,str(r.solution),16)
 					if str(current.id) == "akar":
 						_label(result_box,"Dampak ke Rakit Tani Tanggulangen:\n• Malam ini: PERAWATAN DIMULAI — Bu Darmi memasang penyangga aerasi bambu dan membuka saluran pembuangan pasang agar akar kembali bernapas.\n• Hari berikutnya: PULIH BERTAHAP — Pucuk hijau dan bunga kebun apung akan tumbuh kembali.",14)
 					_label(result_box,"Upah racikan: +%d koin" % int(r.earned),16)
-					_button(result_box,"Pelanggan berikutnya",_kedai_customer)
+					_button(result_box,"Pelanggan berikutnya",_kedai_customer).grab_focus.call_deferred()
 					_update_hud()
 				else:
 					AudioManager.play_sfx("ui_Toggle_off")
@@ -992,6 +1045,10 @@ func _kedai_customer() -> void:
 			_label(box,"Tas kosong. Tutup kedai sementara untuk kembali menyelam.")
 		_button(box,"Tutup sementara · cari stok",func(): await _close_shift(true))
 	_button(box,"Berjalan di dermaga",_close)
+	for child in box.get_children():
+		if child is Button and not child.disabled:
+			child.grab_focus.call_deferred()
+			break
 func _close_shift(abandon: bool) -> void:
 	var r: Dictionary = await ApiClient.call_api("/kedai/close-shift",{"shiftId":GameState.shift.id,"abandon":abandon})
 	if r.get("ok",false):
@@ -999,12 +1056,7 @@ func _close_shift(abandon: bool) -> void:
 		_update_hud()
 		_close()
 		if not abandon:
-			if int(GameState.player.progress.day)==2:
-				_npc_interact("Bu Darmi")
-			elif int(GameState.player.progress.day)==3 and GameState.player.progress.stage=="dive":
-				_talk([{"name":"Babak 3 · Air yang Berubah Ungu","text":"Kebun mulai pulih, tetapi air di bawah permukiman berubah keruh. Beno menemukan jejak asam dari jalur pipa Sektor Tuban-7."},{"name":"Beno","text":"Jangan campur apa pun ke air itu. Selidiki alirannya di Jalatunda. Ada instalasi penyaring lama yang mungkin masih bisa dihidupkan."}])
-			else:
-				_npc_interact("Mbah Wira")
+			_talk([{"name":"Kedai Waras · Pelayanan Selesai","text":"Hasil pelayanan sudah tersimpan. Pulang ke Griya Sasmita di sisi barat desa dan tidur di dipan untuk melanjutkan pagi cerita berikutnya."}])
 	else:
 		status.text = str(r.get("error","Giliran belum selesai."))
 func _show_inventory() -> void:
@@ -1118,7 +1170,7 @@ func _sync_surface() -> bool:
 		GameState.surface = r.surface
 		nala.land_path.acknowledge(int(route.ticket))
 		return true
-	if str(r.get("code","")) in ["SESSION_CHANGED","AREA_CHANGED","POSITION_CHANGED"]:
+	if str(r.get("code","")) in ["SESSION_CHANGED","AREA_CHANGED","POSITION_CHANGED","HOME_REQUIRED"]:
 		syncing = true
 		nala.frozen = true
 		nala.velocity = Vector2.ZERO
@@ -1130,7 +1182,9 @@ func _sync_surface() -> bool:
 			chain_end = Callable()
 			_close()
 			var message := "Data permainan diubah oleh admin atau sesi lain. Posisi dan progres terbaru telah dimuat."
-			if str(GameState.surface.get("area","hub")) == "forest":
+			if bool(GameState.homestead.get("inside",false)):
+				get_tree().change_scene_to_file("res://scenes/homestead.tscn")
+			elif str(GameState.surface.get("area","hub")) == "forest":
 				get_tree().set_meta("surface_change_notice",message)
 				get_tree().change_scene_to_file("res://scenes/forest.tscn")
 			else:

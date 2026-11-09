@@ -59,6 +59,53 @@ Klien tidak mengirim koin hasil perhitungan sendiri, kunci jawaban, atau waktu j
 
 Posisi daratan dikembalikan melalui `surface` pada state petualangan. Hub dan hutan memakai pandangan miring dari atas dengan gerak dua arah pada bidang tanah; hutan merupakan wilayah terpisah berukuran 2400 × 1600. Server membatasi kecepatan sinkronisasi posisi, memeriksa jarak 220 piksel dari gerbang saat perjalanan, dan jarak 180 piksel untuk penemuan. Akses daratan ditolak selama penyelaman atau giliran kedai aktif. Perubahan versi biasa mempertahankan posisi sah; aksi admin yang tercatat audit tetap membatalkan posisi sementara lama. Penemuan tersimpan pada `adventure.discoveries`; transaksi idempoten mencegah hadiah berulang.
 
+## Kalender, rumah, dan kebun Plan 03
+
+`GET /api/adventure/state` dan `GET /api/homestead/state` menyertakan `calendar`, `homestead`, serta `homesteadDefinitions` di samping profil/dunia yang relevan. Definisi lokasi mengacu pada `WORLD.homestead`; klien tidak menetapkan sendiri koordinat pintu, petak atau furnitur.
+
+| Method/path                    | Tujuan                                                                                       |
+| ------------------------------ | -------------------------------------------------------------------------------------------- |
+| `GET /api/homestead/state`     | Memuat kalender, rumah, stok, petak, dan definisi publik                                     |
+| `POST /api/calendar/heartbeat` | Menyelesaikan interval waktu aktif untuk satu penulis tab/perangkat                          |
+| `POST /api/homestead/position` | Memvalidasi gerak interior melalui lantai dan footprint furnitur                             |
+| `POST /api/homestead/action`   | Masuk/keluar, tidur, transfer peti, izin, bibit, penanaman, penyiraman, panen dan stok kedai |
+
+Heartbeat menerima `{sessionId, paused, focused}`; `sessionId` adalah UUID tab, bukan ID akun yang dapat dipilih klien. Klien memanggilnya sekitar lima detik. Redis memberi lease penulis 20 detik kepada pasangan sesi login/tab; tab lain menerima `writer:false` beserta snapshot. Server hanya menambahkan interval milik penulis yang sama ketika kedua heartbeat tidak dijeda dan jedanya paling banyak 15 detik. Jeda yang lebih panjang tidak dihitung; waktu offline tidak mengejar kalender. Pembacaan/tantangan penyelaman memaksa jeda di server. Satu hari permainan memerlukan 36 menit aktif; hujan harian berasal dari server. Akun lama menerima kalender/rumah awal secara idempoten saat state dimuat; kelayakan izin yang sudah dipenuhi tetap dipertahankan.
+
+Posisi interior menerima `{x,y,path?}` dengan paling banyak 128 titik. Pemain harus benar-benar berada di rumah tanpa penyelaman/giliran aktif. Setiap ruas, panjang total dan waktu server diperiksa; lantai serta furnitur memakai `WORLD.homestead.interior`, radius 12 piksel dan sampling ruas 6 piksel. Respons menyediakan posisi yang diterima. Admin yang membatalkan state lama dapat menghasilkan `SESSION_CHANGED`; klien tidak boleh menimpa hasil tersebut dengan respons gerak yang terlambat.
+
+Tindakan rumah memerlukan sesi, CSRF, `Idempotency-Key` UUID dan `expectedRevision` terbaru. Bentuk payload:
+
+```json
+{
+  "action": "plant",
+  "expectedRevision": 3,
+  "plotId": "plot_1",
+  "itemId": "benih_kangkung",
+  "qty": 1
+}
+```
+
+| `action`               | Syarat dan hasil server                                                                                                                          |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `enter` / `exit`       | Dekat pintu luar atau titik keluar interior; portal hanya memindahkan ke titik pasangan yang ditetapkan                                          |
+| `sleep`                | Di dekat dipan; tidur lebih awal memerlukan `confirmEarly:true`; pergantian kalender, pertumbuhan dan marker cerita diselesaikan dalam transaksi |
+| `deposit` / `withdraw` | Di dekat peti; `itemId`, `stars` 1–3 dan `qty` mempertahankan jenis/kualitas fragmen; kapasitas peti 100 unit                                    |
+| `permit`               | Di papan balai setelah misi `akar`; izin dan dua bibit awal hanya diberikan sekali                                                               |
+| `buy_seed`             | Di pasar; `benih_kangkung` berharga 20 koin, paling banyak enam bibit per akun per hari kalender                                                 |
+| `plant`                | Dekat `plot_1` atau `plot_2`, izin sah, petak kosong dan satu bibit yang dimiliki                                                                |
+| `water`                | Dekat petak yang ditanami; perawatan ditandai untuk hari berjalan, bukan menambah pertumbuhan berulang                                           |
+| `harvest`              | Tiga hari pertumbuhan yang dirawat telah selesai; menghasilkan tiga kangkung dan mengosongkan petak                                              |
+| `stock_kedai`          | Dekat Mbah Wira; memindahkan hasil `kangkung` ke pantry kedai, bukan mengubahnya menjadi koin secara langsung                                    |
+
+Tahap publik petak ialah `empty`, `seed`, `sprout`, `young` atau `ready`; `watered`, `needsCare`, dan `ready` merupakan field terpisah. Penyiraman atau hujan server pada hari yang diselesaikan memenuhi syarat pertumbuhan. Setiap batas hari diproses sekali. Hari kalender terpisah dari `progress.day`, sehingga tidur atau menanam tidak membuka siklus cerita berikutnya tanpa syarat.
+
+`POST /api/kedai/serve` menerima opsi `gardenIngredient:true`. Server tetap memerlukan resep dan fragmen/kualitas yang benar, lalu mengonsumsi satu kangkung pantry untuk bonus lima koin. Menutup giliran yang selesai menyimpan `homestead.pendingStoryAdvance`; nomor siklus cerita atau tahap boss baru berubah ketika tidur yang sah diproses. Retry transaksi tidak menggandakan bonus, hasil panen, bibit awal atau kemajuan cerita.
+
+Arsip dibaca dari penemuan yang dimiliki. Rak mengikuti `player.adventure.keyItems`; tidak ada endpoint yang mengarang hadiah hanya karena pemain membuka rumah. Pembaruan rumah yang berbenturan menghasilkan `409 HOMESTEAD_CHANGED`; muat ulang state sebelum membuat tindakan baru. Kunci retry hanya digunakan kembali untuk payload yang sama.
+
+Status kontrak ini: 77 pengujian backend serta alur GUI rumah, kebun, pelayanan kedai dan tidur telah lulus secara lokal. Hasil CI dan staging mengikuti revisi sumber pada repository.
+
 ## Pengelolaan
 
 | Method/path                                        | Tujuan                                          |
@@ -91,7 +138,7 @@ Tindakan lain: `inventory`, `ability`, `progress`, `reset`, `block`, `unblock`, 
 
 Bypass tetap memvalidasi batas saldo, ID, level, dan konsistensi progres. Mutasi membatalkan sesi permainan lama dan menyimpan audit dalam transaksi yang sama. Konten terbit bersifat versi; pengarsipan mempertahankan data yang dirujuk sesi dan inventori. Publikasi menolak penghapusan ID fragmen, level kemampuan, atau resep yang dibutuhkan progres lama.
 
-### Posisi daratan modular, layout 5
+### Posisi daratan modular, hub layout 8 dan hutan layout 5
 
 `WORLD.landMaps.hub` dan `.forest` menerbitkan poligon lantai, material/elevasi, footprint prop, serta konektor tangga yang sama untuk renderer, physics dan server. Air tidak dapat dilalui secara default. Overlay jalan dengan `walkable: false` hanya dekorasi/material dan tidak menciptakan lantai di atas sungai. Badan pemain memerlukan clearance 12 piksel; server memeriksa titik tengah dan delapan sampel keliling pada gabungan lantai, lalu menolak footprint prop beserta marginnya.
 
@@ -99,7 +146,6 @@ Bypass tetap memvalidasi batas saldo, ID, level, dan konsistensi progres. Mutasi
 
 Server memeriksa setiap ruas dari posisi tersimpan, melalui breadcrumb, hingga endpoint; ruas tidak boleh memotong atap, prop, celah elevasi atau air. Jumlah panjang seluruh ruas diperiksa terhadap waktu server dan batas laju yang sama dengan gerak biasa, sehingga loop panjang tidak lolos hanya karena endpoint dekat. Tanpa `path`, endpoint divalidasi sebagai satu ruas lurus. Respons tetap `{surface}` dan `positionAt` selalu meningkat. Kegagalan tidak memindahkan posisi tersimpan.
 
-Save daratan lama dimigrasikan ke layout 5. Koordinat yang masih sah dipertahankan; hanya koordinat tidak sah yang dipindahkan ke lantai aman terdekat dalam area yang sama. Migrasi posisi tidak menulis ulang koin, inventori, progres, penampilan atau versi akun.
-
+Save daratan lama dimigrasikan ke versi layout area saat ini: hub 8 dan hutan 5. Koordinat yang masih sah dipertahankan; hanya koordinat tidak sah yang dipindahkan ke lantai aman terdekat dalam area yang sama. Migrasi posisi tidak menulis ulang koin, inventori, progres, penampilan atau versi akun.
 
 Perubahan versi akun akibat upgrade, tutorial atau penampilan tidak lagi memindahkan pemain ke spawn: posisi sah, area dan basis `positionAt` dipertahankan. Server membedakannya dari perubahan admin melalui audit transaksi `player.*` dengan versi setelah posisi tersimpan. Pembatalan admin tetap mereset posisi/sesi sesuai semantik sebelumnya. Steering klien memakai margin 13 piksel secara konservatif, sementara API memvalidasi radius 12 piksel pada footprint yang sama; perbedaan ini mencegah ruas breadcrumb pendek memotong sudut karena aproksimasi gerakan.

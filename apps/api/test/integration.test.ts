@@ -739,6 +739,22 @@ test("tiga siklus siang-malam, anti-farming pelanggan, upgrade, dan boss sampai 
       (await b.request("/kedai/close-shift", { shiftId: shift.id })).status,
       200,
     );
+    const pending = (await b.request("/homestead/state")).data;
+    assert.equal(pending.player.progress.day, day);
+    assert.equal(pending.homestead.pendingStoryAdvance.storyDay, day);
+    assert.equal(
+      (await b.request("/kedai/start", {})).data.code,
+      "SLEEP_REQUIRED",
+    );
+    await fixtureSurface(u, "hub", WORLD.homestead.door);
+    let home = await homeAction(b, "enter");
+    await fixtureHome(u, { x: 270, y: 330 });
+    home = await homeAction(b, "sleep");
+    assert.equal(home.data.player.progress.day, Math.min(3, day + 1));
+    assert.equal(home.data.player.progress.stage, day === 3 ? "boss" : "dive");
+    assert.equal(home.data.homestead.pendingStoryAdvance, undefined);
+    home = await homeAction(b, "exit");
+    assert.equal(home.status, 200);
     if (day === 1)
       assert.equal(
         (await b.request("/game/upgrade", { ability: "oxygen" })).status,
@@ -2398,4 +2414,742 @@ test("jadwal Bu Darmi menghubungkan kebun, rumah dan tempat berlindung melalui t
     { x: activity.shelter[0], y: activity.shelter[1] },
   );
   checkHubActivityRoute(restToShelter, "Bu Darmi shelter route");
+});
+
+async function homeAction(
+  b: Browser,
+  action: string,
+  fields: Record<string, unknown> = {},
+  key = randomUUID(),
+) {
+  const state = (await b.request("/homestead/state")).data;
+  return b.request(
+    "/homestead/action",
+    { action, expectedRevision: state.homestead.revision, ...fields },
+    "POST",
+    key,
+  );
+}
+async function fixtureHome(
+  u: User,
+  point: { x: number; y: number },
+  agoMs = 2000,
+) {
+  const p = (await s.users.findOne({ id: u.id }))!;
+  await s.redis.set(
+    `home:${u.id}`,
+    JSON.stringify({
+      ...point,
+      positionAt: Date.now() - agoMs,
+      playerVersion: p.version,
+    }),
+    "EX",
+    1800,
+  );
+}
+async function enterHome(b: Browser, u: User) {
+  await fixtureSurface(u, "hub", WORLD.homestead.door);
+  const result = await homeAction(b, "enter");
+  assert.equal(result.status, 200, JSON.stringify(result.data));
+  return result;
+}
+
+test("kalender menghitung waktu server, satu penulis, jeda fokus, dan tidak menaikkan versi pemain", async () => {
+  const u = await account(),
+    b = await new Browser().login(u),
+    other = await new Browser().login(u);
+  const sessionId = randomUUID(),
+    body = { sessionId, paused: false, focused: true };
+  let r = await b.request("/calendar/heartbeat", body);
+  assert.equal(r.status, 200);
+  assert.equal(r.data.calendar.writer, true);
+  const initial = r.data.calendar.minuteOfDay,
+    key = `calendar:writer:${u.id}`;
+  let lease = JSON.parse((await s.redis.get(key))!);
+  lease.lastAt -= 9000;
+  await s.redis.set(key, JSON.stringify(lease), "PX", 20000);
+  r = await b.request("/calendar/heartbeat", body);
+  assert(Math.abs(r.data.calendar.minuteOfDay - initial - 6) < 0.1);
+  assert.equal((await s.users.findOne({ id: u.id }))!.version, 0);
+  const blocked = await other.request("/calendar/heartbeat", {
+    ...body,
+    sessionId: randomUUID(),
+  });
+  assert.equal(blocked.data.calendar.writer, false);
+  const before = r.data.calendar.minuteOfDay;
+  lease = JSON.parse((await s.redis.get(key))!);
+  lease.lastAt -= 9000;
+  await s.redis.set(key, JSON.stringify(lease), "PX", 20000);
+  r = await b.request("/calendar/heartbeat", { ...body, focused: false });
+  assert.equal(r.data.calendar.minuteOfDay, before);
+  r = await b.request("/calendar/heartbeat", body);
+  assert.equal(r.data.calendar.minuteOfDay, before);
+  lease = JSON.parse((await s.redis.get(key))!);
+  lease.lastAt -= 60000;
+  await s.redis.set(key, JSON.stringify(lease), "PX", 20000);
+  assert.equal(
+    (await b.request("/calendar/heartbeat", body)).data.calendar.minuteOfDay,
+    before,
+  );
+  assert.equal(
+    (await b.request("/calendar/heartbeat", { ...body, elapsedMs: 2160000 }))
+      .status,
+    400,
+  );
+});
+
+test("tab berlatar melepas penulis kalender tanpa merebut atau menjeda tab aktif", async () => {
+  const u = await account(),
+    first = await new Browser().login(u),
+    second = await new Browser().login(u),
+    firstBody = { sessionId: randomUUID(), paused: false, focused: true },
+    secondBody = { sessionId: randomUUID(), paused: false, focused: true },
+    key = `calendar:writer:${u.id}`;
+  const started = await first.request("/calendar/heartbeat", firstBody);
+  assert.equal(started.data.calendar.writer, true);
+  const hidden = await first.request("/calendar/heartbeat", {
+    ...firstBody,
+    focused: false,
+  });
+  assert.equal(hidden.data.calendar.writer, false);
+  assert.equal(await s.redis.exists(key), 0);
+  const takeover = await second.request("/calendar/heartbeat", secondBody);
+  assert.equal(takeover.data.calendar.writer, true);
+  const lease = JSON.parse((await s.redis.get(key))!);
+  lease.lastAt -= 9000;
+  await s.redis.set(key, JSON.stringify(lease), "PX", 20000);
+  await first.request("/calendar/heartbeat", { ...firstBody, focused: false });
+  assert.equal(JSON.parse((await s.redis.get(key))!).owner, lease.owner);
+  const advanced = await second.request("/calendar/heartbeat", secondBody);
+  assert(
+    Math.abs(
+      advanced.data.calendar.minuteOfDay -
+        takeover.data.calendar.minuteOfDay -
+        6,
+    ) < 0.1,
+  );
+  const reading = await second.request("/calendar/heartbeat", {
+    ...secondBody,
+    paused: true,
+  });
+  assert.equal(reading.data.calendar.writer, true);
+  assert.equal(
+    (await first.request("/calendar/heartbeat", firstBody)).data.calendar
+      .writer,
+    false,
+  );
+});
+
+test("rumah menyimpan posisi, menghalangi jalan menembus perabot, dan menolak keluar melalui API desa", async () => {
+  const u = await account(),
+    b = await new Browser().login(u);
+  assert.equal((await homeAction(b, "enter")).status, 409);
+  const entered = await enterHome(b, u);
+  assert.equal(entered.data.homestead.inside, true);
+  for (const [path, body] of [
+    [
+      "/adventure/surface-position",
+      { x: WORLD.surfaceSpawn.x, y: WORLD.surfaceSpawn.y },
+    ],
+    ["/adventure/travel", { destination: "forest" }],
+    ["/dive/start", { mode: "dive" }],
+    ["/game/upgrade", { ability: "oxygen" }],
+    ["/kedai/start", {}],
+  ] as const)
+    assert.equal((await b.request(path, body)).data.code, "HOME_INSIDE", path);
+  assert.equal(
+    (await b.request("/homestead/position", { x: 270, y: 250 })).status,
+    409,
+  );
+  assert.equal(
+    (
+      await b.request("/homestead/position", {
+        x: 480,
+        y: 540,
+        path: [{ x: 270, y: 250 }],
+      })
+    ).status,
+    409,
+  );
+  await fixtureHome(u, { x: 480, y: 580 });
+  const move = await b.request("/homestead/position", {
+    x: 480,
+    y: 540,
+    path: [{ x: 480, y: 560 }],
+  });
+  assert.equal(move.status, 200, JSON.stringify(move.data));
+  assert.equal(
+    (await b.request("/adventure/state")).data.homestead.position.y,
+    540,
+  );
+  await s.redis.del(`home:${u.id}`);
+  await b.request("/homestead/state");
+  const saved = JSON.parse((await s.redis.get(`home:${u.id}`))!);
+  assert.equal(saved.playerVersion, entered.data.player.version);
+  saved.positionAt -= 2000;
+  await s.redis.set(`home:${u.id}`, JSON.stringify(saved), "EX", 1800);
+  assert.equal(
+    (await b.request("/homestead/position", { x: 480, y: 480 })).status,
+    200,
+  );
+});
+
+test("tidur dini perlu konfirmasi, pukul 02 menuju 06 hari sama, pengulangan tidak memajukan cerita", async () => {
+  const u = await account(),
+    b = await new Browser().login(u);
+  await enterHome(b, u);
+  await fixtureHome(u, { x: 270, y: 330 });
+  assert.equal((await homeAction(b, "sleep")).data.code, "CONFIRM_EARLY_SLEEP");
+  await s.users.updateOne(
+    { id: u.id },
+    {
+      $set: {
+        "calendar.calendarDay": 7,
+        "calendar.minuteOfDay": 120,
+        "calendar.lastSettledDay": 7,
+      },
+    },
+  );
+  const state = (await b.request("/homestead/state")).data,
+    key = randomUUID(),
+    body = { action: "sleep", expectedRevision: state.homestead.revision };
+  const slept = await b.request("/homestead/action", body, "POST", key);
+  assert.equal(slept.status, 200);
+  assert.equal(slept.data.calendar.calendarDay, 7);
+  assert.equal(slept.data.calendar.minuteOfDay, 360);
+  assert.equal(slept.data.player.progress.day, 1);
+  assert.deepEqual(
+    (await b.request("/homestead/action", body, "POST", key)).data,
+    slept.data,
+  );
+  assert.equal(
+    (await b.request("/homestead/action", body)).data.code,
+    "HOMESTEAD_CHANGED",
+  );
+  await fixtureHome(u, { x: 270, y: 330 });
+  await s.users.updateOne(
+    { id: u.id },
+    { $set: { "calendar.minuteOfDay": 1380 } },
+  );
+  const next = await homeAction(b, "sleep");
+  assert.equal(next.data.calendar.calendarDay, 8);
+  assert.equal(next.data.calendar.minuteOfDay, 360);
+  assert.equal(next.data.player.progress.day, 1);
+});
+
+test("izin kebun, bibit toko Ratih, dan stok harian memerlukan lokasi serta transaksi sekali", async () => {
+  const u = await account(),
+    b = await new Browser().login(u);
+  await fixtureSurface(u, "hub", WORLD.homestead.permitBoard);
+  assert.equal((await homeAction(b, "permit")).data.code, "PERMIT_REQUIREMENT");
+  await s.users.updateOne(
+    { id: u.id },
+    { $set: { "progress.missions": ["akar"], coins: 1000 } },
+  );
+  const permitted = await homeAction(b, "permit");
+  assert.equal(permitted.status, 200);
+  assert.equal(permitted.data.homestead.seeds.benih_kangkung, 2);
+  assert.equal(
+    (await homeAction(b, "permit")).data.homestead.seeds.benih_kangkung,
+    2,
+  );
+  assert.equal(
+    (await homeAction(b, "buy_seed", { itemId: "benih_kangkung" })).data.code,
+    "POSITION",
+  );
+  await fixtureSurface(u, "hub", WORLD.homestead.market);
+  const state = (await b.request("/homestead/state")).data,
+    body = {
+      action: "buy_seed",
+      itemId: "benih_kangkung",
+      qty: 6,
+      expectedRevision: state.homestead.revision,
+    },
+    key = randomUUID();
+  const bought = await b.request("/homestead/action", body, "POST", key);
+  assert.equal(bought.status, 200);
+  assert.equal(bought.data.player.coins, 880);
+  assert.equal(bought.data.homestead.seeds.benih_kangkung, 8);
+  assert.deepEqual(
+    (await b.request("/homestead/action", body, "POST", key)).data,
+    bought.data,
+  );
+  assert.equal(
+    (await homeAction(b, "buy_seed", { itemId: "benih_kangkung" })).data.code,
+    "MARKET_STOCK",
+  );
+  assert.equal(
+    (await homeAction(b, "buy_seed", { itemId: "kangkung", qty: -1 })).status,
+    400,
+  );
+});
+
+test("simpanan lama diturunkan sekali tanpa mengulang pergantian siklus maupun bibit awal", async () => {
+  const u = await account();
+  await s.users.updateOne(
+    { id: u.id },
+    { $set: { "progress.day": 2, "progress.missions": ["akar", "malam_1"] } },
+  );
+  const b = await new Browser().login(u),
+    first = (await b.request("/homestead/state")).data;
+  assert.equal(first.homestead.permit, true);
+  assert.equal(first.homestead.seeds.benih_kangkung, 2);
+  await s.users.updateOne(
+    { id: u.id },
+    { $set: { "homestead.seeds.benih_kangkung": 0 } },
+  );
+  assert.equal(
+    (await b.request("/homestead/state")).data.homestead.seeds.benih_kangkung,
+    0,
+  );
+  await enterHome(b, u);
+  await fixtureHome(u, { x: 270, y: 330 });
+  const slept = await homeAction(b, "sleep", { confirmEarly: true });
+  assert.equal(slept.data.player.progress.day, 2);
+});
+
+test("peti memindahkan kualitas fragmen secara utuh, membatasi kapasitas dan melindungi retry", async () => {
+  const u = await account(),
+    b = await new Browser().login(u);
+  await s.users.updateOne(
+    { id: u.id },
+    {
+      $set: { inventory: [{ fragmentId: "klorofil", stars: 3, quantity: 4 }] },
+    },
+  );
+  await enterHome(b, u);
+  await fixtureHome(u, { x: 700, y: 425 });
+  const state = (await b.request("/homestead/state")).data,
+    key = randomUUID(),
+    body = {
+      action: "deposit",
+      itemId: "klorofil",
+      stars: 3,
+      qty: 3,
+      expectedRevision: state.homestead.revision,
+    };
+  let r = await b.request("/homestead/action", body, "POST", key);
+  assert.equal(r.status, 200, JSON.stringify(r.data));
+  assert.equal(r.data.player.inventory[0].quantity, 1);
+  assert.equal(r.data.homestead.storageLoot[0].quantity, 3);
+  assert.deepEqual(
+    (await b.request("/homestead/action", body, "POST", key)).data,
+    r.data,
+  );
+  r = await homeAction(b, "withdraw", { itemId: "klorofil", stars: 3, qty: 2 });
+  assert.equal(r.data.player.inventory[0].quantity, 3);
+  assert.equal(r.data.homestead.storageLoot[0].quantity, 1);
+  assert.equal(
+    (await homeAction(b, "withdraw", { itemId: "klorofil", stars: 2 })).status,
+    400,
+  );
+  await s.users.updateOne(
+    { id: u.id },
+    {
+      $set: {
+        "homestead.storageLoot": [
+          { fragmentId: "klorofil", stars: 3, quantity: 100 },
+        ],
+      },
+    },
+  );
+  assert.equal(
+    (await homeAction(b, "deposit", { itemId: "klorofil", stars: 3 })).status,
+    400,
+  );
+});
+
+test("tanam, perawatan tiga hari, panen dan pantry bersifat permanen serta tidak menggantikan fragmen ilmu", async () => {
+  const u = await account(),
+    b = await new Browser().login(u);
+  await s.users.updateOne(
+    { id: u.id },
+    { $set: { "progress.missions": ["akar"] } },
+  );
+  await fixtureSurface(u, "hub", WORLD.homestead.permitBoard);
+  await homeAction(b, "permit");
+  await fixtureSurface(u, "hub", WORLD.homestead.gardenPlots[0].interaction);
+  let r = await homeAction(b, "plant", {
+    plotId: "plot_1",
+    itemId: "benih_kangkung",
+  });
+  assert.equal(r.status, 200, JSON.stringify(r.data));
+  assert.equal(r.data.homestead.plots[0].stage, "seed");
+  assert.equal(
+    (await homeAction(b, "harvest", { plotId: "plot_1" })).data.code,
+    "CROP_NOT_READY",
+  );
+  for (let day = 1; day <= 3; day++) {
+    await fixtureSurface(u, "hub", WORLD.homestead.gardenPlots[0].interaction);
+    r = await homeAction(b, "water", { plotId: "plot_1" });
+    assert.equal(r.status, 200);
+    assert.equal(r.data.homestead.plots[0].growthDays, day - 1);
+    r = await homeAction(b, "water", { plotId: "plot_1" });
+    assert.equal(r.data.homestead.plots[0].growthDays, day - 1);
+    await enterHome(b, u);
+    await fixtureHome(u, { x: 270, y: 330 });
+    r = await homeAction(b, "sleep", { confirmEarly: true });
+    assert.equal(r.status, 200);
+    assert.equal(r.data.homestead.plots[0].growthDays, day);
+    assert.equal(r.data.player.progress.day, 1);
+    assert.equal((await homeAction(b, "exit")).status, 200);
+  }
+  await fixtureSurface(u, "hub", WORLD.homestead.gardenPlots[0].interaction);
+  const state = (await b.request("/homestead/state")).data,
+    key = randomUUID(),
+    body = {
+      action: "harvest",
+      plotId: "plot_1",
+      expectedRevision: state.homestead.revision,
+    };
+  r = await b.request("/homestead/action", body, "POST", key);
+  assert.equal(r.status, 200);
+  assert.equal(r.data.homestead.produce.kangkung, 3);
+  assert.equal(r.data.homestead.plots[0].stage, "empty");
+  assert.deepEqual(
+    (await b.request("/homestead/action", body, "POST", key)).data,
+    r.data,
+  );
+  assert.equal(
+    (await homeAction(b, "harvest", { plotId: "plot_1" })).data.code,
+    "CROP_NOT_READY",
+  );
+  await fixtureSurface(u, "hub", { x: 595, y: 650 });
+  r = await homeAction(b, "stock_kedai", { itemId: "kangkung", qty: 2 });
+  assert.equal(r.status, 200);
+  assert.equal(r.data.homestead.produce.kangkung, 1);
+  assert.equal(r.data.homestead.pantry.kangkung, 2);
+  assert.deepEqual(r.data.player.inventory, []);
+});
+
+test("batas tengah malam hanya menumbuhkan tanaman terawat dan tidak memulai hari cerita", async () => {
+  const { calendarRain } =
+    await import("../../../packages/shared/src/calendar.js");
+  let u = await account();
+  while (calendarRain(u.id, 1)) u = await account();
+  const b = await new Browser().login(u),
+    sessionId = randomUUID(),
+    body = { sessionId, paused: false, focused: true };
+  await s.users.updateOne(
+    { id: u.id },
+    {
+      $set: {
+        "calendar.minuteOfDay": 1439,
+        "homestead.plots.0": {
+          id: "plot_1",
+          cropId: "kangkung",
+          growthDays: 0,
+          wateredDay: 0,
+          lastSettledDay: 1,
+          needsCare: false,
+        },
+        "homestead.plots.1": {
+          id: "plot_2",
+          cropId: "kangkung",
+          growthDays: 0,
+          wateredDay: 1,
+          lastSettledDay: 1,
+          needsCare: false,
+        },
+      },
+    },
+  );
+  await b.request("/calendar/heartbeat", body);
+  const key = `calendar:writer:${u.id}`,
+    lease = JSON.parse((await s.redis.get(key))!);
+  lease.lastAt -= 3000;
+  await s.redis.set(key, JSON.stringify(lease), "PX", 20000);
+  const r = await b.request("/calendar/heartbeat", body);
+  assert.equal(r.status, 200);
+  assert.equal(r.data.calendar.calendarDay, 2);
+  assert.equal(r.data.homestead.plots[0].growthDays, 0);
+  assert.equal(r.data.homestead.plots[0].needsCare, true);
+  assert.equal(r.data.homestead.plots[1].growthDays, 1);
+  const next = await b.request("/calendar/heartbeat", body);
+  assert.equal(next.data.homestead.plots[1].growthDays, 1);
+  assert.equal((await s.users.findOne({ id: u.id }))!.progress.day, 1);
+});
+
+test("sayur pantry memberi bonus hanya bersama resep dan fragmen pelanggan yang sah", async () => {
+  const u = await account(),
+    b = await new Browser().login(u);
+  await s.users.updateOne(
+    { id: u.id },
+    { $set: { "progress.stage": "night", "homestead.pantry.kangkung": 2 } },
+  );
+  const started = await b.request("/kedai/start", {});
+  assert.equal(started.status, 200, JSON.stringify(started.data));
+  const customer = started.data.shift.customers[0];
+  const body = {
+    shiftId: started.data.shift.id,
+    recipeId: customer.id,
+    fragmentId: customer.fragmentId,
+    stars: 3,
+    gardenIngredient: true,
+  };
+  assert.equal((await b.request("/kedai/serve", body)).status, 400);
+  assert.equal(
+    (await b.request("/homestead/state")).data.homestead.pantry.kangkung,
+    2,
+  );
+  await s.users.updateOne(
+    { id: u.id },
+    {
+      $set: {
+        inventory: [{ fragmentId: customer.fragmentId, stars: 3, quantity: 1 }],
+      },
+    },
+  );
+  const key = randomUUID(),
+    served = await b.request("/kedai/serve", body, "POST", key);
+  assert.equal(served.status, 200, JSON.stringify(served.data));
+  assert.equal(served.data.gardenBonus, 5);
+  assert.equal(served.data.homestead.pantry.kangkung, 1);
+  assert.equal(served.data.player.inventory.length, 0);
+  assert.deepEqual(
+    (await b.request("/kedai/serve", body, "POST", key)).data,
+    served.data,
+  );
+  assert.equal((await b.request("/kedai/serve", body)).status, 409);
+});
+
+test("36 menit aktif tepat satu hari dan tanaman siap panen tidak hilang ketika terlambat dirawat", async () => {
+  const { settleCalendar, setCalendar } = await import("../src/daily.js");
+  const { CALENDAR_DAY_MS, calendarRain } =
+    await import("../../../packages/shared/src/calendar.js");
+  const u = await account(),
+    b = await new Browser().login(u),
+    p = (await s.users.findOne({ id: u.id }))!;
+  settleCalendar(p, CALENDAR_DAY_MS);
+  assert.equal(p.calendar!.calendarDay, 2);
+  assert.equal(p.calendar!.minuteOfDay, 360);
+  assert.equal(p.progress.day, 1);
+  const plot = p.homestead!.plots[0];
+  Object.assign(plot, {
+    cropId: "kangkung",
+    growthDays: 3,
+    lastSettledDay: 2,
+    wateredDay: 0,
+  });
+  setCalendar(p, 10, 360);
+  assert.equal(plot.growthDays, 3);
+  assert.equal(plot.cropId, "kangkung");
+  let rainDay = 10;
+  while (!calendarRain(p.id, rainDay)) rainDay++;
+  setCalendar(p, rainDay, 360);
+  Object.assign(plot, {
+    growthDays: 0,
+    wateredDay: 0,
+    lastSettledDay: rainDay,
+  });
+  setCalendar(p, rainDay + 1, 360);
+  assert.equal(plot.growthDays, 1);
+  assert.equal(plot.needsCare, false);
+  assert.equal(
+    (await b.request("/homestead/state")).data.calendar.calendarDay,
+    1,
+    "pure settlement never writes another account state",
+  );
+});
+
+test("kegiatan rumah ditolak selama menyelam dan giliran kedai aktif", async () => {
+  const u = await account(),
+    b = await new Browser().login(u);
+  const d = await start(b);
+  await fixtureSurface(u, "hub", WORLD.homestead.door);
+  assert.equal((await homeAction(b, "enter")).data.code, "ACTIVE_DIVE");
+  await s.redis.del(`dive:${u.id}`);
+  await s.users.updateOne(
+    { id: u.id },
+    { $set: { "progress.stage": "night" } },
+  );
+  await fixtureSurface(u, "hub", { x: 595, y: 650 });
+  assert.equal((await b.request("/kedai/start", {})).status, 200);
+  await fixtureSurface(u, "hub", WORLD.homestead.door);
+  assert.equal((await homeAction(b, "enter")).data.code, "ACTIVE_SHIFT");
+  assert(d.id);
+});
+
+test("perubahan admin membatalkan revisi rumah lama tanpa memulihkan posisi melalui receipt lama", async () => {
+  const u = await account(),
+    b = await new Browser().login(u),
+    m = await manager();
+  await fixtureSurface(u, "hub", WORLD.homestead.door);
+  const state = (await b.request("/homestead/state")).data,
+    key = randomUUID(),
+    body = { action: "enter", expectedRevision: state.homestead.revision };
+  const entered = await b.request("/homestead/action", body, "POST", key);
+  assert.equal(entered.status, 200);
+  await fixtureHome(u, { x: 480, y: 540 });
+  const old = JSON.parse((await s.redis.get(`home:${u.id}`))!);
+  const edited = await change(m, (await s.users.findOne({ id: u.id }))!, {
+    action: "coins",
+    mode: "add",
+    amount: 7,
+  });
+  assert.equal(edited.status, 200);
+  assert.equal(
+    (await b.request("/homestead/position", { x: 480, y: 520 })).data.code,
+    "SESSION_CHANGED",
+  );
+  const reset = JSON.parse((await s.redis.get(`home:${u.id}`))!);
+  assert.equal(reset.x, WORLD.homestead.interior.entry.x);
+  assert.equal(reset.y, WORLD.homestead.interior.entry.y);
+  assert(reset.playerVersion > old.playerVersion);
+  assert.deepEqual(
+    (await b.request("/homestead/action", body, "POST", key)).data,
+    entered.data,
+  );
+  assert.deepEqual(JSON.parse((await s.redis.get(`home:${u.id}`))!), reset);
+  const fresh = (await b.request("/homestead/state")).data;
+  assert.equal(fresh.player.coins, 7);
+  assert.equal(
+    (
+      await b.request("/homestead/action", {
+        action: "exit",
+        expectedRevision: entered.data.homestead.revision,
+      })
+    ).data.code,
+    "HOMESTEAD_CHANGED",
+  );
+});
+
+test("tamat tetap mengizinkan rumah dan kebun tanpa membuka kembali hadiah cerita atau boss", async () => {
+  const u = await account(),
+    b = await new Browser().login(u);
+  await s.users.updateOne(
+    { id: u.id },
+    {
+      $set: {
+        progress: {
+          day: 3,
+          stage: "done",
+          tutorial: true,
+          missions: ["akar", "gajah_mina", "malam_3"],
+          bossDefeated: true,
+          unlockedZones: [
+            "shallow_tutorial",
+            "kelp_forest",
+            "limestone_cave",
+            "boss_sanctuary",
+          ],
+        },
+      },
+    },
+  );
+  await fixtureSurface(u, "hub", WORLD.homestead.permitBoard);
+  assert.equal((await homeAction(b, "permit")).status, 200);
+  await enterHome(b, u);
+  await fixtureHome(u, { x: 270, y: 330 });
+  const slept = await homeAction(b, "sleep", { confirmEarly: true });
+  assert.equal(slept.status, 200);
+  assert.equal(slept.data.player.progress.stage, "done");
+  assert.equal(slept.data.player.progress.bossDefeated, true);
+  await homeAction(b, "exit");
+  assert.equal((await b.request("/dive/start", { mode: "boss" })).status, 409);
+  assert.equal((await b.request("/kedai/start", {})).status, 409);
+});
+
+test("pembelian bibit serentak menolak revisi lama dan tidak menggandakan stok maupun koin", async () => {
+  const u = await account(),
+    b = await new Browser().login(u);
+  await s.users.updateOne({ id: u.id }, { $set: { coins: 1000 } });
+  await fixtureSurface(u, "hub", WORLD.homestead.market);
+  const state = (await b.request("/homestead/state")).data,
+    body = {
+      action: "buy_seed",
+      itemId: "benih_kangkung",
+      qty: 2,
+      expectedRevision: state.homestead.revision,
+    };
+  const responses = await Promise.all([
+    b.request("/homestead/action", body),
+    b.request("/homestead/action", body),
+  ]);
+  assert.deepEqual(responses.map((r) => r.status).sort(), [200, 409]);
+  const after = (await b.request("/homestead/state")).data;
+  assert.equal(after.player.coins, 960);
+  assert.equal(after.homestead.seeds.benih_kangkung, 2);
+  assert.equal(after.homestead.market.bought, 2);
+  await s.users.updateOne(
+    { id: u.id },
+    { $set: { "calendar.calendarDay": 2, "calendar.lastSettledDay": 2 } },
+  );
+  assert.equal(
+    (await b.request("/homestead/state")).data.homestead.market.bought,
+    0,
+  );
+});
+
+test("tengah malam saat menyelam tidak mengekstrak hasil atau mengubah versi dan jeda kuis menghentikan kalender", async () => {
+  const u = await account(),
+    b = await new Browser().login(u),
+    d = await start(b),
+    sessionId = randomUUID(),
+    body = { sessionId, paused: false, focused: true };
+  await s.users.updateOne(
+    { id: u.id },
+    { $set: { "calendar.minuteOfDay": 1439 } },
+  );
+  await b.request("/calendar/heartbeat", body);
+  const key = `calendar:writer:${u.id}`,
+    lease = JSON.parse((await s.redis.get(key))!);
+  lease.lastAt -= 3000;
+  await s.redis.set(key, JSON.stringify(lease), "PX", 20000);
+  let r = await b.request("/calendar/heartbeat", body);
+  assert.equal(r.data.calendar.calendarDay, 2);
+  const live = JSON.parse((await s.redis.get(`dive:${u.id}`))!);
+  assert.equal(live.id, d.id);
+  assert.equal(
+    live.playerVersion,
+    (await s.users.findOne({ id: u.id }))!.version,
+  );
+  const before = r.data.calendar.minuteOfDay;
+  live.reading = true;
+  await s.redis.set(`dive:${u.id}`, JSON.stringify(live), "EX", 1800);
+  const old = JSON.parse((await s.redis.get(key))!);
+  old.lastAt -= 3000;
+  await s.redis.set(key, JSON.stringify(old), "PX", 20000);
+  r = await b.request("/calendar/heartbeat", body);
+  assert.equal(r.data.calendar.minuteOfDay, before);
+  assert.equal((await b.request("/game/state")).data.dive.id, d.id);
+});
+
+test("migrasi rumah yang terlambat mempertahankan kalender sah dan hanya membuat satu jatah bibit", async () => {
+  const u = await account();
+  await s.users.updateOne(
+    { id: u.id },
+    {
+      $set: {
+        calendar: {
+          calendarDay: 9,
+          minuteOfDay: 123,
+          calendarRevision: 12,
+          lastSettledDay: 9,
+        },
+        "progress.day": 3,
+        "progress.missions": ["akar"],
+      },
+    },
+  );
+  const [a, b] = await Promise.all([
+    new Browser().login(u),
+    new Browser().login(u),
+  ]);
+  const [left, right] = await Promise.all([
+    a.request("/homestead/state"),
+    b.request("/homestead/state"),
+  ]);
+  for (const result of [left, right]) {
+    assert.equal(result.status, 200);
+    assert.equal(result.data.calendar.calendarDay, 9);
+    assert.equal(result.data.calendar.minuteOfDay, 123);
+    assert.equal(result.data.calendar.calendarRevision, 12);
+    assert.equal(result.data.homestead.seeds.benih_kangkung, 2);
+    assert.equal(result.data.player.progress.day, 3);
+  }
+  assert.equal(
+    (await s.users.findOne({ id: u.id }))!.homestead!.seeds.benih_kangkung,
+    2,
+  );
 });

@@ -1,0 +1,274 @@
+{
+  "id": "ujang",
+  "name": "Mang Ujang",
+  "atlas": "res://resources/art/npc-rigs/ujang.png",
+  "cellSize": 64,
+  "grid": [
+    5,
+    4
+  ],
+  "bodyHeight": 100,
+  "footPivot": [
+    0,
+    0
+  ],
+  "parts": {
+    "torso": {
+      "cell": 0,
+      "size": [
+        33,
+        34
+      ],
+      "origin": [
+        15,
+        15
+      ],
+      "center": [
+        0.09765625,
+        -52.44140625
+      ]
+    },
+    "head": {
+      "cell": 1,
+      "size": [
+        29,
+        27
+      ],
+      "origin": [
+        17,
+        18
+      ],
+      "center": [
+        -4.6875,
+        -81.54296875
+      ]
+    },
+    "upper_arm_left": {
+      "cell": 2,
+      "size": [
+        7,
+        7
+      ],
+      "origin": [
+        28,
+        28
+      ],
+      "pivot": [
+        3.5,
+        0
+      ]
+    },
+    "lower_arm_left": {
+      "cell": 3,
+      "size": [
+        5,
+        9
+      ],
+      "origin": [
+        29,
+        27
+      ],
+      "pivot": [
+        2.5,
+        0
+      ]
+    },
+    "hand_left": {
+      "cell": 4,
+      "size": [
+        5,
+        5
+      ],
+      "origin": [
+        29,
+        29
+      ],
+      "pivot": [
+        2.5,
+        0
+      ]
+    },
+    "upper_arm_right": {
+      "cell": 5,
+      "size": [
+        7,
+        6
+      ],
+      "origin": [
+        28,
+        29
+      ],
+      "pivot": [
+        3.5,
+        0
+      ]
+    },
+    "lower_arm_right": {
+      "cell": 6,
+      "size": [
+        5,
+        8
+      ],
+      "origin": [
+        29,
+        28
+      ],
+      "pivot": [
+        2.5,
+        0
+      ]
+    },
+    "hand_right": {
+      "cell": 7,
+      "size": [
+        5,
+        5
+      ],
+      "origin": [
+        29,
+        29
+      ],
+      "pivot": [
+        2.5,
+        0
+      ]
+    },
+    "upper_leg_left": {
+      "cell": 8,
+      "size": [
+        11,
+        16
+      ],
+      "origin": [
+        26,
+        24
+      ],
+      "pivot": [
+        5.5,
+        0
+      ]
+    },
+    "lower_leg_left": {
+      "cell": 9,
+      "size": [
+        7,
+        15
+      ],
+      "origin": [
+        28,
+        24
+      ],
+      "pivot": [
+        3.5,
+        0
+      ]
+    },
+    "foot_left": {
+      "cell": 10,
+      "size": [
+        13,
+        8
+      ],
+      "origin": [
+        25,
+        28
+      ],
+      "pivot": [
+        6.5,
+        0
+      ]
+    },
+    "upper_leg_right": {
+      "cell": 11,
+      "size": [
+        11,
+        16
+      ],
+      "origin": [
+        26,
+        24
+      ],
+      "pivot": [
+        5.5,
+        0
+      ]
+    },
+    "lower_leg_right": {
+      "cell": 12,
+      "size": [
+        7,
+        15
+      ],
+      "origin": [
+        28,
+        24
+      ],
+      "pivot": [
+        3.5,
+        0
+      ]
+    },
+    "foot_right": {
+      "cell": 13,
+      "size": [
+        14,
+        9
+      ],
+      "origin": [
+        25,
+        27
+      ],
+      "pivot": [
+        7.0,
+        0
+      ]
+    },
+    "head_back": {
+      "cell": 14,
+      "size": [
+        29,
+        27
+      ],
+      "origin": [
+        17,
+        18
+      ]
+    },
+    "torso_back": {
+      "cell": 15,
+      "size": [
+        33,
+        34
+      ],
+      "origin": [
+        15,
+        15
+      ]
+    }
+  },
+  "joints": {
+    "leftShoulder": [
+      -12.109375,
+      -60.15625
+    ],
+    "rightShoulder": [
+      14.6484375,
+      -62.890625
+    ],
+    "leftHip": [
+      -6.0546875,
+      -36.71875
+    ],
+    "rightHip": [
+      8.984375,
+      -36.9140625
+    ]
+  },
+  "source": "village-residents-v1.png",
+  "sourceSha256": "09fd3e55f16b7a17c5077a1b693d4284e04437c7c19ab90ccbca8f210bc5afde",
+  "method": "original portrait cutouts; covered cloth patched from same portrait; back view simplified from sampled palette",
+  "neck": [
+    0.0,
+    -69.140625
+  ]
+}

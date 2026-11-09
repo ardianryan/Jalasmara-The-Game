@@ -66,38 +66,68 @@ func update_actor(actor: Node2D,sprite: Sprite3D) -> void:
 	entry["poseMotion"]=motion
 	if bool(activity.moving) and not EnvironmentState.reduced_motion and not EnvironmentState.clock_paused:
 		sprite.position+=renderer.camera_up()*absf(sin(float(actor.get("_elapsed"))*5))*.7
-	entry.root.visible=str(activity.phase)=="work"
+	var body: Dictionary=actor.body_animation_state() if actor.has_method("body_animation_state") else {}
+	var layered:=bool(body.get("layered",false))
+	entry.root.visible=(str(body.get("clip","")) in ["start_work","work_loop","end_work"]) if layered else str(activity.phase)=="work"
 	if not entry.root.visible: return
 	var feet: Vector3=renderer.map_point(actor.position,renderer.ground_height(actor.position))
 	var up: Vector3=renderer.camera_up()
 	var hand: Vector3=feet+up*35+Vector3(10,0,0)-renderer.camera_forward()*12
+	var other_hand: Vector3=hand-Vector3(8,0,0)
+	var phase:=str(body.get("workPhase","work"))
+	var pose_time:=float(body.get("elapsed",0))
+	if layered:
+		var anchors: Dictionary=body.get("hands",{})
+		if anchors.has("right"):
+			var point: Array=anchors.right
+			hand=to_local(Vector3(float(point[0]),float(point[1]),float(point[2])))
+		if anchors.has("left"):
+			var point: Array=anchors.left
+			other_hand=to_local(Vector3(float(point[0]),float(point[1]),float(point[2])))
+	if EnvironmentState.reduced_motion: phase="wait" if kind=="fishing" else "aim" if kind=="gardening" else "weave"
 	var lines: Array=entry.lines
 	var boxes: Array=entry.boxes
 	if kind=="fishing":
-		var tip:=feet+up*(67+motion*.9)+Vector3(-56,0,0)
-		var float_point: Vector3=renderer.map_point(actor.position+Vector2(-80,70),0)+Vector3(0,0,-11+motion*.6)
-		_place_line(lines[0],hand,tip)
+		var grip: Vector3=(hand-other_hand).normalized()
+		if grip.length()<.5: grip=Vector3(-1,0,0)
+		var tip:=hand+grip*47
+		var water_point: Vector3=renderer.map_point(actor.position+Vector2(-80,70),0)+Vector3(0,0,-11+motion*.6)
+		var hook:=tip-up*9
+		var float_point:=water_point
+		if layered:
+			if phase in ["prepare","tidy"]: float_point=hook
+			elif phase=="cast": float_point=hook.lerp(water_point,clampf((fposmod(pose_time,9)-1.0)/.8,0,1))
+			elif phase=="pull": float_point=water_point.lerp(hook,clampf((fposmod(pose_time,9)-6.7)/1.3,0,1))
+		_place_line(lines[0],other_hand-grip*3,tip)
 		_place_line(lines[1],tip,float_point)
 		boxes[0].position=float_point
+		entry["gripError"]=maxf(_distance_to_segment(hand,other_hand-grip*3,tip),_distance_to_segment(other_hand,other_hand-grip*3,tip))
 	elif kind=="weaving":
-		var center:=hand+Vector3(-5,0,0)
-		var right:=Vector3(11,0,0)
-		var vertical:=up*8
-		_place_line(lines[0],center-right-vertical,center+right-vertical)
-		_place_line(lines[1],center-right+vertical,center+right+vertical)
-		_place_line(lines[2],center-right-vertical,center-right+vertical)
-		_place_line(lines[3],center+right-vertical,center+right+vertical)
+		var left:=other_hand
+		var right:=hand
+		var vertical:=up*7
+		_place_line(lines[0],left-vertical,right-vertical)
+		_place_line(lines[1],left+vertical,right+vertical)
+		_place_line(lines[2],left-vertical,left+vertical)
+		_place_line(lines[3],right-vertical,right+vertical)
 		for index in range(5):
-			var x: float=-8+index*4
-			_place_line(lines[index+4],center+Vector3(x,0,0)-vertical,center+Vector3(x,0,0)+vertical)
-		boxes[0].position=center+Vector3(motion*8,0,1)
+			var center:=left.lerp(right,float(index)/4.0)
+			_place_line(lines[index+4],center-vertical,center+vertical)
+		boxes[0].position=left.lerp(right,(motion+1)*.5)+renderer.camera_forward()*-.2
+		entry["gripError"]=0.0
 	elif kind=="gardening":
-		boxes[0].position=hand
-		var spout:=hand+Vector3(15,0,0)-up*4
-		_place_line(lines[0],hand,spout)
+		var center:=hand-up*4
+		boxes[0].position=center
+		var spout:=center+Vector3(15,0,0)-up
+		_place_line(lines[0],center,spout)
+		_place_line(lines[1],center+Vector3(-3,0,0),hand-Vector3(3,0,0))
+		_place_line(lines[2],hand-Vector3(3,0,0),hand+Vector3(3,0,0))
+		_place_line(lines[3],hand+Vector3(3,0,0),center+Vector3(3,0,0))
 		for index in range(5):
-			var t:=fposmod(float(index)/5.0+motion*.12,1)
+			var t:=fposmod(float(index)/5.0+pose_time*.8,1)
 			boxes[index+1].position=spout.lerp(feet+Vector3(95,0,30),t)-Vector3(0,0,sin(t*PI)*5)
+			boxes[index+1].visible=phase=="pour" and not EnvironmentState.reduced_motion
+		entry["gripError"]=0.0
 	elif kind=="pump":
 		var pivot:=hand+Vector3(motion*2,0,0)
 		_place_line(lines[0],pivot-up*9,pivot+up*9)
@@ -120,7 +150,7 @@ func _build(entry: Dictionary) -> void:
 			for index in range(9): entry.lines.append(_line(holder,"92714c" if index<4 else "c8af7c",.7 if index<4 else .3))
 			entry.boxes=[_box(holder,Vector3(5,2,2),"a46c56")]
 		"gardening":
-			entry.lines=[_line(holder,"819c9b",1)]
+			entry.lines=[_line(holder,"819c9b",1),_line(holder,"819c9b",.7),_line(holder,"819c9b",.7),_line(holder,"819c9b",.7)]
 			entry.boxes=[_box(holder,Vector3(9,8,6),"7e9990")]
 			for index in range(5): entry.boxes.append(_box(holder,Vector3(1,1,2),"9ec8c3"))
 		"pump":
@@ -135,4 +165,12 @@ func debug_status() -> Dictionary:
 	var active: Array[String]=[]
 	for entry in _actors.values():
 		if entry.root.visible: active.append(str(entry.kind))
-	return {"active":active,"actors":_actors.size(),"cosmeticOnly":true,"clockPaused":EnvironmentState.clock_paused}
+	var grips: Dictionary={}
+	for entry in _actors.values():
+		if entry.root.visible and entry.has("gripError"): grips[str(entry.actor.actor_name)]=entry.gripError
+	return {"gripErrors":grips,"active":active,"actors":_actors.size(),"cosmeticOnly":true,"clockPaused":EnvironmentState.clock_paused}
+
+func _distance_to_segment(point: Vector3,a: Vector3,b: Vector3) -> float:
+	var span:=b-a
+	var t:=clampf((point-a).dot(span)/maxf(.0001,span.length_squared()),0,1)
+	return point.distance_to(a+span*t)

@@ -43,7 +43,12 @@ const scripts = [
   "scripts/tests/surface-traversal.gd",
   "scripts/tests/land-path.gd",
   "scripts/tests/world-clock.gd",
+  "scripts/tests/authoritative-calendar.gd",
+  "scripts/tests/homestead-world.gd",
+  "scripts/tests/homestead-ui.gd",
+  "scripts/tests/kedai-focus.gd",
   "scripts/tests/village-activities.gd",
+  "scripts/tests/npc-body-animation.gd",
 ];
 const results = [];
 try {

@@ -12,7 +12,7 @@ Bilik ganti Beno berada di dermaga pada sekitar (1430,1290). Dua tiang memakai f
 
 ## Rumah warga dan balai pada tata letak 7
 
-Manifest `LAND_MAPS.hub` kini memakai `layoutVersion: 7`. Pelataran hunian di sebelah utara menyatu dengan pelataran atas pada elevasi 2. Lantai, batas pesisir, dan footprint bangunan berasal dari manifest bersama yang dipakai renderer serta pemeriksaan gerak server. Titik cerita, kebun Bu Darmi, jalur dermaga, dan gerbang hutan tetap tersedia.
+Rumah warga diperkenalkan pada tata letak 7; penambahan Griya Sasmita menaikkan `LAND_MAPS.hub.layoutVersion` menjadi 8. Pelataran hunian di sebelah utara menyatu dengan pelataran atas pada elevasi 2. Lantai, batas pesisir, dan footprint bangunan berasal dari manifest bersama yang dipakai renderer serta pemeriksaan gerak server. Titik cerita, kebun Bu Darmi, jalur dermaga, dan gerbang hutan tetap tersedia.
 
 | Bangunan         | Footprint pembatas (x, y, lebar, tinggi) | Elevasi | Titik pendekatan pintu |
 | ---------------- | ---------------------------------------- | ------- | ---------------------- |
@@ -25,13 +25,35 @@ Ukuran tabel merupakan kotak pembatas; penghalang sebenarnya berupa poligon empa
 
 Jalur batu selebar 76 piksel dunia menghubungkan titik pendekatan pintu dengan pelataran lama. Jalur ini merupakan lapisan visual di atas lantai yang sudah sah; jalur tidak menciptakan jalan melintasi air atau melewati footprint rumah. Tepi dua lantai yang bersambung pada elevasi sama tidak lagi diberi dinding tebing semu. Renderer tetap menampilkan tebing pada tepi yang benar-benar berbeda tinggi atau berbatasan dengan pesisir.
 
-Jumlah bangunan rumah/kedai/kantor pada hub menjadi tujuh. Bangunan baru belum menyediakan interior yang dapat dimasuki, tempat tidur, penyimpanan barang, transaksi panen, atau hadiah baru. Jadwal dan aktivitas warga dibahas terpisah dari keberadaan bangunannya.
+Pada perluasan tata letak 7, jumlah bangunan rumah/kedai/kantor menjadi tujuh; Griya Sasmita pada versi 8 menjadi bangunan kedelapan. Bangunan baru belum menyediakan interior yang dapat dimasuki, tempat tidur, penyimpanan barang, transaksi panen, atau hadiah baru. Jadwal dan aktivitas warga dibahas terpisah dari keberadaan bangunannya.
 
 Pemeriksaan lokal mencakup 30 ruas jalur hub dengan jarak aman tubuh 13 piksel serta titik awal/akhir rute warga yang ada. Render native siang dan malam selesai tanpa kesalahan shader; bukti visual tersedia secara lokal di `artifacts/godot/village7/`. Pemeriksaan ini belum menyatakan hasil pengujian peramban atau perangkat fisik untuk revisi tersebut.
 
+## Griya Sasmita pada tata letak 8
+
+Rumah Nala dibangun terpisah di sebelah barat Kedai Waras. Rumah panggung memiliki dek kayu, tiang penopang hingga permukaan air, beranda, dan sambungan jembatan berpagar menuju pelataran lama. Tidak ada rumah warga atau kantor Raka yang digantikan. Lantai dek dan footprint penghalang dipakai bersama oleh renderer serta validasi server.
+
+| Unsur       | Geometri atau titik interaksi                  |
+| ----------- | ---------------------------------------------- |
+| Rumah Nala  | Kotak pembatas 60, 420, 200, 145; elevasi 2    |
+| Pintu luar  | 160, 615                                       |
+| Dek beranda | x 40–280, y 385–735; elevasi 2                 |
+| Rakit kebun | x 40–280, y 735–875; elevasi 2                 |
+| Jembatan    | Sumbu 265, 720 menuju 400, 720; lebar 80       |
+| Petak 1     | Footprint 65, 760, 80, 70; interaksi 105, 850  |
+| Petak 2     | Footprint 165, 760, 80, 70; interaksi 205, 850 |
+
+Jembatan ditempatkan di sebelah selatan pohon yang sudah ada. Titik pagar dan lantai tidak dipilih hanya dari gambar; ruas jalan diperiksa dengan jarak aman tubuh 13 piksel. Jalan menuju petak kebun memutari sisi kanan bedeng dan berakhir pada papan pijakan di depannya. Air di luar dek tidak menjadi lantai yang dapat dilalui.
+
+`HomesteadScene.gd` merupakan ruang kecil yang benar-benar dapat dijelajahi. Scene membuat Player, kamera tiga perempat, lantai 3D, dan penghalang furnitur dari `WORLD.homestead.interior`. Atap dan dinding depan dipotong untuk pandangan; collision furnitur tetap aktif. Dipan rotan, meja arsip, peti, rak pameran, dan ambang pintu masing-masing memiliki titik pendekatan yang sah. Scene menerbitkan sinyal interaksi dan menerima `set_state(home)`; menu dan panggilan API berada pada pengendali rumah, bukan pada renderer. Ruang memakai anyaman pada selimut dan tikar, dua bantal, sandaran rotan, buku serta gulungan lontar di meja arsip, keranjang pada rak, dan tanaman kecil pada meja. Dua lampu memberi cahaya hangat lokal; cahaya lingkungan khusus interior dinaikkan secukupnya pada malam hari agar serat kayu dan jalan tetap terbaca. Bingkai dinding samping dan dinding depan rendah memperjelas volume tanpa menutupi pintu.
+
+Empat penampilan serta sistem pakaian/perlengkapan tetap menggunakan komponen karakter yang ada. Rak kosong tidak menampilkan artefak. Barang yang dipamerkan hanya berasal dari `player.adventure.keyItems`. Dua petak di luar mengikuti `homestead.plots`: `empty`, `seed`, `sprout`, `young`, atau `ready`; `needsCare` menentukan tampilan perlu dirawat. Renderer tidak menentukan pertumbuhan, mengurangi bibit, atau memberikan hasil panen.
+
+Pengujian geometri/interior lokal memeriksa 287 sampel lintasan, footprint furnitur, lima interaksi yang dapat dicapai, jeda modal, empat identitas dengan tiga pakaian, serta ketiadaan perubahan ekonomi/state server oleh scene. Render native eksterior, interior siang, dan interior malam tersedia di `artifacts/godot/homestead/`. Bukti ini menguji scene dan renderer; penerimaan akhir transaksi peti, tidur, refresh, serta masuk/keluar tetap memerlukan pengujian API dan peramban terpadu.
+
 ## Rancangan perluasan yang belum aktif
 
-Referensi pengguna menetapkan Griya Sasmita sebagai rumah panggung Nala, kebun dan keramba pribadi, fungsi lanjutan balai Ki Lurah, serta Laskar Kognisi: Bagas, Kinasih, Gito, Cempaka, dan Danu. Pertahankan nama dan peran tersebut untuk perluasan berikutnya. Jangan menampilkan tombol panen, tidur, pemberian bibit, ataupun hadiah yang belum mempunyai layanan server.
+Perluasan berikutnya mencakup interior rumah yang lebih lengkap, keramba pribadi, fungsi lanjutan balai Ki Lurah, serta Laskar Kognisi: Bagas, Kinasih, Gito, Cempaka, dan Danu. Pertahankan nama dan peran tersebut untuk perluasan berikutnya. Jangan menampilkan tombol panen, tidur, pemberian bibit, ataupun hadiah yang belum mempunyai layanan server.
 
 Urutan implementasi lanjutan:
 

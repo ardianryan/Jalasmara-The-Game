@@ -1,3 +1,7 @@
+export * from "./calendar.js";
+export * from "./homestead.js";
+import type { CalendarState } from "./calendar.js";
+import type { HomesteadState } from "./homestead.js";
 export type AppearanceId =
   "male_default" | "male_nusantara" | "female_default" | "female_nusantara";
 export type Role = "player" | "admin" | "owner";
@@ -30,6 +34,8 @@ export interface Player {
   authVersion: number;
   createdAt: string;
   updatedAt: string;
+  calendar?: CalendarState;
+  homestead?: HomesteadState;
   appearance?: AppearanceId;
   adventure?: { discoveries: string[]; puzzles: string[]; keyItems: string[] };
 }

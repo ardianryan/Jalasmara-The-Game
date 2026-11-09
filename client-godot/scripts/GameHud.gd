@@ -336,6 +336,10 @@ func update_state(state: Dictionary) -> void:
 	if not diving:
 		_resources.text += "   TAS %.1f / %.1f kg" % [float(state.get("weight",0)),float(state.get("capacity",0))]
 	_weather.text = (str(state.get("clock",""))+"  "+str(state.get("weather",""))).strip_edges()
+	if state.get("authoritative",false):
+		_weather.text="H%d · %s" % [int(state.get("calendarDay",1)),_weather.text]
+		if not state.get("clockConnected",true): _weather.text="Jam dijeda · sambungkan kembali"
+		elif not state.get("clockWriter",true): _weather.text="Jam aktif di sesi lain"
 	_instrument.visible = diving and not _modal
 	var maximum := maxf(1.0,float(state.get("maxOxygen",100)))
 	var oxygen := clampf(float(state.get("oxygen",maximum)),0.0,maximum)

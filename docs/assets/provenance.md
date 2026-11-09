@@ -37,3 +37,11 @@ Berkas lisensi proyek utama tersedia pada [LICENSE](../../LICENSE) dan [THIRD_PA
 `village-residents-v1.png` adalah atlas enam warga orisinal Jalasmara, dibuat dengan imagegen berdasarkan profil pengguna dan gaya atlas NPC proyek. Tokoh: Ki Lurah Wirabhumi, Mbok Ratih, Mang Ujang, Kang Tedi, Yu Sari, dan Saras. Susunan 3×2, alpha transparan diperiksa sebelum impor. Referensi Dave the Diver hanya digunakan untuk mempelajari pembagian fungsi perlengkapan dan komposisi; tidak ada sprite wiki yang dipaketkan.
 
 Atlas tubuh/pakaian empat identitas dan perlengkapan 3D terpisah didokumentasikan di [modular-character-outfits.md](modular-character-outfits.md). Moodboard tetap privat dan diabaikan Git.
+
+### NPC body cutout pilot — Plan03 B
+
+Three runtime layered rigs (`resources/art/npc-rigs/{ujang,darmi,sari}.{png,json}`) derive from Jalasmara's original `village-residents-v1.png` and `npc-atlas.png`. `tools/npc-rig/generate.py` records source hashes and deterministic manual masks, then resamples original clothing/limb pixels. Covered clothing is repaired with pixels sampled from the same portrait; separate runtime fishing, watering and weaving tools replace the selected baked hand props. No commercial reference image enters these outputs.
+
+Each pilot has sixteen cutout parts, two-bone limb posing, a shared logical foot pivot and computed hand sockets. East/west use mirrored three-quarter art; north uses a simplified rear silhouette constructed from sampled hair/clothing colors. This is a cutout animation pilot, **not** four newly illustrated directional sprite sheets. Small source-mask/sleeve remnants and the simplified rear remain art-polish limitations. The other four working villagers retain their existing portraits and activity props; their daily schedules still run.
+
+Native evidence is kept locally under ignored `artifacts/godot/npc-body-rig/`: three recorded 15-second work → tidy → walk → interact sequences and a separate transparent-stage body-only pixel test. `scripts/tests/npc-body-animation.gd` checks clip transitions, one-shot events, distance gait, pause and reduced motion. `scripts/tests/npc-body-render.gd` requires native GPU rendering and checks changed body pixels without tools or terrain. The generator and rig are original project code; derived art retains the source artwork's existing terms.

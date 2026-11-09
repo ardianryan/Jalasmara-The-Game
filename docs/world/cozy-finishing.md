@@ -19,4 +19,10 @@ Daratan memakai kamera ortografis miring 35° dari bidang tanah, bukan kamera te
 
 ## Ritme waktu yang dipilih
 
-Pengguna memilih satu hari penuh selama 36 menit nyata: satu jam game adalah 90 detik, dan setengah siklus berlangsung 18 menit. Jam visual berlanjut melewati tengah malam, berhenti saat dialog/kuis, sementara animasi cuaca tetap berjalan. Transisi babak dapat menempatkan waktu pada pagi atau awal malam; jam kosmetik tidak menaikkan hari cerita, memberikan hadiah, atau menyelesaikan giliran kedai. Pengujian mempercepat simulasi hingga satu siklus penuh tanpa menunggu 36 menit nyata.
+Pengguna memilih satu hari penuh selama 36 menit nyata: satu jam game adalah 90 detik, dan setengah siklus berlangsung 18 menit. Kalender akun berlanjut melewati tengah malam dan diselesaikan server dari waktu aktif, berhenti saat dialog/kuis atau koneksi terputus, sementara animasi cuaca tetap berjalan. Tidur menempatkan kalender pada pukul 06.00 berikutnya; membuka kedai dapat memajukan waktu ke awal pelayanan. Kalender mengatur pertumbuhan kebun, sedangkan kenaikan siklus cerita memerlukan hasil kedai yang sah dan tidur. Pengujian mempercepat simulasi hingga satu siklus penuh tanpa menunggu 36 menit nyata.
+
+## Griya Sasmita pada rilis Plan 03
+
+Rumah panggung Nala menggunakan komponen 3D yang sama dengan permukiman, jembatan berpagar, dua petak rakit, dan interior cutaway. Kain tenun hijau kebiruan, bantal, rak buku/lontar, pot herba, dan keranjang ditempatkan pada footprint perabot yang sudah terhalang. Dua lampu menghangatkan lantai; ambient malam interior dinaikkan tanpa mencerahkan desa atau HUD. Panel rumah menggunakan perkamen, tombol kayu dengan tepi kuningan, Nunito untuk teks panjang, serta fokus keyboard yang kontras.
+
+Render siang/malam dan rekaman tiga pilot NPC berada di artefak lokal; penilaian kenyamanan akhir dan performa HP fisik tetap membutuhkan playtest manusia.

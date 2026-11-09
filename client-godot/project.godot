@@ -8,6 +8,7 @@ ApiClient="*res://autoloads/ApiClient.gd"
 GameState="*res://autoloads/GameState.gd"
 EnvironmentState="*res://autoloads/EnvironmentState.gd"
 AudioManager="*res://autoloads/AudioManager.gd"
+CalendarSync="*res://autoloads/CalendarSync.gd"
 [display]
 window/size/viewport_width=960
 window/size/viewport_height=540

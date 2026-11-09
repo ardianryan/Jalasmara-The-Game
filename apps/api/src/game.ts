@@ -1,3 +1,6 @@
+import { dailyUser, ensureDaily, dailyBundle, setCalendar } from "./daily.js";
+import { HOMESTEAD_DEFINITIONS } from "../../../packages/shared/src/homestead.js";
+import { homesteadSnapshot } from "./homestead.js";
 import { surfaceInvalidatedByAdmin } from "./surface-version.js";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import type { ClientSession } from "mongodb";
@@ -92,11 +95,13 @@ export async function gameRoutes(app: FastifyInstance, s: Store, g: Guards) {
   );
   await shifts.createIndex({ createdAt: 1 }, { expireAfterSeconds: 7 * 86400 });
   const user = async (id: string, session?: ClientSession) => {
-    const p = await s.users.findOne({ id }, { session });
+    const p = await dailyUser(s, id, session);
     if (!p || p.status !== "active") return fail("Akun tidak aktif.", 403);
     return p;
   };
   const requireHub = async (p: User) => {
+    if (p.homestead?.inside)
+      fail("Keluar dari rumah terlebih dahulu.", 409, "HOME_INSIDE");
     const raw = await s.redis.get(`surface:${p.id}`);
     if (!raw) return;
     const surface = JSON.parse(raw);
@@ -173,7 +178,7 @@ export async function gameRoutes(app: FastifyInstance, s: Store, g: Guards) {
       const shift = await shifts.findOne({ userId: p.id, active: true });
       const validShift = shift?.playerVersion === p.version ? shift : null;
       return {
-        player: publicUser(p),
+        ...(await homesteadSnapshot(s, p)),
         catalog: { ...c.catalog, questions: undefined },
         contentId: c.id,
         dive: d ? diveView(d) : null,
@@ -685,6 +690,13 @@ export async function gameRoutes(app: FastifyInstance, s: Store, g: Guards) {
       await requireHub(p);
       if (await loadDive(p.id, p))
         fail("Kembali dari laut terlebih dahulu.", 409);
+      ensureDaily(p);
+      if (p.homestead!.pendingStoryAdvance)
+        fail(
+          "Pulang dan tidur untuk melanjutkan cerita.",
+          409,
+          "SLEEP_REQUIRED",
+        );
       if (p.progress.stage !== "night")
         fail("Belum waktunya membuka kedai.", 409);
       const discoveries = p.adventure?.discoveries ?? [];
@@ -711,6 +723,14 @@ export async function gameRoutes(app: FastifyInstance, s: Store, g: Guards) {
       if (old?.playerVersion === p.version) return { shift: shiftView(old) };
       if (old)
         await shifts.updateOne({ id: old.id }, { $set: { active: false } });
+      if (p.calendar!.minuteOfDay < 1080) {
+        setCalendar(p, p.calendar!.calendarDay, 1080);
+        await s.users.updateOne(
+          { id: p.id, version: p.version },
+          { $set: { calendar: p.calendar, homestead: p.homestead } },
+        );
+        await s.redis.del(`calendar:writer:${p.id}`);
+      }
       const c = await currentContent(s);
       const shift: Shift = {
         id: randomUUID(),
@@ -739,6 +759,7 @@ export async function gameRoutes(app: FastifyInstance, s: Store, g: Guards) {
         recipeId: z.string().max(64),
         fragmentId: z.string().max(64),
         stars: z.number().int().min(1).max(3),
+        gardenIngredient: z.boolean().default(false),
       })
       .strict()
       .parse(req.body);
@@ -784,12 +805,26 @@ export async function gameRoutes(app: FastifyInstance, s: Store, g: Guards) {
             earned = Math.round(
               r.reward * c.catalog.balance.starMultipliers[b.stars - 1],
             );
+          ensureDaily(p);
+          if (b.gardenIngredient) {
+            if (
+              p.homestead!.pantry.kangkung <
+              HOMESTEAD_DEFINITIONS.gardenServing.quantity
+            )
+              fail("Stok kangkung kedai tidak cukup.");
+            p.homestead!.pantry.kangkung -=
+              HOMESTEAD_DEFINITIONS.gardenServing.quantity;
+            p.homestead!.revision++;
+          }
           item.quantity--;
           p.inventory = p.inventory.filter((x) => x.quantity > 0);
-          p.coins += earned;
+          const gardenBonus = b.gardenIngredient
+            ? HOMESTEAD_DEFINITIONS.gardenServing.bonus
+            : 0;
+          p.coins += earned + gardenBonus;
           p.progress.missions.push(r.id);
           shift.served.push(r.id);
-          shift.earnings += earned;
+          shift.earnings += earned + gardenBonus;
           const player = await update(p, session);
           shift.playerVersion = player.version;
           await shifts.updateOne(
@@ -804,10 +839,11 @@ export async function gameRoutes(app: FastifyInstance, s: Store, g: Guards) {
             { session },
           );
           return {
-            player,
             shift: shiftView(shift),
             solution: r.solution,
-            earned,
+            earned: earned + gardenBonus,
+            gardenBonus,
+            ...dailyBundle(p),
           };
         },
       ),
@@ -843,19 +879,24 @@ export async function gameRoutes(app: FastifyInstance, s: Store, g: Guards) {
               fail(
                 "Layani semua pelanggan atau tutup sementara untuk mencari stok.",
               );
+            ensureDaily(p);
             if (!b.abandon) {
-              p.progress.missions.push(`malam_${p.progress.day}`);
-              if (p.progress.day < 3) {
-                p.progress.day++;
-                p.progress.stage = "dive";
-              } else p.progress.stage = "boss";
+              const marker = `malam_${p.progress.day}`;
+              if (!p.progress.missions.includes(marker))
+                p.progress.missions.push(marker);
+              p.homestead!.pendingStoryAdvance = {
+                storyDay: p.progress.day,
+                shiftId: shift.id,
+              };
+              p.homestead!.revision++;
             }
             await shifts.updateOne(
               { id: shift.id },
               { $set: { active: false } },
               { session },
             );
-            return { player: await update(p, session) };
+            await update(p, session);
+            return { ...dailyBundle(p), sleepRequired: !b.abandon };
           },
         ),
       );

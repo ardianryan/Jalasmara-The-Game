@@ -207,6 +207,15 @@ export async function adminRoutes(app: FastifyInstance, s: Store, g: Guards) {
               p.role = b.role;
               p.authVersion++;
             }
+            if (p.homestead) {
+              p.homestead.revision++;
+              if (["reset", "progress"].includes(b.action))
+                delete p.homestead.pendingStoryAdvance;
+              if (b.action === "reset") {
+                delete p.homestead;
+                delete p.calendar;
+              }
+            }
             p.version++;
             p.updatedAt = new Date().toISOString();
             const { _id, ...replacement } = p as typeof p & { _id?: unknown };

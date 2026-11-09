@@ -1,4 +1,4 @@
-import { LAND_MAPS } from "./land.ts";
+import { LAND_MAPS, HOMESTEAD_INTERIOR } from "./land.ts";
 import { VILLAGE_RESIDENTS, VILLAGE_DISTRICT_ACTIVITIES } from "./village.ts";
 
 const TERRAIN = [
@@ -55,6 +55,16 @@ function coastalContour(
 
 export const WORLD = {
   landMaps: LAND_MAPS,
+  homestead: {
+    door: { x: 160, y: 615 },
+    gardenPlots: [
+      { id: "plot_1", interaction: { x: 105, y: 850 } },
+      { id: "plot_2", interaction: { x: 205, y: 850 } },
+    ],
+    interior: HOMESTEAD_INTERIOR,
+    market: { x: 620, y: 1030 },
+    permitBoard: { x: 940, y: 310 },
+  },
   width: 6144,
   height: 3584,
   surface: 400,
