@@ -164,3 +164,9 @@ Seluruh dependensi ekosistem JavaScript/TypeScript di bawah ini dilisensikan di 
 
 *(Lisensi mendetail dari setiap modul npm tersimpan pada masing-masing subdirektori di dalam `node_modules/`)*
 
+
+## Fish Gen offline-generated decorative fauna
+
+[JacobKulberg/fish-gen](https://github.com/JacobKulberg/fish-gen), revision `0faa79003ca50a7d422b618cb59179d9834094f1`, version0.1.0, copyright2026JacobKulberg, MIT. Original notice: [tools/fish-gen/LICENSE.upstream](tools/fish-gen/LICENSE.upstream), also packaged at `client-godot/resources/licenses/FISH-GEN-MIT.txt`. The pinned README separately permits use of generated sprites, including commercial games.
+
+Actual use: one offline Clownfish pilot seed1519 (48×32cells/32frames), PNG/JSON under `client-godot/resources/art/fishgen/`, with command/dependency/hash provenance. Python3.11/NumPy2.2.6/Pillow11.3.0, nativeC disabled; no upstream software runtime or second3Dengine is embedded. Godot adapter and steering are original project code. Ten previous fauna species remain. See [production tool](tools/fish-gen/README.md) and the overnight acceptance report for release status.

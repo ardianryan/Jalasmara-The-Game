@@ -9,9 +9,14 @@ var _active: Dictionary = {}
 var _session := ""
 var debug_counts: Dictionary = {}
 var _equipment: Node3D
+var _fishgen: Node3D
 
 func configure(main: Node) -> void:
 	source = main
+	if not is_instance_valid(_fishgen):
+		_fishgen = preload("res://scripts/hybrid/FishGenSchool3D.gd").new()
+		add_child(_fishgen)
+	_fishgen.configure(main)
 
 func _process(delta: float) -> void:
 	update_actors(delta)
@@ -30,7 +35,7 @@ func update_actors(_delta: float = 0.0) -> void:
 		_clear()
 		_session = session
 	_active.clear()
-	debug_counts = {"player":0,"targets":0,"wildlife":0,"props":0,"boss":0}
+	debug_counts = {"player":0,"targets":0,"wildlife":0,"props":0,"boss":0,"fishgen":int(_fishgen.get("visible_count")) if is_instance_valid(_fishgen) else 0}
 	_mirror_player(nala)
 	_mirror_targets(entities,nala.position)
 	_mirror_wildlife(entities,nala.position)

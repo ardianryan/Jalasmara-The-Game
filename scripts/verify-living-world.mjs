@@ -28,6 +28,7 @@ const godot =
 const scripts = [
   "scripts/godot-map-geometry.gd",
   "scripts/godot-creature-animation.gd",
+  "scripts/tests/fishgen-animation.gd",
   "scripts/godot-wildlife-check.gd",
   "scripts/tests/living-water.gd",
   "scripts/tests/ocean-current.gd",

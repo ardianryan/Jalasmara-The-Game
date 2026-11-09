@@ -1,0 +1,56 @@
+{
+  "generator": "Fish Gen",
+  "upstream": "https://github.com/JacobKulberg/fish-gen",
+  "revision": "0faa79003ca50a7d422b618cb59179d9834094f1",
+  "python": "3.11.16",
+  "dependencies": {
+    "numpy": "2.2.6",
+    "Pillow": "11.3.0"
+  },
+  "nativeCompiler": false,
+  "arguments": [
+    "-m",
+    "fishgen",
+    "generate",
+    "--species",
+    "Clownfish",
+    "--seed",
+    "1519",
+    "--size",
+    "48x32",
+    "--style",
+    "pixel",
+    "--colors",
+    "18",
+    "--swim-frames",
+    "8",
+    "--turn-frames",
+    "8",
+    "--smoothness",
+    "1",
+    "--fps",
+    "10",
+    "--pitch",
+    "0.25",
+    "--formats",
+    "sheet,godot",
+    "--flat",
+    "--out",
+    "<output>"
+  ],
+  "license": "MIT software; generated sprites permitted for commercial use by pinned README",
+  "files": {
+    "clownfish_48x32_1519.png": {
+      "bytes": 19444,
+      "sha256": "65fd264a1812a0925ab856a1186762d32c03c17e49fb1205a9b54ae0ebe328f2"
+    },
+    "clownfish_48x32_1519.json": {
+      "bytes": 9715,
+      "sha256": "04c3fc92169fdd9be03eb9e2f5c8ae7431bc17c2fb3d23190cbd7f8a97a3930d"
+    },
+    "clownfish_48x32_1519.tres": {
+      "bytes": 6302,
+      "sha256": "522ce5ff4e04bfc4a5e26db26ccac31adca08bc45d1bae2039ccf010d762708f"
+    }
+  }
+}

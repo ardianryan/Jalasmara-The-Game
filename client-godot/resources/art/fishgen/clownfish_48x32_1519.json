@@ -1,0 +1,481 @@
+{
+  "meta": {
+    "generator": "fishgen",
+    "version": "0.1.0",
+    "seed": 1519,
+    "image": "clownfish_48x32_1519.png",
+    "image_size": [
+      384,
+      128
+    ],
+    "frame_size": [
+      48,
+      32
+    ],
+    "pivot": [
+      24.0,
+      16.0
+    ],
+    "length_cm": 7.9,
+    "px_per_m": 554.96,
+    "padding": 0,
+    "style": "pixel",
+    "palette": {
+      "outline": "#3c0005",
+      "shadow": "#a00500",
+      "base": "#eb6107",
+      "highlight": "#ffca52",
+      "belly": "#faac23",
+      "fin": "#e76d33",
+      "fin_dark": "#8f1411",
+      "accent": "#fffefa",
+      "eye": "#f5f5eb",
+      "accent2": "#00ff5f"
+    },
+    "colors": [
+      "#060302",
+      "#1c0f0a",
+      "#321d14",
+      "#4b2715",
+      "#673214",
+      "#51433d",
+      "#863f16",
+      "#6b625e",
+      "#a44b13",
+      "#b85d29",
+      "#8b8481",
+      "#d7621b",
+      "#ca8852",
+      "#f07337",
+      "#a9a7a4",
+      "#fa9d72",
+      "#cac9c5",
+      "#f3f2ee",
+      "#120706",
+      "#3f1f16",
+      "#2c120a"
+    ]
+  },
+  "animations": {
+    "swim_right": {
+      "fps": 10.0,
+      "loop": true,
+      "next": "swim_right",
+      "frames": [
+        {
+          "x": 0,
+          "y": 0,
+          "w": 48,
+          "h": 32,
+          "duration_ms": 100,
+          "yaw": 0.0
+        },
+        {
+          "x": 48,
+          "y": 0,
+          "w": 48,
+          "h": 32,
+          "duration_ms": 100,
+          "yaw": 0.0
+        },
+        {
+          "x": 96,
+          "y": 0,
+          "w": 48,
+          "h": 32,
+          "duration_ms": 100,
+          "yaw": 0.0
+        },
+        {
+          "x": 144,
+          "y": 0,
+          "w": 48,
+          "h": 32,
+          "duration_ms": 100,
+          "yaw": 0.0
+        },
+        {
+          "x": 192,
+          "y": 0,
+          "w": 48,
+          "h": 32,
+          "duration_ms": 100,
+          "yaw": 0.0
+        },
+        {
+          "x": 240,
+          "y": 0,
+          "w": 48,
+          "h": 32,
+          "duration_ms": 100,
+          "yaw": 0.0
+        },
+        {
+          "x": 288,
+          "y": 0,
+          "w": 48,
+          "h": 32,
+          "duration_ms": 100,
+          "yaw": 0.0
+        },
+        {
+          "x": 336,
+          "y": 0,
+          "w": 48,
+          "h": 32,
+          "duration_ms": 100,
+          "yaw": 0.0
+        }
+      ]
+    },
+    "turn_right_to_left": {
+      "fps": 10.0,
+      "loop": false,
+      "next": "swim_left",
+      "frames": [
+        {
+          "x": 0,
+          "y": 32,
+          "w": 48,
+          "h": 32,
+          "duration_ms": 100,
+          "yaw": 0.1224
+        },
+        {
+          "x": 48,
+          "y": 32,
+          "w": 48,
+          "h": 32,
+          "duration_ms": 100,
+          "yaw": 0.9121
+        },
+        {
+          "x": 96,
+          "y": 32,
+          "w": 48,
+          "h": 32,
+          "duration_ms": 100,
+          "yaw": 2.0074
+        },
+        {
+          "x": 144,
+          "y": 32,
+          "w": 48,
+          "h": 32,
+          "duration_ms": 100,
+          "yaw": 2.9034
+        },
+        {
+          "x": 192,
+          "y": 32,
+          "w": 48,
+          "h": 32,
+          "duration_ms": 100,
+          "yaw": 3.1416
+        },
+        {
+          "x": 240,
+          "y": 32,
+          "w": 48,
+          "h": 32,
+          "duration_ms": 100,
+          "yaw": 3.1416
+        },
+        {
+          "x": 288,
+          "y": 32,
+          "w": 48,
+          "h": 32,
+          "duration_ms": 100,
+          "yaw": 3.1416
+        },
+        {
+          "x": 336,
+          "y": 32,
+          "w": 48,
+          "h": 32,
+          "duration_ms": 100,
+          "yaw": 3.1416
+        }
+      ]
+    },
+    "swim_left": {
+      "fps": 10.0,
+      "loop": true,
+      "next": "swim_left",
+      "frames": [
+        {
+          "x": 0,
+          "y": 64,
+          "w": 48,
+          "h": 32,
+          "duration_ms": 100,
+          "yaw": 3.1416
+        },
+        {
+          "x": 48,
+          "y": 64,
+          "w": 48,
+          "h": 32,
+          "duration_ms": 100,
+          "yaw": 3.1416
+        },
+        {
+          "x": 96,
+          "y": 64,
+          "w": 48,
+          "h": 32,
+          "duration_ms": 100,
+          "yaw": 3.1416
+        },
+        {
+          "x": 144,
+          "y": 64,
+          "w": 48,
+          "h": 32,
+          "duration_ms": 100,
+          "yaw": 3.1416
+        },
+        {
+          "x": 192,
+          "y": 64,
+          "w": 48,
+          "h": 32,
+          "duration_ms": 100,
+          "yaw": 3.1416
+        },
+        {
+          "x": 240,
+          "y": 64,
+          "w": 48,
+          "h": 32,
+          "duration_ms": 100,
+          "yaw": 3.1416
+        },
+        {
+          "x": 288,
+          "y": 64,
+          "w": 48,
+          "h": 32,
+          "duration_ms": 100,
+          "yaw": 3.1416
+        },
+        {
+          "x": 336,
+          "y": 64,
+          "w": 48,
+          "h": 32,
+          "duration_ms": 100,
+          "yaw": 3.1416
+        }
+      ]
+    },
+    "turn_left_to_right": {
+      "fps": 10.0,
+      "loop": false,
+      "next": "swim_right",
+      "frames": [
+        {
+          "x": 0,
+          "y": 96,
+          "w": 48,
+          "h": 32,
+          "duration_ms": 100,
+          "yaw": 3.0192
+        },
+        {
+          "x": 48,
+          "y": 96,
+          "w": 48,
+          "h": 32,
+          "duration_ms": 100,
+          "yaw": 2.2295
+        },
+        {
+          "x": 96,
+          "y": 96,
+          "w": 48,
+          "h": 32,
+          "duration_ms": 100,
+          "yaw": 1.1342
+        },
+        {
+          "x": 144,
+          "y": 96,
+          "w": 48,
+          "h": 32,
+          "duration_ms": 100,
+          "yaw": 0.2382
+        },
+        {
+          "x": 192,
+          "y": 96,
+          "w": 48,
+          "h": 32,
+          "duration_ms": 100,
+          "yaw": 0.0
+        },
+        {
+          "x": 240,
+          "y": 96,
+          "w": 48,
+          "h": 32,
+          "duration_ms": 100,
+          "yaw": 0.0
+        },
+        {
+          "x": 288,
+          "y": 96,
+          "w": 48,
+          "h": 32,
+          "duration_ms": 100,
+          "yaw": 0.0
+        },
+        {
+          "x": 336,
+          "y": 96,
+          "w": 48,
+          "h": 32,
+          "duration_ms": 100,
+          "yaw": 0.0
+        }
+      ]
+    }
+  },
+  "genome": {
+    "seed": 1519,
+    "height": 0.4944470582568124,
+    "thickness": 0.7049746442601282,
+    "peak": 0.36,
+    "nose": 0.49647238624947754,
+    "taper": 1.0,
+    "peduncle": 0.34265007972002814,
+    "back_arch": 0.4540260747513498,
+    "eye_pos": 0.13991797663002167,
+    "eye_height": 0.2627851548384145,
+    "eye_size": 0.2682234678111655,
+    "tail_shape": "rounded",
+    "tail_length": 0.2512076892466259,
+    "tail_spread": 0.7165249665139987,
+    "dorsal": {
+      "present": true,
+      "start": 0.26906138888981723,
+      "end": 0.7690613888898172,
+      "height": 0.11211357543906678,
+      "shape": "rounded",
+      "sweep": 0.17791588126944388
+    },
+    "anal": {
+      "present": true,
+      "start": 0.6014786014032192,
+      "end": 0.8376142974359607,
+      "height": 0.08062224105820429,
+      "shape": "rounded",
+      "sweep": 0.3716330887005872
+    },
+    "pelvic": {
+      "present": true,
+      "start": 0.3718393032407229,
+      "end": 0.474492786204229,
+      "height": 0.11311345162078931,
+      "shape": "sail",
+      "sweep": 0.6821377508544519
+    },
+    "pectoral_size": 0.14901776489216548,
+    "swim_amplitude": 0.7018850441932665,
+    "wave_count": 0.6716730431245496,
+    "colors": {
+      "hue": 0.06561819574610668,
+      "saturation": 0.9700192544566405,
+      "value": 0.9217519770757264,
+      "fin_hue_shift": 0.0,
+      "accent_hue_shift": 0.0,
+      "belly_lightness": 0.15,
+      "pattern": "stripes",
+      "pattern_scale": 0.0,
+      "pattern_offset": 0.24617994422959102,
+      "fin_color": "#e76d33",
+      "accent_color": "#fffefa",
+      "fin_tips": 0.0,
+      "accent2_color": null,
+      "belly_level": null,
+      "pattern_on_fins": false,
+      "tail_body_color": false,
+      "tail_color": null,
+      "fin_edge_color": "#141012",
+      "accent_edge_color": "#141012",
+      "belly_pattern": false
+    },
+    "kind": "fish",
+    "profile": "fish",
+    "beak": 0.0,
+    "eye_style": "fish",
+    "gill_slits": 1,
+    "dorsal2": {
+      "present": false,
+      "start": 0.75,
+      "end": 0.82,
+      "height": 0.05,
+      "shape": "triangle",
+      "sweep": 0.5
+    },
+    "pectoral_flap": 1.0,
+    "hammer": 0.0,
+    "swim_vertical": false,
+    "wings": {
+      "present": false,
+      "start": 0.05,
+      "end": 0.45,
+      "span": 0.4,
+      "sweep": 0.6,
+      "shape": "pointed",
+      "flap": 0.6,
+      "wave": 0.25,
+      "dihedral": 0.06
+    },
+    "arms": {
+      "count": 0,
+      "length": 0.8,
+      "thickness": 0.08,
+      "tentacles": 0,
+      "tentacle_length": 1.3,
+      "spread": 0.35,
+      "curl": 0.3
+    },
+    "spines": {
+      "count": 0,
+      "length": 0.35,
+      "sway": 0.15,
+      "taper": 0.85
+    },
+    "pulse": 0.0,
+    "camera_tilt": 0.0,
+    "turn_lag": 0.9,
+    "pectoral_shape": "lobe",
+    "pectoral_droop": 0.45,
+    "melon": 0.0,
+    "neck": 0.0,
+    "flat_head": 0.0,
+    "mouth": 0.030277478095367034,
+    "mouth_height": -0.0790729695894081,
+    "teeth": false,
+    "scariness": 0.0,
+    "lobes": "none",
+    "lobe_length": 0.0,
+    "puff": 0.0,
+    "puff_spines": 0,
+    "pleats": false,
+    "length_cm": 7.928823492630698,
+    "silver": 0.0,
+    "gloss": 0.45,
+    "scales": 0.025,
+    "fin_alpha": 0.92,
+    "tail_alpha": null,
+    "billow": 0.0,
+    "iris_color": "#e8a020",
+    "finlets": 0,
+    "scars": 0.0,
+    "knobs": 0.0,
+    "morph": "Ocellaris"
+  }
+}
