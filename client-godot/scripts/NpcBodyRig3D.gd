@@ -296,7 +296,7 @@ func _contact_legs(pose:Dictionary) -> void:
 		var along:=vector.normalized()
 		var offset:=(first*first-second*second+length*length)/(2.0*length)
 		var facing:String=_visual_facing
-		var hint:=Vector3.RIGHT if facing in ["east","west"] else Vector3(0,0,-1 if facing=="north" else 1)
+		var hint:=Vector3.RIGHT if facing=="east" else Vector3.LEFT if facing=="west" else Vector3(0,0,-1 if facing=="north" else 1)
 		var bend:=hint-along*along.dot(hint)
 		if bend.length()<.01: bend=Vector3.RIGHT
 		bend=bend.normalized()

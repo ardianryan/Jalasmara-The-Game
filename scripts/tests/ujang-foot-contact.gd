@@ -19,6 +19,8 @@ var measured_grips:=0
 var max_grip_error:=0.0
 var turn_steps:=0
 var contact_failures:=0
+var knee_facing_samples:=0
+var knee_facing_failures:=0
 const OUTPUT:="res://../artifacts/godot/06b-body-contact"
 
 func _initialize() -> void:
@@ -83,6 +85,17 @@ func _measure() -> void:
 			assert(absf(limb.global_basis.y.length()-1.0)<.001,"Limb pixels must retain fixed length; no scale stretching")
 		var knee_a:=upper.global_position-upper.global_basis.y*upper.texture.get_height()*.5
 		var knee_b:=lower.global_position+lower.global_basis.y*lower.texture.get_height()*.5
+		if str(pose.direction) in ["east","west"]:
+			var hip:=rig.to_local(upper.global_position+upper.global_basis.y*upper.texture.get_height()*.5)
+			var ankle:=rig.to_local(lower.global_position-lower.global_basis.y*lower.texture.get_height()*.5)
+			var knee:=rig.to_local(knee_a)
+			var axis:Vector3=(ankle-hip).normalized()
+			var bend:Vector3=knee-hip-axis*(knee-hip).dot(axis)
+			var forward:=Vector3.RIGHT if str(pose.direction)=="east" else Vector3.LEFT
+			knee_facing_samples+=1
+			if bend.dot(forward)<-.02:
+				knee_facing_failures+=1
+				if knee_facing_failures<=3: push_error("Knee bends behind authored facing: "+str(pose.direction)+" leg="+side+" bend="+str(bend)+" actor="+str(person.position))
 		var error:=knee_a.distance_to(knee_b)
 		max_join_error=maxf(max_join_error,error)
 		assert(error<.02,"Actual thigh/calf quad endpoints must share the same knee")
@@ -107,11 +120,11 @@ func _step(to:Vector2,delta:=.1,talking:=false) -> void:
 	_measure()
 	if _capture:
 		await process_frame
-		await RenderingServer.frame_post_draw
+		RenderingServer.force_draw(false)
 		renderer.viewport_3d.get_texture().get_image().save_png(OUTPUT+"/%04d.png"%_frame)
 		if _frame%40==0:
 			root.get_texture().get_image().save_png(OUTPUT+"/scene-%04d.png"%_frame)
-			_recording[str(_frame)]={"actor":[person.position.x,person.position.y],"reduced":clock.reduced_motion,"pose":rig.pose_snapshot()}
+		_recording[str(_frame)]={"actor":[person.position.x,person.position.y],"reduced":clock.reduced_motion,"pose":rig.pose_snapshot()}
 		_frame+=1
 
 func _turn_trace() -> void:
@@ -184,7 +197,7 @@ func _work_grip_checks() -> void:
 				measured_grips+=1
 				if _capture:
 					await process_frame
-					await RenderingServer.frame_post_draw
+					RenderingServer.force_draw(false)
 					renderer.viewport_3d.get_texture().get_image().save_png(OUTPUT+"/grip-%s-%s-%s.png"%[reduced,clip,time])
 	animation.clip="idle"
 	animation.direction="north"
@@ -202,7 +215,7 @@ func _work_grip_checks() -> void:
 				animation.distance=frame*6.25
 				renderer.actors_3d.update_actors(.1)
 				await process_frame
-				await RenderingServer.frame_post_draw
+				RenderingServer.force_draw(false)
 				renderer.viewport_3d.get_texture().get_image().save_png(OUTPUT+"/art-%s-%s.png"%[direction,frame])
 
 	renderer.camera_3d.global_transform=original_camera
@@ -279,12 +292,13 @@ func run() -> void:
 	for tick in range(8): await _step(person.position)
 	if OS.get_environment("UJANG_TURNS_ONLY")=="1":
 		await _turn_trace()
-		if contact_failures>0:
-			push_error("UJANG TURN FAILED: "+str(contact_failures)+" unreachable contact samples; do not claim natural turn completion")
+		if contact_failures>0 or knee_facing_failures>0:
+			push_error("UJANG TURN FAILED: "+str(contact_failures)+" unreachable contact samples; "+str(knee_facing_failures)+" backward profile knees")
 			scene.free()
 			quit(1)
 			return
-		print("UJANG TURN PASS ",turn_steps," real 90/180-degree turn steps at actual camera azimuths 0/-45, normal/reduced; max stance drift=",max_drift," pelvis=",max_pelvis,"; positive anatomical basis and actual-camera facing")
+		print("UJANG TURN PASS ",turn_steps," real 90/180-degree turn steps at actual camera azimuths 0/-45, normal/reduced; max stance drift=",max_drift," pelvis=",max_pelvis,"; ",knee_facing_samples," mesh knee facing samples; positive anatomical basis and actual-camera facing")
+		if _capture: FileAccess.open(OUTPUT+"/results.json",FileAccess.WRITE).store_string(JSON.stringify(_recording,"  "))
 		scene.free()
 		quit()
 		return
@@ -319,12 +333,13 @@ func run() -> void:
 	assert(rig.pose_snapshot().gripMeasurement.status=="inactive")
 	assert(JSON.stringify({"world":state.world,"player":state.player,"dive":state.dive})==before)
 	assert(measured_grips==26)
-	if contact_failures>0:
-		push_error("UJANG CONTACT FAILED: "+str(contact_failures)+" unreachable samples")
+	assert(knee_facing_samples>100,"Both screen-profile views must exercise actual mesh knee facing")
+	if contact_failures>0 or knee_facing_failures>0:
+		push_error("UJANG CONTACT FAILED: "+str(contact_failures)+" unreachable samples; "+str(knee_facing_failures)+" backward profile knees")
 		scene.free()
 		quit(1)
 		return
-	print("UJANG CONTACT PASS actual3/4renderer: ",checked," legal26unit/s steps including ",turn_steps," sharp-turn samples, alpha-sole world drift=",max_drift," knee join=",max_join_error," bounded pelvis=",max_pelvis,"; fixed pixel lengths, rendered floor/tread triangles, reduced/stop/turn; ",measured_grips," authored west grip poses max error=",max_grip_error,"; no actor root motion/world mutation")
+	print("UJANG CONTACT PASS actual3/4renderer: ",checked," legal26unit/s steps including ",turn_steps," sharp-turn samples, alpha-sole world drift=",max_drift," knee join=",max_join_error," bounded pelvis=",max_pelvis,"; fixed pixel lengths, rendered floor/tread triangles, reduced/stop/turn; ",measured_grips," authored west grip poses max error=",max_grip_error,"; ",knee_facing_samples," mesh knee facing samples; no actor root motion/world mutation")
 	if _capture: FileAccess.open(OUTPUT+"/results.json",FileAccess.WRITE).store_string(JSON.stringify(_recording,"  "))
 	scene.free()
 	quit()
