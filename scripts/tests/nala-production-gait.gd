@@ -109,7 +109,14 @@ func _production_tick(value:Vector2,label:String) -> bool:
 	windows[phase].logicalDistance+=before.distance_to(player.position)
 	windows[phase].physicalDistance+=world_motion.length()
 	prior_planner_contacts=int(pose.contacts.contacts)
-	var record:={"case":label,"physicsFrame":now,"physicsDelta":last_delta,"elapsedPhysics":elapsed_physics,"elapsedWall":float(Time.get_ticks_usec()-began_usec)/1000000.0,"input":[value.x,value.y],"position":[player.position.x,player.position.y],"acceptedLogical":logical_travel,"acceptedPhysical":physical_travel,"source":source,"legacyContacts":legacy_contacts,"pose":pose.duplicate(true)}
+	var rig:Node3D=renderer.actors_3d.get("_nala_lower")
+	var upper:Sprite3D=rig.get("_parts").upper
+	var region:Rect2=(upper.texture as AtlasTexture).region
+	var equipment:Node3D=renderer.actors_3d.get("_equipment")
+	var swing:=str(pose.contacts.swingSide)
+	var planner_phase:Variant=null
+	if swing!="": planner_phase=(0.0 if swing=="right" else .5)+float(pose.contacts.swingDistance)/maxf(.001,float(pose.contacts.landingDistance))*.5
+	var record:={"case":label,"physicsFrame":now,"physicsDelta":last_delta,"elapsedPhysics":elapsed_physics,"elapsedWall":float(Time.get_ticks_usec()-began_usec)/1000000.0,"input":[value.x,value.y],"position":[player.position.x,player.position.y],"acceptedLogical":logical_travel,"acceptedPhysical":physical_travel,"source":source,"upperAtlasRegion":[region.position.x,region.position.y,region.size.x,region.size.y],"actualEquipmentState":equipment.get("state").duplicate(true),"plannerCyclePhase":planner_phase,"legacyContacts":legacy_contacts,"pose":pose.duplicate(true)}
 	sample_log.store_line(JSON.stringify(record))
 	sample_log.flush()
 	if capture and checks%capture_stride==0:
