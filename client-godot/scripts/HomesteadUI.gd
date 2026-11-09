@@ -382,8 +382,9 @@ func _fish_pen() -> void:
 	else:
 		_text("Pertumbuhan %d/%d hari pemberian pakan. Kapasitas anakan %d ikan." % [int(pen.get("progressDays",0)),int(definition.growthDays),int(definition.capacity)])
 		var fed:=bool(pen.get("fed",false))
-		var feed:=_button("Pakan hari ini sudah diberikan" if fed else "Beri pakan · %d koin" % int(definition.feedCost),func(): _perform("feed_pen"))
-		feed.disabled=fed or int(GameState.player.get("coins",0))<int(definition.feedCost)
+		var full:=int(pen.get("offspring",0))>=int(definition.capacity)
+		var feed:=_button("Keramba penuh · panen dahulu" if full else "Pakan hari ini sudah diberikan" if fed else "Beri pakan · %d koin" % int(definition.feedCost),func(): _perform("feed_pen"))
+		feed.disabled=full or fed or int(GameState.player.get("coins",0))<int(definition.feedCost)
 	if pen.get("ready",false): _button("Panen satu ikan budidaya",func(): _perform("harvest_pen",{"qty":1}))
 	_text("Budidaya mengikuti pergantian hari kalender yang tersimpan. Hasilnya dapat dititipkan sebagai pelengkap di Kedai Waras.")
 

@@ -65,6 +65,12 @@ func run() -> void:
 	ui.open_for("fish_pen")
 	await settle()
 	assert(button(ui,"Pakan hari ini").disabled)
+	state.homestead.fishPen.fed=false
+	state.homestead.fishPen.offspring=5
+	ui.open_for("fish_pen")
+	await settle()
+	assert(button(ui,"Keramba penuh").disabled,"Full pens direct the player to harvest before feeding")
+	assert(not button(ui,"Panen satu").disabled)
 	ui.open_for("kedai_stock")
 	await settle()
 	for name in ["Kangkung kebun","Jahe pesisir","Ikan seruni budidaya"]: assert(button(ui,"Titipkan satu "+name)!=null)
