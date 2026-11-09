@@ -2,8 +2,43 @@ extends "res://../scripts/tests/nala-production-gait.gd"
 
 var terrain_cases:Array=[]
 var declared_setups:=0
+var terrain_profile:Dictionary={}
+var previous_terrain_position:=Vector2.INF
+
+func _measure(label:String) -> void:
+	var expected:=1.0
+	if str(terrain_profile.get("type",""))=="ramp":
+		var a:Vector2=terrain_profile.start
+		var b:Vector2=terrain_profile.end
+		var tangent:=(b-a).normalized()
+		var perpendicular:=Vector2(-tangent.y,tangent.x)
+		var active:=false
+		for point in [player.position,previous_terrain_position]:
+			if not Vector2(point).is_finite(): continue
+			var along:float=(Vector2(point)-a).dot(tangent)
+			if along>=0 and along<=a.distance_to(b) and absf((Vector2(point)-a).dot(perpendicular))<=float(terrain_profile.width): active=true
+		if not active and previous_terrain_position.is_finite():
+			var side:=perpendicular*float(terrain_profile.width)
+			var corners:Array[Vector2]=[a-side,a+side,b+side,b-side]
+			for index in range(4):
+				if Geometry2D.segment_intersects_segment(previous_terrain_position,player.position,corners[index],corners[(index+1)%4])!=null: active=true
+		if active:
+			var first:Vector3=renderer.ground_point(a)
+			var last:Vector3=renderer.ground_point(b)
+			expected=maxf(1.0,absf(last.z-first.z)/Vector2(last.x-first.x,last.y-first.y).length())
+	var contact:Dictionary=renderer.actors_3d.counts.get("nalaLowerBody",{}).get("contacts",{})
+	if not _check(absf(float(contact.get("continuousGroundRate",1.0))-expected)<.00001,"Continuous ground rate disagrees with actual active ramp geometry "+label): return
+	var stair_rate:=1.0
+	for profile in renderer.get("_stair_queries"):
+		if str(profile.type)=="stairs": stair_rate=maxf(stair_rate,absf(float(profile.to)-float(profile.from))/float(profile.steps)/32.0*1.5)
+	if not _check(absf(float(contact.get("bodyTransferRate",1.0))-maxf(stair_rate,expected))<.00001,"Body transfer rate inflated beyond authored stair/ramp geometry "+label): return
+	var prior:=checks
+	super._measure(label)
+	if checks>prior: previous_terrain_position=player.position
 
 func _terrain_case(profile:Dictionary,reverse:bool,reduced:bool,label:String) -> bool:
+	terrain_profile=profile
+	previous_terrain_position=Vector2.INF
 	clock.reduced_motion=reduced
 	var a:Vector2=profile.end if reverse else profile.start
 	var b:Vector2=profile.start if reverse else profile.end

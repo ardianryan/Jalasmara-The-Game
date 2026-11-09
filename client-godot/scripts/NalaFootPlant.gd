@@ -24,6 +24,7 @@ var _stairs:Array=[]
 var _connectors:Array=[]
 var _body_height:=0.0
 var _body_rate:=1.0
+var _continuous_ground_rate:=1.0
 var _stair_transfer:=false
 var _steady_distance:=STEP_DISTANCE
 var _landing_lead:=LANDING_LEAD
@@ -198,6 +199,29 @@ func _on_stairs(at:Vector2) -> bool:
 			if not Traversal.connector_ground(profile,entry.logical).is_empty(): return true
 	return false
 
+func _ramp_body_rate(from:Vector2,to:Vector2) -> float:
+	if not _physical_contract: return 1.0
+	var rate:=1.0
+	for profile in _connectors:
+		if str(profile.get("type",""))!="ramp": continue
+		var start:Vector2=profile.start
+		var end:Vector2=profile.end
+		var active:=not Traversal.connector_ground(profile,from).is_empty() or not Traversal.connector_ground(profile,to).is_empty()
+		var tangent:=(end-start).normalized()
+		var side:=Vector2(-tangent.y,tangent.x)*float(profile.width)
+		var corners:Array[Vector2]=[start-side,start+side,end+side,end-side]
+		if not active:
+			for index in range(4):
+				if Geometry2D.segment_intersects_segment(from,to,corners[index],corners[(index+1)%4])!=null:
+					active=true
+					break
+		if not active: continue
+		var first:=_ground(start)
+		var last:=_ground(end)
+		var span:=Vector2(last.x-first.x,last.y-first.y).length()
+		rate=maxf(rate,absf(last.z-first.z)/maxf(.001,span))
+	return rate
+
 func _transfer_body(at:Vector2,distance:float,side:String) -> void:
 	if not _on_stairs(at):
 		var ordinary:=_ground(at).z
@@ -332,6 +356,7 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 	_right=right
 	if not _ready: _reset(at,hips,right)
 	if paused: return snapshot()
+	_continuous_ground_rate=_ramp_body_rate(_last_at,at)
 	var logical_delta:=at-_last_at
 	var physical:=_world_motion(_last_at,logical_delta).length()
 	var body_advanced:=false
@@ -434,4 +459,4 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 	return snapshot()
 
 func snapshot() -> Dictionary:
-	return {"bodyHeight":_body_height,"bodyTransferRate":_body_rate,"feet":_feet.duplicate(true),"swingSide":_swing,"swingDistance":_distance,"acceptedDistance":_accepted_distance,"stepDistance":_steady_distance,"landingLead":_landing_lead,"physicalContract":_physical_contract,"bodyFacingTransitions":_body_facing_transitions,"shortHandoverPending":_transition_next,"landingDistance":_landing_distance,"contacts":_contact_count,"discontinuityResets":_discontinuities,"actorRootMotion":false,"legacyFoleyChanged":false}
+	return {"bodyHeight":_body_height,"bodyTransferRate":maxf(_body_rate,_continuous_ground_rate),"continuousGroundRate":_continuous_ground_rate,"feet":_feet.duplicate(true),"swingSide":_swing,"swingDistance":_distance,"acceptedDistance":_accepted_distance,"stepDistance":_steady_distance,"landingLead":_landing_lead,"physicalContract":_physical_contract,"bodyFacingTransitions":_body_facing_transitions,"shortHandoverPending":_transition_next,"landingDistance":_landing_distance,"contacts":_contact_count,"discontinuityResets":_discontinuities,"actorRootMotion":false,"legacyFoleyChanged":false}
