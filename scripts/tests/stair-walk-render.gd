@@ -64,6 +64,7 @@ func run() -> void:
 				player.traversal_state={}
 				var id:="%s-%s-%s"%[connector_id,"down" if descending else "up","reduced" if reduced else "normal"]
 				var travelled:=0.0
+				var gait_distance:=0.0
 				var start_distance: float=player.swim_sprite.locomotion_state().distance
 				var saved:=0
 				var reached:=false
@@ -73,7 +74,9 @@ func run() -> void:
 					player.touch=renderer.visual_motion(direction,renderer.ground_gradient(player.position).dot(direction)).normalized() if player.position.distance_to(target)>1.5 else Vector2.ZERO
 					await physics_frame
 					player._physics_process(1.0/60)
-					travelled+=player.position.distance_to(previous)
+					var accepted: float=player.position.distance_to(previous)
+					travelled+=accepted
+					if accepted*60>=8: gait_distance+=accepted
 					camera.position=player.position
 					camera.force_update_scroll()
 					renderer._process(1.0/60)
@@ -91,8 +94,26 @@ func run() -> void:
 						reached=true
 						break
 				assert(reached,"Actual accepted player motion failed to reach the opposite landing: "+id)
-				assert(absf(player.swim_sprite.locomotion_state().distance-start_distance-travelled)<.05,"Stair display must not invent gait distance or footstep travel")
-				report.cases[id]={"frames":saved,"distance":travelled,"reached":reached}
+				player.touch=Vector2.ZERO
+				for rest in range(12):
+					var previous: Vector2=player.position
+					await physics_frame
+					player._physics_process(1.0/60)
+					var accepted: float=player.position.distance_to(previous)
+					travelled+=accepted
+					if accepted*60>=8: gait_distance+=accepted
+					renderer._process(1.0/60)
+					if rest in [0,5,11]:
+						await process_frame
+						RenderingServer.force_draw(false)
+						var key:="%s-stop-%02d"%[id,rest]
+						root.get_texture().get_image().save_png(output+"/"+key+".png")
+						var land: Dictionary=renderer.debug_status()
+						report.frames[key]={"player":[player.position.x,player.position.y],"traversal":player.traversal_state.duplicate(),"gait":player.swim_sprite.locomotion_state(),"grounding":land.actors.playerGrounding,"view":land.view}
+						saved+=1
+				assert(absf(player.swim_sprite.locomotion_state().distance-start_distance-gait_distance)<.05,"Stair display must preserve the existing accepted-speed>=8 gait distance filter")
+				assert(player.velocity.is_zero_approx() and is_zero_approx(float(player.traversal_state.bodyLift)))
+				report.cases[id]={"frames":saved,"distance":travelled,"gaitDistance":gait_distance,"reached":reached}
 	assert(JSON.stringify({"world":state.world,"player":state.player,"dive":state.dive})==before)
 	FileAccess.open(output+"/results.json",FileAccess.WRITE).store_string(JSON.stringify(report,"  "))
 	print("STAIR WALK NATIVE PASS: ",report.cases.size()," actual controller ascent/descent/reduced cases,",report.frames.size()," sequential frames; distance/state preserved")
