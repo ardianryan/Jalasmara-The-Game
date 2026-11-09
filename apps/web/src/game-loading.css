@@ -239,6 +239,16 @@
     margin-top: 8px;
   }
 }
+@media (max-height: 320px) and (orientation: landscape) {
+  .harbor-loading-panel {
+    max-height: calc(
+      100% - max(4px, env(safe-area-inset-top, 0px)) - 56px -
+        max(16px, env(safe-area-inset-bottom, 0px))
+    );
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
 @media (prefers-reduced-motion: reduce), (pointer: coarse) {
   .harbor-loading-harbor,
   .harbor-loading-foreground {

@@ -5,18 +5,32 @@ import { mkdirSync, writeFileSync } from "node:fs";
 
 const origin = process.env.PLAY_HOST_ORIGIN ?? "http://localhost:5175";
 assert(["localhost", "127.0.0.1"].includes(new URL(origin).hostname));
-const output = "artifacts/browser/website-loading";
+const shortOnly = process.env.LOADING_SHORT_ONLY === "1";
+const shortCase = process.env.LOADING_SHORT_CASE ?? "all";
+assert(["all", "844", "932"].includes(shortCase));
+const output = shortOnly
+  ? `artifacts/browser/website-loading-short-${Date.now()}`
+  : "artifacts/browser/website-loading";
 mkdirSync(output, { recursive: true });
 const browser = await chromium.launch();
 const checks = [],
   errors = [];
 try {
-  for (const [name, viewport, touch, reducedMotion] of [
-    ["desktop", { width: 1440, height: 900 }, false, "no-preference"],
-    ["landscape", { width: 667, height: 375 }, true, "no-preference"],
-    ["portrait", { width: 390, height: 844 }, true, "no-preference"],
-    ["reduced-motion", { width: 1024, height: 768 }, false, "reduce"],
-  ]) {
+  const viewports = shortOnly
+    ? [
+        ["short-844", { width: 844, height: 320 }, true, "reduce"],
+        ["short-932", { width: 932, height: 280 }, true, "reduce"],
+      ]
+    : [
+        ["desktop", { width: 1440, height: 900 }, false, "no-preference"],
+        ["landscape", { width: 667, height: 375 }, true, "no-preference"],
+        ["portrait", { width: 390, height: 844 }, true, "no-preference"],
+        ["reduced-motion", { width: 1024, height: 768 }, false, "reduce"],
+      ];
+  for (const [name, viewport, touch, reducedMotion] of viewports.filter(
+    ([name]) =>
+      !shortOnly || shortCase === "all" || name === `short-${shortCase}`,
+  )) {
     const context = await browser.newContext({
       viewport,
       hasTouch: touch,
@@ -50,6 +64,110 @@ try {
       .find((frame) => frame.url().endsWith("/game/index.html"));
     const emit = async (payload) =>
       frame.evaluate((data) => window.send(data), payload);
+    const shortLayout = async (phase) => {
+      if (!shortOnly) return;
+      const panel = page.locator(".harbor-loading-panel");
+      const scroll = await panel.evaluate((element) => ({
+        top: element.scrollTop,
+        overflow: element.scrollHeight - element.clientHeight,
+      }));
+      if (scroll.overflow > 2) {
+        const bounds = await panel.boundingBox();
+        const cdp = await context.newCDPSession(page);
+        try {
+          const x = bounds.x + bounds.width - 24;
+          const start = bounds.y + bounds.height - 20;
+          const end = bounds.y + 36;
+          await cdp.send("Input.dispatchTouchEvent", {
+            type: "touchStart",
+            touchPoints: [{ x, y: start, id: 1 }],
+          });
+          for (let i = 1; i <= 8; i++) {
+            await cdp.send("Input.dispatchTouchEvent", {
+              type: "touchMove",
+              touchPoints: [{ x, y: start + ((end - start) * i) / 8, id: 1 }],
+            });
+          }
+          await cdp.send("Input.dispatchTouchEvent", {
+            type: "touchEnd",
+            touchPoints: [],
+          });
+          await panel.evaluate((element) => element.scrollTop);
+          await page.waitForFunction(
+            () => document.querySelector(".harbor-loading-panel").scrollTop > 0,
+          );
+        } finally {
+          await cdp.detach();
+        }
+      }
+      await page.screenshot({
+        path: `${output}/${name}-${phase}-controls.png`,
+      });
+      const measured = await page.evaluate(() => {
+        const rect = (element) => {
+          const r = element.getBoundingClientRect();
+          return {
+            x: r.x,
+            y: r.y,
+            right: r.right,
+            bottom: r.bottom,
+            width: r.width,
+            height: r.height,
+          };
+        };
+        const panel = document.querySelector(".harbor-loading-panel");
+        return {
+          panel: rect(panel),
+          menu: rect(document.querySelector(".play-menu-toggle")),
+          controls: [...panel.querySelectorAll("button,a")].map(rect),
+          scrollTop: panel.scrollTop,
+          scrollHeight: panel.scrollHeight,
+          clientHeight: panel.clientHeight,
+          body: [...panel.querySelectorAll("p")].map((p) =>
+            parseFloat(getComputedStyle(p).fontSize),
+          ),
+        };
+      });
+      const inside = (r) =>
+        r.x >= 0 &&
+        r.y >= 0 &&
+        r.right <= viewport.width &&
+        r.bottom <= viewport.height;
+      assert(
+        inside(measured.panel),
+        `${name}/${phase}: panel outside viewport ${JSON.stringify(measured)}`,
+      );
+      assert(
+        measured.controls.every(
+          (r) =>
+            inside(r) &&
+            r.height >= 48 &&
+            r.y >= measured.panel.y &&
+            r.bottom <= measured.panel.bottom,
+        ),
+        `${name}/${phase}: retry/link touch target clipped`,
+      );
+      const p = measured.panel,
+        m = measured.menu;
+      assert(
+        p.right <= m.x || p.x >= m.right || p.bottom <= m.y || p.y >= m.bottom,
+        `${name}/${phase}: loading panel overlaps Menu ${JSON.stringify(measured)}`,
+      );
+      assert(measured.body.every((font) => font >= 16));
+      if (scroll.overflow > 2)
+        assert(
+          measured.scrollTop > scroll.top,
+          "Actual touch gesture must reveal overflowing controls",
+        );
+      checks.push({
+        label: `${name}: ${phase} viewport containment, Menu clearance, 48px controls,16px body`,
+        measured,
+      });
+      await page.getByRole("button", { name: "Menu", exact: true }).tap();
+      await page.getByRole("dialog").waitFor();
+      await page.keyboard.press("Escape");
+      await page.getByRole("dialog").waitFor({ state: "detached" });
+    };
     const message = (downloadedBytes, totalBytes, phase = "downloading") => ({
       type: "jalasmara:loading",
       version: 1,
@@ -192,7 +310,9 @@ try {
     const retryBounds = await retry.boundingBox();
     assert(retryBounds.height >= 48);
     await page.screenshot({ path: `${output}/${name}-stalled.png` });
-    await retry.click();
+    await shortLayout("stalled");
+    if (shortOnly) await retry.tap();
+    else await retry.click();
     await page.waitForFunction(
       () => document.querySelector("iframe")?.contentWindow?.send !== undefined,
     );
@@ -223,9 +343,13 @@ try {
       "/",
     );
     await page.screenshot({ path: `${output}/${name}-error.png` });
-    await page
-      .getByRole("button", { name: "Muat ulang permainan", exact: true })
-      .click();
+    await shortLayout("error");
+    const errorRetry = page.getByRole("button", {
+      name: "Muat ulang permainan",
+      exact: true,
+    });
+    if (shortOnly) await errorRetry.tap();
+    else await errorRetry.click();
     await page.waitForFunction(
       () => document.querySelector("iframe")?.contentWindow?.send !== undefined,
     );
@@ -244,9 +368,54 @@ try {
   assert.deepEqual(errors, []);
   writeFileSync(
     `${output}/results.json`,
-    JSON.stringify({ checks, errors }, null, 2),
+    JSON.stringify(
+      {
+        status: "passed",
+        completed: true,
+        output,
+        shortOnly,
+        shortCase,
+        checks,
+        errors,
+      },
+      null,
+      2,
+    ),
   );
-  console.log(JSON.stringify({ checks, errors }, null, 2));
+  console.log(
+    JSON.stringify(
+      {
+        status: "passed",
+        completed: true,
+        output,
+        shortOnly,
+        shortCase,
+        checks,
+        errors,
+      },
+      null,
+      2,
+    ),
+  );
+} catch (error) {
+  writeFileSync(
+    `${output}/results.json`,
+    JSON.stringify(
+      {
+        status: "failed",
+        completed: false,
+        output,
+        shortOnly,
+        shortCase,
+        message: error.message,
+        checks,
+        errors,
+      },
+      null,
+      2,
+    ),
+  );
+  throw error;
 } finally {
   await browser.close();
 }

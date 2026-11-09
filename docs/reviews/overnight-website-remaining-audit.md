@@ -11,3 +11,5 @@ Pemeriksaan `play.tsx`, `GameLoading.tsx`, `loading.ts`, `style.css`, dan `game-
 Satu celah cakupan yang belum dibuktikan sebagai masalah produk: panel loading memakai absolute bottom; harness memeriksa bounds saat download biasa, tetapi tidak memeriksa bounds panel stalled/error pada landscape sangat pendek (misalnya tinggi ≤320px). Jika keluhan layar pendek muncul, langkah berikutnya adalah fixture aktual viewport itu dengan state stalled, mengukur panel/menu/aksi dan melihat PNG sebelum mengubah CSS. Tidak ada perubahan spekulatif atau klaim gagal dalam audit ini.
 
 Tool aktual hanya pembacaan source, pencarian `rg`, typecheck dan pemeriksaan syntax. Tidak ada proxy, akun, game export atau API preview yang diubah.
+
+Follow-up: celah cakupan landscape pendek kemudian diuji, menemukan overlap frame/Menu pada844×320 dan diperbaiki secara terbatas; lihat [bukti gagal serta penerimaan16checks](overnight-loading-short-landscape.md). Audit source di atas tetap menggambarkan apa yang diketahui sebelum run tersebut.
