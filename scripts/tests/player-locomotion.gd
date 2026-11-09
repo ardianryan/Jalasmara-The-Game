@@ -81,8 +81,8 @@ func _transition_checks() -> void:
 			var seen:Array[String]=[drawn]
 			for tick in range(12):
 				var state:=await _step(visual,Vector2(-100,0),1.0/60,"reverse-180")
-				var before:=visual.DIRECTIONS.find(drawn)
-				var after:=visual.DIRECTIONS.find(state.artworkDirection)
+				var before:int=visual.DIRECTIONS.find(drawn)
+				var after:int=visual.DIRECTIONS.find(state.artworkDirection)
 				assert(posmod(after-before,8) in [0,1,7],"A rendered turn must visit neighboring authored views instead of reflecting or jumping across the body")
 				assert(state.requestedDirection=="west" and not visual.flip_h)
 				var equipment:Dictionary=visual.get_equipment_state()
@@ -129,7 +129,8 @@ func _run() -> void:
 			visual.animate(false,false,1,0)
 			for index in range(8):
 				var velocity:=Vector2.RIGHT.rotated(index*PI*.25)*175
-				visual.set_locomotion(velocity,.08)
+				#17.5 accepted units also completes the maximum four-octant16-unit turn.
+				visual.set_locomotion(velocity,.1)
 				visual.animate(true,false,1,0)
 				var state: Dictionary=visual.locomotion_state()
 				assert(visual.hframes==8 and visual.vframes==8)

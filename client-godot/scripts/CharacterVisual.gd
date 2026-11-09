@@ -99,7 +99,9 @@ func set_locomotion(velocity: Vector2,delta: float,visual_velocity := Vector2.IN
 	var was_frozen:=_pose_frozen
 	_speed=velocity.length()
 	var parent:=get_parent()
-	_pose_frozen=not _in_water and (EnvironmentState.clock_paused or ViewportLayout.host_paused or (is_instance_valid(parent) and "frozen" in parent and bool(parent.get("frozen"))))
+	var environment:=get_node_or_null("/root/EnvironmentState")
+	var host:=get_node_or_null("/root/ViewportLayout")
+	_pose_frozen=not _in_water and ((is_instance_valid(environment) and bool(environment.get("clock_paused"))) or (is_instance_valid(host) and bool(host.get("host_paused"))) or (is_instance_valid(parent) and "frozen" in parent and bool(parent.get("frozen"))))
 	if _pose_frozen or delta<=0: return
 	if _speed<.1 or _in_water:
 		if _in_water:
