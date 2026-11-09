@@ -31,14 +31,19 @@ verify:
     TEST_MONGO_URL: 'mongodb://mongo:27018/jalasmara_ci?replicaSet=rs0'
     TEST_REDIS_URL: 'redis://redis:6379/14'
   script:
+    - apt-get update -qq && apt-get install -y -qq python3
     - npm ci
     - node ci/init-mongo.mjs
     - npm run typecheck
+    - npm run check:worldkit
+    - npm ci --prefix tools/image-to-pixel --ignore-scripts
+    - node --test tools/image-to-pixel/convert.test.mjs
     - mkdir -p reports
     - npx tsx --test --test-concurrency=1 --test-reporter=junit --test-reporter-destination=reports/tests.xml apps/api/test/*.test.ts
     - npm audit --json > reports/dependencies.json
     - npm ci --prefix tools/img2threejs --ignore-scripts
     - npm audit --prefix tools/img2threejs --json > reports/asset-tool-dependencies.json
+    - npm audit --prefix tools/image-to-pixel --json > reports/worldkit-image-dependencies.json
   artifacts:
     when: always
     paths: [reports/]

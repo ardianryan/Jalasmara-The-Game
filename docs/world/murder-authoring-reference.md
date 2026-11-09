@@ -1,6 +1,6 @@
 # Referensi authoring: Murder, Pixprite, dan OpenWorld
 
-Diperiksa pada 9 November 2026. **Status Jalasmara: riset sumber resmi; belum ada kode, editor, paket, atau aset dari ketiga proyek yang diimpor.** Godot tetap menjadi runtime web. Manifest bersama tetap menentukan lantai, footprint, rute, zona, dan validasi server.
+Diperiksa pada 9 November 2026. **Status Jalasmara: adapter format OpenWorld sudah diimplementasikan secara orisinal dalam WorldKit; belum ada kode engine, editor, paket, atau aset dari ketiga proyek yang diimpor.** Godot tetap menjadi runtime web. Manifest bersama tetap menentukan lantai, footprint, rute, zona, dan validasi server.
 
 ## Murder: pola editor dunia
 
@@ -27,7 +27,7 @@ Pemakaian yang masuk akal ialah menyunting layer pakaian, memperbaiki siluet dan
 
 Adaptasi yang diusulkan ialah adapter offline menuju `WORLD.landMaps`: tetapkan ukuran tile ke piksel dunia; gabungkan tile lantai menjadi poligon; petakan ketinggian ke elevasi dan konektor; ubah entity penghalang menjadi footprint; ubah portal menjadi gerbang dengan spawn tujuan yang sah. Material Nusantara, ID zona, rute NPC, serta prasyarat cerita tetap memakai data Jalasmara. Validasi harus menolak ID ganda, endpoint portal di air/solid, loncatan elevasi tanpa tangga, serta lintasan terputus sebelum preview Godot dan kenaikan versi layout.
 
-**Belum ada adapter, editor, streaming chunk, atau runtime OpenWorld yang dipasang.** Fitur usulan ini tidak mengaktifkan aturan LLM saat permainan berjalan atau mengubah kewenangan server atas akun, kuis, ekonomi, dan hadiah. Manfaat terdekat adalah authoring peta serta pengujian konektivitas antarwilayah.
+**Adapter draft offline kini tersedia di [WorldKit](../../tools/worldkit/README.md).** Adapter menghasilkan bentuk `LandMap` dari pemetaan eksplisit, memeriksa clearance, elevasi, serta portal, dan tidak menerbitkan draft ke game. Fixture dua area diperiksa terhadap fungsi geometry server Jalasmara. Editor visual, streaming chunk, dan runtime OpenWorld belum dipasang. Integrasi ini tidak mengaktifkan aturan LLM saat permainan berjalan atau mengubah kewenangan server atas akun, kuis, ekonomi, dan hadiah.
 
 ## Lisensi dan batas pemakaian
 

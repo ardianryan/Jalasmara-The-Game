@@ -98,6 +98,16 @@ SOFTWARE.
 
 ## 4. Peralatan Pipa Aset & Generator Prosedural (Pipeline Tools)
 
+### Jalasmara WorldKit dan komponen baru
+
+WorldKit adalah nama lapisan integrasi asli Jalasmara, bukan penggantian nama kepemilikan kode upstream.
+
+- **Sprite Fusion Pixel Snapper:** Hugo Duprez / Sprite Fusion, MIT. CLI Rust dipakai offline, sumber tanpa modifikasi dikunci pada commit `02f9315d73d3219274d17767b36d9a231a6b1f4b`. [Teks lisensi asli](tools/pixel-snapper/vendor/LICENSE), [manifest hash](tools/pixel-snapper/source.json), dan [adapter](tools/pixel-snapper/README.md) disertakan. Binary dan dependensi Cargo tidak dibundel ke game.
+- **Image-to-Pixel 3.2.0:** Copyright 2023–2026 Tezumie, MIT, dipakai untuk konversi palet PNG offline. [Lisensi asli](tools/image-to-pixel/LICENSE.upstream.txt) disertakan. Dependensi ShaderMate mempertahankan [lisensi MIT Tezumie](tools/image-to-pixel/LICENSE.shadermate.txt), sedangkan pngjs 7.0.0 mempertahankan [lisensi Luke Page, Kuba Niegowski dan kontributor](tools/image-to-pixel/LICENSE.pngjs.txt). Paket terisolasi dari runtime game dan dikunci melalui lockfile alat.
+- **Adapter format OpenWorld:** implementasi asli WorldKit berdasarkan format publik yang ditinjau, bukan salinan engine atau aset OpenWorld. [Asal format dan batas adapter](tools/worldkit/source.json) serta [sumber penelitian](docs/world/murder-authoring-reference.md) dicatat. WorldKit tidak mengimpor runtime LLM OpenWorld, FNA/Bang Murder, atau UI Pixprite.
+
+Nunito Sans kini juga disematkan untuk teks dialog/kuis Godot. [Salinan lisensi font game](client-godot/resources/fonts/LICENSE-nunito-sans.txt) tetap OFL 1.1.
+
 ### Procedural Pixel Creatures
 - **Pembuat:** Copyright (c) 2026 idlerunner00 (https://github.com/idlerunner00/procedural-pixel-creatures)
 - **Lisensi:** MIT License

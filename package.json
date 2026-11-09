@@ -21,7 +21,12 @@
     "recover-owner": "tsx apps/api/src/cli.ts recover-owner",
     "check": "npm run typecheck && npm test && npm run build",
     "build:game": "node scripts/export-game.mjs",
-    "check:world": "node scripts/verify-living-world.mjs"
+    "check:world": "node scripts/verify-living-world.mjs",
+    "worldkit:import": "node tools/worldkit/cli.mjs import",
+    "worldkit:snap": "python3 tools/pixel-snapper/snap.py snap",
+    "worldkit:palette": "node tools/image-to-pixel/convert.mjs",
+    "check:worldkit": "node --test tools/worldkit/adapter.test.mjs && node --experimental-strip-types scripts/check-worldkit-compat.mjs && python3 tools/pixel-snapper/snap.py verify",
+    "check:worldkit-assets": "node --test tools/image-to-pixel/convert.test.mjs && python3 -m unittest discover -s tools/pixel-snapper/tests -v"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.0",

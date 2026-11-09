@@ -47,6 +47,16 @@ Jika Godot tidak ada di PATH, isi `GODOT_BIN` dengan path executable. Hasil eksp
 | `packages/shared/` | Kontrak data, konten awal, dan definisi wilayah |
 | `assets/brand/` | Kit identitas Jala Muara |
 | `ci/` | Build Godot, CodeQL, dan pengiriman laporan |
+| `tools/worldkit/` | Adapter offline peta dan validator lantai, elevasi, serta portal |
+| `tools/pixel-snapper/`, `tools/image-to-pixel/` | Persiapan grid dan palet aset offline dengan atribusi upstream |
+
+## Jalasmara WorldKit
+
+Repositori alat terpisah (privat): [GitHub](https://github.com/ardianryan/jalasmara-worldkit) · [GitLab](https://gitlab.com/ardianryan/jalasmara-worldkit). Salinan integrasi di `tools/` tetap diuji terhadap kontrak geometri game.
+
+WorldKit adalah lapisan authoring dan pipa aset milik proyek; Godot tetap runtime permainan. Adapter peta menghasilkan draft untuk ditinjau, bukan publikasi otomatis ke dunia atau database. Pixel Snapper memakai kode upstream berlisensi MIT yang dikunci versinya; Image-to-Pixel memakai paket npm terpisah dari dependensi game.
+
+Lihat [panduan WorldKit](tools/worldkit/README.md), [Pixel Snapper](tools/pixel-snapper/README.md), [pengolah palet](tools/image-to-pixel/README.md), dan [backlog next-gen](docs/nextgen-world-authoring.md). Jalankan `npm run check:worldkit` untuk memeriksa adapter beserta kecocokan geometry server. `npm run check:worldkit-assets` membutuhkan instalasi/build alat sesuai README masing-masing.
 
 ## Akun dan pengelolaan
 
@@ -64,4 +74,4 @@ OIDC opsional melalui ZITADEL. Pemain menautkan identitas eksternal dari akun lo
 
 CI dijalankan di GitLab; GitHub Actions dinonaktifkan. JUnit, audit dependensi, dan CodeQL SARIF diterbitkan sebagai artefak GitLab dan disalin ke branch `ci-reports` GitHub. Pengiriman memakai deploy key khusus repository, bukan token pribadi pengguna.
 
-Referensi Dave the Diver digunakan sebagai moodboard privat, bukan aset distribusi. Direktori `moodboard/` dan `references/private/` diabaikan Git. Aset permainan dan materi budaya harus mengikuti provenance dan peninjauan budaya. Belum ada lisensi sumber terbuka yang ditetapkan pemilik; publikasi repository tidak memberikan izin penggunaan ulang otomatis.
+Referensi Dave the Diver digunakan sebagai moodboard privat, bukan aset distribusi. Direktori `moodboard/` dan `references/private/` diabaikan Git. Kode asli mengikuti MIT; aset kreatif mengikuti ketentuan terpisah pada [LICENSE](LICENSE). Kode, fon, dan aset pihak ketiga tetap mengikuti lisensi serta atribusi masing-masing pada [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
