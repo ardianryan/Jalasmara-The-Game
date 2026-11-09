@@ -95,6 +95,18 @@ Verifikasi tujuh profil yang sudah ada sebelum menambah pemeran. Gunakan `villag
 
 **Bukti penerimaan:** tabel tujuan dan rekaman kerja–bicara–lanjut–pulang–berteduh. Tidak ada `blocked_*` menetap, warga ganda, layanan cerita yang tidak dapat dijangkau, atau hadiah otomatis dari animasi kosmetik.
 
+### B1a. Rumah panggung dan tempat berteduh dengan pendekatan Noxe
+
+Arahan tambahan pengguna: pengerjaan tempat berteduh mencakup rumah panggung yang terbaca sebagai volume dari pandangan tiga perempat. Metode konstruksi Noxe dimajukan dari persiapan C ke satu pilot B1a; bangunan/pemeran baru pada C tetap mempunyai penerimaan sendiri. Lihat [rincian pilot](06b1a-rumah-panggung-dan-kamera.md).
+
+- Bangun modul native Godot untuk tiang, balok, bracing, kolong, lantai tebal, serambi, akses dan atap. Gunakan platform/elevasi yang sudah tersedia; bila lantai atau footprint berubah, manifest, collision, konektor dan migrasi save ikut diperiksa.
+- Tujuh tujuan hujan harus berada di bawah bidang atap fisik, di atas lantai sah, dengan rute serta clearance badan. Titik metadata saja tidak cukup.
+- Bandingkan kamera permainan dengan satu preset menyudut pada pilot. Kamera sekarang ortografis pada elevasi 35°, tetapi `map_point` dan proyeksi darat mempertahankan susunan peta lama. Pandangan isometrik dunia memerlukan konsistensi proyeksi aktor, input, interaksi dan penanda; tidak cukup mengganti angka rotasi kamera.
+- Pisahkan rotasi bangunan dari kamera. Pintu, tangga, footprint, titik berteduh dan lampu mengikuti transform bangunan yang sama. Pilihan akhir mengikuti keterbacaan sisi/depan/atap/kolong pada ukuran bermain.
+- Noxe menjadi sumber metode atau port kecil berlisensi ke Godot. Jika kode upstream dipakai, simpan pin, teks MIT dan atribusi berkas yang diadaptasi. Penerimaan performa tetap memakai renderer game, dengan Windows/S23 fisik dicatat tersendiri.
+
+**Bukti penerimaan:** rumah panggung berpenyangga dan kolong nyata, tujuh warga mencapai area beratap saat hujan, Nala/percakapan tetap terbaca, dan jalur tangga/portal/save lama tetap sah. Pembanding kamera harus berupa render mesh sebenarnya, bukan gambar referensi yang ditempel sebagai latar.
+
 ### B2. Matangkan tiga pilot tubuh
 
 | NPC | Rangkaian yang dinilai | Kontak yang harus jelas |
@@ -137,7 +149,7 @@ Urutan produksi: Ratih/Tedi/Saras, lalu Lurah/Wira/Beno; Raka mengikuti fungsi p
 - Kantor PT tetap memakai kontainer/chassis/atap datar yang berbeda dari rumah warga. Raka tetap **Inspektur Raka**, sesuai cerita yang sudah berjalan.
 - Penambahan direktur memakai ID NPC tersendiri dan fungsi cerita/interaksi yang jelas. Periksa dokumen cerita/wiki sebelum menetapkan nama pribadi; bila belum ada, gunakan jabatan **Direktur PT Cakrawala Sintetis** pada rancangan awal, tanpa mengganti identitas Raka.
 - Tetapkan hubungan kunjungan/kerjanya dengan kantor kontainer dan rute kedatangan sebelum membuat aset. Bedakan tempat berdiri dari Raka; jangan membuat keduanya menumpuk atau mempunyai trigger layanan yang saling mengambil alih.
-- RV yang dapat dikendarai tidak termasuk paket ini. Bentuk kontainer rumah/kantor sudah memenuhi arah bangunan pendatang dan tetap dipertahankan.
+- Direktur mempunyai kontainer rumah/RV statis tersendiri sesuai permintaan pengguna; kantor Raka yang sudah ada tetap dipertahankan untuk inspektur. RV yang dapat dikendarai tidak termasuk paket ini.
 
 ### C3. Laskar Kognisi
 

@@ -30,7 +30,9 @@ Untuk interior, sediakan bagian atap/dinding yang dapat disembunyikan berdasarka
 
 Finishing memakai resolusi dunia rendah dan upscale nearest yang sudah ada, pencahayaan hangat, bayangan berwarna, serta kabut menurut jarak. Dither, outline, bloom, dan refleksi dipilih satu per satu melalui perbandingan visual/performa. Jangan menyalin seluruh rangkaian pass: Noxe dapat menggambar mesh dalam pass bayangan, refleksi, dan utama. Dither rapat pada pratinjau juga bukan kewajiban untuk mood comfy Jalasmara.
 
-Pilot pada paket 06-C: satu bangunan kontainer direktur dengan satu rancangan ruang potong terbuka. Eksterior/penempatan yang diperlukan paket C dapat selesai dahulu; interior playable tetap mengikuti paket 06-D. Bukti pilot meliputi empat facing, siang/malam, kamera permainan, pintu/tangga yang terhubung, dan penilaian HUD. Tidak ada janji interior siap hanya karena pratinjau ruang berhasil dirender.
+Arahan pengguna berikutnya memajukan satu pilot ke 06-B1a: rumah panggung pada dek existing dan serambi/tempat berteduh fisik. Tiang, kolong, balok, atap serta aksesnya dinilai bersama pembanding kamera menyudut. [Rencana pilot B1a](../plans/06b1a-rumah-panggung-dan-kamera.md) menjelaskan perubahan yang diperlukan pada proyeksi bila seluruh dunia memakai kamera isometrik. Pilot tersebut belum berarti Noxe sudah menjadi runtime game.
+
+Pilot lanjutan pada paket 06-C: satu bangunan kontainer direktur dengan satu rancangan ruang potong terbuka. Eksterior/penempatan yang diperlukan paket C dapat selesai dahulu; interior playable tetap mengikuti paket 06-D. Bukti pilot meliputi empat facing, siang/malam, kamera permainan, pintu/tangga yang terhubung, dan penilaian HUD. Tidak ada janji interior siap hanya karena pratinjau ruang berhasil dirender.
 
 Ekspor GLB dari generator Three.js dapat diteliti kemudian sebagai alat authoring offline. Perlu menambahkan exporter sendiri, menangani geometri yang didukung dan material pengganti, lalu menguji round-trip. Material prosedural, cuaca, lampu dan post-processing tidak boleh diasumsikan ikut tersimpan dalam GLB.
 
