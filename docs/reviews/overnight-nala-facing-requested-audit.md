@@ -1,0 +1,11 @@
+# Nala requested-facing audit refinement
+
+This is a CPU-only audit refinement for the isolated lower-body pilot. It changes no production gait, character artwork, controller, threshold or default activation.
+
+The recorded `pose.desiredDirection` is CharacterVisual's intermediate artwork direction. In the preserved combined dock reversal, it advances NORTH_WEST→WEST→SOUTH_WEST while `source.requestedDirection` already requests SOUTH_EAST throughout movement. Comparing body and shoes only with that intermediate artwork could hide an upstream CharacterVisual lag even when all three match each other.
+
+The checker now compares actual body and both shoe views with `source.requestedDirection` whenever it is recorded. Older observations fall back explicitly to the intermediate artwork target. It separately retains the artwork directions and count of observations containing a real requested direction. Continuous mismatch intervals are not erased when either intermediate source view or requested target changes. Paused time, missing cases, incomplete observations, terminal mismatches and original rejection remain explicit.
+
+Eight CPU regressions pass, including a body/shoe pair that matches the intermediate artwork but lags the actual requested direction. The preserved `6704e21` partial full-matrix audit now correctly reports NORTH_WEST body and both feet versus requested SOUTH_EAST, while retaining the original eight-pixel reach rejection and incomplete matrix. Fresh output is `artifacts/godot/nala-ramp-sole-cpu/facing-partial-full16-requested-6704e21.json`; the earlier intermediate-artwork audit is preserved separately. No full-32 facing recovery, natural motion, native sequence or module performance acceptance follows.
+
+Run: `python3 -m unittest discover -s tools/player-gait -p test_facing_recovery.py`. The checker accepts one or more actual run directories with `--run`, expected case count with `--expected-cases`, and a new output JSON path with `--output`.
