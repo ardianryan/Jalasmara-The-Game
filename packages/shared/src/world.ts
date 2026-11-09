@@ -64,6 +64,7 @@ export const WORLD = {
     interior: HOMESTEAD_INTERIOR,
     market: { x: 620, y: 1030 },
     permitBoard: { x: 940, y: 310 },
+    fishPen: { interaction: { x: 275, y: 850 }, waterAnchor: { x: 360, y: 940, z: -11 }, speciesId: "reef_seruni" },
   },
   width: 6144,
   height: 3584,

@@ -28,6 +28,7 @@ type HomeWorld = {
   interior: LandMap & { entry: Point; exit: Point; bed: Point; chest: Point };
   market: Point;
   permitBoard: Point;
+  fishPen: { interaction: Point };
 };
 function locations(): HomeWorld {
   const home = (WORLD as unknown as { homestead?: HomeWorld }).homestead;
@@ -282,6 +283,9 @@ export async function homesteadRoutes(
         "deposit",
         "withdraw",
         "stock_kedai",
+        "stock_pen",
+        "feed_pen",
+        "harvest_pen",
       ]),
       expectedRevision: z.number().int().min(0),
       plotId: z.enum(["plot_1", "plot_2"]).optional(),
@@ -412,7 +416,10 @@ export async function homesteadRoutes(
                 }
               } else if (b.action === "buy_seed") {
                 near(at, defs.market);
-                if (b.itemId !== "benih_kangkung") fail("Bibit tidak dikenal.");
+                const crop = HOMESTEAD_DEFINITIONS.crops.find(
+                  (crop) => crop.seedId === b.itemId,
+                );
+                if (!crop) return fail("Bibit tidak dikenal.");
                 if (h.market.day !== c.calendarDay)
                   h.market = { day: c.calendarDay, bought: 0 };
                 if (
@@ -420,20 +427,79 @@ export async function homesteadRoutes(
                   HOMESTEAD_DEFINITIONS.market.dailyStock
                 )
                   fail("Stok bibit hari ini habis.", 409, "MARKET_STOCK");
-                const price = b.qty * HOMESTEAD_DEFINITIONS.market.price;
+                const price = b.qty * crop.price;
                 if (p.coins < price) fail("Koin belum cukup.");
                 p.coins -= price;
                 h.market.bought += b.qty;
-                h.seeds.benih_kangkung += b.qty;
+                h.seeds[crop.seedId] += b.qty;
               } else if (b.action === "stock_kedai") {
                 const wira = WORLD.surface_hub.districts.find(
                   (district) => district.npc === "Mbah Wira",
                 )!;
                 near(at, wira);
-                if (b.itemId !== "kangkung" || h.produce.kangkung < b.qty)
-                  fail("Hasil kebun tidak cukup.");
-                h.produce.kangkung -= b.qty;
-                h.pantry.kangkung += b.qty;
+                if (!b.itemId || !(b.itemId in HOMESTEAD_DEFINITIONS.servings))
+                  return fail("Bahan kedai tidak dikenal.");
+                const itemId =
+                  b.itemId as keyof typeof HOMESTEAD_DEFINITIONS.servings;
+                if (h.produce[itemId] < b.qty)
+                  fail("Hasil budidaya tidak cukup.");
+                h.produce[itemId] -= b.qty;
+                h.pantry[itemId] += b.qty;
+              } else if (
+                ["stock_pen", "feed_pen", "harvest_pen"].includes(b.action)
+              ) {
+                const definition = HOMESTEAD_DEFINITIONS.fishPen,
+                  pen = h.fishPen;
+                near(at, defs.fishPen.interaction, 100);
+                if (!h.permit || p.progress.day < definition.unlockStoryDay)
+                  fail(
+                    "Izin kebun dan siklus cerita kedua diperlukan untuk keramba.",
+                    409,
+                    "PEN_LOCKED",
+                  );
+                if (b.action === "stock_pen") {
+                  if (
+                    b.itemId !== definition.speciesId ||
+                    b.qty !== definition.parentCount ||
+                    pen.breeders
+                  )
+                    fail(
+                      "Masukkan sepasang ikan seruni hidup ke keramba kosong.",
+                    );
+                  if (h.liveCatch.reef_seruni < definition.parentCount)
+                    fail("Butuh dua ikan seruni tangkapan hidup Bintang3.");
+                  h.liveCatch.reef_seruni -= definition.parentCount;
+                  Object.assign(pen, {
+                    breeders: definition.parentCount,
+                    progressDays: 0,
+                    fedDay: 0,
+                    lastSettledDay: c.calendarDay,
+                  });
+                } else if (b.action === "feed_pen") {
+                  if (pen.breeders !== definition.parentCount)
+                    fail("Keramba belum berisi pasangan induk.");
+                  if (pen.fedDay === c.calendarDay)
+                    fail(
+                      "Pakan hari ini sudah diberikan.",
+                      409,
+                      "PEN_ALREADY_FED",
+                    );
+                  if (pen.offspring >= definition.capacity)
+                    fail(
+                      "Panen hasil keramba yang penuh dahulu.",
+                      409,
+                      "PEN_FULL",
+                    );
+                  if (p.coins < definition.feedCost)
+                    fail("Koin pakan belum cukup.");
+                  p.coins -= definition.feedCost;
+                  pen.fedDay = c.calendarDay;
+                } else {
+                  if (pen.offspring < b.qty)
+                    fail("Hasil keramba belum cukup.", 409, "PEN_NOT_READY");
+                  pen.offspring -= b.qty;
+                  h.produce.ikan_seruni += b.qty;
+                }
               } else {
                 if (!h.permit)
                   fail(
@@ -446,12 +512,15 @@ export async function homesteadRoutes(
                 if (!place) fail("Petak belum tersedia.", 503);
                 near(at, place!.interaction, 120);
                 if (b.action === "plant") {
-                  if (b.itemId !== "benih_kangkung" || plot.cropId)
-                    fail("Pilih bibit untuk petak kosong.");
-                  if (h.seeds.benih_kangkung < 1) fail("Bibit habis.");
-                  h.seeds.benih_kangkung--;
+                  const crop = HOMESTEAD_DEFINITIONS.crops.find(
+                    (crop) => crop.seedId === b.itemId,
+                  );
+                  if (!crop || plot.cropId)
+                    return fail("Pilih bibit untuk petak kosong.");
+                  if (h.seeds[crop.seedId] < 1) fail("Bibit habis.");
+                  h.seeds[crop.seedId]--;
                   Object.assign(plot, {
-                    cropId: "kangkung",
+                    cropId: crop.id,
                     growthDays: 0,
                     wateredDay: 0,
                     lastSettledDay: c.calendarDay,
@@ -462,12 +531,16 @@ export async function homesteadRoutes(
                   plot.wateredDay = c.calendarDay;
                   plot.needsCare = false;
                 } else if (b.action === "harvest") {
-                  if (
-                    !plot.cropId ||
-                    plot.growthDays < HOMESTEAD_DEFINITIONS.crop.growthDays
-                  )
-                    fail("Tanaman belum siap panen.", 409, "CROP_NOT_READY");
-                  h.produce.kangkung += HOMESTEAD_DEFINITIONS.crop.yield;
+                  const crop = HOMESTEAD_DEFINITIONS.crops.find(
+                    (crop) => crop.id === plot.cropId,
+                  );
+                  if (!crop || plot.growthDays < crop.growthDays)
+                    return fail(
+                      "Tanaman belum siap panen.",
+                      409,
+                      "CROP_NOT_READY",
+                    );
+                  h.produce[crop.id] += crop.yield;
                   Object.assign(plot, {
                     cropId: null,
                     growthDays: 0,

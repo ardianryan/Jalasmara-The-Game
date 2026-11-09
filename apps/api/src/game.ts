@@ -475,6 +475,13 @@ export async function gameRoutes(app: FastifyInstance, s: Store, g: Guards) {
         const stars = duration >= 600 && duration <= 1400 ? 3 : 2;
         target.caught = true;
         addLoot(d.loot, { fragmentId: f.id, stars, quantity: 1 });
+        if (
+          stars === 3 &&
+          ["ekosistem", "netralisasi"].includes(target.fragmentId)
+        ) {
+          d.liveCatch ??= { reef_seruni: 0 };
+          d.liveCatch.reef_seruni++;
+        }
         d.weight += f.weight;
         delete d.netAt;
         await saveDive(p.id, d);
@@ -522,6 +529,13 @@ export async function gameRoutes(app: FastifyInstance, s: Store, g: Guards) {
       if (d.mode === "dive") {
         target.caught = true;
         addLoot(d.loot, { fragmentId: q.fragmentId, stars, quantity: 1 });
+        if (
+          stars === 3 &&
+          ["ekosistem", "netralisasi"].includes(target.fragmentId)
+        ) {
+          d.liveCatch ??= { reef_seruni: 0 };
+          d.liveCatch.reef_seruni++;
+        }
         d.weight += c.catalog.fragments.find(
           (f) => f.id === q.fragmentId,
         )!.weight;
@@ -647,6 +661,10 @@ export async function gameRoutes(app: FastifyInstance, s: Store, g: Guards) {
                 "SESSION_CHANGED",
               );
             for (const l of loot) addLoot(u.inventory, l);
+            if (d.oxygen > 0 && d.mode === "dive" && d.liveCatch) {
+              u.homestead!.liveCatch.reef_seruni += d.liveCatch.reef_seruni;
+              u.homestead!.revision++;
+            }
             if (d.mode === "boss" && d.hits >= d.requiredHits && d.oxygen > 0) {
               u.progress.stage = "done";
               u.progress.bossDefeated = true;
@@ -760,6 +778,7 @@ export async function gameRoutes(app: FastifyInstance, s: Store, g: Guards) {
         fragmentId: z.string().max(64),
         stars: z.number().int().min(1).max(3),
         gardenIngredient: z.boolean().default(false),
+        gardenItemId: z.enum(["kangkung", "jahe", "ikan_seruni"]).optional(),
       })
       .strict()
       .parse(req.body);
@@ -806,21 +825,17 @@ export async function gameRoutes(app: FastifyInstance, s: Store, g: Guards) {
               r.reward * c.catalog.balance.starMultipliers[b.stars - 1],
             );
           ensureDaily(p);
+          const gardenItemId = b.gardenItemId ?? "kangkung";
+          const serving = HOMESTEAD_DEFINITIONS.servings[gardenItemId];
           if (b.gardenIngredient) {
-            if (
-              p.homestead!.pantry.kangkung <
-              HOMESTEAD_DEFINITIONS.gardenServing.quantity
-            )
-              fail("Stok kangkung kedai tidak cukup.");
-            p.homestead!.pantry.kangkung -=
-              HOMESTEAD_DEFINITIONS.gardenServing.quantity;
+            if (p.homestead!.pantry[gardenItemId] < serving.quantity)
+              fail("Stok bahan budidaya kedai tidak cukup.");
+            p.homestead!.pantry[gardenItemId] -= serving.quantity;
             p.homestead!.revision++;
           }
           item.quantity--;
           p.inventory = p.inventory.filter((x) => x.quantity > 0);
-          const gardenBonus = b.gardenIngredient
-            ? HOMESTEAD_DEFINITIONS.gardenServing.bonus
-            : 0;
+          const gardenBonus = b.gardenIngredient ? serving.bonus : 0;
           p.coins += earned + gardenBonus;
           p.progress.missions.push(r.id);
           shift.served.push(r.id);

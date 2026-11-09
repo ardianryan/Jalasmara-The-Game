@@ -112,6 +112,7 @@ export interface DiveView {
   hits: number;
   requiredHits: number;
   loot: Loot[];
+  liveCatch?: { reef_seruni: number };
   position?: { x: number; y: number };
   targets: {
     id: string;

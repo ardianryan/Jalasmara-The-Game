@@ -6,6 +6,7 @@ import {
   calendarRain,
   freshHomestead,
   HOMESTEAD_DEFINITIONS,
+  normalizeHomestead,
 } from "../../../packages/shared/src/index.js";
 import type {
   CalendarView,
@@ -20,6 +21,7 @@ export function ensureDaily(p: User): void {
     p.calendar.calendarDay,
     p.progress.missions.includes("akar"),
   );
+  normalizeHomestead(p.homestead, p.calendar.calendarDay);
 }
 export async function dailyUser(
   s: Store,
@@ -30,8 +32,11 @@ export async function dailyUser(
   if (!p || p.status !== "active") return fail("Akun tidak aktif.", 403);
   const missingCalendar = !p.calendar,
     missingHome = !p.homestead;
+  const homeChanged = p.homestead
+    ? normalizeHomestead(p.homestead, p.calendar?.calendarDay ?? 1)
+    : false;
   ensureDaily(p);
-  if (missingCalendar || missingHome) {
+  if (missingCalendar || missingHome || homeChanged) {
     const saved = await s.users.updateOne(
       {
         id,
@@ -42,7 +47,7 @@ export async function dailyUser(
       {
         $set: {
           ...(missingCalendar ? { calendar: p.calendar } : {}),
-          ...(missingHome ? { homestead: p.homestead } : {}),
+          ...(missingHome || homeChanged ? { homestead: p.homestead } : {}),
         },
       },
       { session },
@@ -66,13 +71,32 @@ export function setCalendar(p: User, day: number, minute: number): void {
   for (let previous = c.lastSettledDay; previous < day; previous++) {
     for (const plot of h.plots) {
       if (!plot.cropId || plot.lastSettledDay > previous) continue;
-      if (plot.growthDays < HOMESTEAD_DEFINITIONS.crop.growthDays) {
+      const crop = HOMESTEAD_DEFINITIONS.crops.find(
+        (crop) => crop.id === plot.cropId,
+      )!;
+      if (plot.growthDays < crop.growthDays) {
         const watered =
           plot.wateredDay === previous || calendarRain(p.id, previous);
         if (watered) plot.growthDays++;
         plot.needsCare = !watered;
       }
       plot.lastSettledDay = previous + 1;
+    }
+    const pen = h.fishPen;
+    if (pen.lastSettledDay <= previous) {
+      const definition = HOMESTEAD_DEFINITIONS.fishPen;
+      if (
+        pen.breeders === definition.parentCount &&
+        pen.fedDay === previous &&
+        pen.offspring < definition.capacity
+      ) {
+        pen.progressDays++;
+        if (pen.progressDays >= definition.growthDays) {
+          pen.offspring++;
+          pen.progressDays = 0;
+        }
+      }
+      pen.lastSettledDay = previous + 1;
     }
     h.revision++;
   }
@@ -103,16 +127,31 @@ export function homesteadView(p: User) {
   return {
     ...h,
     market: h.market.day === day ? h.market : { day, bought: 0 },
-    plots: h.plots.map((plot) => ({
-      ...plot,
-      stage: !plot.cropId
-        ? "empty"
-        : plot.growthDays >= 3
-          ? "ready"
-          : (["seed", "sprout", "young"] as const)[plot.growthDays],
-      watered: plot.wateredDay === day || calendarRain(p.id, day),
-      ready: !!plot.cropId && plot.growthDays >= 3,
-    })),
+    fishPen: {
+      ...h.fishPen,
+      unlocked:
+        h.permit &&
+        p.progress.day >= HOMESTEAD_DEFINITIONS.fishPen.unlockStoryDay,
+      ready: h.fishPen.offspring > 0,
+      fed: h.fishPen.fedDay === day,
+    },
+    plots: h.plots.map((plot) => {
+      const needed =
+        HOMESTEAD_DEFINITIONS.crops.find((crop) => crop.id === plot.cropId)
+          ?.growthDays ?? 3;
+      return {
+        ...plot,
+        stage: !plot.cropId
+          ? "empty"
+          : plot.growthDays >= needed
+            ? "ready"
+            : (["seed", "sprout", "young"] as const)[
+                Math.min(2, plot.growthDays)
+              ],
+        watered: plot.wateredDay === day || calendarRain(p.id, day),
+        ready: !!plot.cropId && plot.growthDays >= needed,
+      };
+    }),
   };
 }
 export function dailyBundle(p: User) {
