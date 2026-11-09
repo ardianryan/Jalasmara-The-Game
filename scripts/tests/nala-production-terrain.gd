@@ -27,6 +27,17 @@ func _measure(label:String) -> void:
 			var last:Vector3=renderer.ground_point(b)
 			expected=maxf(1.0,absf(last.z-first.z)/Vector2(last.x-first.x,last.y-first.y).length())
 	var contact:Dictionary=renderer.actors_3d.counts.get("nalaLowerBody",{}).get("contacts",{})
+	var contact_trace:Dictionary=renderer.actors_3d.counts.get("nalaLowerBody",{}).get("contactTrace",{})
+	if not _check(bool(contact_trace.get("finalPoseValidated",false)) and not bool(contact_trace.get("intermediateContactPosesValidated",true)) and not bool(contact_trace.get("audioWired",true)),"Diagnostic trace overclaims transient validation/audio "+label): return
+	if not _check(int(contact_trace.get("overflow",0))==0 and JSON.stringify(contact_trace.get("events",[]))==JSON.stringify(contact.get("rawContactEvents",[])),"Diagnostic trace lost or invented raw transitions "+label): return
+	var previous_event_distance:float=-INF
+	var previous_sequence:=-1
+	for event in contact_trace.get("events",[]):
+		if not _check(str(event.stage)=="raw_planner_transition" and str(event.purpose) in ["walking","settling"] and not bool(event.contactPoseRendered) and not bool(event.exactContactPhysicsFrameKnown),"Diagnostic trace invented purpose/render/timestamp "+label): return
+		if not _check(int(event.sequence)>previous_sequence and int(event.sequence)<=int(contact.contacts) and float(event.acceptedDistance)>=previous_event_distance and float(event.acceptedDistance)<=float(contact.acceptedDistance)+.003,"Diagnostic trace event order differs from planner phase "+label): return
+		if not _check(Vector3(event.newPlant).distance_to(renderer.ground_point(event.logicalPlant))<.003,"Diagnostic contact is not its actual supported ground "+label): return
+		previous_event_distance=float(event.acceptedDistance)
+		previous_sequence=int(event.sequence)
 	for entry in contact.get("feet",{}).values():
 		var tread:Dictionary=entry.get("treadPlan",{})
 		if str(tread.get("curveType",""))=="stair_swept_support":
@@ -106,7 +117,14 @@ func _terrain_case(profile:Dictionary,reverse:bool,reduced:bool,label:String) ->
 			clock.clock_paused=true
 			for pause_frame in range(2):
 				if not await _production_tick(Vector2.ZERO,label+" paused-on-connector"): return false
-			if not _check(renderer.actors_3d.counts.nalaLowerBody==before_pause,"Actual terrain pause changed planted rig "+label): return false
+			var after_pause:Dictionary=renderer.actors_3d.counts.nalaLowerBody.duplicate(true)
+			if not _check(after_pause.contactTrace.events.is_empty() and after_pause.contacts.rawContactEvents.is_empty(),"Actual terrain pause replayed contact diagnostics "+label): return false
+			for paused_pose in [before_pause,after_pause]:
+				paused_pose.erase("contactTrace")
+				paused_pose.contacts.erase("rawContactEvents")
+				paused_pose.contacts.erase("rawTraceEpoch")
+				paused_pose.contacts.erase("rawTraceOverflow")
+			if not _check(after_pause==before_pause,"Actual terrain pause changed planted rig "+label): return false
 			player.frozen=false
 			clock.clock_paused=false
 			stopped=true

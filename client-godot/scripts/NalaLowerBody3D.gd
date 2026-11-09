@@ -124,7 +124,11 @@ func _anatomy(view:Dictionary,feet:Dictionary,at:Vector2,right:Vector3,vertical:
 	return {"ankles":ankles,"lengths":lengths,"drop":drop,"horizontalInvalid":horizontal_invalid}
 
 func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
-	if not supported(visual): visible=false; return {}
+	if not supported(visual):
+		_planner.begin_contact_frame(false)
+		visible=false
+		return {}
+	_planner.begin_contact_frame(bool(_last.get("enabled",true)))
 	var outfit:=str(visual.get("outfit"))
 	if _outfit!=outfit:
 		_outfit=outfit
@@ -221,7 +225,14 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 			return _last.duplicate(true)
 	if frozen and not _last.is_empty():
 		proxy.visible=false
-		return _last.duplicate(true)
+		var frozen_pose:Dictionary=_last.duplicate(true)
+		if physical_plane:
+			frozen_pose.contacts.rawContactEvents=[]
+			frozen_pose.contacts.rawTraceEpoch=pose.rawTraceEpoch
+			frozen_pose.contacts.rawTraceOverflow=0
+			frozen_pose["contactTrace"]=_planner.publish_contact_trace(bool(frozen_pose.get("enabled",false)) and bool(frozen_pose.get("reachValid",false)))
+			frozen_pose.contacts.rawTraceEpoch=frozen_pose.contactTrace.epoch
+		return frozen_pose
 	var accepted_distance:float=pose.acceptedDistance
 	var moved_distance:=maxf(0,accepted_distance-_last_distance)
 	_last_distance=accepted_distance
@@ -435,4 +446,5 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 	visible=true
 	proxy.visible=false
 	_last={"enabled":true,"identity":"male_nusantara","outfit":outfit,"direction":direction,"desiredDirection":desired,"heldFacing":direction!=desired,"contacts":pose,"calibration":1.0/vertical,"supportBodyOffsetPixels":support_body_offset*vertical,"pelvisDropPixels":drop*vertical,"requestedDropPixels":requested_drop*vertical,"reachValid":not unreachable,"maxLengthError":max_length_error,"attachmentOffset":root_hip+up*12-proxy.position,"rootMotion":false,"status":"opt-in lower-body pilot, full natural gait unaccepted"}
+	if physical_plane: _last["contactTrace"]=_planner.publish_contact_trace()
 	return _last.duplicate(true)

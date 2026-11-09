@@ -36,6 +36,10 @@ var _turn_cosine:=.5
 var _physical_contract:=false
 var _transition_next:=true
 var _body_facing_transitions:=0
+var _raw_contact_events:Array=[]
+var _trace_epoch:=0
+var _trace_discarded:=0
+var _trace_overflow:=0
 const Traversal=preload("res://scripts/SurfaceTraversal.gd")
 const FootPlane=preload("res://scripts/NalaFootPlane.gd")
 const RestartBodyBudget=preload("res://scripts/NalaRestartBodyBudget.gd")
@@ -66,6 +70,36 @@ func note_body_facing_transition() -> void:
 
 func request_body_facing_handover() -> void:
 	if _physical_contract: _transition_next=true
+
+func begin_contact_frame(previous_pose_valid:bool) -> void:
+	if not _raw_contact_events.is_empty() or not previous_pose_valid:
+		_trace_discarded+=_raw_contact_events.size()
+		_trace_epoch+=1
+	_raw_contact_events.clear()
+	_trace_overflow=0
+
+func publish_contact_trace(final_pose_valid:bool=true) -> Dictionary:
+	if not final_pose_valid:
+		_trace_discarded+=_raw_contact_events.size()
+		_raw_contact_events.clear()
+		_trace_epoch+=1
+	var result:Dictionary={"producer":str(get_instance_id()),"epoch":_trace_epoch,"events":_raw_contact_events.duplicate(true),"finalPoseValidated":final_pose_valid,"intermediateContactPosesValidated":false,"validationScope":"final runtime-guard-enabled Lower only; transient contact anatomy and external mesh/triangle checks remain independent","overflow":_trace_overflow,"discardedBeforeValidation":_trace_discarded,"audioWired":false}
+	_raw_contact_events.clear()
+	return result
+
+func _record_contact(side:String,purpose:String,prior_plant:Vector3,body_at:Vector2,accepted_at:float) -> void:
+	if not _physical_contract: return
+	if _raw_contact_events.size()>=64:
+		_trace_overflow+=1
+		return
+	var entry:Dictionary=_feet[side]
+	var support:Dictionary={"type":"outside_connector","id":"","ordinal":-1}
+	for profile in _connectors:
+		var actual:=Traversal.connector_ground(profile,entry.logical)
+		if not actual.is_empty():
+			support={"type":str(profile.type),"id":str(profile.id),"ordinal":int(actual.stepIndex)+1 if str(profile.type)=="stairs" else -1,"height":actual.groundHeight,"progress":actual.progress}
+			break
+	_raw_contact_events.append({"stage":"raw_planner_transition","producer":str(get_instance_id()),"epoch":_trace_epoch,"sequence":_contact_count,"side":side,"purpose":purpose,"stepInitiation":str(entry.get("stepInitiation","unknown")),"previousPlant":prior_plant,"newPlant":Vector3(entry.plant),"plantDisplacement":prior_plant.distance_to(entry.plant),"logicalPlant":Vector2(entry.logical),"bodyLogical":body_at,"bodyHeight":_body_height,"acceptedDistance":accepted_at,"observedPhysicsFrame":Engine.get_physics_frames(),"observedProcessFrame":Engine.get_process_frames(),"exactContactPhysicsFrameKnown":false,"actualSupport":support,"plannedOrdinal":int(entry.get("treadPlan",{}).get("landingOrdinal",-1)),"sourceFootId":str(_landing_geometry.get(side,{}).get("id","unknown")),"supportedLandingAtTransition":bool(entry.get("landingGeometryValid",false)),"landingValidationScope":"original mask" if _landing_geometry.has(side) else "legacy support extents","contactPoseRendered":false})
 
 func legal_support(point:Vector2) -> bool:
 	return _legal(point)
@@ -394,6 +428,7 @@ func _begin(side:String,at:Vector2,hips:Dictionary,right:Vector3,resuming:bool=f
 	_swing=side
 	_distance=0.0
 	var entry:Dictionary=_feet[side]
+	entry["stepInitiation"]="resume_unfinished_settlement" if resuming else ("requested_short_handover" if _physical_contract and _transition_next else "steady_walk")
 	if _physical_contract and _transition_next:
 		var heading:=_world_motion(at,_heading).normalized()
 		var target_base:=_base(at,float(hips[side]),right)
@@ -449,6 +484,9 @@ func _begin(side:String,at:Vector2,hips:Dictionary,right:Vector3,resuming:bool=f
 	entry.grounded=false
 
 func _reset(at:Vector2,hips:Dictionary,right:Vector3) -> void:
+	_trace_discarded+=_raw_contact_events.size()
+	_raw_contact_events.clear()
+	_trace_epoch+=1
 	_feet.clear()
 	for side in ["left","right"]:
 		var point:=_safe(_base(at,float(hips[side]),right),at,side,_ground(at).z)
@@ -497,6 +535,7 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 			_distance=0.0
 			_landing_distance=_turn_distance
 			var entry:Dictionary=_feet[_swing]
+			entry["stepInitiation"]="heading_turn_reanchor"
 			if _physical_contract and (bool(entry.get("fixedTreadTarget",false)) or bool(entry.get("fixedRampTarget",false))):
 				var path:=_path_metrics(entry.from,entry.to)
 				var budget:Dictionary=_ramp_duration(entry.from,entry.to,entry.fromWorld,_turn_distance,_swing) if bool(entry.get("fixedRampTarget",false)) else _terrain_duration(entry.fromWorld,entry.toWorld,_turn_distance,float(path.total))
@@ -569,11 +608,13 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 				else: world.z=maxf(world.z+sin(u*PI)*TOE_CLEARANCE,floor_world.z+.02)
 				entry.sole=Vector3(floor_world.x,floor_world.y,world.z)
 			if u>=1:
+				var prior_plant:Vector3=entry.plant
 				entry.logical=target
 				entry.sole=entry.toWorld
 				entry.plant=entry.sole
 				entry.grounded=true
 				_contact_count+=1
+				_record_contact(_swing,"walking",prior_plant,sample,_accepted_distance-physical+consumed)
 				_next_side="left" if _swing=="right" else "right"
 				_landing_distance=_steady_distance
 				_swing=""
@@ -589,11 +630,13 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 		body_advanced=true
 		entry.sole=Vector3(entry.sole).move_toward(ground,maxf(0,delta)*24.0)
 		if Vector3(entry.sole).distance_to(ground)<.001 and settlement_ready:
+			var prior_plant:Vector3=entry.plant
 			entry.logical=entry.get("settlingTarget",entry.logical)
 			entry.sole=ground
 			entry.plant=ground
 			entry.grounded=true
 			_contact_count+=1
+			_record_contact(_swing,"settling",prior_plant,at,_accepted_distance)
 			_next_side="left" if _swing=="right" else "right"
 			_landing_distance=_steady_distance
 			_swing=""
@@ -608,4 +651,4 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 	return snapshot()
 
 func snapshot() -> Dictionary:
-	return {"actorLogical":_last_at,"bodyHeight":_body_height,"bodyTransferRate":maxf(_body_rate,_continuous_ground_rate),"continuousGroundRate":_continuous_ground_rate,"feet":_feet.duplicate(true),"swingSide":_swing,"swingDistance":_distance,"acceptedDistance":_accepted_distance,"stepDistance":_steady_distance,"landingLead":_landing_lead,"physicalContract":_physical_contract,"bodyFacingTransitions":_body_facing_transitions,"shortHandoverPending":_transition_next,"landingDistance":_landing_distance,"contacts":_contact_count,"discontinuityResets":_discontinuities,"actorRootMotion":false,"legacyFoleyChanged":false}
+	return {"actorLogical":_last_at,"bodyHeight":_body_height,"bodyTransferRate":maxf(_body_rate,_continuous_ground_rate),"continuousGroundRate":_continuous_ground_rate,"feet":_feet.duplicate(true),"swingSide":_swing,"swingDistance":_distance,"acceptedDistance":_accepted_distance,"stepDistance":_steady_distance,"landingLead":_landing_lead,"physicalContract":_physical_contract,"bodyFacingTransitions":_body_facing_transitions,"shortHandoverPending":_transition_next,"landingDistance":_landing_distance,"contacts":_contact_count,"discontinuityResets":_discontinuities,"rawContactEvents":_raw_contact_events.duplicate(true),"rawTraceEpoch":_trace_epoch,"rawTraceOverflow":_trace_overflow,"actorRootMotion":false,"legacyFoleyChanged":false}
