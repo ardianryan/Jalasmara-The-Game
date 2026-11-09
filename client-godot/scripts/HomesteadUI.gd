@@ -1,5 +1,6 @@
 extends CanvasLayer
 
+const HudArt=preload("res://scripts/HudSkin.gd")
 const BODY_FONT=preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2")
 var host: Node
 var inside := false
@@ -112,13 +113,19 @@ func _layout_page() -> void:
 	if not is_instance_valid(panel): return
 	var view:=get_viewport().get_visible_rect().size
 	var safe:=ViewportLayout.insets()
-	var top:=ceilf(60*preload("res://scripts/UiMetrics.gd").ratio(self))+safe.y
-	panel.position=Vector2(maxf(16+safe.x,(view.x-760)*.5),top)
-	panel.size=Vector2(minf(760,view.x-32-safe.x-safe.z),view.y-top-16-safe.w)
-	for label in panel.find_children("*","Label",true,false): label.add_theme_font_size_override("font_size",_ui_font())
-	for button in panel.find_children("*","Button",true,false):
-		button.custom_minimum_size.y=_ui_target()
-		button.add_theme_font_size_override("font_size",_ui_font())
+	var ratio:=preload("res://scripts/UiMetrics.gd").ratio(self)
+	var edge:=ceilf(16*ratio)
+	var top:=ceilf(60*ratio)+safe.y
+	var width:=minf(760*ratio,view.x-edge*2-safe.x-safe.z)
+	panel.position=Vector2(safe.x+(view.x-safe.x-safe.z-width)*.5,top)
+	panel.size=Vector2(width,view.y-top-edge-safe.w)
+	for label in panel.find_children("*","Label",true,false):
+		label.add_theme_font_size_override("font_size",maxi(_ui_font(),ceili(int(label.get_meta("base_font_size",16))*ratio)))
+	for control in panel.find_children("*","Button",true,false):
+		control.custom_minimum_size.y=_ui_target()
+		control.add_theme_font_size_override("font_size",_ui_font())
+		HudArt.apply_button(control)
+	if content!=null: content.add_theme_constant_override("separation",ceili(10*ratio))
 
 func _page(title: String) -> void:
 	if is_instance_valid(panel):
@@ -132,18 +139,7 @@ func _page(title: String) -> void:
 	var top:=ceilf(60*preload("res://scripts/UiMetrics.gd").ratio(self))+safe.y
 	panel.position=Vector2(maxf(16+safe.x,(viewport_size.x-760)*.5),top)
 	panel.size=Vector2(minf(760,viewport_size.x-32-safe.x-safe.z),viewport_size.y-top-16-safe.w)
-	var paper:=StyleBoxFlat.new()
-	paper.bg_color=Color("f1e1bc")
-	paper.border_color=Color("654733")
-	paper.set_border_width_all(3)
-	paper.shadow_color=Color("241e17")
-	paper.shadow_size=0
-	paper.shadow_offset=Vector2(0,5)
-	paper.content_margin_left=22
-	paper.content_margin_right=22
-	paper.content_margin_top=18
-	paper.content_margin_bottom=18
-	panel.add_theme_stylebox_override("panel",paper)
+	panel.add_theme_stylebox_override("panel",HudArt.panel("paper"))
 	root_control.add_child(panel)
 	var scroll:=ScrollContainer.new()
 	scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
@@ -156,11 +152,13 @@ func _page(title: String) -> void:
 	var heading:=Label.new()
 	heading.text=title
 	heading.add_theme_color_override("font_color",Color("302d2a"))
-	heading.add_theme_font_size_override("font_size",maxi(23,_ui_font()))
+	heading.set_meta("base_font_size",23)
+	heading.add_theme_font_size_override("font_size",maxi(ceili(23*preload("res://scripts/UiMetrics.gd").ratio(self)),_ui_font()))
 	heading.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	content.add_child(heading)
 	message_label=_text("")
 	message_label.visible=false
+	_layout_page()
 
 func _text(value: String) -> Label:
 	var label:=Label.new()
@@ -180,23 +178,7 @@ func _button(value: String,action: Callable) -> Button:
 	button.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	button.add_theme_font_override("font",BODY_FONT)
 	button.add_theme_font_size_override("font_size",_ui_font())
-	button.add_theme_color_override("font_color",Color("f4ebd9"))
-	button.add_theme_color_override("font_hover_color",Color("fff4d8"))
-	button.add_theme_color_override("font_focus_color",Color("fff4d8"))
-	for state_name in ["normal","hover","pressed","disabled","focus"]:
-		var style:=StyleBoxFlat.new()
-		style.bg_color=Color("3d2b1f") if state_name=="normal" else Color("57402b") if state_name=="hover" else Color("241b15") if state_name=="pressed" else Color("6a6151")
-		style.border_color=Color("e3b66d") if state_name in ["hover","focus"] else Color("a77943")
-		style.set_border_width_all(2)
-		style.content_margin_left=14
-		style.content_margin_right=14
-		style.shadow_color=Color("241b15")
-		style.shadow_size=0
-		style.shadow_offset=Vector2(0,1 if state_name=="pressed" else 4)
-		if state_name=="focus":
-			style.bg_color=Color.TRANSPARENT
-			style.set_border_width_all(4)
-		button.add_theme_stylebox_override(state_name,style)
+	HudArt.apply_button(button)
 	button.pressed.connect(action)
 	var first_button:=true
 	for child in content.get_children():
@@ -236,6 +218,7 @@ func open_for(id: String) -> void:
 		"inventory": _inventory()
 		"display": _display()
 		"market": _market()
+		"fish_pen": _fish_pen()
 		"balai": _balai()
 		"kedai_stock": _kedai_stock()
 		"wira":
@@ -295,7 +278,10 @@ func _inventory() -> void:
 	_page("Bekal Nala")
 	for item in GameState.player.get("inventory",[]):
 		_text("%s · %d bintang · %d buah" % [GameState.fragment_name(str(item.fragmentId)),int(item.stars),int(item.quantity)])
-	_text("Bibit kangkung: %d · Hasil panen: %d · Stok kedai: %d" % [_quantity("seeds","benih_kangkung"),_quantity("produce","kangkung"),_quantity("pantry","kangkung")])
+	for crop in _crops():
+		_text("%s · Bibit %d · Panen %d · Kedai %d" % [crop.name,_quantity("seeds",str(crop.seedId)),_quantity("produce",str(crop.id)),_quantity("pantry",str(crop.id))])
+	if not GameState.homestead_definitions.get("fishPen",{}).is_empty():
+		_text("Ikan seruni hidup untuk indukan: %d · Hasil budidaya %d · Kedai %d" % [_quantity("liveCatch","reef_seruni"),_quantity("produce","ikan_seruni"),_quantity("pantry","ikan_seruni")])
 	if GameState.player.get("inventory",[]).is_empty(): _text("Belum ada fragmen yang dibawa pulang.")
 
 func _chest() -> void:
@@ -321,6 +307,14 @@ func _display() -> void:
 func _quantity(group: String,item_id: String) -> int:
 	return int(GameState.homestead.get(group,{}).get(item_id,0))
 
+func _crops() -> Array:
+	var definitions:=GameState.homestead_definitions
+	if definitions.has("crops"): return definitions.crops
+	return [definitions.crop] if definitions.has("crop") else []
+
+func _servings() -> Dictionary:
+	return GameState.homestead_definitions.get("servings",{"kangkung":{"itemId":"kangkung","name":"Kangkung kebun"}})
+
 func _plot(plot_id: String) -> void:
 	_page("Rakit Kebun · Petak "+plot_id.trim_prefix("plot_"))
 	if not GameState.homestead.get("permit",false):
@@ -333,29 +327,65 @@ func _plot(plot_id: String) -> void:
 		_text("Petak belum dapat dimuat. Tutup panel dan coba lagi setelah tersambung.")
 		return
 	if str(plot.get("stage","empty"))=="empty":
-		_text("Petak kosong. Bibit kangkung tersedia: %d." % _quantity("seeds","benih_kangkung"))
-		if _quantity("seeds","benih_kangkung")>0:
-			_button("Tanam satu bibit kangkung",func(): _perform("plant",{"plotId":plot_id,"itemId":"benih_kangkung"}))
-		else: _text("Bibit dapat dibeli di pasar Mbok Ratih.")
+		_text("Petak kosong. Pilih bibit yang dibawa Nala.")
+		var available:=false
+		for crop in _crops():
+			var seed_id:=str(crop.seedId)
+			var count:=_quantity("seeds",seed_id)
+			_text("%s · %d bibit · Tumbuh %d hari kalender dengan perawatan." % [crop.name,count,int(crop.growthDays)])
+			if count>0:
+				available=true
+				_button("Tanam "+str(crop.name),func(): _perform("plant",{"plotId":plot_id,"itemId":seed_id}))
+		if not available: _text("Bibit dapat dibeli di pasar Mbok Ratih.")
 	else:
+		var crop_name:="Tanaman kebun"
+		for crop in _crops():
+			if str(crop.id)==str(plot.get("cropId","")): crop_name=str(crop.name)
 		var stage:=str({"seed":"Bibit","sprout":"Tunas","young":"Tanaman muda","ready":"Siap panen"}.get(str(plot.get("stage","")),str(plot.get("stage","Tumbuh"))))
-		_text("Kangkung · %s · Pertumbuhan %d hari." % [stage,int(plot.get("growthDays",0))])
+		_text("%s · %s · Pertumbuhan %d hari." % [crop_name,stage,int(plot.get("growthDays",0))])
 		_text("Kebutuhan air hari ini terpenuhi." if plot.get("watered",false) else "Petak perlu disiram agar pertumbuhan berikutnya tidak tertunda.")
-		if plot.get("ready",false): _button("Panen kangkung",func(): _perform("harvest",{"plotId":plot_id}))
+		if plot.get("ready",false): _button("Panen "+crop_name,func(): _perform("harvest",{"plotId":plot_id}))
 		elif not plot.get("watered",false): _button("Siram petak",func(): _perform("water",{"plotId":plot_id}))
-	_text("Hasil panen dibawa ke Kedai Waras sebagai bahan pelengkap. Fragmen pengetahuan untuk resep cerita tetap diperlukan.")
+	_text("Hasil panen melengkapi racikan Kedai Waras. Fragmen pengetahuan untuk resep cerita tetap diperlukan.")
 
 func _market() -> void:
 	_page("Pasar Tambakbaya · Bibit Ratih")
-	_text("Koin Nala: %d · Bibit dimiliki: %d." % [int(GameState.player.get("coins",0)),_quantity("seeds","benih_kangkung")])
+	_text("Koin Nala: %d." % int(GameState.player.get("coins",0)))
 	var market: Dictionary=GameState.homestead_definitions.get("market",{})
-	var price:=int(market.get("price",0))
 	var bought:=int(GameState.homestead.get("market",{}).get("bought",0)) if int(GameState.homestead.get("market",{}).get("day",0))==int(GameState.calendar.get("calendarDay",1)) else 0
 	var remaining:=maxi(0,int(market.get("dailyStock",0))-bought)
-	_text("Satu bibit: %d koin · Sisa persediaan hari ini: %d." % [price,remaining])
-	_text("Bibit dipakai pada petak kebun pribadi setelah memperoleh izin Lurah.")
-	var purchase:=_button("Beli satu bibit kangkung",func(): _perform("buy_seed",{"itemId":"benih_kangkung","qty":1}))
-	purchase.disabled=market.is_empty() or remaining<=0 or int(GameState.player.get("coins",0))<price
+	_text("Sisa persediaan bibit bersama hari ini: %d. Bibit dipakai setelah memperoleh izin kebun Lurah." % remaining)
+	for crop in _crops():
+		var seed_id:=str(crop.seedId)
+		var price:=int(crop.get("price",market.get("price",0)))
+		_text("%s · %d koin · Dibawa %d bibit." % [crop.name,price,_quantity("seeds",seed_id)])
+		var purchase:=_button("Beli satu bibit "+str(crop.name),func(): _perform("buy_seed",{"itemId":seed_id,"qty":1}))
+		purchase.disabled=market.is_empty() or remaining<=0 or int(GameState.player.get("coins",0))<price
+
+func _fish_pen() -> void:
+	_page("Keramba Nala · Ikan Seruni")
+	var definition:Dictionary=GameState.homestead_definitions.get("fishPen",{})
+	var pen:Dictionary=GameState.homestead.get("fishPen",{})
+	if definition.is_empty():
+		_text("Data keramba belum tersambung. Coba kembali setelah desa selesai dimuat.")
+		return
+	if not pen.get("unlocked",false):
+		_text("Keramba dibuka setelah izin kebun diperoleh dan cerita mencapai siklus %d." % int(definition.unlockStoryDay))
+		return
+	var parents:=int(definition.parentCount)
+	var live:=_quantity("liveCatch",str(definition.speciesId))
+	_text("Indukan %d/%d · Ikan hidup dibawa %d · Siap dipanen %d/%d." % [int(pen.get("breeders",0)),parents,live,int(pen.get("offspring",0)),int(definition.capacity)])
+	if int(pen.get("breeders",0))<parents:
+		_text("Bawa pulang %d ikan seruni hidup berkualitas tiga bintang dari penyelaman. Ikan yang belum berhasil diekstraksi belum dapat menjadi indukan." % parents)
+		var stock:=_button("Masukkan %d ikan hidup sebagai indukan" % parents,func(): _perform("stock_pen",{"itemId":str(definition.speciesId),"qty":parents}))
+		stock.disabled=live<parents
+	else:
+		_text("Pertumbuhan %d/%d hari pemberian pakan. Kapasitas anakan %d ikan." % [int(pen.get("progressDays",0)),int(definition.growthDays),int(definition.capacity)])
+		var fed:=bool(pen.get("fed",false))
+		var feed:=_button("Pakan hari ini sudah diberikan" if fed else "Beri pakan · %d koin" % int(definition.feedCost),func(): _perform("feed_pen"))
+		feed.disabled=fed or int(GameState.player.get("coins",0))<int(definition.feedCost)
+	if pen.get("ready",false): _button("Panen satu ikan budidaya",func(): _perform("harvest_pen",{"qty":1}))
+	_text("Budidaya mengikuti pergantian hari kalender yang tersimpan. Hasilnya dapat dititipkan sebagai pelengkap di Kedai Waras.")
 
 func _balai() -> void:
 	_page("Balai Wirabhumi · Izin Kebun")
@@ -377,11 +407,13 @@ func _balai() -> void:
 	if GameState.homestead.get("pendingStoryAdvance",false): _text("Pelayanan kedai telah selesai. Pulang ke Griya Sasmita dan tidur untuk melanjutkan pagi cerita.")
 
 func _kedai_stock() -> void:
-	_page("Kedai Waras · Bahan Kebun")
-	_text("Hasil panen dibawa: %d · Stok pelengkap kedai: %d." % [_quantity("produce","kangkung"),_quantity("pantry","kangkung")])
-	_text("Titipkan satu hasil panen untuk dipakai pada penyajian. Bahan kebun melengkapi racikan; fragmen pengetahuan yang tepat tetap dibutuhkan.")
-	if _quantity("produce","kangkung")>0:
-		_button("Titipkan satu hasil panen",func(): _perform("stock_kedai",{"itemId":"kangkung","qty":1}))
+	_page("Kedai Waras · Bahan Kebun dan Keramba")
+	_text("Titipkan hasil kebun atau budidaya untuk dipakai pada penyajian. Fragmen pengetahuan yang tepat tetap dibutuhkan.")
+	for item in _servings().values():
+		var item_id:=str(item.itemId)
+		_text("%s · Dibawa %d · Stok kedai %d." % [item.name,_quantity("produce",item_id),_quantity("pantry",item_id)])
+		if _quantity("produce",item_id)>0:
+			_button("Titipkan satu "+str(item.name),func(): _perform("stock_kedai",{"itemId":item_id,"qty":1}))
 
 func _sync_position() -> bool:
 	if not inside or not is_instance_valid(host.player): return true

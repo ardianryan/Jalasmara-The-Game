@@ -1,0 +1,11 @@
+# Garden and fish-pen controls
+
+Candidate follows authoritative village contract f74bc55 (local dependency fb33b3c). No API/shared schema, reward, growth rule or economy was changed by this UI package. It is separate from the unfinished night-tray experiment.
+
+HomesteadUI now uses the existing Bahari paper/button artwork and physical text/action metrics. Market and plots read both crop definitions and prices; inventory and Kedai stocking include kangkung, ginger and cultivated seruni. The fish-pen page shows the server's unlock, live-parent count, growth/feed state and offspring. Stocking needs the actual live-catch count, feeding respects current coins and server-fed state, and harvest appears only when ready. Main discovers the authored pen interaction through the same nearby-object path as garden plots and other services. Existing expectedRevision/idempotency/retry code is unchanged.
+
+Actual focused checks passed on Godot4.7.2 Compatibility: homestead-options (real controls, capture-only operation payloads), existing homestead-ui (844×390,667×375,390×844; body≥16px/actions≥56px; Tab/Enter, scroll/focus, busy/pending recovery and pause), and existing Kedai result regression. TypeScript checking passed with the authoritative contract dependency. Logs are in Jalasmara-overnight-hud-perf/.runtime/ui-night-homestead-options-accepted.log, ui-night-homestead-ui-bounds.log and ui-night-kedai-result-layout-bounds.log.
+
+The first options fixture inherited HomesteadUI before autoload registration and failed to resolve GameState. It now loads a small test support subclass after startup; clean runs passed without script/engine errors. The subclass captures actual button action/extra dictionaries and performs no network call. It is UI wiring proof, not a claim of real catches, breeding, rewards or browser transactions. Native world/pen alignment remains the village lane's evidence. Actual browser garden/fish-pen transactions and final combined runtime checks are pending integrator export.
+
+No new images, library, upstream tool or license change. Existing project art retains its asset license. GPU was released after every focused window. Night layout work remains separately uncommitted because a strengthened mobile context-visibility assertion found scrolling that hides the customer; it must be fixed before acceptance.

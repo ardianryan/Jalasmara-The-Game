@@ -554,6 +554,9 @@ func _find_nearby() -> void:
 		for plot in home.get("gardenPlots",[]):
 			var at: Dictionary=plot.get("interaction",{})
 			objects.append({"id":str(plot.id),"kind":"homestead","name":"Petak Kebun Nala","x":at.get("x",0),"y":at.get("y",0),"radius":75.0})
+		var pen:Dictionary=home.get("fishPen",{})
+		if pen.get("interaction") is Dictionary:
+			objects.append({"id":"fish_pen","kind":"homestead","name":"Keramba Nala","x":pen.interaction.x,"y":pen.interaction.y,"radius":75.0})
 		if home.get("permitBoard") is Dictionary:
 			objects.append({"id":"balai","kind":"homestead","name":"Papan Balai Wirabhumi","x":home.permitBoard.x,"y":home.permitBoard.y,"radius":100.0})
 		if home.get("market") is Dictionary:
