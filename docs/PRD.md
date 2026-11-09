@@ -29,6 +29,8 @@ Nala datang ke Kota Apung Bandar Hujung, menjelajah desa/hutan/gua daratan, meny
 
 Arahan terbaru memajukan [paket rumah/gapura06-B2](plans/06b2-keselarasan-rumah-dan-gapura.md): rumah warga mengikuti sistem modular3D Griya; gapura dan jalan memakai orientasi/bukaan/collider yang konsisten. Kerjakan penerimaan lokalnya secara terisolasi, sambil mempertahankan blocker startup publik yang belum selesai.
 
+Koreksi berikutnya dalam paket yang sama: tepi pulau dan kenaikan terrain berupa batu alami yang menyambung; hutan sudah terlihat dari desa meski perpindahan tetap loading; kaki naik/turun mengikuti pijakan tangga sebenarnya. Warna mengikuti gambar login/loading yang cerah dengan ambience sejuk dan cahaya hangat. Tekstur bintik yang membuat rumah/karakter/terrain tampak burik bukan target finishing; perbaiki sumber noise dan palet, bukan sekadar memperbesar saturasi layar.
+
 1. Tutup penerimaan publik paket aktif06-B: diagnosis startupHTTP2 dan targetcanopyharness setelah kamera kiri. Runtime46world/82API sudah lolos, tetapi hasil HTTP1 diagnostik bukan bukti browser default. Lihat [diagnosis startup](reviews/06p-public-startup-transport.md).
 2. Pertahankan kamera kiri yang sudah diterapkan bersama invers input/proyeksi; lanjutkan alignment rumah selain Griya melalui kandidat layout10 dan native penerimaan. Jangan mengubah rotasi kamera sendirian.
 3. Matangkan pilot Ujang, Darmi dan Sari sebelum menggandakan rig ke seluruh warga. Pertahankan bukti visual walking/turn, bukan angka socket saja.

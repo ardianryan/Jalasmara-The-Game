@@ -1,3 +1,6 @@
+import { createLandGateway, type LandGateway } from "./gateways.ts";
+import { decorateVillageGround } from "./village-ground.ts";
+
 export type LandPoint = readonly [number, number];
 export type LandMaterial =
   "dirt" | "grass" | "sand" | "stone" | "dock" | "bridge" | "wood";
@@ -56,6 +59,7 @@ export type LandMap = {
   terraces: { id: string; elevation: number }[];
   routes: LandPoint[][];
   shelters?: LandShelter[];
+  gateways?: LandGateway[];
 };
 export type LandShelter = {
   id: string;
@@ -111,6 +115,69 @@ const obstacle = (
   variant,
   elevation,
 });
+const rectangularHouse = (
+  id: string,
+  x: number,
+  y: number,
+  width: number,
+  depth: number,
+  height3d: number,
+  variant: string,
+  elevation: number,
+): LandObstacle =>
+  obstacle(
+    id,
+    "house",
+    x,
+    y,
+    width,
+    depth,
+    height3d,
+    variant,
+    elevation,
+    rectangle(x, y, width, depth),
+  );
+const alignedLegacyHouse = (
+  id: string,
+  x: number,
+  y: number,
+  width: number,
+  depth: number,
+  height3d: number,
+  variant: string,
+  elevation: number,
+): LandObstacle => {
+  const legacy = obstacle(
+    id,
+    "house",
+    x,
+    y,
+    width,
+    depth,
+    height3d,
+    variant,
+    elevation,
+  );
+  const [a, b, , d] = legacy.footprint;
+  // This is the persisted map embedding scale, not the current camera elevation.
+  const embeddingCos = Math.cos((55 * Math.PI) / 180);
+  const along = [b[0] - a[0], (b[1] - a[1]) / embeddingCos];
+  const outward = [d[0] - a[0], (d[1] - a[1]) / embeddingCos];
+  const area = Math.abs(along[0] * outward[1] - along[1] * outward[0]);
+  const aspect = Math.hypot(...along) / Math.hypot(...outward);
+  const alignedWidth = Math.sqrt(area * aspect);
+  const alignedDepth = Math.sqrt(area / aspect) * embeddingCos;
+  return rectangularHouse(
+    id,
+    x + (width - alignedWidth) / 2,
+    y + (depth - alignedDepth) / 2,
+    alignedWidth,
+    alignedDepth,
+    height3d,
+    variant,
+    elevation,
+  );
+};
 const floor = (
   id: string,
   polygon: LandPoint[],
@@ -131,10 +198,11 @@ function strip(a: LandPoint, b: LandPoint, width: number): LandPoint[] {
 }
 function miteredRouteSegments(
   route: readonly LandPoint[],
-  width: number,
+  width: number | readonly number[],
 ): LandPoint[][] {
   if (route.length < 2) return [];
-  const half = width / 2;
+  if (typeof width !== "number" && width.length !== route.length)
+    throw new Error("Trail widths must match its route points");
   const normals: [number, number][] = [];
   for (let i = 0; i < route.length - 1; i++) {
     const a = route[i],
@@ -144,6 +212,7 @@ function miteredRouteSegments(
   }
   const offsets: [number, number][] = [];
   for (let i = 0; i < route.length; i++) {
+    const half = (typeof width === "number" ? width : width[i]) / 2;
     if (i === 0) {
       offsets.push([normals[0][0] * half, normals[0][1] * half]);
     } else if (i === route.length - 1) {
@@ -447,7 +516,7 @@ hubRoutes.push(
   ],
   [
     [940, 310],
-    [760, 350],
+    [760, 325],
     [640, 350],
     [640, 320],
     [465, 320],
@@ -481,21 +550,10 @@ for (const [routeIndex, route] of hubRoutes.slice(-4).entries()) {
   }
 }
 const hubObstacles: LandObstacle[] = [
-  obstacle("kedai_waras", "house", 360, 420, 400, 175, 155, "thatch", 2),
-  obstacle("galangan_beno", "house", 1090, 390, 420, 170, 125, "workshop", 2),
-  obstacle("pos_cakrawala", "house", 1840, 140, 300, 105, 135, "metal", 3),
-  obstacle(
-    "griya_sasmita",
-    "house",
-    78,
-    420,
-    164,
-    145,
-    122,
-    "sasmita",
-    2,
-    rectangle(78, 420, 164, 145),
-  ),
+  alignedLegacyHouse("kedai_waras", 360, 420, 400, 175, 155, "thatch", 2),
+  alignedLegacyHouse("galangan_beno", 1090, 390, 420, 170, 125, "workshop", 2),
+  alignedLegacyHouse("pos_cakrawala", 1840, 140, 300, 105, 135, "metal", 3),
+  rectangularHouse("griya_sasmita", 78, 420, 164, 145, 122, "sasmita", 2),
   obstacle("home_plot_1", "garden", 65, 760, 80, 70, 24, "home_plot", 2),
   obstacle("home_plot_2", "garden", 165, 760, 80, 70, 24, "home_plot", 2),
   obstacle(
@@ -520,10 +578,10 @@ const hubObstacles: LandObstacle[] = [
     "bridge_rail",
     2,
   ),
-  obstacle("balai_lurah", "house", 750, 120, 380, 145, 165, "balai", 2),
-  obstacle("rumah_ratih", "house", 350, 150, 230, 125, 108, "home_pelana", 2),
-  obstacle("rumah_sari", "house", 1210, 120, 230, 125, 112, "home_limas", 2),
-  obstacle("rumah_tedi", "house", 920, 850, 170, 90, 100, "home_pelana", 1),
+  alignedLegacyHouse("balai_lurah", 750, 120, 380, 145, 165, "balai", 2),
+  alignedLegacyHouse("rumah_ratih", 350, 150, 230, 125, 108, "home_pelana", 2),
+  alignedLegacyHouse("rumah_sari", 1210, 120, 230, 125, 112, "home_limas", 2),
+  alignedLegacyHouse("rumah_tedi", 920, 850, 170, 90, 100, "home_pelana", 1),
   obstacle("kebun_darmi", "garden", 1810, 485, 330, 180, 34, "raised_beds", 2),
   obstacle("batu_pelataran", "rock", 760, 835, 105, 65, 70, "limestone", 1),
   obstacle("palm_lower", "tree", 1530, 1020, 34, 34, 190, "palm", 1),
@@ -836,7 +894,7 @@ for (const [i, x, y] of [
 export const LAND_MAPS: Record<"hub" | "forest", LandMap> = {
   hub: {
     id: "hub",
-    layoutVersion: 9,
+    layoutVersion: 10,
     landmass: [
       [240, 80],
       [680, 60],
@@ -889,7 +947,7 @@ export const LAND_MAPS: Record<"hub" | "forest", LandMap> = {
   },
   forest: {
     id: "forest",
-    layoutVersion: 5,
+    layoutVersion: 6,
     width: 2400,
     height: 1600,
     spawn: { x: 200, y: 1320 },
@@ -1100,15 +1158,8 @@ for (const [
   );
 }
 const hubRidgeTrail = miteredRouteSegments(
-  [
-    [1780, 390],
-    [1780, 345],
-    [1950, 295],
-    [2180, 295],
-    [2282, 225],
-    [2282, 82],
-  ],
-  92,
+  hubRoutes[7].slice(2),
+  [92, 92, 92, 52, 52],
 );
 for (const [index, segment] of hubRidgeTrail.entries()) {
   LAND_MAPS.hub.surfaces.push({
@@ -1116,6 +1167,45 @@ for (const [index, segment] of hubRidgeTrail.entries()) {
     walkable: false,
   });
 }
+const hubGatewayRoad = LAND_MAPS.hub.surfaces.find(
+  (surface) => surface.id === "hub_ridge_trail_3",
+)!;
+LAND_MAPS.hub.gateways = [
+  createLandGateway({
+    id: "hub_forest_gate",
+    label: "HubForestGate",
+    elevation: 3,
+    route: { segment: [[2295, 230], [2295, 125]], fraction: 95 / 105 },
+    roadSurfaceId: hubGatewayRoad.id,
+    roadPolygon: hubGatewayRoad.polygon,
+    colliderIds: ["forest_gate_west", "forest_gate_east"],
+    halfSpan: 42.5,
+  }),
+];
+const forestGatewayRoad = LAND_MAPS.forest.surfaces.find(
+  (surface) => surface.id === "forest_trail_0_1",
+)!;
+const forestGateway = createLandGateway({
+  id: "forest_entry_gate",
+  label: "ForestEntryGate",
+  elevation: 0,
+  route: { segment: [[85, 1378], [200, 1320]], fraction: 0.65 },
+  roadSurfaceId: forestGatewayRoad.id,
+  roadPolygon: forestGatewayRoad.polygon,
+  colliderIds: ["forest_entry_gate_post_0", "forest_entry_gate_post_1"],
+});
+LAND_MAPS.forest.gateways = [forestGateway];
+for (const [index, footprint] of forestGateway.postFootprints.entries()) {
+  const xs = footprint.map((point) => point[0]);
+  const ys = footprint.map((point) => point[1]);
+  LAND_MAPS.forest.obstacles.push(obstacle(
+    forestGateway.colliderIds[index], "fence", Math.min(...xs), Math.min(...ys),
+    Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys),
+    118, "gateway_post", forestGateway.elevation, footprint,
+  ));
+}
+LAND_MAPS.hub = decorateVillageGround(LAND_MAPS.hub);
+
 export function landDistanceToSegment(
   point: LandPosition,
   a: LandPoint,
@@ -1231,14 +1321,17 @@ export function nearestSafeLandPoint(
   map: LandMap,
   point: LandPosition,
 ): LandPosition {
-  if (isLandWalkable(map, point)) return { x: point.x, y: point.y };
+  // Recovery must also clear LandCollision.WALK_CLEARANCE, not only the API's 12px body.
+  const recoveryClearance = 13;
+  if (isLandWalkable(map, point, recoveryClearance))
+    return { x: point.x, y: point.y };
   for (let radius = 16; radius <= 2600; radius += 16)
     for (let i = 0; i < 32; i++) {
       const candidate = {
         x: point.x + Math.cos((i * Math.PI) / 16) * radius,
         y: point.y + Math.sin((i * Math.PI) / 16) * radius,
       };
-      if (isLandWalkable(map, candidate)) return candidate;
+      if (isLandWalkable(map, candidate, recoveryClearance)) return candidate;
     }
   return { ...map.spawn };
 }

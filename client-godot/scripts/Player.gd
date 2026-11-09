@@ -21,6 +21,7 @@ var bubbles: Array[Dictionary] = []
 var wet_marks: Array[Dictionary] = []
 var outfit := "daily"
 var equipment: Dictionary = {}
+var _traversal_bob := 0.0
 func _ready() -> void:
 	var collision := CollisionShape2D.new()
 	var shape := CapsuleShape2D.new()
@@ -97,11 +98,13 @@ func _physics_process(delta: float) -> void:
 		moved_velocity = Vector2.ZERO
 	if not in_water:
 		surface_traversal.set_reduced_motion(EnvironmentState.reduced_motion)
-		traversal_state = surface_traversal.sample(position,moved_velocity,delta)
+		traversal_state = surface_traversal.sample(position,moved_velocity,delta,frozen or ViewportLayout.host_paused or EnvironmentState.clock_paused)
 		land_path.record(position)
 	else:
 		traversal_state = {}
 	if swim_sprite:
+		swim_sprite.position.y -= _traversal_bob
+		_traversal_bob = 0.0
 		# The dock's changing arch separates the village from the dive ladder.
 		# Hysteresis prevents swapping repeatedly while standing in the curtain.
 		if in_water:
@@ -117,7 +120,9 @@ func _physics_process(delta: float) -> void:
 		var visual_velocity: Vector2=visual_motion_transform.call(previous,position,delta) if not in_water and visual_motion_transform.is_valid() else moved_velocity
 		swim_sprite.set_locomotion(moved_velocity,delta,visual_velocity)
 		swim_sprite.animate(moved_velocity.length()>10,in_water,direction,walk_time)
-		if not in_water: swim_sprite.position.y += float(traversal_state.get("footBob",0.0))
+		if not in_water:
+			_traversal_bob = float(traversal_state.get("footBob",0.0))
+			swim_sprite.position.y += _traversal_bob
 		swim_sprite.visible = not hybrid_visual
 	queue_redraw()
 func _draw() -> void:

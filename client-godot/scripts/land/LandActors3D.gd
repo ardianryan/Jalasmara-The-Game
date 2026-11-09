@@ -54,7 +54,7 @@ func _frame(texture: Texture2D, rect: Rect2) -> AtlasTexture:
 		_frames[key]=frame
 	return _frames[key]
 
-func _sprite(key: String, texture: Texture2D, feet: Vector2, dimensions: Vector2, rise: float, flip:=false, authored_pivot_y := -1.0) -> Sprite3D:
+func _sprite(key: String, texture: Texture2D, feet: Vector2, dimensions: Vector2, rise: float, flip:=false, authored_pivot_y := -1.0, visual_lift := 0.0) -> Sprite3D:
 	var sprite: Sprite3D=sprites.get(key)
 	if sprite==null:
 		sprite=Sprite3D.new()
@@ -88,9 +88,13 @@ func _sprite(key: String, texture: Texture2D, feet: Vector2, dimensions: Vector2
 	var height: float=renderer.ground_height(feet)
 	var up: Vector3=renderer.camera_up()
 	var forward: Vector3=renderer.camera_forward()
-	sprite.position=renderer.map_point(feet,height)+up*rise-forward*8
-	var projected: Vector2=renderer.logical_on_height(sprite.position-up*rise,height)
+	var lift:=Vector3(0,0,visual_lift)
+	var support: Vector3=renderer.ground_point(feet) if renderer.has_method("ground_point") else renderer.map_point(feet,height)
+	sprite.position=support+up*rise-forward*8+lift
+	var projected: Vector2=renderer.logical_on_height(sprite.position-up*rise-lift,height)
 	max_foot_error=maxf(max_foot_error,projected.distance_to(feet))
+	if key=="Nala":
+		counts["playerGrounding"]={"height":height,"visualLift":visual_lift,"support":[feet.x,feet.y],"visualFoot":[sprite.position.x-up.x*rise+forward.x*8,sprite.position.y-up.y*rise+forward.y*8,sprite.position.z-up.z*rise+forward.z*8],"rootMotion":false}
 	_shadow(key,feet,height,dimensions.x*.18)
 	sprite.modulate=_readable_tint(feet,height)
 	sprite.flip_h=flip
@@ -119,7 +123,8 @@ func _shadow(key: String,feet: Vector2,height: float,radius: float) -> void:
 		mesh.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		add_child(mesh)
 		_shadows[key]=mesh
-	mesh.position=renderer.map_point(feet,height+.35)
+	var support: Vector3=renderer.ground_point(feet) if renderer.has_method("ground_point") else renderer.map_point(feet,height)
+	mesh.position=support+renderer.map_point(feet,height+.35)-renderer.map_point(feet,height)
 
 func update_actors(delta: float) -> void:
 	if not is_instance_valid(actor): return
@@ -148,7 +153,9 @@ func update_actors(delta: float) -> void:
 			var cell:=visual.texture.get_size()/Vector2(visual.hframes,visual.vframes)
 			var rect:=Rect2(Vector2(visual.frame%visual.hframes,floori(float(visual.frame)/visual.hframes))*cell,cell)
 			var pivot: Vector2=visual.get_land_pivot() if visual.has_method("get_land_pivot") else Vector2.ZERO
-			var nala := _sprite("Nala",_frame(visual.texture,rect),actor.position,cell*visual.scale.abs(),-visual.position.y,visual.flip_h,pivot.y if pivot!=Vector2.ZERO else -1.0)
+			var traversal: Dictionary=actor.get("traversal_state") if "traversal_state" in actor else {}
+			var lift:=clampf(float(traversal.get("bodyLift",0)),0,1.6)
+			var nala := _sprite("Nala",_frame(visual.texture,rect),actor.position,cell*visual.scale.abs(),-visual.position.y,visual.flip_h,pivot.y if pivot!=Vector2.ZERO else -1.0,lift)
 			var gear: Dictionary=visual.get_equipment_state() if visual.has_method("get_equipment_state") else {}
 			_update_equipment(nala,gear,false,visual.flip_h)
 			counts.player=1

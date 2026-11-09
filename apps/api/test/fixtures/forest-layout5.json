@@ -1,0 +1,2414 @@
+{
+  "id": "forest",
+  "layoutVersion": 5,
+  "width": 2400,
+  "height": 1600,
+  "spawn": {
+    "x": 200,
+    "y": 1320
+  },
+  "surfaces": [
+    {
+      "id": "forest_west_land",
+      "polygon": [
+        [
+          80,
+          120
+        ],
+        [
+          1320,
+          120
+        ],
+        [
+          1350,
+          290
+        ],
+        [
+          1310,
+          470
+        ],
+        [
+          1340,
+          650
+        ],
+        [
+          1320,
+          820
+        ],
+        [
+          1340,
+          1000
+        ],
+        [
+          1370,
+          1180
+        ],
+        [
+          1340,
+          1330
+        ],
+        [
+          1320,
+          1480
+        ],
+        [
+          120,
+          1480
+        ],
+        [
+          80,
+          1350
+        ]
+      ],
+      "material": "grass",
+      "elevation": 0,
+      "priority": 0
+    },
+    {
+      "id": "forest_east_land",
+      "polygon": [
+        [
+          1580,
+          120
+        ],
+        [
+          2340,
+          120
+        ],
+        [
+          2350,
+          1430
+        ],
+        [
+          1560,
+          1430
+        ],
+        [
+          1580,
+          1280
+        ],
+        [
+          1600,
+          1130
+        ],
+        [
+          1570,
+          1020
+        ],
+        [
+          1530,
+          890
+        ],
+        [
+          1560,
+          710
+        ],
+        [
+          1560,
+          620
+        ],
+        [
+          1590,
+          450
+        ],
+        [
+          1550,
+          280
+        ]
+      ],
+      "material": "grass",
+      "elevation": 0,
+      "priority": 0
+    },
+    {
+      "id": "bridge_upper",
+      "polygon": [
+        [
+          1303.6585455788077,
+          714.8781836821134
+        ],
+        [
+          1296.3414544211923,
+          605.1218163178866
+        ],
+        [
+          1596.3414544211923,
+          585.1218163178866
+        ],
+        [
+          1603.6585455788077,
+          694.8781836821134
+        ]
+      ],
+      "material": "bridge",
+      "elevation": 0,
+      "priority": 30,
+      "bridgeId": "bridge_upper"
+    },
+    {
+      "id": "bridge_lower",
+      "polygon": [
+        [
+          1310,
+          1135
+        ],
+        [
+          1310,
+          1025
+        ],
+        [
+          1620,
+          1025
+        ],
+        [
+          1620,
+          1135
+        ]
+      ],
+      "material": "bridge",
+      "elevation": 0,
+      "priority": 30,
+      "bridgeId": "bridge_lower"
+    },
+    {
+      "id": "forest_trail_0_1",
+      "polygon": [
+        [
+          108.64,
+          1424.88
+        ],
+        [
+          61.36,
+          1331.12
+        ],
+        [
+          177.07,
+          1272.76
+        ],
+        [
+          222.93,
+          1367.24
+        ]
+      ],
+      "material": "dirt",
+      "elevation": 0,
+      "priority": 10,
+      "walkable": false
+    },
+    {
+      "id": "forest_trail_0_2",
+      "polygon": [
+        [
+          222.93,
+          1367.24
+        ],
+        [
+          177.07,
+          1272.76
+        ],
+        [
+          331.09,
+          1200.89
+        ],
+        [
+          368.91,
+          1299.11
+        ]
+      ],
+      "material": "dirt",
+      "elevation": 0,
+      "priority": 10,
+      "walkable": false
+    },
+    {
+      "id": "forest_trail_0_3",
+      "polygon": [
+        [
+          368.91,
+          1299.11
+        ],
+        [
+          331.09,
+          1200.89
+        ],
+        [
+          452.9,
+          1163.41
+        ],
+        [
+          507.1,
+          1256.59
+        ]
+      ],
+      "material": "dirt",
+      "elevation": 0,
+      "priority": 10,
+      "walkable": false
+    },
+    {
+      "id": "forest_trail_0_4",
+      "polygon": [
+        [
+          507.1,
+          1256.59
+        ],
+        [
+          452.9,
+          1163.41
+        ],
+        [
+          622.01,
+          1004.25
+        ],
+        [
+          677.99,
+          1095.75
+        ]
+      ],
+      "material": "dirt",
+      "elevation": 0,
+      "priority": 10,
+      "walkable": false
+    },
+    {
+      "id": "forest_trail_0_5",
+      "polygon": [
+        [
+          677.99,
+          1095.75
+        ],
+        [
+          622.01,
+          1004.25
+        ],
+        [
+          903.84,
+          903.6
+        ],
+        [
+          956.16,
+          996.4
+        ]
+      ],
+      "material": "dirt",
+      "elevation": 0,
+      "priority": 10,
+      "walkable": false
+    },
+    {
+      "id": "forest_trail_0_6",
+      "polygon": [
+        [
+          956.16,
+          996.4
+        ],
+        [
+          903.84,
+          903.6
+        ],
+        [
+          1163.2,
+          692.27
+        ],
+        [
+          1236.8,
+          767.73
+        ]
+      ],
+      "material": "dirt",
+      "elevation": 0,
+      "priority": 10,
+      "walkable": false
+    },
+    {
+      "id": "forest_trail_0_7",
+      "polygon": [
+        [
+          1236.8,
+          767.73
+        ],
+        [
+          1163.2,
+          692.27
+        ],
+        [
+          1235.85,
+          607.5
+        ],
+        [
+          1284.15,
+          712.5
+        ]
+      ],
+      "material": "dirt",
+      "elevation": 0,
+      "priority": 10,
+      "walkable": false
+    },
+    {
+      "id": "forest_trail_0_8",
+      "polygon": [
+        [
+          1284.15,
+          712.5
+        ],
+        [
+          1235.85,
+          607.5
+        ],
+        [
+          1298.25,
+          607.5
+        ],
+        [
+          1301.75,
+          712.5
+        ]
+      ],
+      "material": "dirt",
+      "elevation": 0,
+      "priority": 10,
+      "walkable": false
+    },
+    {
+      "id": "forest_trail_0_9",
+      "polygon": [
+        [
+          1301.75,
+          712.5
+        ],
+        [
+          1298.25,
+          607.5
+        ],
+        [
+          1582.53,
+          588.55
+        ],
+        [
+          1617.47,
+          691.45
+        ]
+      ],
+      "material": "dirt",
+      "elevation": 0,
+      "priority": 10,
+      "walkable": false
+    },
+    {
+      "id": "forest_trail_0_10",
+      "polygon": [
+        [
+          1617.47,
+          691.45
+        ],
+        [
+          1582.53,
+          588.55
+        ],
+        [
+          1629.46,
+          557.26
+        ],
+        [
+          1690.54,
+          642.74
+        ]
+      ],
+      "material": "dirt",
+      "elevation": 0,
+      "priority": 10,
+      "walkable": false
+    },
+    {
+      "id": "forest_trail_0_11",
+      "polygon": [
+        [
+          1690.54,
+          642.74
+        ],
+        [
+          1629.46,
+          557.26
+        ],
+        [
+          1808.63,
+          420.25
+        ],
+        [
+          1851.37,
+          519.75
+        ]
+      ],
+      "material": "dirt",
+      "elevation": 0,
+      "priority": 10,
+      "walkable": false
+    },
+    {
+      "id": "forest_trail_0_12",
+      "polygon": [
+        [
+          1851.37,
+          519.75
+        ],
+        [
+          1808.63,
+          420.25
+        ],
+        [
+          2071.71,
+          378.16
+        ],
+        [
+          2088.29,
+          481.84
+        ]
+      ],
+      "material": "dirt",
+      "elevation": 0,
+      "priority": 10,
+      "walkable": false
+    },
+    {
+      "id": "forest_trail_1_1",
+      "polygon": [
+        [
+          1147.64,
+          726.12
+        ],
+        [
+          1252.36,
+          733.88
+        ],
+        [
+          1234.13,
+          979.89
+        ],
+        [
+          1125.87,
+          1020.11
+        ]
+      ],
+      "material": "dirt",
+      "elevation": 0,
+      "priority": 10,
+      "walkable": false
+    },
+    {
+      "id": "forest_trail_1_2",
+      "polygon": [
+        [
+          1125.87,
+          1020.11
+        ],
+        [
+          1234.13,
+          979.89
+        ],
+        [
+          1281.75,
+          1027.5
+        ],
+        [
+          1238.25,
+          1132.5
+        ]
+      ],
+      "material": "dirt",
+      "elevation": 0,
+      "priority": 10,
+      "walkable": false
+    },
+    {
+      "id": "forest_trail_1_3",
+      "polygon": [
+        [
+          1238.25,
+          1132.5
+        ],
+        [
+          1281.75,
+          1027.5
+        ],
+        [
+          1310,
+          1027.5
+        ],
+        [
+          1310,
+          1132.5
+        ]
+      ],
+      "material": "dirt",
+      "elevation": 0,
+      "priority": 10,
+      "walkable": false
+    },
+    {
+      "id": "forest_trail_1_4",
+      "polygon": [
+        [
+          1310,
+          1132.5
+        ],
+        [
+          1310,
+          1027.5
+        ],
+        [
+          1610.48,
+          1027.5
+        ],
+        [
+          1629.52,
+          1132.5
+        ]
+      ],
+      "material": "dirt",
+      "elevation": 0,
+      "priority": 10,
+      "walkable": false
+    },
+    {
+      "id": "forest_trail_1_5",
+      "polygon": [
+        [
+          1629.52,
+          1132.5
+        ],
+        [
+          1610.48,
+          1027.5
+        ],
+        [
+          1690.48,
+          997.5
+        ],
+        [
+          1709.52,
+          1102.5
+        ]
+      ],
+      "material": "dirt",
+      "elevation": 0,
+      "priority": 10,
+      "walkable": false
+    },
+    {
+      "id": "forest_trail_1_6",
+      "polygon": [
+        [
+          1709.52,
+          1102.5
+        ],
+        [
+          1690.48,
+          997.5
+        ],
+        [
+          2156.25,
+          997.5
+        ],
+        [
+          2103.75,
+          1102.5
+        ]
+      ],
+      "material": "dirt",
+      "elevation": 0,
+      "priority": 10,
+      "walkable": false
+    },
+    {
+      "id": "forest_trail_1_7",
+      "polygon": [
+        [
+          2103.75,
+          1102.5
+        ],
+        [
+          2156.25,
+          997.5
+        ],
+        [
+          2202,
+          1058.5
+        ],
+        [
+          2118,
+          1121.5
+        ]
+      ],
+      "material": "dirt",
+      "elevation": 0,
+      "priority": 10,
+      "walkable": false
+    },
+    {
+      "id": "forest_trail_2_1",
+      "polygon": [
+        [
+          1252.5,
+          730
+        ],
+        [
+          1147.5,
+          730
+        ],
+        [
+          1147.5,
+          300
+        ],
+        [
+          1252.5,
+          300
+        ]
+      ],
+      "material": "dirt",
+      "elevation": 0,
+      "priority": 10,
+      "walkable": false
+    }
+  ],
+  "obstacles": [
+    {
+      "id": "bridge_east",
+      "kind": "fence",
+      "x": 2140,
+      "y": 360,
+      "width": 180,
+      "height": 80,
+      "height3d": 75,
+      "footprint": [
+        [
+          2140,
+          360
+        ],
+        [
+          2320,
+          360
+        ],
+        [
+          2320,
+          440
+        ],
+        [
+          2140,
+          440
+        ]
+      ],
+      "variant": "broken_bridge",
+      "elevation": 0
+    },
+    {
+      "id": "landslide_north",
+      "kind": "rock",
+      "x": 1080,
+      "y": 155,
+      "width": 240,
+      "height": 90,
+      "height3d": 125,
+      "footprint": [
+        [
+          1080,
+          155
+        ],
+        [
+          1320,
+          155
+        ],
+        [
+          1320,
+          245
+        ],
+        [
+          1080,
+          245
+        ]
+      ],
+      "variant": "landslide",
+      "elevation": 0
+    },
+    {
+      "id": "gate_east",
+      "kind": "fence",
+      "x": 2205,
+      "y": 1140,
+      "width": 110,
+      "height": 220,
+      "height3d": 110,
+      "footprint": [
+        [
+          2205,
+          1140
+        ],
+        [
+          2315,
+          1140
+        ],
+        [
+          2315,
+          1360
+        ],
+        [
+          2205,
+          1360
+        ]
+      ],
+      "variant": "bamboo",
+      "elevation": 0
+    },
+    {
+      "id": "forest_hut",
+      "kind": "house",
+      "x": 1960,
+      "y": 600,
+      "width": 160,
+      "height": 100,
+      "height3d": 110,
+      "footprint": [
+        [
+          1985.6,
+          600
+        ],
+        [
+          2120,
+          627
+        ],
+        [
+          2094.4,
+          700
+        ],
+        [
+          1960,
+          673
+        ]
+      ],
+      "variant": "thatch",
+      "elevation": 0
+    },
+    {
+      "id": "bridge_upper_left_rail",
+      "kind": "fence",
+      "x": 1296.407973431716,
+      "y": 586.1196014757431,
+      "width": 300.53215208419033,
+      "height": 27.982281262852894,
+      "height3d": 44,
+      "footprint": [
+        [
+          1296.9401255159064,
+          614.101882738596
+        ],
+        [
+          1296.407973431716,
+          606.1196014757431
+        ],
+        [
+          1596.407973431716,
+          586.1196014757431
+        ],
+        [
+          1596.9401255159064,
+          594.101882738596
+        ]
+      ],
+      "variant": "bridge_rail",
+      "elevation": 0
+    },
+    {
+      "id": "bridge_upper_right_rail",
+      "kind": "fence",
+      "x": 1303.0598744840936,
+      "y": 685.898117261404,
+      "width": 300.53215208419033,
+      "height": 27.982281262852894,
+      "height3d": 44,
+      "footprint": [
+        [
+          1303.592026568284,
+          713.8803985242569
+        ],
+        [
+          1303.0598744840936,
+          705.898117261404
+        ],
+        [
+          1603.0598744840936,
+          685.898117261404
+        ],
+        [
+          1603.592026568284,
+          693.8803985242569
+        ]
+      ],
+      "variant": "bridge_rail",
+      "elevation": 0
+    },
+    {
+      "id": "bridge_lower_left_rail",
+      "kind": "fence",
+      "x": 1310,
+      "y": 1026,
+      "width": 310,
+      "height": 8,
+      "height3d": 44,
+      "footprint": [
+        [
+          1310,
+          1034
+        ],
+        [
+          1310,
+          1026
+        ],
+        [
+          1620,
+          1026
+        ],
+        [
+          1620,
+          1034
+        ]
+      ],
+      "variant": "bridge_rail",
+      "elevation": 0
+    },
+    {
+      "id": "bridge_lower_right_rail",
+      "kind": "fence",
+      "x": 1310,
+      "y": 1126,
+      "width": 310,
+      "height": 8,
+      "height3d": 44,
+      "footprint": [
+        [
+          1310,
+          1134
+        ],
+        [
+          1310,
+          1126
+        ],
+        [
+          1620,
+          1126
+        ],
+        [
+          1620,
+          1134
+        ]
+      ],
+      "variant": "bridge_rail",
+      "elevation": 0
+    },
+    {
+      "id": "forest_tree_0",
+      "kind": "tree",
+      "x": 470,
+      "y": 1030,
+      "width": 36,
+      "height": 36,
+      "height3d": 180,
+      "footprint": [
+        [
+          470,
+          1030
+        ],
+        [
+          506,
+          1030
+        ],
+        [
+          506,
+          1066
+        ],
+        [
+          470,
+          1066
+        ]
+      ],
+      "variant": "broadleaf",
+      "elevation": 0
+    },
+    {
+      "id": "forest_tree_1",
+      "kind": "tree",
+      "x": 820,
+      "y": 780,
+      "width": 36,
+      "height": 36,
+      "height3d": 192,
+      "footprint": [
+        [
+          820,
+          780
+        ],
+        [
+          856,
+          780
+        ],
+        [
+          856,
+          816
+        ],
+        [
+          820,
+          816
+        ]
+      ],
+      "variant": "mangrove",
+      "elevation": 0
+    },
+    {
+      "id": "forest_tree_2",
+      "kind": "tree",
+      "x": 1080,
+      "y": 970,
+      "width": 36,
+      "height": 36,
+      "height3d": 204,
+      "footprint": [
+        [
+          1080,
+          970
+        ],
+        [
+          1116,
+          970
+        ],
+        [
+          1116,
+          1006
+        ],
+        [
+          1080,
+          1006
+        ]
+      ],
+      "variant": "broadleaf",
+      "elevation": 0
+    },
+    {
+      "id": "forest_tree_3",
+      "kind": "tree",
+      "x": 1290,
+      "y": 470,
+      "width": 36,
+      "height": 36,
+      "height3d": 180,
+      "footprint": [
+        [
+          1290,
+          470
+        ],
+        [
+          1326,
+          470
+        ],
+        [
+          1326,
+          506
+        ],
+        [
+          1290,
+          506
+        ]
+      ],
+      "variant": "mangrove",
+      "elevation": 0
+    },
+    {
+      "id": "forest_tree_4",
+      "kind": "tree",
+      "x": 1710,
+      "y": 730,
+      "width": 36,
+      "height": 36,
+      "height3d": 192,
+      "footprint": [
+        [
+          1710,
+          730
+        ],
+        [
+          1746,
+          730
+        ],
+        [
+          1746,
+          766
+        ],
+        [
+          1710,
+          766
+        ]
+      ],
+      "variant": "broadleaf",
+      "elevation": 0
+    },
+    {
+      "id": "forest_tree_5",
+      "kind": "tree",
+      "x": 1990,
+      "y": 1180,
+      "width": 36,
+      "height": 36,
+      "height3d": 204,
+      "footprint": [
+        [
+          1990,
+          1180
+        ],
+        [
+          2026,
+          1180
+        ],
+        [
+          2026,
+          1216
+        ],
+        [
+          1990,
+          1216
+        ]
+      ],
+      "variant": "mangrove",
+      "elevation": 0
+    },
+    {
+      "id": "forest_tree_6",
+      "kind": "tree",
+      "x": 1020,
+      "y": 550,
+      "width": 36,
+      "height": 36,
+      "height3d": 180,
+      "footprint": [
+        [
+          1020,
+          550
+        ],
+        [
+          1056,
+          550
+        ],
+        [
+          1056,
+          586
+        ],
+        [
+          1020,
+          586
+        ]
+      ],
+      "variant": "broadleaf",
+      "elevation": 0
+    },
+    {
+      "id": "forest_tree_7",
+      "kind": "tree",
+      "x": 1660,
+      "y": 1100,
+      "width": 36,
+      "height": 36,
+      "height3d": 192,
+      "footprint": [
+        [
+          1660,
+          1100
+        ],
+        [
+          1696,
+          1100
+        ],
+        [
+          1696,
+          1136
+        ],
+        [
+          1660,
+          1136
+        ]
+      ],
+      "variant": "mangrove",
+      "elevation": 0
+    },
+    {
+      "id": "forest_tree_8",
+      "kind": "tree",
+      "x": 2040,
+      "y": 320,
+      "width": 36,
+      "height": 36,
+      "height3d": 204,
+      "footprint": [
+        [
+          2040,
+          320
+        ],
+        [
+          2076,
+          320
+        ],
+        [
+          2076,
+          356
+        ],
+        [
+          2040,
+          356
+        ]
+      ],
+      "variant": "broadleaf",
+      "elevation": 0
+    },
+    {
+      "id": "forest_tree_9",
+      "kind": "tree",
+      "x": 360,
+      "y": 1360,
+      "width": 36,
+      "height": 36,
+      "height3d": 180,
+      "footprint": [
+        [
+          360,
+          1360
+        ],
+        [
+          396,
+          1360
+        ],
+        [
+          396,
+          1396
+        ],
+        [
+          360,
+          1396
+        ]
+      ],
+      "variant": "mangrove",
+      "elevation": 0
+    },
+    {
+      "id": "forest_rock_0",
+      "kind": "rock",
+      "x": 520,
+      "y": 1320,
+      "width": 75,
+      "height": 58,
+      "height3d": 55,
+      "footprint": [
+        [
+          520,
+          1320
+        ],
+        [
+          595,
+          1320
+        ],
+        [
+          595,
+          1378
+        ],
+        [
+          520,
+          1378
+        ]
+      ],
+      "variant": "limestone",
+      "elevation": 0
+    },
+    {
+      "id": "forest_rock_1",
+      "kind": "rock",
+      "x": 1050,
+      "y": 1040,
+      "width": 75,
+      "height": 58,
+      "height3d": 55,
+      "footprint": [
+        [
+          1050,
+          1040
+        ],
+        [
+          1125,
+          1040
+        ],
+        [
+          1125,
+          1098
+        ],
+        [
+          1050,
+          1098
+        ]
+      ],
+      "variant": "limestone",
+      "elevation": 0
+    },
+    {
+      "id": "forest_rock_2",
+      "kind": "rock",
+      "x": 1730,
+      "y": 600,
+      "width": 75,
+      "height": 58,
+      "height3d": 55,
+      "footprint": [
+        [
+          1730,
+          600
+        ],
+        [
+          1805,
+          600
+        ],
+        [
+          1805,
+          658
+        ],
+        [
+          1730,
+          658
+        ]
+      ],
+      "variant": "limestone",
+      "elevation": 0
+    },
+    {
+      "id": "forest_rock_3",
+      "kind": "rock",
+      "x": 1850,
+      "y": 1100,
+      "width": 75,
+      "height": 58,
+      "height3d": 55,
+      "footprint": [
+        [
+          1850,
+          1100
+        ],
+        [
+          1925,
+          1100
+        ],
+        [
+          1925,
+          1158
+        ],
+        [
+          1850,
+          1158
+        ]
+      ],
+      "variant": "limestone",
+      "elevation": 0
+    },
+    {
+      "id": "forest_canopy_tree_0",
+      "kind": "tree",
+      "x": 510,
+      "y": 481,
+      "width": 36,
+      "height": 36,
+      "height3d": 190,
+      "footprint": [
+        [
+          510,
+          481
+        ],
+        [
+          546,
+          481
+        ],
+        [
+          546,
+          517
+        ],
+        [
+          510,
+          517
+        ]
+      ],
+      "variant": "mangrove",
+      "elevation": 0
+    },
+    {
+      "id": "forest_canopy_tree_1",
+      "kind": "tree",
+      "x": 2215,
+      "y": 213,
+      "width": 36,
+      "height": 36,
+      "height3d": 203,
+      "footprint": [
+        [
+          2215,
+          213
+        ],
+        [
+          2251,
+          213
+        ],
+        [
+          2251,
+          249
+        ],
+        [
+          2215,
+          249
+        ]
+      ],
+      "variant": "broadleaf",
+      "elevation": 0
+    },
+    {
+      "id": "forest_canopy_tree_2",
+      "kind": "tree",
+      "x": 631,
+      "y": 358,
+      "width": 36,
+      "height": 36,
+      "height3d": 216,
+      "footprint": [
+        [
+          631,
+          358
+        ],
+        [
+          667,
+          358
+        ],
+        [
+          667,
+          394
+        ],
+        [
+          631,
+          394
+        ]
+      ],
+      "variant": "broadleaf",
+      "elevation": 0
+    },
+    {
+      "id": "forest_canopy_tree_3",
+      "kind": "tree",
+      "x": 492,
+      "y": 187,
+      "width": 36,
+      "height": 36,
+      "height3d": 229,
+      "footprint": [
+        [
+          492,
+          187
+        ],
+        [
+          528,
+          187
+        ],
+        [
+          528,
+          223
+        ],
+        [
+          492,
+          223
+        ]
+      ],
+      "variant": "mangrove",
+      "elevation": 0
+    },
+    {
+      "id": "forest_canopy_tree_4",
+      "kind": "tree",
+      "x": 347,
+      "y": 342,
+      "width": 36,
+      "height": 36,
+      "height3d": 190,
+      "footprint": [
+        [
+          347,
+          342
+        ],
+        [
+          383,
+          342
+        ],
+        [
+          383,
+          378
+        ],
+        [
+          347,
+          378
+        ]
+      ],
+      "variant": "broadleaf",
+      "elevation": 0
+    },
+    {
+      "id": "forest_canopy_tree_5",
+      "kind": "tree",
+      "x": 784,
+      "y": 1228,
+      "width": 36,
+      "height": 36,
+      "height3d": 203,
+      "footprint": [
+        [
+          784,
+          1228
+        ],
+        [
+          820,
+          1228
+        ],
+        [
+          820,
+          1264
+        ],
+        [
+          784,
+          1264
+        ]
+      ],
+      "variant": "broadleaf",
+      "elevation": 0
+    },
+    {
+      "id": "forest_canopy_tree_6",
+      "kind": "tree",
+      "x": 788,
+      "y": 499,
+      "width": 36,
+      "height": 36,
+      "height3d": 216,
+      "footprint": [
+        [
+          788,
+          499
+        ],
+        [
+          824,
+          499
+        ],
+        [
+          824,
+          535
+        ],
+        [
+          788,
+          535
+        ]
+      ],
+      "variant": "mangrove",
+      "elevation": 0
+    },
+    {
+      "id": "forest_canopy_tree_7",
+      "kind": "tree",
+      "x": 944,
+      "y": 214,
+      "width": 36,
+      "height": 36,
+      "height3d": 229,
+      "footprint": [
+        [
+          944,
+          214
+        ],
+        [
+          980,
+          214
+        ],
+        [
+          980,
+          250
+        ],
+        [
+          944,
+          250
+        ]
+      ],
+      "variant": "broadleaf",
+      "elevation": 0
+    },
+    {
+      "id": "forest_canopy_tree_8",
+      "kind": "tree",
+      "x": 2210,
+      "y": 636,
+      "width": 36,
+      "height": 36,
+      "height3d": 190,
+      "footprint": [
+        [
+          2210,
+          636
+        ],
+        [
+          2246,
+          636
+        ],
+        [
+          2246,
+          672
+        ],
+        [
+          2210,
+          672
+        ]
+      ],
+      "variant": "broadleaf",
+      "elevation": 0
+    },
+    {
+      "id": "forest_canopy_tree_9",
+      "kind": "tree",
+      "x": 199,
+      "y": 331,
+      "width": 36,
+      "height": 36,
+      "height3d": 203,
+      "footprint": [
+        [
+          199,
+          331
+        ],
+        [
+          235,
+          331
+        ],
+        [
+          235,
+          367
+        ],
+        [
+          199,
+          367
+        ]
+      ],
+      "variant": "mangrove",
+      "elevation": 0
+    },
+    {
+      "id": "forest_canopy_tree_10",
+      "kind": "tree",
+      "x": 2179,
+      "y": 779,
+      "width": 36,
+      "height": 36,
+      "height3d": 216,
+      "footprint": [
+        [
+          2179,
+          779
+        ],
+        [
+          2215,
+          779
+        ],
+        [
+          2215,
+          815
+        ],
+        [
+          2179,
+          815
+        ]
+      ],
+      "variant": "broadleaf",
+      "elevation": 0
+    },
+    {
+      "id": "forest_canopy_tree_11",
+      "kind": "tree",
+      "x": 2038,
+      "y": 766,
+      "width": 36,
+      "height": 36,
+      "height3d": 229,
+      "footprint": [
+        [
+          2038,
+          766
+        ],
+        [
+          2074,
+          766
+        ],
+        [
+          2074,
+          802
+        ],
+        [
+          2038,
+          802
+        ]
+      ],
+      "variant": "broadleaf",
+      "elevation": 0
+    },
+    {
+      "id": "forest_canopy_tree_12",
+      "kind": "tree",
+      "x": 477,
+      "y": 645,
+      "width": 36,
+      "height": 36,
+      "height3d": 190,
+      "footprint": [
+        [
+          477,
+          645
+        ],
+        [
+          513,
+          645
+        ],
+        [
+          513,
+          681
+        ],
+        [
+          477,
+          681
+        ]
+      ],
+      "variant": "mangrove",
+      "elevation": 0
+    },
+    {
+      "id": "forest_canopy_tree_13",
+      "kind": "tree",
+      "x": 1717,
+      "y": 205,
+      "width": 36,
+      "height": 36,
+      "height3d": 203,
+      "footprint": [
+        [
+          1717,
+          205
+        ],
+        [
+          1753,
+          205
+        ],
+        [
+          1753,
+          241
+        ],
+        [
+          1717,
+          241
+        ]
+      ],
+      "variant": "broadleaf",
+      "elevation": 0
+    },
+    {
+      "id": "forest_canopy_tree_14",
+      "kind": "tree",
+      "x": 189,
+      "y": 624,
+      "width": 36,
+      "height": 36,
+      "height3d": 216,
+      "footprint": [
+        [
+          189,
+          624
+        ],
+        [
+          225,
+          624
+        ],
+        [
+          225,
+          660
+        ],
+        [
+          189,
+          660
+        ]
+      ],
+      "variant": "broadleaf",
+      "elevation": 0
+    },
+    {
+      "id": "forest_canopy_tree_15",
+      "kind": "tree",
+      "x": 1582,
+      "y": 218,
+      "width": 36,
+      "height": 36,
+      "height3d": 229,
+      "footprint": [
+        [
+          1582,
+          218
+        ],
+        [
+          1618,
+          218
+        ],
+        [
+          1618,
+          254
+        ],
+        [
+          1582,
+          254
+        ]
+      ],
+      "variant": "mangrove",
+      "elevation": 0
+    },
+    {
+      "id": "forest_canopy_tree_16",
+      "kind": "tree",
+      "x": 631,
+      "y": 766,
+      "width": 36,
+      "height": 36,
+      "height3d": 190,
+      "footprint": [
+        [
+          631,
+          766
+        ],
+        [
+          667,
+          766
+        ],
+        [
+          667,
+          802
+        ],
+        [
+          631,
+          802
+        ]
+      ],
+      "variant": "broadleaf",
+      "elevation": 0
+    },
+    {
+      "id": "forest_canopy_tree_17",
+      "kind": "tree",
+      "x": 950,
+      "y": 1208,
+      "width": 36,
+      "height": 36,
+      "height3d": 203,
+      "footprint": [
+        [
+          950,
+          1208
+        ],
+        [
+          986,
+          1208
+        ],
+        [
+          986,
+          1244
+        ],
+        [
+          950,
+          1244
+        ]
+      ],
+      "variant": "broadleaf",
+      "elevation": 0
+    },
+    {
+      "id": "forest_canopy_tree_18",
+      "kind": "tree",
+      "x": 2050,
+      "y": 193,
+      "width": 36,
+      "height": 36,
+      "height3d": 216,
+      "footprint": [
+        [
+          2050,
+          193
+        ],
+        [
+          2086,
+          193
+        ],
+        [
+          2086,
+          229
+        ],
+        [
+          2050,
+          229
+        ]
+      ],
+      "variant": "mangrove",
+      "elevation": 0
+    },
+    {
+      "id": "forest_canopy_tree_19",
+      "kind": "tree",
+      "x": 340,
+      "y": 501,
+      "width": 36,
+      "height": 36,
+      "height3d": 229,
+      "footprint": [
+        [
+          340,
+          501
+        ],
+        [
+          376,
+          501
+        ],
+        [
+          376,
+          537
+        ],
+        [
+          340,
+          537
+        ]
+      ],
+      "variant": "broadleaf",
+      "elevation": 0
+    },
+    {
+      "id": "forest_canopy_tree_20",
+      "kind": "tree",
+      "x": 811,
+      "y": 215,
+      "width": 36,
+      "height": 36,
+      "height3d": 190,
+      "footprint": [
+        [
+          811,
+          215
+        ],
+        [
+          847,
+          215
+        ],
+        [
+          847,
+          251
+        ],
+        [
+          811,
+          251
+        ]
+      ],
+      "variant": "broadleaf",
+      "elevation": 0
+    },
+    {
+      "id": "forest_canopy_tree_21",
+      "kind": "tree",
+      "x": 323,
+      "y": 625,
+      "width": 36,
+      "height": 36,
+      "height3d": 203,
+      "footprint": [
+        [
+          323,
+          625
+        ],
+        [
+          359,
+          625
+        ],
+        [
+          359,
+          661
+        ],
+        [
+          323,
+          661
+        ]
+      ],
+      "variant": "mangrove",
+      "elevation": 0
+    },
+    {
+      "id": "forest_canopy_tree_22",
+      "kind": "tree",
+      "x": 355,
+      "y": 796,
+      "width": 36,
+      "height": 36,
+      "height3d": 216,
+      "footprint": [
+        [
+          355,
+          796
+        ],
+        [
+          391,
+          796
+        ],
+        [
+          391,
+          832
+        ],
+        [
+          355,
+          832
+        ]
+      ],
+      "variant": "broadleaf",
+      "elevation": 0
+    },
+    {
+      "id": "forest_canopy_tree_23",
+      "kind": "tree",
+      "x": 496,
+      "y": 777,
+      "width": 36,
+      "height": 36,
+      "height3d": 229,
+      "footprint": [
+        [
+          496,
+          777
+        ],
+        [
+          532,
+          777
+        ],
+        [
+          532,
+          813
+        ],
+        [
+          496,
+          813
+        ]
+      ],
+      "variant": "broadleaf",
+      "elevation": 0
+    },
+    {
+      "id": "forest_canopy_tree_24",
+      "kind": "tree",
+      "x": 200,
+      "y": 1075,
+      "width": 36,
+      "height": 36,
+      "height3d": 190,
+      "footprint": [
+        [
+          200,
+          1075
+        ],
+        [
+          236,
+          1075
+        ],
+        [
+          236,
+          1111
+        ],
+        [
+          200,
+          1111
+        ]
+      ],
+      "variant": "mangrove",
+      "elevation": 0
+    },
+    {
+      "id": "forest_cluster_tree_0",
+      "kind": "tree",
+      "x": 298,
+      "y": 1388,
+      "width": 24,
+      "height": 24,
+      "height3d": 135,
+      "footprint": [
+        [
+          298,
+          1388
+        ],
+        [
+          322,
+          1388
+        ],
+        [
+          322,
+          1412
+        ],
+        [
+          298,
+          1412
+        ]
+      ],
+      "variant": "broadleaf",
+      "elevation": 0
+    },
+    {
+      "id": "forest_cluster_tree_1",
+      "kind": "tree",
+      "x": 415,
+      "y": 1405,
+      "width": 30,
+      "height": 30,
+      "height3d": 210,
+      "footprint": [
+        [
+          415,
+          1405
+        ],
+        [
+          445,
+          1405
+        ],
+        [
+          445,
+          1435
+        ],
+        [
+          415,
+          1435
+        ]
+      ],
+      "variant": "mangrove",
+      "elevation": 0
+    },
+    {
+      "id": "forest_cluster_tree_2",
+      "kind": "tree",
+      "x": 413,
+      "y": 988,
+      "width": 24,
+      "height": 24,
+      "height3d": 145,
+      "footprint": [
+        [
+          413,
+          988
+        ],
+        [
+          437,
+          988
+        ],
+        [
+          437,
+          1012
+        ],
+        [
+          413,
+          1012
+        ]
+      ],
+      "variant": "broadleaf",
+      "elevation": 0
+    },
+    {
+      "id": "forest_cluster_tree_3",
+      "kind": "tree",
+      "x": 390,
+      "y": 1085,
+      "width": 30,
+      "height": 30,
+      "height3d": 225,
+      "footprint": [
+        [
+          390,
+          1085
+        ],
+        [
+          420,
+          1085
+        ],
+        [
+          420,
+          1115
+        ],
+        [
+          390,
+          1115
+        ]
+      ],
+      "variant": "mangrove",
+      "elevation": 0
+    },
+    {
+      "id": "forest_cluster_tree_4",
+      "kind": "tree",
+      "x": 1293,
+      "y": 393,
+      "width": 24,
+      "height": 24,
+      "height3d": 125,
+      "footprint": [
+        [
+          1293,
+          393
+        ],
+        [
+          1317,
+          393
+        ],
+        [
+          1317,
+          417
+        ],
+        [
+          1293,
+          417
+        ]
+      ],
+      "variant": "mangrove",
+      "elevation": 0
+    },
+    {
+      "id": "forest_cluster_tree_5",
+      "kind": "tree",
+      "x": 1295,
+      "y": 330,
+      "width": 30,
+      "height": 30,
+      "height3d": 200,
+      "footprint": [
+        [
+          1295,
+          330
+        ],
+        [
+          1325,
+          330
+        ],
+        [
+          1325,
+          360
+        ],
+        [
+          1295,
+          360
+        ]
+      ],
+      "variant": "broadleaf",
+      "elevation": 0
+    },
+    {
+      "id": "forest_cluster_tree_6",
+      "kind": "tree",
+      "x": 1678,
+      "y": 813,
+      "width": 24,
+      "height": 24,
+      "height3d": 140,
+      "footprint": [
+        [
+          1678,
+          813
+        ],
+        [
+          1702,
+          813
+        ],
+        [
+          1702,
+          837
+        ],
+        [
+          1678,
+          837
+        ]
+      ],
+      "variant": "broadleaf",
+      "elevation": 0
+    },
+    {
+      "id": "forest_cluster_tree_7",
+      "kind": "tree",
+      "x": 1745,
+      "y": 790,
+      "width": 30,
+      "height": 30,
+      "height3d": 220,
+      "footprint": [
+        [
+          1745,
+          790
+        ],
+        [
+          1775,
+          790
+        ],
+        [
+          1775,
+          820
+        ],
+        [
+          1745,
+          820
+        ]
+      ],
+      "variant": "mangrove",
+      "elevation": 0
+    }
+  ],
+  "stairs": [],
+  "bridges": [
+    {
+      "id": "bridge_upper",
+      "path": [
+        [
+          1300,
+          660
+        ],
+        [
+          1600,
+          640
+        ]
+      ],
+      "width": 110,
+      "elevation": 0,
+      "railIds": [
+        "bridge_upper_left_rail",
+        "bridge_upper_right_rail"
+      ]
+    },
+    {
+      "id": "bridge_lower",
+      "path": [
+        [
+          1310,
+          1080
+        ],
+        [
+          1620,
+          1080
+        ]
+      ],
+      "width": 110,
+      "elevation": 0,
+      "railIds": [
+        "bridge_lower_left_rail",
+        "bridge_lower_right_rail"
+      ]
+    }
+  ],
+  "terraces": [
+    {
+      "id": "forest_floor",
+      "elevation": 0
+    }
+  ],
+  "routes": [
+    [
+      [
+        200,
+        1320
+      ],
+      [
+        350,
+        1250
+      ],
+      [
+        480,
+        1210
+      ],
+      [
+        650,
+        1050
+      ],
+      [
+        930,
+        950
+      ],
+      [
+        1200,
+        730
+      ],
+      [
+        1260,
+        660
+      ],
+      [
+        1300,
+        660
+      ],
+      [
+        1600,
+        640
+      ],
+      [
+        1660,
+        600
+      ],
+      [
+        1830,
+        470
+      ],
+      [
+        2080,
+        430
+      ]
+    ],
+    [
+      [
+        1200,
+        730
+      ],
+      [
+        1180,
+        1000
+      ],
+      [
+        1260,
+        1080
+      ],
+      [
+        1310,
+        1080
+      ],
+      [
+        1620,
+        1080
+      ],
+      [
+        1700,
+        1050
+      ],
+      [
+        2130,
+        1050
+      ],
+      [
+        2160,
+        1090
+      ]
+    ],
+    [
+      [
+        1200,
+        730
+      ],
+      [
+        1200,
+        300
+      ]
+    ]
+  ]
+}
