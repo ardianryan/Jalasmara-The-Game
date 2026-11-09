@@ -15,6 +15,8 @@ Urutan nyata yang dapat terjadi pada jaringan lambat:
 
 Perbaikan terbatas yang disarankan kepada pemilik: `if busy: return` pada awal callback Talk, sebelum close dan `_talk`, lalu pertahankan guard close yang sudah ada. Repro focused dapat menahan preflight await, menekan Talk dan memastikan jumlah `_talk` tetap0, panel/is_open tidak berubah, busy tetaptrue, serta transaksi permit tetap dapat selesai. Menyetel busytrue lalu emit pressed juga mereproduksi guard callback secara deterministik, tetapi tidak menggantikan pemeriksaan preflight async. Temuan ini dikirim langsung ke integrator sebelum laporan disimpan. Belum ada klaim runtime PASS untuk kasus tersebut.
 
+Integrator menerima temuan dan membuat `01a67cb`, lalu alpha menambahkan regression busy actual. Review source followup menemukan guard ditulis dengan3 tab, sejajar `_button`, sedangkan body lambda close/_talk memakai4 tab. Koreksi indent telah dilaporkan langsung sebelum import; status checkpoint laporan ini **menunggu source koreksi dan hasil alpha**, bukan mengklaim guard sudah lolos parse. Tidak ada edit runtime yang dilakukan reviewer.
+
 ## Bagian yang tidak menunjukkan regresi baru pada inspeksi ini
 
 - `_interact` dan `_balai` memakai `service_resident` yang sama, sehingga pemenang nearest antara resident dan board membuka layanan yang sama saat syarat terpenuhi.
