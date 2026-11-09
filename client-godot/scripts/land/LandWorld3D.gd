@@ -448,6 +448,17 @@ func _build_stair(stair: Dictionary) -> void:
 			var left:=map_point(start-side,top)
 			var right:=map_point(start+side,top)
 			_face("Riser",[left,right,right-Vector3(0,0,top-previous),left-Vector3(0,0,top-previous)],material)
+		var base:=minf(lower,upper)-12.0
+		var top_start:=map_point(start-side,h0)
+		var top_end:=map_point(end-side,top)
+		var bottom_start:=top_start-Vector3(0,0,h0-base)
+		var bottom_end:=top_end-Vector3(0,0,top-base)
+		_face("StairSideCheek",[top_start,top_end,bottom_end,bottom_start],material)
+		top_start=map_point(start+side,h0)
+		top_end=map_point(end+side,top)
+		bottom_start=top_start-Vector3(0,0,h0-base)
+		bottom_end=top_end-Vector3(0,0,top-base)
+		_face("StairSideCheek",[top_end,top_start,bottom_start,bottom_end],material)
 		_stair_treads+=1
 
 func _build_obstacle(entry: Dictionary) -> void:
@@ -1206,6 +1217,20 @@ func _build_bridge(surface: Dictionary) -> void:
 			var at:=map_point(a.lerp(b,fraction)+offset,height)-Vector3(0,0,18)
 			_column(at-Vector3(0,0,95),at,7,bamboo)
 			_column(at-Vector3(0,0,64),at+Vector3(axis.x*24,-axis.y*24/cos(TILT),0),3,wood)
+	var foundations: Array=preload("res://scripts/land/BridgeLandings.gd").foundations(a,b,width,polygon,map.get("surfaces",[]),float(surface.get("elevation",0)))
+	_bridges[id]["bankFoundations"]=foundations.size()
+	_bridges[id]["foundationBanks"]=[]
+	for foundation in foundations:
+		var footprint: PackedVector2Array=foundation.polygon
+		var top:=PackedVector3Array()
+		for point in footprint: top.append(map_point(point,height)-Vector3(0,0,1.5))
+		_mesh("BridgeBankFooting",top,Geometry2D.triangulate_polygon(footprint),_materials.get_material("stone"))
+		for edge in range(footprint.size()):
+			var first:=top[edge]
+			var last:=top[(edge+1)%footprint.size()]
+			_face("BridgeBankFoundation",[first,last,last-Vector3(0,0,42),first-Vector3(0,0,42)],_materials.get_material("stone"))
+		for contact in foundation.contacts:
+			if contact.bankId not in _bridges[id]["foundationBanks"]: _bridges[id]["foundationBanks"].append(contact.bankId)
 	for end_point in [a,b]:
 		var start:=map_point(end_point-side*width*.48,height)-Vector3(0,0,20)
 		var end:=map_point(end_point+side*width*.48,height)-Vector3(0,0,20)
