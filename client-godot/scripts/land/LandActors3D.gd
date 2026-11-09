@@ -294,3 +294,9 @@ func _update_wet_marks() -> void:
 		var feet: Vector2=mark.at
 		_wet_effects.multimesh.set_instance_transform(index,Transform3D(basis,renderer.map_point(feet,renderer.ground_height(feet)+.6)))
 		_wet_effects.multimesh.set_instance_color(index,Color(1,1,1,clampf(1-float(mark.age)/5,0,1)*.45))
+
+func debug_counts() -> Dictionary:
+	if not preload("res://scripts/Diagnostics.gd").enabled(): return counts
+	var report:=counts.duplicate()
+	report["gearNodes"]=_equipment.visibility_diagnostics() if is_instance_valid(_equipment) else {}
+	return report

@@ -254,7 +254,7 @@ func _count_nodes(node: Node, type_name: String) -> int:
 	return count
 
 func debug_status() -> Dictionary:
-	return {
+	var report := {
 		"quality": RenderQuality.get_profile(), "active": active, "enabled": enabled, "renderer": "SubViewport3D", "viewport": [480, 270],
 		"orthographic": is_instance_valid(camera_3d) and camera_3d.projection == Camera3D.PROJECTION_ORTHOGONAL,
 		"mesh_count": _count_nodes(world_root, "MeshInstance3D") if _built else 0,
@@ -266,3 +266,6 @@ func debug_status() -> Dictionary:
 		"backdrop": backdrop.debug_status() if is_instance_valid(backdrop) else {},
 		"water": living_water.debug_status() if is_instance_valid(living_water) else {},
 	}
+	if preload("res://scripts/Diagnostics.gd").enabled():
+		report["gearNodes"]=actors.gear_node_diagnostics() if is_instance_valid(actors) else {}
+	return report

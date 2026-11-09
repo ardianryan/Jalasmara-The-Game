@@ -130,3 +130,17 @@ static func land_layout(direction: String,phase: float,moving: bool) -> Dictiona
 
 func debug_status() -> Dictionary:
 	return {"facingDirection":state.get("facingDirection","east"),"gaitPhase":state.get("gaitPhase",0.0),"tankDepth":_tank.position.z if is_instance_valid(_tank) else 0.0,"netDepth":_net.position.z if is_instance_valid(_net) else 0.0,"modular":bool(state.get("modular",false)),"tank":is_instance_valid(_tank) and _tank.visible and visible,"net":is_instance_valid(_net) and _net.visible and visible,"satchel":is_instance_valid(_satchel) and _satchel.visible and visible,"vest":is_instance_valid(_vest) and _vest.visible and visible,"meshes":find_children("*","MeshInstance3D",true,false).size()}
+
+# Node-tree visibility is diagnostic evidence, not a pixel-occlusion result.
+func visibility_diagnostics() -> Dictionary:
+	if not preload("res://scripts/Diagnostics.gd").enabled(): return {}
+	var nodes: Dictionary={}
+	for entry in [["tank",_tank],["net",_net],["satchel",_satchel],["vest",_vest]]:
+		var attachment: Node3D=entry[1]
+		var present:=is_instance_valid(attachment)
+		var meshes: Array=attachment.find_children("*","MeshInstance3D",true,false) if present else []
+		var visible_meshes:=0
+		for mesh in meshes:
+			if mesh.is_visible_in_tree(): visible_meshes+=1
+		nodes[entry[0]]={"exists":present,"visible":attachment.visible if present else false,"visibleInTree":attachment.is_visible_in_tree() if present else false,"meshCount":meshes.size(),"visibleMeshCount":visible_meshes}
+	return {"schemaVersion":1,"visibilityScope":"scene-tree-not-pixel-occlusion","rootInTree":is_inside_tree(),"rootVisibleInTree":is_visible_in_tree(),"nodes":nodes}

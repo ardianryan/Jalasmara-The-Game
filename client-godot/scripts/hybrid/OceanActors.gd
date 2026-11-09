@@ -195,3 +195,7 @@ func _memory_texture() -> Texture2D:
 		var texture: Texture2D = load(path)
 		return _frame(texture,Rect2(64,0,32,32))
 	return preload("res://scripts/ItemIcons.gd").texture("cache")
+
+func gear_node_diagnostics() -> Dictionary:
+	if not preload("res://scripts/Diagnostics.gd").enabled(): return {}
+	return _equipment.visibility_diagnostics() if is_instance_valid(_equipment) else {}
