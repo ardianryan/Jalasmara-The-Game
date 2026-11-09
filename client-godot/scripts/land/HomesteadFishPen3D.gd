@@ -64,7 +64,8 @@ func update(renderer: Node, elapsed: float) -> void:
 	var clock:=0.0 if EnvironmentState.reduced_motion else elapsed
 	for index in range(count):
 		var phase:=clock*.45+index*TAU/7
-		var at:=_center+Vector3(sin(phase)*24,cos(phase)*17,-7-index%2*3)
+		# The coastal surface is opaque at Z=-14; shallow backs can breach it naturally.
+		var at:=_center+Vector3(sin(phase)*24,cos(phase)*17,-3-float(index%2)*.4)
 		var direction:=Vector3(cos(phase)*24,-sin(phase)*17,0)
 		var transform:=Transform3D(Basis(Vector3(0,0,1),atan2(direction.y,direction.x)),at)
 		_fish.multimesh.set_instance_transform(index,transform)

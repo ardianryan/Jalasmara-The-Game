@@ -31,7 +31,7 @@ func _run() -> void:
 	player.swim_sprite.set_outfit("daily")
 	player.swim_sprite.animate(false,false,1,0)
 	var camera:=Camera2D.new()
-	camera.zoom=Vector2(.5,.5)
+	camera.zoom=Vector2(.75,.75)
 	stage.add_child(camera)
 	var renderer:Node2D=load("res://../scripts/tests/fixtures/house-framing-renderer.gd").new()
 	stage.add_child(renderer)
