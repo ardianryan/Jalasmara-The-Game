@@ -99,3 +99,12 @@ Root full61 pada9497fc2/08c737b berhenti:50kasus pertama lulus, kedai-resume gag
 Image798a47b/d044/PCK1315 sudahaktif. CI3046335495:61world/120API/3audit0; SARIF1warning/2notes dengan dua perbaikansasaran terverifikasi. ActualpublicdefaultH2 mencapai ready, semua62PCKbagian selesai; rute fisik/jurnal/reload masih berjalan. Jangan menyebut seluruhsmoke lulus sebelumcleanup. Firstactivationscript otomatisrollback karena curlhosttidaktersedia; scriptkedua/verifyterpisah berhasil, tanpa proxy/datachanges.
 
 Lokalnight11/garden5/PCKfault4/WASM3PASS; Sarasnightattention legalview2 menunjukkan tubuh penuh tanpa graybackplate di situsitu. Perangkatfisik belum diuji. Actualauto30recorder dan realcapture→parent→breedingharness kini tergabung sourceQA, belumactualrun. RouteCPU2/authcleanup2 didaftarkanCI. Nala physical32world helper masih experimentalOFF; independentreview menemukan lowanalogcreep dan gradienheldinput perlu pemeriksaan. Default produk tidak diganti agar teslulus. Tiga lane tetap bekerja/menunggu slotGPUserial.
+
+
+## Checkpoint01.17WIB: publik dan recorder diterima
+
+[Smoke publik default](overnight-public-release.md) lulus5pemeriksaan pada image798a47b/d044/PCK1315:624pulsa/378.430ms, nol error dan cleanup nol. [Auto30](overnight-recorder-auto30.md) lulus4/4, deadline otomatis30.103ms/28sampel tanpa Stop; bukan hasilFPSfisik. Galeri sekarang10PNGoriginal/2.280.689byte dengan dua bukti publik baru.
+
+[Pembersihan release](overnight-storage-cleanup.md) selesai setelah smoke: arsip lokal276.832.256allocatedbyte, konteks/arsip VPS, image43bd lama dan d811 intermediate dipensiunkan. Aktifd044 dan rollbackd60 tetap; freeVPS44.030.980.096byte, health/hash/.env valid.
+
+Shelter sedang menjalankan browser akuisisi induk asli hingga18menit; dua tangkapan3bintang sudah dilalui, belum dianggap alur lengkap. Character opt-inphysical32world lulus hanya dua kasus datar/analog, bukan tangga atau naturalwalk penuh; defaultOFF. Website menutup blocker rawJSONinvalid pada editoradmin di branch sendiri. Proposal interiorLurah tersimpan terpisah dan belum diimplementasikan; core tetap didahulukan.
