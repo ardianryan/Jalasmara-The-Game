@@ -2,7 +2,7 @@
 
 ## Kandidat lokal06-B2: terrain dan warna
 
-[Paket finishing aktif](reviews/06b2-world-finishing-progress.md) menggabungkan tujuh rumah sejajar, gapura berbasis jalan, preview desa–hutan bertumpu, terrain batu berfaset dan support tread tangga sebenarnya. Palet lebih cerah dan noise material dikurangi; perbaikan normal vertex menghilangkan garis bayangan pada tanah tanpa mematikan bayangan. Typecheck94API dan native28+28rumah selesai lokal; focused868tread/inverse lulus. Native cleanhybrid99frame naik/turun juga selesai, tetapi pose dua kaki masih memakai atlas jalan lama. Iterasi terrain lebar18frame serta gapura/seam6frame sudah selesai lokal; fullsuite/ekspor/browser kandidat masih tahap berikutnya. Belum ada rilis baru. Bagian rilis di bawah tetap pin yang benar-benar aktif.
+[Paket finishing aktif](reviews/06b2-world-finishing-progress.md) menggabungkan tujuh rumah sejajar, gapura berbasis jalan, preview desa–hutan bertumpu, terrain batu berfaset dan support tread tangga sebenarnya. Pelataran rumput/jalan tanah, palet cerah dan noise material yang lebih halus menggantikan bidang kusam; normal vertex menghilangkan garis bayangan tanpa mematikan shadow. Typecheck100API/40harness/full50world dan build lulus lokal. Native rumah final28, natural18, seam6 serta cleanhybrid99frame tangga selesai; pose dua kaki masih atlas lama. PCK5f5baf24/64.333.184byte sedang penerimaan browser3101 oleh lane website. Belum ada rilis baru. Bagian rilis di bawah tetap pin yang benar-benar aktif.
 
 ## Pembaruan aktif 9 November: rilis 06-B
 
