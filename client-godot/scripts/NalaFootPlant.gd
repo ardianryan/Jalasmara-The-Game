@@ -257,7 +257,8 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 		_discontinuities+=1
 		_reset(at,hips,right)
 		return snapshot()
-	if moving and physical>.00001:
+	var accepted_moving:=moving or (_physical_contract and physical>.00001)
+	if accepted_moving and physical>.00001:
 		_accepted_distance+=physical
 		var next_heading:=logical_delta.normalized()
 		if _physical_contract and _swing=="" and _heading.dot(next_heading)<_turn_cosine: _transition_next=true
@@ -330,7 +331,7 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 			_next_side="left" if _swing=="right" else "right"
 			_landing_distance=_steady_distance
 			_swing=""
-	if not moving: _transition_next=true
+	if not accepted_moving: _transition_next=true
 	if _swing=="" and not _on_stairs(at):
 		var ordinary:=_ground(at).z
 		if _stair_transfer:

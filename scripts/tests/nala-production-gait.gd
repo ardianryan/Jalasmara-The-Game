@@ -16,14 +16,29 @@ var windows:Dictionary={}
 var prior_planner_contacts:=0
 var physical_pilot:=false
 var delivered_input:=Vector2.ZERO
+var input_driver:Node
+var analog_probe:=false
 const PhysicalMotion=preload("res://scripts/NalaPhysicalMotion.gd")
 
+class PhysicalInputDriver extends Node:
+	var renderer:Node
+	var actor:Node2D
+	var controller:Node
+	var requested:=Vector2.ZERO
+	var delivered:=Vector2.ZERO
+	func _physics_process(_delta:float) -> void:
+		delivered=preload("res://scripts/NalaPhysicalMotion.gd").screen_input(renderer,requested,actor.position)
+		if controller.has_method("_is_walkable"): controller.set("touch_direction",delivered)
+		else: actor.set("touch",delivered)
+
 func _input(value:Vector2) -> void:
+	if is_instance_valid(input_driver): input_driver.set("requested",value)
 	delivered_input=PhysicalMotion.screen_input(renderer,value,player.position) if physical_pilot else value
 	if controller.has_method("_is_walkable"): controller.set("touch_direction",delivered_input)
 	else: player.set("touch",delivered_input)
 
 func _controller_enabled(enabled:bool) -> void:
+	if is_instance_valid(input_driver): input_driver.set_physics_process(enabled)
 	if controller.has_method("_is_walkable"): controller.set_physics_process(enabled)
 	else: player.set_physics_process(enabled)
 
@@ -63,22 +78,31 @@ func _open(outfit:String) -> void:
 	player.set_meta("nala_physical_walk_pilot",physical_pilot)
 	player.get("swim_sprite").call("set_appearance","male_nusantara")
 	renderer.set_process(false)
+	if physical_pilot:
+		input_driver=PhysicalInputDriver.new()
+		input_driver.set("renderer",renderer)
+		input_driver.set("actor",player)
+		input_driver.set("controller",controller)
+		input_driver.process_physics_priority=-100
+		controller.add_child(input_driver)
+		input_driver.set_physics_process(false)
 	_index_meshes()
 
 func _physical_inputs(at:Vector2) -> bool:
 	var probes:=0
 	for heading in range(32):
-		for magnitude in [.25,.5,1.0]:
+		for magnitude in [.10,.12,.15,.17,.18,.25,.5,1.0]:
 			var input:=Vector2.from_angle(heading*TAU/32.0)*float(magnitude)
 			var logical:=PhysicalMotion.logical_input(renderer,input,at)
 			if not _check(logical.length()<=input.length()+.00001,"Physical input exceeds canonical logical cap"): return false
 			var wrapped:Vector2=renderer.input_motion(PhysicalMotion.screen_input(renderer,input,at),at)
 			if not _check(wrapped.distance_to(logical)<.00001,"Fixture screen-amplitude wrapper differs from intended renderer hook"): return false
 			var actual:Vector3=renderer.ground_point(at+logical)-renderer.ground_point(at)
-			var expected:=input.length()*PhysicalMotion.WORLD_XY_SPEED/float(PhysicalMotion.LOGICAL_CAP)
+			var in_deadzone:=input.length()+.000001<PhysicalMotion.INNER_DEADZONE
+			var expected:=0.0 if in_deadzone else input.length()*PhysicalMotion.WORLD_XY_SPEED/float(PhysicalMotion.LOGICAL_CAP)
 			if not _check(absf(Vector2(actual.x,actual.y).length()-expected)<.0003,"Actual flat ground metric fails physical-speed input contract"): return false
 			var screen:Vector2=renderer.view_projection.logical_motion_to_view(logical)
-			if not _check(absf(screen.normalized().cross(input.normalized()))<.00001 and screen.dot(input)>0,"Physical input changes requested screen direction"): return false
+			if not in_deadzone and not _check(absf(screen.normalized().cross(input.normalized()))<.00001 and screen.dot(input)>0,"Physical input changes requested screen direction"): return false
 			probes+=1
 	print("NALA PHYSICAL INPUT PASS ",probes," actual-ground magnitude/direction/cap/wrapper probes")
 	return true
@@ -104,11 +128,14 @@ func _production_tick(value:Vector2,label:String) -> bool:
 	_input(value)
 	var before:=player.position
 	var before_world:Vector3=renderer.ground_point(before)
+	var prior_pose:Dictionary=renderer.actors_3d.counts.get("nalaLowerBody",{})
+	var prior_distance:float=prior_pose.get("contacts",{}).get("acceptedDistance",0.0)
 	await physics_frame
 	await process_frame
 	var now:=Engine.get_physics_frames()
 	last_delta=float(now-last_physics_frame)/float(Engine.physics_ticks_per_second)
 	last_physics_frame=now
+	if is_instance_valid(input_driver): delivered_input=input_driver.get("delivered")
 	if not _check(last_delta>0,"Production fixture must observe actual physics frames"): return false
 	elapsed_physics+=last_delta
 	logical_travel+=before.distance_to(player.position)
@@ -124,6 +151,11 @@ func _production_tick(value:Vector2,label:String) -> bool:
 	legacy_contacts+=events.size()
 	var source:Dictionary=visual.call("locomotion_state")
 	var pose:Dictionary=renderer.actors_3d.counts.nalaLowerBody
+	if physical_pilot:
+		if not _check(bool(pose.contacts.get("physicalContract",false)),"Physical input pilot did not select its explicit gait contract"): return false
+		if not _check(float(pose.contacts.acceptedDistance)-prior_distance>=world_motion.length()-.003,"Accepted controller displacement froze physical-pilot feet"): return false
+		if label.contains("analog ") and value.length()+.000001<PhysicalMotion.INNER_DEADZONE:
+			if not _check(player.position.distance_to(before)<.0001,"Physical-pilot deadzone moved actor from rest"): return false
 	var phase:=label.split(" ",true,1)[1]
 	if not windows.has(phase): windows[phase]={"seconds":0.0,"plannerContacts":0,"legacyContacts":0,"logicalDistance":0.0,"physicalDistance":0.0}
 	windows[phase].seconds+=last_delta
@@ -155,6 +187,7 @@ func _production_tick(value:Vector2,label:String) -> bool:
 func run() -> void:
 	root.size=Vector2i(1440,810)
 	physical_pilot=OS.get_environment("NALA_PHYSICAL_WALK")=="1"
+	analog_probe=OS.get_environment("NALA_PRODUCTION_ANALOG")=="1"
 	first_case=clampi(int(OS.get_environment("NALA_PRODUCTION_FIRST")) if OS.has_environment("NALA_PRODUCTION_FIRST") else 0,0,31)
 	case_limit=clampi(int(OS.get_environment("NALA_PRODUCTION_CASES")) if OS.has_environment("NALA_PRODUCTION_CASES") else 32,1,32-first_case)
 	capture=OS.get_environment("NALA_LOWER_CAPTURE")=="1"
@@ -166,7 +199,7 @@ func run() -> void:
 	capture_log=FileAccess.open(output+"/frames.jsonl",FileAccess.WRITE)
 	var hashes:Dictionary={}
 	for path in ["res://scripts/Player.gd","res://scripts/Forest.gd","res://scripts/CharacterVisual.gd","res://scripts/NalaFootPlant.gd","res://scripts/NalaLowerBody3D.gd","res://scripts/NalaPhysicalMotion.gd","res://scripts/land/LandActors3D.gd","res://../scripts/tests/nala-production-gait.gd","res://../scripts/tests/nala-lower-body.gd"]: hashes[path]=FileAccess.get_sha256(path)
-	FileAccess.open(output+"/source.json",FileAccess.WRITE).store_string(JSON.stringify({"files":hashes,"firstCase":first_case,"requestedCases":case_limit,"physicalPilot":physical_pilot,"physicsHz":Engine.physics_ticks_per_second,"captureStride":capture_stride,"acceptance":"Geometry diagnostic; cadence and arm opposition require sequence review. No default adoption."},"  "))
+	FileAccess.open(output+"/source.json",FileAccess.WRITE).store_string(JSON.stringify({"files":hashes,"firstCase":first_case,"requestedCases":case_limit,"physicalPilot":physical_pilot,"analogProbe":analog_probe,"physicsHz":Engine.physics_ticks_per_second,"captureStride":capture_stride,"acceptance":"Geometry diagnostic; cadence and arm opposition require sequence review. No default adoption."},"  "))
 	var state:=root.get_node("GameState")
 	state.world=JSON.parse_string(FileAccess.get_file_as_string("res://../.runtime/world-map.json"))
 	state.player={"appearance":"male_nusantara","progress":{"day":2,"stage":"dive"}}
@@ -220,7 +253,12 @@ func run() -> void:
 				last_physics_frame=Engine.get_physics_frames()
 				_controller_enabled(true)
 				var direction:=Vector2.from_angle(heading*PI*.25)
-				for phase in [{"name":"walk","input":direction,"frames":48},{"name":"stop","input":Vector2.ZERO,"frames":18},{"name":"restart turn","input":-direction,"frames":30}]:
+				var phases:Array=[]
+				if analog_probe:
+					for magnitude in [.10,.12,.15,.17,.18]: phases.append({"name":"analog "+str(magnitude),"input":direction*float(magnitude),"frames":12})
+					phases.append({"name":"analog-release","input":Vector2.ZERO,"frames":12})
+				phases.append_array([{"name":"walk","input":direction,"frames":48},{"name":"stop","input":Vector2.ZERO,"frames":18},{"name":"restart turn","input":-direction,"frames":30}])
+				for phase in phases:
 					for frame in range(int(phase.frames)):
 						if not await _production_tick(phase.input,label+" "+str(phase.name)): return
 				_controller_enabled(false)
@@ -234,5 +272,5 @@ func run() -> void:
 	FileAccess.open(output+"/results.json",FileAccess.WRITE).store_string(JSON.stringify(frames,"  "))
 	FileAccess.open(output+"/cadence.json",FileAccess.WRITE).store_string(JSON.stringify({"cases":production_cases,"geometrySamples":checks,"complete32Cases":first_case==0 and case_index==32,"naturalWalkingAccepted":false,"armOppositionAccepted":false},"  "))
 	if not _check(JSON.stringify({"world":state.world,"player":state.player})==unchanged,"Production fixture changed authoritative data"): return
-	print("NALA PRODUCTION GEOMETRY DIAGNOSTIC PASS ",checks," samples/",case_index," cases. Cadence and arm review pending; lower-body stays OFF.")
+	print("NALA PRODUCTION GEOMETRY DIAGNOSTIC PASS ",checks," samples/",case_index," cases. Cadence/arms pending; default lower-body stays OFF.")
 	quit(0)
