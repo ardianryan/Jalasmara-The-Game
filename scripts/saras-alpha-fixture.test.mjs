@@ -30,3 +30,18 @@ test("Saras fixture rejects obstructed viewpoints and proximity-stalled commute 
   stalled.surface_hub.residents.find((entry) => entry.id === "npc_saras").activity.commute.push([800, 1000]);
   assert.throws(() => deriveSarasFixture(stalled), /stall Saras/);
 });
+
+test("short attention variant uses actual night work spawn and a clear sub100unit route", () => {
+  const fixture = deriveSarasFixture(WORLD, 1200, true);
+  assert.equal(fixture.minute, 1200);
+  assert.equal(fixture.phase, "rest");
+  assert.equal(fixture.attentionAtWork, true);
+  assert.deepEqual(fixture.scheduledStation, [1020, 310]);
+  assert.deepEqual(fixture.station, { x: 1480, y: 680 });
+  assert.deepEqual(fixture.quiet, { x: 1530, y: 715 });
+  assert.deepEqual(fixture.viewpoints[1], { x: 1540, y: 690 });
+  assert.throws(() => deriveSarasFixture(WORLD, 600, true), /actual20:00/);
+  const blocked = structuredClone(WORLD);
+  blocked.landMaps.hub.obstacles.push({ id: "short-path-only", footprint: [[1528,698],[1548,698],[1548,708],[1528,708]] });
+  assert.throws(() => deriveSarasFixture(blocked, 1200, true), /body clearance|physically clear/);
+});

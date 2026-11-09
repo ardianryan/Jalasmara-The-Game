@@ -16,7 +16,7 @@ import {
   HOMESTEAD_DEFINITIONS,
 } from "../packages/shared/src/index.ts";
 import { WORLD } from "../packages/shared/src/world.ts";
-import { isLandWalkable } from "../packages/shared/src/land.ts";
+import { isLandWalkable, isLandSegmentWalkable } from "../packages/shared/src/land.ts";
 import { fetchWorld } from "./game-navigation.mjs";
 import { physicalRoute } from "./plan06-physical-route.mjs";
 import {
@@ -95,7 +95,8 @@ function validateShelterWait(world, from) {
 }
 if (routeMode === "shelters") validateShelterWait(WORLD, WORLD.surfaceSpawn);
 assert(!process.env.PLAN06_SARAS_MINUTE || routeMode === "saras");
-const sarasFixture = routeMode === "saras" ? deriveSarasFixture(WORLD, Number(process.env.PLAN06_SARAS_MINUTE ?? 1200)) : null;
+assert(!process.env.PLAN06_SARAS_ATTENTION_WORK || (routeMode === "saras" && process.env.PLAN06_SARAS_ATTENTION_WORK === "1"));
+const sarasFixture = routeMode === "saras" ? deriveSarasFixture(WORLD, Number(process.env.PLAN06_SARAS_MINUTE ?? 1200), process.env.PLAN06_SARAS_ATTENTION_WORK === "1") : null;
 const navigation = { matrixPulses: 0, legacyPulses: 0 };
 const inputProofs = [];
 const fixtureStoryDay = routeMode === "dialogue" ? 1 : 2;
@@ -1109,30 +1110,41 @@ async function verifyFocusedCanopy() {
 }
 
 async function verifySaras() {
-  const fixture = deriveSarasFixture(world, sarasFixture.minute);
+  const fixture = deriveSarasFixture(world, sarasFixture.minute, sarasFixture.attentionAtWork);
   assert.deepEqual(fixture, sarasFixture);
   observations.push({ name: "source-derived-saras-alpha-fixture", ...fixture });
   console.log(JSON.stringify({ phase: "waiting-for-real-saras-station", fixture }));
   const ready = await waitState((value) => {
     const resident = value.land?.actors?.residentStates?.Saras;
-    return resident?.phase === fixture.phase && resident.atStation;
-  }, 90000);
+    return fixture.attentionAtWork
+      ? resident?.phase === "walking_rest" && !resident.moving && !resident.atStation
+      : resident?.phase === fixture.phase && resident.atStation;
+  }, fixture.attentionAtWork ? 15000 : 90000);
   assert(ready.weather.rain < 0.05 && ready.weather.night === (fixture.minute >= 1110));
-  assert.deepEqual(ready.land.actors.residentStates.Saras.destination, [fixture.station.x, fixture.station.y]);
-  checks.push("saras-real-clear-weather-schedule-reaches-authored-station-without-attention-stall");
+  assert.deepEqual(ready.land.actors.residentStates.Saras.destination, fixture.scheduledStation);
+  checks.push(fixture.attentionAtWork
+    ? "saras-real-night-player-attention-holds-authored-initial-work-spawn-without-npc-override"
+    : "saras-real-clear-weather-schedule-reaches-authored-station-without-attention-stall");
+  const site = fixture.attentionAtWork ? "night-work-attention" : fixture.phase;
   for (const [index, point] of fixture.viewpoints.entries()) {
-    await routeTo(point, "hub");
+    if (fixture.attentionAtWork) {
+      const from = await snapshot();
+      assert(isLandSegmentWalkable(world.landMaps.hub, from, point, 14));
+      await walkTo(point.x, point.y);
+    } else await routeTo(point, "hub");
     const current = await waitState((value) => value.nearby === "Saras");
     const delta = [fixture.station.x - current.x, fixture.station.y - current.y];
     assert(Math.hypot(...delta) > 50 && Math.hypot(...delta) < 80);
     assert(Math.abs(projectLogicalDelta(delta, current.land.view.motion)[0]) > 50,
       "The portrait and player need independently measurable screen-horizontal separation");
-    assert(current.land.actors.residentStates.Saras.atStation);
+    assert(fixture.attentionAtWork
+      ? !current.land.actors.residentStates.Saras.moving && !current.land.actors.residentStates.Saras.atStation
+      : current.land.actors.residentStates.Saras.atStation);
     await page.waitForTimeout(500);
-    await shot(`saras-${fixture.phase}-view-${index + 1}-before-conversation-needs-image-review`);
+    await shot(`saras-${site}-view-${index + 1}-before-conversation-needs-image-review`);
     await page.keyboard.press("e");
     await waitState((value) => value.modal && value.dialogue?.speaker === "Saras" && value.weather.clockPaused);
-    await shot(`saras-${fixture.phase}-view-${index + 1}-actual-conversation`);
+    await shot(`saras-${site}-view-${index + 1}-actual-conversation`);
     await closeDialogue();
     await waitState((value) => !value.modal && !value.weather.clockPaused);
   }

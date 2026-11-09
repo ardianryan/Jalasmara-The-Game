@@ -33,3 +33,13 @@ Both real conversations identified Saras. The pre-dialog player points were `(10
 Evidence is in integration `artifacts/browser/plan06-layout-5102932f-9cda-4131-8c85-a4368a72154e/`: `results.json`, two `saras-rest-view-*-before-conversation-needs-image-review.png`, two actual-dialogue PNGs, and the checked quiet-spawn PNG. Log `.runtime/overnight-saras-night-browser.log`. The exclusive browser slot was released immediately after completion. This real local Chromium/SwiftShader result is not a physical-device performance measurement or public acceptance.
 
 A follow-up approved by root will use a separate legitimate20:00 fixture with Nala already near Saras's authored work spawn. Existing player attention will hold her there through normal HubActor behavior; no NPC override or new renderer mechanism is needed. This avoids repeating the long commute and uses the same unobscured work-site composition previously measured natively, now through actual Main/browser night lighting. It remains a prepared gate until its original images are inspected.
+
+## Prepared short night work-site attention variant
+
+`PLAN06_SARAS_ATTENTION_WORK=1` retains actual20:00/day2/clear-calendar fixture setup, but starts Nala at the validated free-floor point `(1530,715)`,61units from Saras's normal initial work spawn `(1480,680)`. Existing HubActor attention naturally prevents her pending rest commute while Nala is nearby. The browser must observe the real `walking_rest`, not-moving, not-at-station state with unchanged scheduled rest destination `(1020,310)`. It explicitly does not claim a work shift is open at night or that she arrived at rest.
+
+Two short source-checked viewpoints `(1530,715)` and `(1540,690)` have a body-clear direct corridor and only26.93logical units of total travel. Actual matrix-based keyboard input still reaches the second point; no runtime position/NPC/clock/weather write is added. Each real E interaction must name Saras. Both original pre-dialog images still require manual unobscured-silhouette review. The additional CPU test checks the retained night calendar/scheduled destination, real initial-spawn attention range, short corridor and rejection of an obstructed path or a daytime attention flag. All four CPU tests, browser syntax and diff checks passed; no new engine/browser execution occurred for this preparation.
+
+```sh
+APP_TEST_ORIGIN=http://localhost:3111 PLAN06_EXPECT_PCK=1315f34672b0fc5694a5f73684ca68bfbc6b5be1f6f4560b9628cc14ac2ef5e0 PLAN06_EXPECT_PCK_BYTES=64491320 PLAN06_ROUTE_MODE=saras PLAN06_SARAS_ATTENTION_WORK=1 node --import tsx scripts/plan06-layout-browser.mjs
+```
