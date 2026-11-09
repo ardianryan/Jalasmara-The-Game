@@ -67,6 +67,7 @@ var root_control: Control
 var status_label: Label
 var touch_enabled := false
 var _region: Label
+var _region_name := "Bandar Hujung"
 var _depth: Label
 var _resources: Label
 var _weather: Label
@@ -391,6 +392,7 @@ func _layout() -> void:
 	_region.position=margin+Vector2(64*unit,6*unit)
 	_region.size=Vector2(width-cell-8*unit-64*unit,line)
 	_region.add_theme_font_size_override("font_size",body)
+	_region.text=fit_region_name(_region_name,_region.get_theme_font("font"),body,_region.size.x)
 	_resources.position=margin+Vector2((10 if touch_enabled else 64)*unit,line+4*unit)
 	_resources.size=Vector2(width-cell-(18 if touch_enabled else 72)*unit,line)
 	_resources.add_theme_font_size_override("font_size",body)
@@ -553,6 +555,16 @@ func _layout_portrait_instrument(ratio:float,instrument_scale:float,available_wi
 	_instrument.size=Vector2(width,stats_y+text_height*2+stats_gap+padding)
 	_instrument.queue_redraw()
 
+static func fit_region_name(full_name: String,font: Font,font_size: int,width: float) -> String:
+	if font.get_string_size(full_name,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size).x<=width: return full_name
+	var ellipsis := "…"
+	if font.get_string_size(ellipsis,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size).x>width: return ""
+	var boundaries:=TextServerManager.get_primary_interface().string_get_character_breaks(full_name)
+	for index in range(boundaries.size()-1,-1,-1):
+		var candidate:=full_name.substr(0,boundaries[index]).strip_edges()+ellipsis
+		if font.get_string_size(candidate,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size).x<=width: return candidate
+	return ellipsis
+
 func update_state(state: Dictionary) -> void:
 	_state = state.duplicate()
 	if not is_instance_valid(root_control): return
@@ -568,8 +580,8 @@ func update_state(state: Dictionary) -> void:
 			face.region=Rect2(cell*Vector2(.2,.02),cell*Vector2(.62,.45))
 			_identity_portrait.texture=face
 	var diving := bool(state.get("diving",false))
-	_region.text = str(state.get("area","Bandar Hujung"))
-	_region.tooltip_text = _region.text
+	_region_name = str(state.get("area","Bandar Hujung"))
+	_region.tooltip_text = _region_name
 	_resources.text = "%d koin" % int(state.get("coins",0))
 	if not diving:
 		_resources.text += " · %s/%s kg" % [String.num(float(state.get("weight",0)),1).trim_suffix(".0"),String.num(float(state.get("capacity",0)),1).trim_suffix(".0")]
