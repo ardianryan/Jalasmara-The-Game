@@ -54,6 +54,40 @@ func _side_limits(profile:Dictionary) -> bool:
 	print("PHYSICAL CONNECTOR SIDE PASS ",cases.size()," actual-ground prefixes, original segments rejected=",old_rejections)
 	return true
 
+func _endpoint_diagnostics(profile:Dictionary,held:Vector2,tangent:Vector2,sign:float) -> void:
+	var at:=player.position
+	var positions:Array=[]
+	for offset in [-.01,-.001,0.0,.001,.01]:
+		var point:Vector2=at+tangent*sign*float(offset)
+		var ground:Vector3=renderer.ground_point(point)
+		positions.append({"offset":offset,"logical":[point.x,point.y],"ground":[ground.x,ground.y,ground.z],"groundHeight":renderer.ground_height(point),"gradient":renderer.ground_gradient(point),"contact":preload("res://scripts/SurfaceTraversal.gd").connector_ground(profile,point)})
+	var delivered:=PhysicalMotion.screen_input(renderer,held,at)
+	var logical:Vector2=renderer.input_motion(delivered,at)
+	var desired:Vector2=logical*100.0*float(player.get("traversal_state").get("paceScale",1.0))
+	var step:=1.0/float(Engine.physics_ticks_per_second)
+	var accelerated:Vector2=Vector2(player.velocity).move_toward(desired,step*850.0)
+	var trials:Array=[]
+	for velocity in [accelerated,tangent*sign*100.0]:
+		var target:Vector2=at+Vector2(velocity)*step
+		var cuts:=PhysicalMotion._segment_cuts(renderer,at,target)
+		var spans:Array=[]
+		for index in range(1,cuts.size()):
+			var start:float=cuts[index-1]
+			var end:float=cuts[index]
+			var span:=end-start
+			if span<.00000001: continue
+			var probe:=minf(.001/maxf(.001,(target-at).length()),span*.25)
+			var before:Vector3=renderer.ground_point(at.lerp(target,start))
+			var after:Vector3=renderer.ground_point(at.lerp(target,end))
+			var near_start:Vector3=renderer.ground_point(at.lerp(target,start+probe))
+			var near_end:Vector3=renderer.ground_point(at.lerp(target,end-probe))
+			var extension:=Vector2(near_end.x-near_start.x,near_end.y-near_start.y)*(probe/maxf(.000000001,span-2.0*probe))
+			var expected_start:=Vector2(near_start.x,near_start.y)-extension
+			var expected_end:=Vector2(near_end.x,near_end.y)+extension
+			spans.append({"start":start,"end":end,"probe":probe,"before":[before.x,before.y,before.z],"after":[after.x,after.y,after.z],"nearStart":[near_start.x,near_start.y,near_start.z],"nearEnd":[near_end.x,near_end.y,near_end.z],"expectedStart":[expected_start.x,expected_start.y],"expectedEnd":[expected_end.x,expected_end.y],"startError":expected_start.distance_to(Vector2(before.x,before.y)),"endError":expected_end.distance_to(Vector2(after.x,after.y))})
+		trials.append({"velocity":velocity,"target":target,"cuts":cuts,"limitedVelocity":PhysicalMotion.limit_velocity(renderer,at,velocity,step),"spans":spans})
+	FileAccess.open(output+"/endpoint-diagnostic.json",FileAccess.WRITE).store_string(JSON.stringify({"at":[at.x,at.y],"actualVelocity":player.velocity,"desired":desired,"oneSidedPositions":positions,"trials":trials,"sourceOnlyInterpretationPending":true},"  "))
+
 func run() -> void:
 	physical_pilot=true
 	var state:=root.get_node("GameState")
@@ -114,6 +148,7 @@ func run() -> void:
 				break
 		_controller_enabled(false)
 		boundary_results.append({"case":label,"entered":entered,"crossed":crossed,"observations":visited_frames,"position":[player.position.x,player.position.y]})
+		if not crossed: _endpoint_diagnostics(profile,held,tangent,float(sign))
 		if not _check(crossed,"Held input did not traverse actual connector "+label): return
 	FileAccess.open(output+"/results.json",FileAccess.WRITE).store_string(JSON.stringify({"cases":boundary_results,"overspeed":overspeed,"inputOnly":true,"footGeometryChecked":false,"naturalWalkingAccepted":false},"  "))
 	if not _check(JSON.stringify({"world":state.world,"player":state.player})==unchanged,"Input diagnostic mutated authoritative data"): return
