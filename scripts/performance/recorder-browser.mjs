@@ -13,6 +13,12 @@ import {
   freshHomestead,
 } from "../../packages/shared/src/index.ts";
 import { WORLD } from "../../packages/shared/src/world.ts";
+import {
+  recorderProvenanceMode,
+  assertProvenanceLoader,
+  assertRecorderIdentity,
+  assertDownloadedProvenance,
+} from "./recorder-provenance-gate.mjs";
 
 const origin = process.env.APP_TEST_ORIGIN ?? "http://localhost:3111";
 const mongoUrl =
@@ -30,6 +36,10 @@ const recorderMode = process.env.PERFORMANCE_RECORDER_MODE ?? "manual";
 assert(
   ["manual", "auto30"].includes(recorderMode),
   "PERFORMANCE_RECORDER_MODE must be manual or auto30",
+);
+const provenanceProof = recorderProvenanceMode(
+  process.env.PERFORMANCE_RECORDER_PROVENANCE,
+  expected,
 );
 const id = randomUUID();
 const email = `recorder-${id}@test.invalid`;
@@ -50,7 +60,7 @@ let browser,
   completed = false,
   phase = "pin",
   failureStage = null;
-let reportSummary;
+let reportSummary, provenancePreflight;
 const safe = (value) =>
   String(value)
     .replaceAll(email, "[fixture-email]")
@@ -74,6 +84,36 @@ try {
   assert.equal(downloaded, expectedBytes);
   assert.equal(hash.digest("hex"), expected);
   checks.push("live-local-PCK-byte-count-and-SHA-match-before-fixture");
+  if (provenanceProof) {
+    phase = "provenance-loader-prefixture";
+    const loader = await fetch(`${origin}/game/index.js`, {
+      signal: AbortSignal.timeout(15000),
+    });
+    assert.equal(loader.status, 200);
+    const chunks = [];
+    let size = 0;
+    for await (const chunk of loader.body) {
+      size += chunk.length;
+      assert(
+        size <= 4 * 1024 * 1024,
+        "Live loader capability probe exceeds its bound",
+      );
+      chunks.push(chunk);
+    }
+    const bytes = Buffer.concat(chunks);
+    provenancePreflight = {
+      ...assertProvenanceLoader(
+        bytes.toString("utf8"),
+        expected,
+        expectedBytes,
+      ),
+      loaderSha256: createHash("sha256").update(bytes).digest("hex"),
+      loaderDecodedBytes: size,
+    };
+    checks.push(
+      "live-loader-provenance-capability-and-embedded-pin-supported-before-fixture",
+    );
+  }
   phase = "fixture";
   await mongo.connect();
   assert(
@@ -182,6 +222,17 @@ try {
     "Recorder must work without full QA/account snapshots",
   );
   checks.push("actual-game-ready-without-full-diagnostics-snapshot");
+  if (provenanceProof) {
+    phase = "actual-iframe-identity";
+    assertRecorderIdentity(
+      await frame.evaluate(() => window.jalasmaraPckIdentity),
+      expected,
+      expectedBytes,
+    );
+    checks.push(
+      "actual-ready-iframe-has-exact-new-export-verified-loader-identity",
+    );
+  }
   phase = "start-recorder";
   await page.getByRole("button", { name: "Menu", exact: true }).click();
   await page.getByLabel("Durasi rekaman").selectOption("30000");
@@ -291,6 +342,13 @@ try {
     ),
   );
   assert(report.definitions.frameScheduling.includes("not GPU"));
+  if (provenanceProof) {
+    phase = "downloaded-report-provenance";
+    assertDownloadedProvenance(report, expected, expectedBytes);
+    checks.push(
+      "actual-downloaded-JSON-has-unchanged-same-document-new-export-loader-pin-with-no-identity-fallback",
+    );
+  }
   checks.push(
     recorderMode === "auto30"
       ? "actual30s-option-user-start-menu-pause-resume-automatic-expiry-and-local-JSON-download"
@@ -310,6 +368,7 @@ try {
     engineSampleCount: report.engine.fps.count,
     gpu: report.device.gpu,
     physicalDevice: false,
+    ...(provenanceProof ? { assetProvenance: report.assetProvenance } : {}),
   };
   await shot("download-ready");
   assert.deepEqual(errors, []);
@@ -387,6 +446,16 @@ try {
         {
           origin,
           recorderMode,
+          ...(provenanceProof
+            ? {
+                recorderProvenanceProof: {
+                  enabled: true,
+                  scope:
+                    "actual-downloaded-report-loader-identity-not-runtime-attestation",
+                  preflight: provenancePreflight,
+                },
+              }
+            : {}),
           candidatePck: { sha256: expected, decodedBytes: expectedBytes },
           outcome:
             completed && cleaned && shutdownErrors.length === 0

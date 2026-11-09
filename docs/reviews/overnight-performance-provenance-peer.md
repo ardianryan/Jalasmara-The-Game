@@ -21,3 +21,22 @@ Use the actual adapter stream and actual recorder sanitizer/build path. Successf
 For reports: valid start/end, malformed hash/bytes/kind, extra private fields, throwing access, frozen/mutable source copies, one boundary missing, changed identity, replaced iframe document with unchanged hash, and old report without provenance. Keep the device JSON generated locally; no upload or extra asset fetch is needed.
 
 This is design review, not a new finding that existing PCK73d loading or AUTO30 capture failed. Parent already has separate actual startup, recorder and full public route proofs. New provenance should be tested and released with the next coherent host/game package.
+
+## Prepared future downloaded-recorder proof
+
+The explicit `PERFORMANCE_RECORDER_PROVENANCE=1` harness addition is prepared for a **new coherent export and host**, not current73d or a retroactive reinterpretation of the historical manual/AUTO30 results. Normal recorder mode remains unchanged without the flag. The old73d hash is refused before fixture allocation. After the existing full PCK HTTP hash/byte check, a bounded15s/4MiB live `game/index.js` source probe must contain the provenance-capable segmented adapter and exactly one matching embedded manifest. Missing/old loader capability or wrong SHA/length fails before the owned player is inserted. This source preflight is explicitly labelled capability-only, **not** a loaded runtime identity proof; it executes no loader code.
+
+The actual browser must then reach game READY with no full diagnostics/account snapshot enabled and expose its own strict allowlisted loader identity with the exact expected new SHA/bytes/part count and `all-parts-verified-manifest`. The existing UI start, selected30s duration, menu pause/resume, manual stop or actualAUTO30 completion, download and owned cleanup flow is unchanged. The downloaded JSON itself—not a constructed replacement—must carry `assetProvenance.status="unchanged-loader-pin"`, `document="same"` and exact matching start/end identities. Missing, changed, unobserved-document, wrong verification kind or private extra fields fail; no current candidate identity is inserted into the report by the harness. Existing report privacy and real-engine sample checks still run.
+
+Three CPU gate tests PASS: explicit-mode/legacy rejection, bounded loader capability plus exact manifest parser rejection cases, downloaded JSON contract and negative cases. An additional source-only check used root's actual `withSegmentedPck` on its real Godot preloader fixture and generated manifest; the parser accepted its two-part wrapper. Harness syntax/`git diff --check` pass. No browser, engine, build or export was run for this prepared mode.
+
+After integrator supplies the new verified package and grants its browser slot:
+
+```sh
+APP_TEST_ORIGIN=http://localhost:3111 PERFORMANCE_RECORDER_MODE=auto30 \
+PERFORMANCE_RECORDER_PROVENANCE=1 PLAN06_EXPECT_PCK="$NEXT_PCK_SHA" \
+PLAN06_EXPECT_PCK_BYTES="$NEXT_PCK_BYTES" \
+node --import tsx scripts/performance/recorder-browser.mjs
+```
+
+The future outcome must preserve source/PCK/loader hash, actual downloaded JSON and original screenshots, browser/API errors and targeted cleanup. This will verify reporting provenance under Chromium automation; it will not supply Samsung S23/Windows physical performance measurements or GPU timing.
