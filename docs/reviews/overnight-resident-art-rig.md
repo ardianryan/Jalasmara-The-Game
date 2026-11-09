@@ -18,7 +18,7 @@ Godot 4.7.2 stable ed1daf0bf, native Compatibility Apple M2. Seluruh import/nati
 
 - Cold import dua tahap dan import atlas revisi PASS, scan penuh tanpa SCRIPT ERROR/ERROR.
 - CPU `python3 tools/npc-rig/test_resident_parts.py` PASS: determinisme, 84 bagian, semua pixel original, palm socket opaque.
-- Headless dan native final **576 pose** normal/reduced PASS: actual submitted transform dan native MultiMesh readback, panjang tulang 3D, endpoint mesh joint, alpha sole ke support, palm ke prop, turn/stop dan pause. Pelvis max **4.20688676 world**. Log `.runtime/resident-sized-headless.log` dan `.runtime/resident-sized-native.log`.
+- Headless dan native final **576 pose di central court datar** normal/reduced PASS: actual submitted transform dan native MultiMesh readback, panjang tulang 3D, endpoint mesh joint, alpha sole ke support, palm ke prop, turn/stop dan pause. Pelvis max **4.20688676 world**. Log `.runtime/resident-sized-headless.log` dan `.runtime/resident-sized-native.log`.
 - Regresi default Ujang **1242 sampel PASS** termasuk 168 sharp-turn: alpha-sole drift max 0.0003491, knee error 0.0002730, pelvis 6.98887, west grip 0.0153571. Log `.runtime/ujang-default.log`. Tidak mengulang tes ini sesudah perubahan baseline warga karena helper Ujang tidak diubah lagi.
 - Guard framebuffer shown/hidden seluruh enam warga PASS; seluruh sudut quad masuk frame. Enam pair shots kemudian mengisolasi badan satu per satu pada lantai asli terbuka, zoom dan kamera yang sama dengan Nala. Tidak menyembunyikan/menghapus pohon produksi.
 
@@ -50,6 +50,6 @@ Direktur lebih tinggi dari Nala sesuai baseline dewasa legacy; tidak mengubah uk
 
 ## Batas dan integrasi berikutnya
 
-Belum ada adapter runtime, full suite gabungan, browser, FPS perangkat Windows/S23, rekaman gait yang ditinjau, atau artwork belakang/samping baru. Still image dan numeric pose tidak membuktikan natural walking lengkap. Runtime cutout tidak mengubah atlas portrait yang dimiliki root. Props sederhana dan single-view tetap batas pekerjaan ini.
+Belum ada adapter runtime, full suite gabungan, browser, FPS perangkat Windows/S23, rekaman gait yang ditinjau, endpoint mesh setiap scaled-child commute di tangga, atau artwork belakang/samping baru. Still image dan numeric pose tidak membuktikan natural walking lengkap. Runtime cutout tidak mengubah atlas portrait yang dimiliki root. Props sederhana dan single-view tetap batas pekerjaan ini.
 
 Integrator dapat memilih helper baru di `LandActors3D._body_rig` berdasarkan resident_id yang terdapat pada rigs.json, sambil mempertahankan path tiga rig lama serta `_sprite` shadow/readable tint. `configure(renderer, actor) -> bool`, `update_pose(tint)`, dan `pose_snapshot()` mengikuti kontrak lama. Reproduksi focused: `Godot --headless --path client-godot --script ../scripts/tests/resident-art-rig.gd`. Native memakai script sama dengan `--rendering-method gl_compatibility --resolution 1440x810 -- --output=res://../artifacts/godot/resident-art-rig-sized`. Root perlu mendaftarkan focused ke runner pada saat benar-benar mengintegrasikan, lalu menjalankan full world dan review runtime bersama UI.
