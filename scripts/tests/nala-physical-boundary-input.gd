@@ -60,7 +60,13 @@ func _endpoint_diagnostics(profile:Dictionary,held:Vector2,tangent:Vector2,sign:
 	for offset in [-.01,-.001,0.0,.001,.01]:
 		var point:Vector2=at+tangent*sign*float(offset)
 		var ground:Vector3=renderer.ground_point(point)
-		positions.append({"offset":offset,"logical":[point.x,point.y],"ground":[ground.x,ground.y,ground.z],"groundHeight":renderer.ground_height(point),"gradient":renderer.ground_gradient(point),"contact":preload("res://scripts/SurfaceTraversal.gd").connector_ground(profile,point)})
+		var matching:Array=[]
+		var queries:Array=renderer.get("_surface_queries")
+		for index in range(queries.size()):
+			var query:Dictionary=queries[index]
+			if Geometry2D.is_point_in_polygon(point,query.polygon):
+				matching.append({"id":renderer.map.surfaces[index].id,"priority":query.priority,"height":query.height})
+		positions.append({"matchingSurfaceQueries":matching,"offset":offset,"logical":[point.x,point.y],"ground":[ground.x,ground.y,ground.z],"groundHeight":renderer.ground_height(point),"gradient":renderer.ground_gradient(point),"contact":preload("res://scripts/SurfaceTraversal.gd").connector_ground(profile,point)})
 	var delivered:=PhysicalMotion.screen_input(renderer,held,at)
 	var logical:Vector2=renderer.input_motion(delivered,at)
 	var desired:Vector2=logical*100.0*float(player.get("traversal_state").get("paceScale",1.0))
