@@ -2,6 +2,7 @@ extends SceneTree
 
 const Predicate=preload("res://scripts/land/LandGeometry.gd")
 var checks:=0
+var _renderer:Node2D
 
 func _initialize() -> void:
 	_run.call_deferred()
@@ -11,6 +12,7 @@ func _check(condition:bool,message:String) -> bool:
 		checks+=1
 		return true
 	printerr("GROUND QUERY CANONICAL FAILED: ",message)
+	if is_instance_valid(_renderer): _renderer.free()
 	quit(1)
 	return false
 
@@ -18,6 +20,7 @@ func _run() -> void:
 	var expected:Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://../scripts/tests/fixtures/ground-query-canonical.json"))
 	var world:Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://../.runtime/world-map.json"))
 	var renderer=load("res://scripts/land/LandWorld3D.gd").new()
+	_renderer=renderer
 	var area:=""
 	var legacy_mismatches:=0
 	for sample in expected.cases:
@@ -30,7 +33,9 @@ func _run() -> void:
 			for surface in renderer.map.surfaces: ids.append(str(surface.id))
 			if not _check(ids==expected.metadata[area].surfaceIds,"Frozen surface order/priority identity changed"): return
 		var point:=Vector2(float(sample.point[0]),float(sample.point[1]))
-		var matches:Array=[]
+		var matches:Array[int]=[]
+		var expected_matches:Array[int]=[]
+		for index in sample.matches: expected_matches.append(int(index))
 		var floor_height:=0.0
 		var priority:=-10000
 		for index in range(renderer._surface_queries.size()):
@@ -42,7 +47,7 @@ func _run() -> void:
 			if int(surface.priority)>=priority:
 				priority=int(surface.priority)
 				floor_height=float(surface.height)
-		if not _check(matches==sample.matches,"Canonical surface membership "+str(sample)): return
+		if not _check(matches==expected_matches,"Canonical surface membership actual="+str(matches)+" expected="+str(expected_matches)+" sample="+str(sample)): return
 		if not _check(absf(floor_height-float(sample.floorHeight))<.000001,"Priority/last-surface floor winner "+str(sample)): return
 		if not _check(absf(renderer.ground_height(point)-float(sample.groundHeight))<.0001,"Actual ground_height endpoint/connector "+str(sample)): return
 	for sample in expected.polygonCases:
