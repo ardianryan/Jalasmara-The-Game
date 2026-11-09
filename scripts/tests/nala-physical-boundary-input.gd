@@ -114,7 +114,7 @@ func run() -> void:
 	boundary_log=FileAccess.open(output+"/physics.jsonl",FileAccess.WRITE)
 	var hashes:Dictionary={}
 	for path in ["res://scripts/Player.gd","res://scripts/NalaPhysicalMotion.gd","res://scripts/land/LandWorld3D.gd","res://scripts/land/LandViewProjection.gd","res://../scripts/tests/nala-production-gait.gd","res://../scripts/tests/nala-physical-boundary-input.gd"]: hashes[path]=FileAccess.get_sha256(path)
-	FileAccess.open(output+"/source.json",FileAccess.WRITE).store_string(JSON.stringify({"files":hashes,"inputOnly":true,"footGeometryChecked":false,"naturalWalkingAccepted":false,"postAccelerationSegmentLimiter":true},"  "))
+	FileAccess.open(output+"/source.json",FileAccess.WRITE).store_string(JSON.stringify({"fixtureWorldSha256":FileAccess.get_sha256("res://../.runtime/world-map.json"),"files":hashes,"inputOnly":true,"footGeometryChecked":false,"naturalWalkingAccepted":false,"postAccelerationSegmentLimiter":true},"  "))
 	_open("daily")
 	player.set_meta("nala_lower_body_pilot",false)
 	var wanted:=OS.get_environment("NALA_INPUT_PROFILE") if OS.has_environment("NALA_INPUT_PROFILE") else "dock_gangway"
