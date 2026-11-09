@@ -50,6 +50,17 @@ func run() -> void:
 		var collision: Node2D=load("res://scripts/land/LandCollision.gd").new()
 		collision.configure(map)
 		var status: Dictionary=renderer.debug_status()
+		var seam: Dictionary=renderer._area_seam.debug_status()
+		assert(seam.destination==("forest" if area=="hub" else "hub") and seam.visualOnly)
+		assert(seam.surfaces>0 and seam.vertices>=6,"Adjacent map must supply actual clipped terrain, not a flat backdrop image")
+		if area=="hub": assert(seam.trees>0 and seam.trees<=12,"The forest must already be visible from the village")
+		var portal_value: Array=map.gateways[0].route.segment[1 if area=="hub" else 0]
+		var portal: Vector3=renderer.map_point(_v2(portal_value),float(map.gateways[0].elevation)*renderer.LEVEL_HEIGHT)
+		assert(_v3(seam.origin).distance_to(portal)<.001)
+		var seam_vertices:=PackedVector3Array(seam.trail)
+		assert(((seam_vertices[0]+seam_vertices[1])*.5-portal-Vector3(0,0,.42)).length()<.001,"Preview trail must meet the exact portal center with no gap or hardcoded offset")
+		assert(absf((seam_vertices[1]-seam_vertices[0]).length()-2*float(seam.trailHalfWidth))<.001)
+		checks+=6
 		assert(status.components.RouteAlignedGateways==1)
 		var batch_vertices: Dictionary={}
 		for instance in renderer._geometry.find_children("*","MeshInstance3D",true,false):

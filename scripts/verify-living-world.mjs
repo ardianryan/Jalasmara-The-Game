@@ -58,6 +58,7 @@ const scripts = [
   "scripts/tests/shelter-architecture06.gd",
   "scripts/tests/hub-house-alignment.gd",
   "scripts/tests/gateway-architecture06.gd",
+  "scripts/tests/natural-terrain-edges.gd",
   "scripts/tests/map-grounding.gd",
   "scripts/tests/surface-traversal.gd",
   "scripts/tests/land-path.gd",

@@ -50,8 +50,8 @@ func run() -> void:
 			camera.force_update_scroll()
 			renderer._process(.5)
 			for tick in range(5): await process_frame
-			await RenderingServer.frame_post_draw
-			var id:=area+"-"+phase
+			RenderingServer.force_draw()
+			var id: String=str(area)+"-"+str(phase)
 			root.get_texture().get_image().save_png(output+"/"+id+".png")
 			report[id]={"player":[player.position.x,player.position.y],"land":renderer.debug_status()}
 	FileAccess.open(output+"/results.json",FileAccess.WRITE).store_string(JSON.stringify(report,"  "))

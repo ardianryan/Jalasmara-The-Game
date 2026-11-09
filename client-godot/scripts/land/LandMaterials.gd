@@ -21,34 +21,34 @@ void vertex() {
 void fragment() {
 	if(abs(normal_world.z)>.85) NORMAL=normalize((VIEW_MATRIX*vec4(0.0,0.0,1.0,0.0)).xyz);
 	vec2 planar=abs(normal_world.z)>.6 ? at.xy : abs(normal_world.y)>.6 ? at.xz : at.yz;
-	vec2 pixel=floor(planar/2.7);
+	vec2 pixel=floor(planar/6.0);
 	if(soften_edge && COLOR.a < hash(vec3(pixel,17.0))) discard;
 	float fine=floor(hash(vec3(pixel,0.0))*5.0)/4.0;
-	vec2 broad_at=planar/110.0;
+	vec2 broad_at=planar/160.0;
 	vec2 blend=smoothstep(vec2(0.0),vec2(1.0),fract(broad_at));
 	vec2 cell=floor(broad_at);
 	float patch=mix(mix(hash(vec3(cell,0.0)),hash(vec3(cell+vec2(1,0),0.0)),blend.x),mix(hash(vec3(cell+vec2(0,1),0.0)),hash(vec3(cell+vec2(1,1),0.0)),blend.x),blend.y);
-	vec3 color=base_color.rgb*(.93+fine*.035+patch*.09);
-	if(has_micro) { vec3 texel=texture(micro_texture,fract(planar/96.0)).rgb; float luma=dot(texel,vec3(.299,.587,.114)); color*=.84+mix(vec3(luma),texel,.28)*.36; }
+	vec3 color=base_color.rgb*(.985+fine*.012+(patch-.5)*.055);
+	if(has_micro) { vec3 texel=texture(micro_texture,fract(planar/128.0)).rgb; float luma=dot(texel,vec3(.299,.587,.114)); color*=1.0+(mix(vec3(luma),texel,.15)-.5)*.10; }
 	if(has_atlas) {
 		vec2 tile=fract(planar/150.0);
 		vec2 origin=vec2(float(atlas_cell%3)/3.0,float(atlas_cell/3)/2.0);
 		vec3 texel=texture(material_atlas,origin+tile*vec2(1.0/3.0,.5)).rgb;
-		color*=.78+texel*.50;
+		color*=.94+texel*.12;
 	}
 	if(kind==3) {
 		float seam=step(.95,hash(vec3(floor(planar/19.0),3.0)));
-		color*=(1.0-seam*.23)*.82;
+		color*=(1.0-seam*.15)*.95;
 	}
 	if(kind==4 || kind==6) {
 		float seam=step(21.0,mod(planar.x,23.0));
 		float fiber=step(.80,hash(vec3(floor(planar.x/2.5),floor(planar.y/14.0),4.0)));
-		color*=1.0-seam*.4-fiber*.10;
+		color*=1.0-seam*.22-fiber*.025;
 	}
 	if(kind==5) {
 		float course=step(25.0,mod(planar.y,28.0));
 		float fiber=step(2.5,mod(planar.x+floor(planar.y/28.0)*7.0,4.0));
-		color*=1.0-course*.25-fiber*.10;
+		color*=1.0-course*.18-fiber*.03;
 	}
 	if(kind==9) {
 		float fiber=hash(vec3(floor(planar.x/9.0),floor(planar.y/2.7),9.0));
@@ -81,7 +81,7 @@ func _init() -> void:
 func get_material(id: String) -> ShaderMaterial:
 	var key: String={"dock":"wood","bridge":"wood","cliff":"stone"}.get(id,id)
 	if _cache.has(key): return _cache[key]
-	var types: Dictionary={"dirt":[0,"9b7c52",0],"grass":[1,"76a268",-1],"sand":[2,"cdbb87",-1],"stone":[3,"969d98",1],"wood":[4,"887055",2],"thatch":[5,"a48c63",4],"bamboo":[6,"b39d74",3],"leaves":[7,"657361",5],"metal":[8,"344a4b",-1],"bridge_board":[9,"88775f",-1],"bridge_board_light":[9,"8b7a62",-1],"bridge_board_dark":[9,"85745d",-1],"terracotta":[0,"aa7050",-1],"cloth_cream":[0,"d2bd91",-1],"cloth_teal":[0,"4c8178",-1],"office_shell":[8,"c6c5b4",-1],"office_glass":[8,"425e65",-1],"corporate_copper":[8,"a76045",-1],"roof_tiles":[5,"97674e",-1],"woven_teal":[10,"568779",-1],"paper":[0,"bfae86",-1]}
+	var types: Dictionary={"dirt":[0,"b68f58",0],"grass":[1,"8caf61",-1],"sand":[2,"e0c58c",-1],"stone":[3,"a8b5aa",1],"wood":[4,"a57b50",2],"thatch":[5,"c5a16d",4],"bamboo":[6,"c9b17d",3],"leaves":[7,"657361",5],"metal":[8,"344a4b",-1],"bridge_board":[9,"a18760",-1],"bridge_board_light":[9,"ad926a",-1],"bridge_board_dark":[9,"947853",-1],"terracotta":[0,"bb7e58",-1],"cloth_cream":[0,"e2cfa1",-1],"cloth_teal":[0,"58998c",-1],"office_shell":[8,"c6c5b4",-1],"office_glass":[8,"425e65",-1],"corporate_copper":[8,"a76045",-1],"roof_tiles":[5,"b87854",-1],"woven_teal":[10,"568779",-1],"paper":[0,"d5c092",-1]}
 	var data: Array=types.get(key,types.stone)
 	var material:=ShaderMaterial.new()
 	material.shader=_shader

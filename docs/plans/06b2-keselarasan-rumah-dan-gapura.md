@@ -35,6 +35,17 @@ Semua import/headless/native/browser memakai satu slot bergantian. Source/CPU da
 - Semua tujuan kerja/rumah/berteduh tetap dapat dicapai; dialog dan aktivitas lanjut bekerja. Recovery save lama tetap pada lantai tersambung, tanpa reset spawn atau perubahan inventori/ekonomi.
 - Full API/typecheck/world, native dan gameplay aktual dicatat terpisah. Hasil lokal tidak otomatis berarti sudah tampil di staging atau lolos browser publik default.
 
+## Koreksi lanjutan pengguna: terrain, sambungan area dan warna
+
+Pengguna menolak tebing kotak/siku90°, pulau yang tampak terputus, tangga seperti bidang datar, serta tekstur yang tampak burik. Target warna mengikuti gambar login/loading: cerah, lingkungan sejuk, cahaya matahari/lampu hangat. Piksel tajam tetap dipertahankan, sedangkan noise material dikurangi.
+
+- Terrain batu memakai kontur bahu/tanah/batuan yang menyambung, faceted dan bertumpu pada lantai bawah. Tidak menutupi akses tangga atau mengubah collision/save untuk menyamarkan masalah visual. Dek kayu tetap konstruksi lurus.
+- Di balik portal desa–hutan harus tampak potongan area tujuan dengan basis jalan dan bidang sambungan yang sama. Preview hanya visual; perpindahan area tetap melalui interaksi dan loading. Tidak menambahkan lokasi yang dapat diinjak tanpa dukungan server.
+- Ketinggian kaki harus mengikuti tread tangga yang benar-benar dirender. Ramp tetap kontinu. Naik/turun, diam, pause dan reduced motion diperiksa bersama geometri, tanpa mengklaim artwork/IK dua kaki sudah selesai.
+- Material dikurangi bintik kontras tinggi; warna dasar tanah/kayu/hijau diperbaiki sebelum menaikkan saturasi global. Bandingkan native siang/malam pada kamera, waktu dan kualitas sama; jangan menaikkan resolusi dan biaya GPU tanpa pengukuran.
+
+Pembagian lanjutan: shelter mengerjakan helper tepi terrain; character mengerjakan sampling/gerak tangga dan helper geometri; website memegang acceptance browser dan audit sisa pekerjaan. Integrator satu-satunya penulis hook LandWorld3D, palet/shader, sambungan area, manifest dan dokumentasi aktif. Seluruh engine/browser tetap bergantian.
+
 ## Sistem dan lisensi
 
 Runtime tetap Godot4.7.2 dengan konstruksi mesh modular native yang juga dipakai Griya. Port aktif Noxe terbatas pada helper kamera; referensi konstruksi bangunannya dipakai sebagai arahan, bukan klaim integrasi seluruh engine. Notice MIT dan pin upstream dipertahankan. Tidak ada aset moodboard yang didistribusikan, library runtime baru, atau generasi gambar dalam tahap alignment ini.

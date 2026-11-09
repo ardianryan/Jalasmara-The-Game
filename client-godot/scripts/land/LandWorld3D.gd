@@ -6,6 +6,8 @@ const LEVEL_HEIGHT := 48.0
 const Materials = preload("res://scripts/land/LandMaterials.gd")
 const CameraPose = preload("res://scripts/land/LandCameraPose.gd")
 const ViewProjection = preload("res://scripts/land/LandViewProjection.gd")
+const Traversal = preload("res://scripts/SurfaceTraversal.gd")
+const StairGeometry = preload("res://scripts/land/StairGeometry3D.gd")
 var camera_azimuth := -45.0
 var camera_elevation := 35.0
 var view_projection = ViewProjection.new()
@@ -56,12 +58,15 @@ var _static_builds := 0
 var _plot_updates := 0
 var _surface_queries: Array[Dictionary] = []
 var _stair_queries: Array[Dictionary] = []
+var _stair_geometry: Dictionary = {}
 var _cloth: Array[Dictionary] = []
 var _canopy_readability = preload("res://scripts/land/CanopyReadability3D.gd").new()
 var _soft_ground_patches := 0
 var _soft_ground_vertices := 0
 var _shelter_architecture = preload("res://scripts/land/ShelterArchitecture3D.gd").new()
 var _gateway_architecture = preload("res://scripts/land/GatewayArchitecture3D.gd").new()
+var _area_seam = preload("res://scripts/land/LandAreaSeam3D.gd").new()
+var _natural_edges = preload("res://scripts/land/NaturalTerrainEdges3D.gd").new()
 
 func _compute_garden_state() -> int:
 	var progress: Dictionary = GameState.player.get("progress",{})
@@ -164,10 +169,12 @@ func set_area(place: String) -> void:
 	_meshes=0
 	_components.clear()
 	_bridges.clear()
+	_stair_geometry.clear()
 	_leaves.clear()
 	_canopy_readability=preload("res://scripts/land/CanopyReadability3D.gd").new()
 	_soft_ground_patches=0
 	_soft_ground_vertices=0
+	_natural_edges=preload("res://scripts/land/NaturalTerrainEdges3D.gd").new()
 	_lanterns.clear()
 	_cloth.clear()
 	_garden_state=_compute_garden_state()
@@ -188,6 +195,7 @@ func set_area(place: String) -> void:
 	for stair in map.get("stairs",[]): _build_stair(stair)
 	for obstacle in map.get("obstacles",[]): _build_obstacle(obstacle)
 	_build_corridor_landmarks()
+	_area_seam.build(self)
 	_gateway_architecture.build(self)
 	_shelter_architecture.build(self)
 	_build_ground_details()
@@ -227,7 +235,7 @@ func _update_view(delta: float,immediate := false) -> void:
 	if viewport_3d.size!=render_size: viewport_3d.size=render_size
 	# Follow accepted actor motion in world space; Camera2D's axis-aligned bounds
 	# describe the old view, not the rotated screen or a different terrace floor.
-	var target:=map_point(actor.position,ground_height(actor.position))
+	var target:=ground_point(actor.position)
 	if immediate or not _view_ready:
 		_follow_world=target
 	else:
@@ -262,14 +270,20 @@ func visual_motion(logical_velocity: Vector2,height_velocity := 0.0) -> Vector2:
 	return view_projection.logical_motion_to_view(logical_velocity,height_velocity)
 
 func visual_locomotion(previous: Vector2,current: Vector2,delta: float) -> Vector2:
-	return visual_motion((current-previous)/maxf(.001,delta),(ground_height(current)-ground_height(previous))/maxf(.001,delta))
+	var movement: Vector2=(current-previous)/maxf(.001,delta)
+	return visual_motion(movement,ground_gradient((previous+current)*.5).dot(movement))
 
 func project_host(point: Vector2,height := NAN) -> Vector2:
-	var floor_height:=ground_height(point) if is_nan(height) else height
-	return view_projection.project_to_host(point,floor_height,Rect2(display.position,display.size))
+	var world: Vector3=ground_point(point) if is_nan(height) else map_point(point,height)
+	return view_projection.render_to_host(view_projection.project_world(world),Rect2(display.position,display.size))
 
 func logical_on_height(point: Vector3,height: float) -> Vector2:
 	_sync_projection()
+	var forward:=camera_forward()
+	var floor_point:=point+forward*((height-point.z)/forward.z)
+	for profile in _stair_queries:
+		var logical: Vector2=StairGeometry.logical_from_contact(self,profile,floor_point)
+		if logical.is_finite(): return logical
 	return view_projection.logical_on_height(point,height)
 
 
@@ -287,9 +301,7 @@ func _cache_ground_queries() -> void:
 	for stair in map.get("stairs",[]):
 		var path: Array=stair.get("path",[])
 		if path.size()<2: continue
-		var start:=_v2(path[0])
-		var end:=_v2(path[1])
-		_stair_queries.append({"start":start,"end":end,"lengthSquared":maxf(1,(end-start).length_squared()),"width":float(stair.width)*.5,"from":_level(str(stair.from)),"to":_level(str(stair.to))})
+		_stair_queries.append(Traversal.connector_profile(stair,_level(str(stair.from)),_level(str(stair.to))))
 
 func ground_height(point: Vector2) -> float:
 	var elevation:=0.0
@@ -299,10 +311,15 @@ func ground_height(point: Vector2) -> float:
 			priority=surface.priority
 			elevation=surface.height
 	for stair in _stair_queries:
-		var t: float=(point-stair.start).dot(stair.end-stair.start)/stair.lengthSquared
-		if t>=0 and t<=1 and point.distance_to(Geometry2D.get_closest_point_to_segment(point,stair.start,stair.end))<=stair.width:
-			elevation=lerpf(stair.from,stair.to,t)
+		var contact: Dictionary=Traversal.connector_ground(stair,point)
+		if not contact.is_empty(): elevation=float(contact.groundHeight)
 	return elevation
+
+func ground_point(point: Vector2) -> Vector3:
+	for profile in _stair_queries:
+		if not Traversal.connector_ground(profile,point).is_empty():
+			return StairGeometry.contact_point(self,profile,point)
+	return map_point(point,ground_height(point))
 
 func _level(id: String) -> float:
 	for terrace in map.get("terraces",[]):
@@ -378,7 +395,8 @@ func _build_landmass() -> void:
 		_build_surface_geometry(surface)
 		if area=="hub":
 			_build_surface_geometry({"id":"HubGatewayBackingPatch","polygon":[[2160,15],[2390,20],[2385,95],[2160,95]],"material":"grass","elevation":3,"heightPixels":3.0*LEVEL_HEIGHT-2.0,"priority":1})
-			_build_surface_geometry({"id":"HubGatewayBackingTrail","polygon":[[2238,18],[2324,18],[2324,88],[2238,88]],"material":"dirt","elevation":3,"heightPixels":3.0*LEVEL_HEIGHT+0.15,"priority":8})
+			if map.get("gateways",[]).is_empty():
+				_build_surface_geometry({"id":"HubGatewayBackingTrail","polygon":[[2238,18],[2324,18],[2324,88],[2238,88]],"material":"dirt","elevation":3,"heightPixels":3.0*LEVEL_HEIGHT+0.15,"priority":8})
 		return
 	if area=="forest":
 		_build_surface_geometry({
@@ -397,7 +415,7 @@ func _build_landmass() -> void:
 			"heightPixels":-0.05,
 			"priority":0,
 		})
-		_build_surface_geometry({
+		if map.get("gateways",[]).is_empty(): _build_surface_geometry({
 			"id":"ForestEntryBackingTrail",
 			"polygon":[[-45,1405],[110,1330],[150,1408],[-5,1485]],
 			"material":"dirt",
@@ -437,7 +455,7 @@ func _build_soft_ground_edge(surface: Dictionary, polygon: PackedVector2Array, h
 	var vertices:=PackedVector3Array()
 	var colors:=PackedColorArray()
 	var indices:=PackedInt32Array()
-	var insets:=Geometry2D.offset_polygon(polygon,-12.0)
+	var insets:=Geometry2D.offset_polygon(polygon,-7.0)
 	if insets.size()!=1 or insets[0].size()<3:
 		for point in polygon: vertices.append(map_point(point,height))
 		_mesh(str(surface.id),vertices,triangles,_materials.get_material(str(surface.material)))
@@ -447,11 +465,11 @@ func _build_soft_ground_edge(surface: Dictionary, polygon: PackedVector2Array, h
 		vertices.append(map_point(point,height))
 		colors.append(Color.WHITE)
 	indices=Geometry2D.triangulate_polygon(inner)
-	# Only the twelve-unit rim is subdivided; the opaque interior stays triangulated.
+	# Keep the seven-unit transition separate from the opaque ground interior.
 	for index in range(polygon.size()):
 		var a:=polygon[index]
 		var b:=polygon[(index+1)%polygon.size()]
-		var steps:=maxi(1,ceili(a.distance_to(b)/12.0))
+		var steps:=maxi(1,ceili(a.distance_to(b)/8.0))
 		for part in range(steps):
 			var outer_a:=a.lerp(b,float(part)/steps)
 			var outer_b:=a.lerp(b,float(part+1)/steps)
@@ -493,6 +511,7 @@ func _build_surface_geometry(surface: Dictionary) -> void:
 	var is_forest_bank:=surface_id in ["forest_west_land","forest_east_land"]
 	var is_forest_backing:=surface_id in ["WestForestBacking","EastForestBacking"]
 	if is_forest_backing: return
+	if _natural_edges.build_surface(self,surface,polygon,height): return
 	for i in range(polygon.size()):
 		var first:=polygon[i]
 		var second:=polygon[(i+1)%polygon.size()]
@@ -547,38 +566,9 @@ func _connector_at(point: Vector2) -> bool:
 	return false
 
 func _build_stair(stair: Dictionary) -> void:
-	var path: Array=stair.path
-	var a:=_v2(path[0])
-	var b:=_v2(path[1])
-	var tangent: Vector2=(b-a).normalized()
-	var side:=Vector2(-tangent.y,tangent.x)*float(stair.width)*.5
-	var lower:=_level(str(stair.from))
-	var upper:=_level(str(stair.to))
-	var count:=int(stair.steps) if str(stair.type)=="stairs" else 1
-	var material: Material=_materials.get_material(str(stair.get("material","stone")))
-	for i in range(count):
-		var start:=a.lerp(b,float(i)/count)
-		var end:=a.lerp(b,float(i+1)/count)
-		var top:=lerpf(lower,upper,float(i+1)/count)
-		var previous:=lerpf(lower,upper,float(i)/count)
-		var h0:=previous if str(stair.type)=="ramp" else top
-		_face("Tread",[map_point(start-side,h0),map_point(start+side,h0),map_point(end+side,top),map_point(end-side,top)],material)
-		if str(stair.type)=="stairs":
-			var left:=map_point(start-side,top)
-			var right:=map_point(start+side,top)
-			_face("Riser",[left,right,right-Vector3(0,0,top-previous),left-Vector3(0,0,top-previous)],material)
-		var base:=minf(lower,upper)-12.0
-		var top_start:=map_point(start-side,h0)
-		var top_end:=map_point(end-side,top)
-		var bottom_start:=top_start-Vector3(0,0,h0-base)
-		var bottom_end:=top_end-Vector3(0,0,top-base)
-		_face("StairSideCheek",[top_start,top_end,bottom_end,bottom_start],material)
-		top_start=map_point(start+side,h0)
-		top_end=map_point(end+side,top)
-		bottom_start=top_start-Vector3(0,0,h0-base)
-		bottom_end=top_end-Vector3(0,0,top-base)
-		_face("StairSideCheek",[top_end,top_start,bottom_start,bottom_end],material)
-		_stair_treads+=1
+	var built: Dictionary=StairGeometry.build(self,stair)
+	_stair_geometry[str(stair.id)]=built
+	_stair_treads+=int(built.count)
 
 func _build_obstacle(entry: Dictionary) -> void:
 	if str(entry.get("variant",""))=="gateway_post": return
@@ -858,11 +848,11 @@ func _tree(entry: Dictionary, rect: Rect2, center: Vector3) -> void:
 	if not palm:
 		for side in [-1.0,1.0]:
 			_column(center+Vector3(side*rect.size.x*.5,0,0),center+Vector3(0,0,height*.28),4,wood)
-		if not _atlas_canopy(previous,210+height*.25,0): _canopy(previous,210+height*.25,_trees)
+		if not _atlas_canopy(previous,210+height*.25,0,not bool(entry.get("vista",false))): _canopy(previous,210+height*.25,_trees)
 	else:
-		if not _atlas_canopy(previous,height*1.35,1): _palm_fronds(previous,height*.65)
+		if not _atlas_canopy(previous,height*1.35,1,not bool(entry.get("vista",false))): _palm_fronds(previous,height*.65)
 
-func _atlas_canopy(at: Vector3,width: float,index: int) -> bool:
+func _atlas_canopy(at: Vector3,width: float,index: int,track_occlusion := true) -> bool:
 	var path:="res://resources/art/land-foliage-v1.png"
 	if not ResourceLoader.exists(path): return false
 	var atlas: Texture2D=load(path)
@@ -883,7 +873,7 @@ func _atlas_canopy(at: Vector3,width: float,index: int) -> bool:
 	sprite.pixel_size=width/cell.x
 	sprite.position=at+camera_up()*width*.08
 	_geometry.add_child(sprite)
-	_canopy_readability.register(sprite,frame,width)
+	if track_occlusion: _canopy_readability.register(sprite,frame,width)
 	_leaves.append({"node":sprite,"home":sprite.position,"phase":float(_trees)})
 	return true
 
@@ -1265,7 +1255,7 @@ func _process(delta: float) -> void:
 	for cloth in _cloth:
 		var panel: Node3D=cloth.node
 		panel.rotation.y=sin(float(Time.get_ticks_msec())*.0014+float(cloth.phase))*.035*sway
-	_canopy_readability.update(map_point(actor.position,ground_height(actor.position)),camera_up(),camera_forward(),delta,camera_right())
+	_canopy_readability.update(ground_point(actor.position),camera_up(),camera_forward(),delta,camera_right())
 	_shelter_architecture.update(self,delta)
 	_weather_clock+=delta
 	if _weather_clock>.25:
@@ -1274,13 +1264,13 @@ func _process(delta: float) -> void:
 		var daylight:=clampf((float(weather.get("daylight",.8))-.24)/.76,0,1)
 		var clouds:=float(weather.get("clouds",0))
 		_grade_material.set_shader_parameter("daylight",daylight)
-		sunlight.light_energy=lerpf(.035,.55,daylight)*(1-clouds*.25)
+		sunlight.light_energy=lerpf(.035,.72,daylight)*(1-clouds*.25)
 		sunlight.light_color=Color("a5c2c0").lerp(Color("fff0d7"),daylight)
 		sunlight.shadow_enabled=daylight>.15 and bool(RenderQuality.get_profile().sunShadows)
 		for lantern in _lanterns: lantern.light_energy=lerpf(280.0,28.0,daylight)
 		if _glow_material: _glow_material.emission_energy_multiplier=lerpf(.85,.14,daylight)
-		environment.ambient_light_energy=lerpf(.65,.57,daylight) if area=="home" else lerpf(.50,.55,daylight)
-		environment.ambient_light_color=(Color("9faeae") if area=="home" else Color("8da4a8")).lerp(Color("bdc0b5"),daylight)
+		environment.ambient_light_energy=lerpf(.65,.62,daylight) if area=="home" else lerpf(.50,.62,daylight)
+		environment.ambient_light_color=(Color("9faeae") if area=="home" else Color("71929c")).lerp(Color("b7d4d1"),daylight)
 
 func debug_status() -> Dictionary:
 	return {"active":active,"area":area,"renderer":"LandSubViewport3D","viewport":[viewport_3d.size.x,viewport_3d.size.y],"quality":RenderQuality.get_profile(),"performance":{"staticBuilds":_static_builds,"plotUpdates":_plot_updates,"softGroundPatches":_soft_ground_patches,"softGroundVertices":_soft_ground_vertices},"readability":_canopy_readability.debug_status(),"tilt":55,"elevationDegrees":camera_elevation,"azimuthDegrees":camera_azimuth,"view":{"azimuth":camera_azimuth,"elevation":camera_elevation,"input":"screen-relative","motion":view_projection.motion_contract(ground_gradient(actor.position)),"targetHeight":ground_height(actor.position)},"meshes":_meshes,"houses":_houses,"trees":_trees,"glbModels":_models,"stairTreads":_stair_treads,"surfaces":map.get("surfaces",[]).size(),"obstacles":map.get("obstacles",[]).size(),"actors":actors_3d.counts if is_instance_valid(actors_3d) else {},"maxFootError":actors_3d.max_foot_error if is_instance_valid(actors_3d) else 0,"camera":[_center.x,_center.y],"warmLanterns":_lanterns.size(),"gardenState":_garden_state,"streamCleared":_stream_cleared,"components":_components.duplicate(),"bridges":_bridges.duplicate(true),"gateways":_gateway_architecture.debug_status(),"bitmapGround":false,"water":water_node.debug_status() if is_instance_valid(water_node) else {}}

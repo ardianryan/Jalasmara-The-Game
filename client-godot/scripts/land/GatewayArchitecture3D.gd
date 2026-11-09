@@ -84,7 +84,7 @@ func _side_fence(renderer: Node,frame: Node3D,obstacle: Dictionary,record: Dicti
 	var count:=maxi(3,ceili(bounds.size.y/20))
 	var support_count:=0
 	for side in [-1.0,1.0]:
-		var x:=bounds.get_center().x+side*(bounds.size.x*.5-4)
+		var x: float=bounds.get_center().x+float(side)*(bounds.size.x*.5-4)
 		for index in range(count):
 			var y:=lerpf(bounds.position.y+4,bounds.end.y-4,float(index)/float(count-1))
 			renderer._column(Vector3(x,y,0),Vector3(x,y,height),4,material)

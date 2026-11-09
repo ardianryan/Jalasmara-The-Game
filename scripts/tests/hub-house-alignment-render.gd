@@ -56,7 +56,7 @@ func run() -> void:
 				renderer._update_view(0,true)
 				renderer._process(.5)
 				for frame in range(6): await process_frame
-				await RenderingServer.frame_post_draw
+				RenderingServer.force_draw()
 				var status: Dictionary=renderer.debug_status()
 				assert(status.view.azimuth==-45 and status.view.elevation==35 and status.actors.player==1 and status.maxFootError<.01)
 				var framing:=Rect2(Vector2(8,8),Vector2(renderer.viewport_3d.size)-Vector2(16,16))
