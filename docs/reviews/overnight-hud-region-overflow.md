@@ -28,3 +28,8 @@ Root independently viewed all three native images: baseline and explicitU+2026 r
 
 
 Root focused regressions on the corrected source: `hud-footprint.gd`, `hud-oxygen.gd` and `dialogue-compact.gd` all PASS/exit0, no SCRIPTERROR/ERROR. The old unsupported sample-playback warning remains in dialogue-compact; the other two logs contain no warning. Logs `.runtime/overnight-region-regression-*.log`, summary `overnight-region-regressions.json`. No new browser/export or full66 acceptance is implied.
+
+
+## Full66 root source acceptance
+
+Root subsequently ran all66world checks on the integrated source: **66/66PASS**, summed150,822ms,10species/722frames verified; source runtime is the corrected32914ae+finalfixture/registrationf8b47a1. `resident-commute-contact`22,263ms under its unchanged60second limit. No SCRIPTERROR or line-start ERROR occurred. The same three existing warnings remain (4ObjectDB in locomotion-collision-foley,2in balai-resident-interaction, unsupported sample playback in dialogue-compact). Report `.runtime/overnight-world66-region/world-checks.json`, SHA256 `0c3a1ff674163207cf4074c35f906c285cf13c15ec0c976cb963b9e28fed57d2`. Root released the engine slot at05.28WIB. This closes full local source regression, while actual next Web export/browser and publication remain separate gates.
