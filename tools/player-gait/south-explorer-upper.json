@@ -238,7 +238,23 @@
         ],
         "reason": "Visible tan vest edge adjoining original vest x56,y50, not teal sleeve cap"
       }
-    ]
+    ],
+    "additionalOwnedRuns": {
+      "right/palm": [
+        [
+          69,
+          47,
+          48
+        ]
+      ],
+      "left/fore": [
+        [
+          56,
+          83,
+          84
+        ]
+      ]
+    }
   },
   "garmentPolygons": {
     "vest": [
@@ -766,6 +782,36 @@
         15,
         255
       ]
+    }
+  ],
+  "sourceBoundaryAssignments": [
+    {
+      "pixel": [
+        47,
+        69
+      ],
+      "rgba": [
+        60,
+        43,
+        32,
+        255
+      ],
+      "part": "right/palm",
+      "reason": "AUTHORED ownership of original dark lower palm boundary adjoining source48,69, outside intended torso. Was isolated1pixel on body plate."
+    },
+    {
+      "pixel": [
+        83,
+        56
+      ],
+      "rgba": [
+        68,
+        47,
+        30,
+        255
+      ],
+      "part": "left/fore",
+      "reason": "AUTHORED ownership of original dark outer forearm boundary adjoining source82,56, outside intended torso. Was isolated1pixel on body plate."
     }
   ]
 }

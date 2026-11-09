@@ -18,9 +18,9 @@ Original LEFT palm `(74,62)` and RIGHT `(49,65)` remain in their corresponding p
 
 | Original layer                 |        Opaque texels |
 | ------------------------------ | -------------------: |
-| LEFT sleeve/upper, fore, palm  |         63 / 35 / 53 |
-| RIGHT sleeve/upper, fore, palm |         50 / 47 / 50 |
-| Shirt / vest / belt / other    | 78 / 302 / 130 / 709 |
+| LEFT sleeve/upper, fore, palm  |         63 / 36 / 53 |
+| RIGHT sleeve/upper, fore, palm |         50 / 47 / 51 |
+| Shirt / vest / belt / other    | 78 / 302 / 130 / 707 |
 
 Original source reconstruction is byte-exact. Head y<43 stays byte-exact in both endpoints, and all rendered opaque colors belong to the explorer source palette.
 
@@ -41,6 +41,12 @@ The two endpoints are original rest and an authored opposing-arm pose: shoulders
 
 Shelter viewed the actual v3 source/garment, body/endpoints and isolated-arm sheets. Teal sleeves stay on arms, tan vest stays on the body, the broad vest flap is absent, isolated endpoints look connected in those stills, and no clear bright old-arm remnant or body hole was found. They specifically retained the hidden horizontal belt/vest reconstruction as an art proposal, not recovered source. Final v5 rendered poses match v3; later changes add strict status/gear guards, clearer labels, and prune unused donor candidates without changing any repair/pose bytes.
 
+## Root's follow-up: two isolated original arm-edge texels
+
+After commit `b9935c1`, root viewed the body-only plate and found dark/brown specks. Exact eight-neighbor alpha components were one main body of1,258texels and two one-pixel islands: original `(47,69)=[60,43,32,255]` and `(83,56)=[68,47,30,255]`. Neither came from authored fill. The former adjoins original RIGHT palm `(48,69)=[56,41,25,255]`; the latter adjoins LEFT forearm skin `(82,56)=[238,181,133,255]`. Both lie outside the intended fixed torso contour. Shelter independently confirmed the source coordinates/RGBA and plausibility of their arm-outline ownership.
+
+V6 explicitly assigns `(47,69)` to RIGHT palm and `(83,56)` to LEFT forearm, with original RGBA and manual ownership reasons in the spec/manifest. No source pixel is erased or recolored. The body now has exactly one1,258-texel alpha component;41 hidden repairs and the intended contour are unchanged. Original rest stays byte-exact. A regression reconstructs the previous masks, proves the exact `[1258,1,1]` component failure and island coordinates, then checks `[1258]` after reassignment. Remaining **attached** original dark garment folds were not automatically deleted or reassigned. This is narrow source-boundary repair, not acceptance of every dark pixel's anatomy.
+
 ## Actual checks and reproduction
 
 ```sh
@@ -49,18 +55,18 @@ python3 -m py_compile tools/player-gait/south-explorer-upper.py tools/player-gai
 python3 tools/player-gait/south-explorer-upper.py --output artifacts/player-gait/south-explorer-upper-fresh
 ```
 
-**6/6 CPU tests PASS**, along with `py_compile` and `git diff --check`. Tests exercise every original texel's one-owner coverage/RGBA; exact rest; vest shoulder versus teal cap/palm ownership; all41 same-row/same-garment source donors and their occlusion; unchanged head/palette and rigid determinant+1/unit transforms; rejecting daily/wrong-source/corrupt donor/duplicate vest mesh status/measured-wrist relabeling; unchanged source/input and refusal to write runtime output. These checks do not grade joint anatomy or animation quality. No engine, browser, GPU, frame timing, gear-node run or new export occurred.
+**7/7 CPU tests PASS**, along with `py_compile` and `git diff --check`. Tests exercise every original texel's one-owner coverage/RGBA; exact rest; vest shoulder versus teal cap/palm ownership; all41 same-row/same-garment source donors and their occlusion; unchanged head/palette and rigid determinant+1/unit transforms; rejecting daily/wrong-source/corrupt donor/duplicate vest mesh status/measured-wrist relabeling; unchanged source/input and refusal to write runtime output. These checks do not grade joint anatomy or animation quality. No engine, browser, GPU, frame timing, gear-node run or new export occurred.
 
-Ignored final review: `artifacts/player-gait/south-explorer-upper-draft-v5/`.
+Ignored final review: `artifacts/player-gait/south-explorer-upper-draft-v6/`. Previous v5 remains preserved with its two visible specks; it is not silently relabeled as the corrected evidence.
 
 | File                                     |  Bytes | SHA256                                                             |
 | ---------------------------------------- | -----: | ------------------------------------------------------------------ |
-| `explorer0-source-garment-ownership.png` | 19,423 | `01934f6800720314e0581c8a81f44f95e534e08e3f83334d8f1c1b3e57c4c6cb` |
-| `explorer0-two-endpoints-and-body.png`   | 23,807 | `9af9d3cbb8878b2ae2705e5d1414002f1a7d9b818b8589663cde1c3350d2236f` |
-| `explorer0-separate-arm-endpoints.png`   | 10,567 | `0e4e693b7e1db4bf6e875cf7c1490b5150cb701f55e0aa873ab9972c88891983` |
-| `manifest.json`                          | 26,467 | `81c2aea9246862477192ab9dc4a02422bed685d5a60e4157640c94fea1eb0a9f` |
+| `explorer0-source-garment-ownership.png` | 19,403 | `1085c4ffa3c4382fc5282ea6f38ff92cbe4032edabf5d6aea1f967c876bbbc47` |
+| `explorer0-two-endpoints-and-body.png`   | 23,793 | `867915cd1f07d01e29ecfe21bf8e3c1d2214bbdb43fd962a6ea1f18ecf9c4df5` |
+| `explorer0-separate-arm-endpoints.png`   | 10,603 | `cbdc8e205a8556541cae1848306413ce3deb599a77aa6a649c6f30e5fb290200` |
+| `manifest.json`                          | 27,126 | `e8277a29f525576fc7a1c2394894011e9fdd43f58f102f96018fd458255d86b1` |
 
-Spec SHA `47b6573a6abfb33c65a54c9a82fe9c21bfd8bf37c8f51f0d03befdd7dde4776c`. Manifest pins original source/tool/spec/helper, exact source arm and garment runs,41 authored donor records, authored joint/matrix poses and the zero-new-gear contract. Earlier source grids and failed draft attempts remain under `artifacts/player-gait/south-explorer-source-inspect-v1/` and draft v1–v4.
+Spec SHA `757f811d8f0dd71d965861b2f32c642c6d205f95b920e6de4231b6e1ce77f8a5`. Manifest pins original source/tool/spec/helper, exact source arm and garment runs,41 authored donor records, authored joint/matrix poses and the zero-new-gear contract. Earlier source grids and failed draft attempts remain under `artifacts/player-gait/south-explorer-source-inspect-v1/` and draft v1–v4.
 
 Next: root/character review these exact source boundaries and the hidden belt/vest shading before extending explorer into a cyclic loop. Wrists/grips, dynamic occlusion, source completeness at different angles, native scale, stopping/turning and final Lower contact coupling remain separate work. There is no source-atlas replacement, new torso/gear geometry or default activation in this package.
 

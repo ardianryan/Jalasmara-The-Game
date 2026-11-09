@@ -20,6 +20,25 @@ COLORS = {'belt': (208, 100, 80, 255), 'vest': (224, 189, 96, 255), 'shirt': (59
 def digest(data): return hashlib.sha256(data).hexdigest()
 
 
+def opaque_components(image):
+    remaining = {(x,y) for y in range(image.height) for x in range(image.width) if image.getpixel((x,y))[3]}
+    result = []
+    while remaining:
+        pending = [remaining.pop()]
+        part = []
+        while pending:
+            x,y = pending.pop()
+            part.append([x,y])
+            for dx in (-1,0,1):
+                for dy in (-1,0,1):
+                    q = x+dx,y+dy
+                    if q in remaining:
+                        remaining.remove(q)
+                        pending.append(q)
+        result.append(part)
+    return sorted(result, key=len, reverse=True)
+
+
 def prepare(spec):
     require(spec.get('schemaVersion') == 1 and spec.get('identity') == 'male_nusantara'
             and spec.get('outfit') == 'explorer' and spec.get('view') == 'south'
@@ -31,6 +50,13 @@ def prepare(spec):
             and spec['gearContract']['atlasVestMeshEnabled'] is False
             and spec['gearContract']['tankNetEnabled'] is False, 'Do not introduce duplicate garment/gear in authoring proposal')
     source, plate, arms, rebuilt = ownership.split(spec['case'])
+    seen = set()
+    for record in spec.get('sourceBoundaryAssignments', []):
+        q = tuple(record['pixel'])
+        require(q not in seen and list(source.getpixel(q)) == record['rgba']
+                and record['rgba'][3] == 255 and arms[record['part']].getpixel(q) == source.getpixel(q)
+                and not plate.getpixel(q)[3] and 'AUTHORED' in record['reason'], 'Source boundary assignment differs from original arm ownership proposal')
+        seen.add(q)
     masks = {name: ownership.polygon(poly) for name, poly in spec['garmentPolygons'].items()}
     def category(x, y):
         for name in ('belt', 'vest', 'vestRight', 'shirt'):
@@ -110,6 +136,8 @@ def export(spec, output):
                 'toolSha256': digest(Path(__file__).read_bytes()), 'ownershipToolSha256': digest(Path(ownership.__file__).read_bytes()),
                 'sourceArms': {k: ownership.row_runs(v) for k,v in arms.items()},
                 'sourceGarments': {k: ownership.row_runs(v) for k,v in garments.items()},
+                'sourceBoundaryAssignments': spec.get('sourceBoundaryAssignments', []),
+                'bodyComponents': [{'opaquePixels': len(c), 'pixels': c if len(c) < 16 else None} for c in opaque_components(body)],
                 'authoredHiddenGarment': repairs, 'jointsStatus': spec['jointsStatus'], 'joints': spec['joints'],
                 'poses': [{'name': n, 'transforms': t, 'rgbaSha256': digest(im.tobytes())} for n, im, t in poses],
                 'gearContract': spec['gearContract']}

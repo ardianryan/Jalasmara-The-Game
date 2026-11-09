@@ -66,13 +66,30 @@ class ExplorerUpper(unittest.TestCase):
                     self.assertAlmostEqual(math.hypot(a,d), 1)
                     self.assertAlmostEqual(math.hypot(b,e), 1)
 
+    def test_original_outline_specks_move_to_arms_without_deletion(self):
+        source, plate, arms, garments, body, repairs, poses = self.data
+        self.assertEqual([len(c) for c in tool.opaque_components(body)], [1258])
+        for q, part, rgba in [((47,69),'right/palm',(60,43,32,255)), ((83,56),'left/fore',(68,47,30,255))]:
+            self.assertEqual(source.getpixel(q), rgba)
+            self.assertEqual(arms[part].getpixel(q), rgba)
+            self.assertEqual(body.getpixel(q)[3], 0)
+            self.assertTrue(all(im.getpixel(q)[3] == 0 for im in garments.values()))
+        predecessor = copy.deepcopy(self.spec)
+        predecessor['case'].pop('additionalOwnedRuns')
+        predecessor['sourceBoundaryAssignments'] = []
+        before = tool.prepare(predecessor)[4]
+        parts = tool.opaque_components(before)
+        self.assertEqual([len(c) for c in parts], [1258,1,1])
+        self.assertEqual({tuple(c[0]) for c in parts if len(c) == 1}, {(47,69),(83,56)})
+
     def test_scope_source_donor_and_duplicate_gear_rejected(self):
-        for mutation in ('outfit','source','donor','gear','status'):
+        for mutation in ('outfit','source','donor','gear','status','boundary'):
             spec = copy.deepcopy(self.spec)
             if mutation == 'outfit': spec['outfit'] = 'daily'
             if mutation == 'source': spec['sourceSha256'] = '0'*64
             if mutation == 'donor': spec['sourceRowDonorCandidates'][0]['rgba'][0] ^= 1
             if mutation == 'gear': spec['gearContract']['atlasVestMeshEnabled'] = True
+            if mutation == 'boundary': spec['sourceBoundaryAssignments'][0]['rgba'][0] ^= 1
             if mutation == 'status': spec['jointsStatus'] = 'measured original wrist'
             with self.assertRaises(ValueError): tool.prepare(spec)
 
