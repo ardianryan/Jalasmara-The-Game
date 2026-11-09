@@ -403,8 +403,15 @@ export function Admin({ auth }: { auth: AuthState }) {
     setDirty(true);
     if (!invalid) editRecord({ ...current, [key]: parsed });
   }
-  function requireValidArrays() {
-    if (!invalidArrays) return true;
+  function requireValidArrays(onlyCategory?: keyof Catalog) {
+    const invalid = onlyCategory
+      ? Object.entries(arrayDrafts).some(
+          ([key, fields]) =>
+            key.startsWith(`${onlyCategory}:`) &&
+            Object.values(fields).some((field) => field.invalid),
+        )
+      : invalidArrays;
+    if (!invalid) return true;
     setError(
       "Perbaiki array JSON yang belum valid sebelum menyimpan atau meninjau publikasi.",
     );
@@ -470,6 +477,7 @@ export function Admin({ auth }: { auth: AuthState }) {
     });
   }
   function exportQuestions() {
+    if (!requireValidArrays("questions")) return;
     const blob = new Blob(
         [JSON.stringify(content!.catalog.questions, null, 2)],
         { type: "application/json" },
@@ -496,6 +504,13 @@ export function Admin({ auth }: { auth: AuthState }) {
         ...c!,
         catalog: { ...c!.catalog, questions: r.questions },
       }));
+      setArrayDrafts((drafts) =>
+        Object.fromEntries(
+          Object.entries(drafts).filter(
+            ([key]) => !key.startsWith("questions:"),
+          ),
+        ),
+      );
       setDirty(true);
       setRecord(0);
       setNotice(

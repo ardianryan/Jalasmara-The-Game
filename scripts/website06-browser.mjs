@@ -1,7 +1,7 @@
 // Run against a local Vite server. All API routes are isolated fixtures.
 import { chromium } from "@playwright/test";
 import assert from "node:assert/strict";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
 const origin = process.env.WEBSITE_TEST_ORIGIN ?? "http://localhost:5176";
 assert(["localhost", "127.0.0.1"].includes(new URL(origin).hostname));
@@ -193,6 +193,10 @@ async function fixture(viewport, role = "owner") {
     if (path === "/api/admin/content/fixture-draft/publish") {
       state.publications++;
       return route.fulfill({ json: { ok: true } });
+    }
+    if (path === "/api/admin/questions/validate") {
+      const questions = route.request().postDataJSON();
+      return route.fulfill({ json: { questions, count: questions.length } });
     }
     if (path === "/api/admin/audit")
       return route.fulfill({ json: { total: 0, audits: [] } });
@@ -525,6 +529,88 @@ try {
       checks.push({
         label:
           "invalid JSON raw drafts survive record/category and canceled navigation; disabled controls and actual handlers reject writes, keyboard saves only repaired arrays",
+      });
+      await page.getByLabel("Pilih abilities").selectOption("0");
+      await prices.fill("[7,");
+      await page.getByRole("button", { name: "Soal", exact: true }).click();
+      const replacement = [
+        {
+          ...question,
+          id: "q-import",
+          prompt: "Pertanyaan hasil impor yang dikonfirmasi.",
+          options: ["Baru A", "Baru B", "Baru C", "Baru D"],
+        },
+      ];
+      const importFile = {
+        name: "questions.json",
+        mimeType: "application/json",
+        buffer: Buffer.from(JSON.stringify(replacement)),
+      };
+      await Promise.all([
+        page.waitForEvent("dialog").then((dialog) => dialog.dismiss()),
+        page.getByLabel("Impor JSON soal").setInputFiles(importFile),
+      ]);
+      await page.waitForFunction(() =>
+        [...document.querySelectorAll("button")].some(
+          (button) =>
+            button.textContent?.trim() === "Arsipkan draft" && !button.disabled,
+        ),
+      );
+      assert.equal(
+        await page.getByLabel("Pertanyaan", { exact: true }).inputValue(),
+        question.prompt,
+      );
+      page.once("dialog", (dialog) => dialog.accept());
+      await page.getByLabel("Impor JSON soal").setInputFiles(importFile);
+      await page
+        .getByText(
+          "Impor masuk ke draft lokal. Simpan dan publikasikan setelah peninjauan.",
+          { exact: true },
+        )
+        .waitFor();
+      assert.equal(
+        await page.getByLabel("Pertanyaan", { exact: true }).inputValue(),
+        replacement[0].prompt,
+      );
+      assert.equal(
+        await page.getByLabel("Pilihan A", { exact: true }).inputValue(),
+        "Baru A",
+      );
+      assert.equal(
+        await save.isDisabled(),
+        true,
+        "Confirmed question replacement must preserve invalid ability drafts",
+      );
+      const [exported] = await Promise.all([
+        page.waitForEvent("download"),
+        page
+          .getByRole("button", { name: "Ekspor JSON soal", exact: true })
+          .click(),
+      ]);
+      const exportedPath = `${output}/imported-questions-export.json`;
+      await exported.saveAs(exportedPath);
+      assert.deepEqual(
+        JSON.parse(readFileSync(exportedPath, "utf8")),
+        replacement,
+      );
+      await page
+        .getByRole("button", { name: "Kemampuan", exact: true })
+        .click();
+      assert.equal(await prices.inputValue(), "[7,");
+      await prices.fill("[0,120,240]");
+      await save.click();
+      await page
+        .getByText("Draft disimpan. Tinjau sebelum publikasi.", { exact: true })
+        .waitFor();
+      assert.equal(state.contentWrites.length, 2);
+      assert.deepEqual(state.contentWrites[1].catalog.questions, replacement);
+      assert.deepEqual(
+        state.contentWrites[1].catalog.abilities[0].prices,
+        [0, 120, 240],
+      );
+      checks.push({
+        label:
+          "canceled import preserves questions; confirmed import replaces only questions, preserves invalid other-category raw draft, and exports actual imported content",
       });
     }
     await page.goto(`${origin}/settings`);
