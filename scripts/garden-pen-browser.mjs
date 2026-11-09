@@ -188,7 +188,7 @@ try {
     redirect: "error",
     signal: AbortSignal.timeout(180000),
   });
-  assert(release.ok());
+  assert(release.ok);
   const digest = createHash("sha256");
   let bytes = 0;
   for await (const chunk of release.body) {
