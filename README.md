@@ -57,6 +57,7 @@ Jika Godot tidak ada di PATH, isi `GODOT_BIN` dengan path executable. Hasil eksp
 | `packages/shared/`                              | Kontrak data, konten awal, dan definisi wilayah                  |
 | `assets/brand/`                                 | Kit identitas Jalasmara                                          |
 | `ci/`                                           | Build Godot, CodeQL, dan pengiriman laporan                      |
+| `scripts/package-web-release.py`                 | Context Docker tracked dengan manifest hash dan reuse aset terverifikasi |
 | `tools/npc-rig/`                                | Generator bagian tubuh NPC dari artwork orisinal proyek          |
 | `tools/worldkit/`                               | Adapter offline peta dan validator lantai, elevasi, serta portal |
 | `tools/pixel-snapper/`, `tools/image-to-pixel/` | Persiapan grid dan palet aset offline dengan atribusi upstream   |
@@ -69,7 +70,7 @@ WorldKit adalah lapisan authoring dan pipa aset milik proyek; Godot tetap runtim
 
 Lihat [panduan WorldKit](tools/worldkit/README.md), [Pixel Snapper](tools/pixel-snapper/README.md), [pengolah palet](tools/image-to-pixel/README.md), dan [backlog next-gen](docs/nextgen-world-authoring.md). Jalankan `npm run check:worldkit` untuk memeriksa adapter beserta kecocokan geometry server. `npm run check:worldkit-assets` membutuhkan instalasi/build alat sesuai README masing-masing.
 
-[Fish Gen](docs/world/fish-gen-reference.md) sudah disimpan sebagai kandidat generator fauna laut offline, lengkap dengan pin source, lisensi MIT dan rencana adapter animasi. Tool ini belum dijalankan atau masuk runtime; pilot dilakukan setelah pekerjaan inti selesai.
+[Fish Gen](docs/world/fish-gen-reference.md) sudah dipakai sebagai generator offline untuk atlas orisinal32bingkai dan tiga ikan dekoratif (satu pada profil ringan), dengan adapter animasi GDScript. Adapter masuk paket staging PCK73d; sepuluh spesies gameplay tetap. Pin, MIT/izin hasil dan provenance tersedia pada [pilot aktual](docs/reviews/overnight-fishgen-pilot.md). Ini bukan generator terrain/air atau perubahan ekonomi tangkapan.
 
 ## Akun dan pengelolaan
 
