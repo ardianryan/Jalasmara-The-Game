@@ -19,6 +19,7 @@ var last_delta:=0.0
 var capture_stride:=4
 var trace:Array=[]
 var output:=""
+var capture_log:FileAccess
 
 func _initialize() -> void: call_deferred("run")
 func _check(valid:bool,message:String) -> bool:
@@ -145,6 +146,8 @@ func _tick(target:Vector2,delta:float,label:String) -> void:
 		var index:=frames.size()
 		renderer.viewport_3d.get_texture().get_image().save_png(output+"/%04d.png"%index)
 		frames.append({"frame":index,"case":label,"position":[target.x,target.y],"pose":renderer.actors_3d.counts.nalaLowerBody.duplicate(true)})
+		capture_log.store_line(JSON.stringify(frames[-1]))
+		capture_log.flush()
 
 func _reset_case(at:Vector2,outfit:String) -> void:
 	previous.clear()
@@ -163,6 +166,7 @@ func run() -> void:
 		output=OS.get_environment("NALA_LOWER_OUTPUT") if OS.has_environment("NALA_LOWER_OUTPUT") else "res://../artifacts/godot/overnight-nala-lower-"+str(int(Time.get_unix_time_from_system()))
 		if not _check(not DirAccess.dir_exists_absolute(ProjectSettings.globalize_path(output)),"Capture output already exists; preserve prior native proof"): return
 		DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(output))
+		capture_log=FileAccess.open(output+"/frames.jsonl",FileAccess.WRITE)
 		var source_hashes:Dictionary={}
 		for path in ["res://scripts/NalaFootPlant.gd","res://scripts/NalaLowerBody3D.gd","res://scripts/CharacterVisual.gd","res://scripts/land/LandActors3D.gd","res://../scripts/tests/nala-lower-body.gd"]: source_hashes[path]=FileAccess.get_sha256(path)
 		FileAccess.open(output+"/source.json",FileAccess.WRITE).store_string(JSON.stringify({"files":source_hashes,"flatOnly":OS.get_environment("NALA_LOWER_FLAT_ONLY")=="1","captureStride":capture_stride,"nativeAcceptance":"pending visual review; never full gait by geometry alone"},"  "))
