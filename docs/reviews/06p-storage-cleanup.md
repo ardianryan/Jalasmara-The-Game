@@ -4,22 +4,22 @@
 
 ## Hasil aktual lokal
 
-Sumber bukti: `/Users/ardianryan/Documents/Jalasmara/.runtime/cleanup-20261109-local.json`, SHA256 `a8781c3cd25bc18e326ff26c2128b1975710c302410577adc8e1f6ca51218a5d`. Hitungan49 entri dan jumlah `allocatedBytes` dihitung ulang dari seluruh array `removed`, bukan disalin dari estimasi inventori.
+Sumber bukti final lokal: `/Users/ardianryan/Documents/Jalasmara/.runtime/cleanup-20261109-local.json`, SHA256 `451a0ce53309cd985de5a869cc0d5752d14bb806deb60a7f120b70391558419c`. Hitungan51 entri dan jumlah `allocatedBytes` dihitung ulang dari seluruh array `removed`, bukan disalin dari estimasi inventori. Pemeriksaan awal mencakup49 path; integrator kemudian menambahkan dua gzip obsolete ke manifest dan reviewer memeriksa keduanya sudah hilang.
 
 | Jenis yang benar-benar dihapus | Jumlah path | Allocated bytes |
 | --- | ---: | ---: |
 |Cache import/editor Godot nonaktif, termasuk salinan cold/hero|19|1.162.543.104|
 |Build aplikasi/Vite nonaktif|6|134.373.376|
 |Ekspor game compiled lama|9|903.503.872|
-|Arsip tar/PCK lama|14|1.499.697.152|
+|Arsip tar/PCK/gzip lama|16|1.931.960.320|
 |Installer export templates yang sudah terpasang|1|1.281.351.680|
-|**Total aktual**|**49**|**4.981.469.184**|
+|**Total aktual**|**51**|**5.413.732.352**|
 
-Manifest mencatat4.954.930.484 logical bytes. Snapshot free space sebelum pembersihan3.964.059.648B, sesudah8.954.580.992B: kenaikan4.990.521.344B. Allocated bytes yang dihapus sekitar4,64GiB; selisih dengan perubahan free space dapat dipengaruhi APFS dan aktivitas bersamaan. Jangan menjumlahkan logical dan allocated atau menghitung ulang subfolder dari parent sebagai ruang tambahan.
+Manifest final mencatat5.387.189.795 logical bytes. Allocated bytes yang dihapus sekitar5,04GiB atau5,414GB. Snapshot awal free space sebelum pembersihan3.964.059.648B dan sesudah49 path8.954.580.992B: saat itu teramati kenaikan4.990.521.344B. Sesudah dua gzip tambahan dibuang, manifest diperbarui dengan free snapshot7.585.648.640B sementara arsip baru/build/browser juga memakai disk. **Jangan menyamakan selisih free snapshot akhir dengan total bytes penghapusan51 path.** APFS dan aktivitas bersamaan juga dapat memengaruhi angka free space; logical dan allocated tidak dijumlahkan sebagai reklamasi tambahan.
 
 Pembacaan `df -k` read-only sesudahnya melaporkan7.157.572KiB tersedia atau7.329.353.728B. Itu snapshot lebih baru ketika pekerjaan build/QA telah berlanjut, bukan pengganti dua pengukuran sebelum/sesudah pada manifest. Tidak disimpulkan sebagai penghapusan gagal atau angka reklamasi baru.
 
-Daftar49 path exact dan bytes ada pada manifest. Folder source snapshot lama tetap; hanya cache/compiled export child serta arsip yang sudah dipilih integrator dibuang. Tidak ada penghapusan seluruh worktree atau parent `.runtime`.
+Daftar51 path exact dan bytes ada pada manifest. Folder source snapshot lama tetap; hanya cache/compiled export child serta arsip yang sudah dipilih integrator dibuang. Tidak ada penghapusan seluruh worktree atau parent `.runtime`.
 
 ## Perbedaan dengan inventori sebelumnya
 
@@ -27,11 +27,11 @@ Daftar49 path exact dan bytes ada pada manifest. Folder source snapshot lama tet
 
 `templates.tpz` semula ditahan pada inventori. Integrator memverifikasi Web templates sudah terpasang, lalu menghapus **arsip installer**1.281.351.680B, bukan installed templates. Reviewer memastikan `/Users/ardianryan/Library/Application Support/Godot/export_templates/4.7.2.stable/` masih memiliki delapan ZIP Web, termasuk `web_nothreads_release.zip`10.245.903B dan `web_nothreads_debug.zip`10.232.720B. Tidak ada Godot import/export baru yang dijalankan reviewer untuk memeriksanya.
 
-Dua arsip lokal `06b-f319da9.tar.gz`216.114.566 logicalB dan `06b-11c7576.tar.gz`216.144.745 logicalB **masih ada pada saat pemeriksaan** dan tidak tercantum dalam49 entri removed. Jangan mengklaim keduanya sudah dihapus hanya karena masuk inventori calon. `godot.zip` juga masih ada. Catatan dua arsip f319/11c yang sudah dihapus pada VPS adalah kejadian terpisah; status remote belum diverifikasi reviewer pada checkpoint ini.
+Dua arsip lokal `06b-f319da9.tar.gz`216.114.566 logicalB dan `06b-11c7576.tar.gz`216.144.745 logicalB awalnya belum dihapus pada checkpoint49 path. Integrator kemudian menghapus keduanya, menambahkan432.263.168 allocatedB ke manifest final51 path, dan reviewer memastikan kedua path tidak ada. Ini perubahan aktual sesudah checkpoint awal, bukan kesimpulan dari inventori calon. `godot.zip` masih ada; arsip source/build f4 yang sedang dipakai juga dilindungi hingga integrator menyatakan sudah tidak perlu. Catatan penghapusan dua arsip f319/11c pada VPS adalah kejadian terpisah; status remote belum diverifikasi reviewer pada checkpoint ini.
 
 ## Pemeriksaan preservasi
 
-Reviewer memeriksa seluruh entri removed:42 target yang tidak ditandai `preservedGitkeep` sudah tidak ada;7 folder public/game dengan `preservedGitkeep=true` masih ada dan masing-masing hanya berisi `.gitkeep`.
+Reviewer memeriksa ulang seluruh51 entri removed:44 target yang tidak ditandai `preservedGitkeep` sudah tidak ada;7 folder public/game dengan `preservedGitkeep=true` masih ada dan masing-masing hanya berisi `.gitkeep`.
 
 Pemeriksaan keberadaan read-only juga memastikan:
 
