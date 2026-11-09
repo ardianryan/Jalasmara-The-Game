@@ -370,6 +370,7 @@ for (const stair of hubStairs)
     connectorId: stair.id,
   });
 const hubRoutes: LandPoint[][] = [
+  [[1210, 1250], [1430, 1260]],
   [
     [1120, 1230],
     [1350, 1290],

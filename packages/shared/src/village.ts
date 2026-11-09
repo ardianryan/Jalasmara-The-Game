@@ -10,14 +10,14 @@ export const VILLAGE_RESIDENTS = [
   {
     id: "npc_mbok_ratih", name: "Mbok Ratih", title: "Pedagang Pasar Tambakbaya", appearance: 1, cycle: 1,
     route: [[620, 1030], [710, 1040]],
-    activity: { kind: "trading", startMinute: 420, endMinute: 1080, work: [620, 1030], rest: [465, 320], shelter: [465, 320], commute: [[620, 1030], [600, 950], [600, 815], [600, 735], [595, 650], [900, 650], [900, 350], [940, 310], [640, 320], [465, 320]] },
+    activity: { kind: "trading", startMinute: 420, endMinute: 1080, work: [620, 1030], rest: [465, 320], shelter: [465, 320], commute: [[620, 1030], [600, 950], [600, 815], [600, 735], [595, 650], [900, 650], [900, 350], [940, 310], [760, 350], [640, 350], [640, 320], [465, 320]] },
     line: "Berat barang bersama wadah disebut bruto. Kurangi berat wadah, atau tara, untuk mendapatkan netto. Timbangan dacin ini bisa diperiksa bersama pembeli.",
     evening: "Bahan dapur untuk Mbah Wira sudah kutimbang. Catat berat bersihnya supaya racikan malam ini tidak meleset.",
   },
   {
     id: "npc_mang_ujang", name: "Mang Ujang", title: "Nakhoda Bandar Hujung", appearance: 2, cycle: 1,
     route: [[1210, 1250], [1330, 1280]],
-    activity: { kind: "fishing", startMinute: 360, endMinute: 1050, work: [900, 1360], rest: [1210, 1250], shelter: [1430, 1260], commute: [[900, 1360], [1120, 1360], [1210, 1250], [1430, 1260]] },
+    activity: { kind: "fishing", startMinute: 360, endMinute: 1050, work: [900, 1360], rest: [1210, 1250], shelter: [1430, 1260], commute: [[900, 1360], [1120, 1360], [1210, 1250]] },
     line: "Bilik Beno ada sebelum tangga selam. Lewati biliknya untuk memasang tabung dan Jala Kognisi. Perjalanan pulang juga memerlukan oksigen; jangan habiskan semuanya saat mengejar tangkapan.",
     evening: "Permukaan yang tenang belum tentu berarti arus di bawah juga tenang. Lihat arah renik air dan simpan bekal oksigen untuk pulang.",
   },
@@ -31,7 +31,7 @@ export const VILLAGE_RESIDENTS = [
   {
     id: "npc_yu_sari", name: "Yu Sari", title: "Penenun Serat Bahari", appearance: 4, cycle: 1,
     route: [[760, 650], [900, 650]],
-    activity: { kind: "weaving", startMinute: 480, endMinute: 1020, work: [760, 650], rest: [1305, 300], shelter: [1305, 300], commute: [[760, 650], [900, 650], [900, 350], [940, 310], [1150, 320], [1305, 300]] },
+    activity: { kind: "weaving", startMinute: 480, endMinute: 1020, work: [760, 650], rest: [1305, 300], shelter: [1305, 300], commute: [[760, 650], [900, 650], [900, 350], [940, 310], [1150, 320], [1150, 360], [1240, 365], [1305, 360], [1305, 300]] },
     line: "Serat kususun berpilin agar beban terbagi. Bawa perlengkapan ke Beno untuk peningkatan kemampuan. Baju lapangan dipakai saat masuk hutan; tabung baru dipasang di bilik dermaga.",
     evening: "Kain basah kuangin-anginkan dulu. Menyimpan jala lembap terlalu lama membuat serat cepat rusak.",
   },
@@ -50,7 +50,7 @@ export const VILLAGE_DISTRICT_ACTIVITIES = {
     activity: {
       kind: "gardening", startMinute: 420, endMinute: 1050,
       work: [1720, 520], rest: [1375, 300], shelter: [1375, 300],
-      commute: [[1720, 520], [1350, 635], [900, 650], [900, 350], [940, 310], [1150, 320], [1375, 300]],
+      commute: [[1720, 520], [1350, 635], [900, 650], [900, 350], [940, 310], [1150, 320], [1150, 360], [1240, 365], [1305, 360], [1305, 300], [1375, 300]],
     },
   },
 } as const;
