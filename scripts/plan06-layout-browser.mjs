@@ -5,7 +5,7 @@ import { MongoClient } from "mongodb";
 import Redis from "ioredis";
 import argon2 from "argon2";
 import { randomUUID, randomBytes, createHash } from "node:crypto";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import assert from "node:assert/strict";
 import {
   freshAbilities,
@@ -50,6 +50,31 @@ assert(
 );
 const routeLimitMs =
   (["left", "lower"].includes(routeMode) ? 5 : 10) * 60 * 1000;
+const shelterWaitPosition = { x: 800, y: 1000 };
+function validateShelterWait(world, from) {
+  const profiles = [
+    ...world.surface_hub.residents,
+    ...Object.values(world.surface_hub.districtActivities),
+  ];
+  const stations = profiles.flatMap((profile) => [
+    profile.activity.work,
+    profile.activity.rest,
+    profile.activity.shelter,
+    ...(profile.route ? [profile.route[0]] : []),
+  ]);
+  const darmi = world.surface_hub.districts.find(
+    (entry) => entry.npc === "Bu Darmi",
+  );
+  stations.push([darmi.x, darmi.y]);
+  assert(
+    stations.every(
+      ([x, y]) =>
+        Math.hypot(x - shelterWaitPosition.x, y - shelterWaitPosition.y) > 175,
+    ),
+  );
+  return physicalRoute(world, from, shelterWaitPosition, "hub");
+}
+if (routeMode === "shelters") validateShelterWait(WORLD, WORLD.surfaceSpawn);
 const navigation = { matrixPulses: 0, legacyPulses: 0 };
 const inputProofs = [];
 const fixtureStoryDay = routeMode === "dialogue" ? 1 : 2;
@@ -63,6 +88,66 @@ assert(
   Number.isSafeInteger(expectedPckBytes) && expectedPckBytes > 0,
   "Set PLAN06_EXPECT_PCK_BYTES to the exact exported PCK size.",
 );
+let shelterPredecessor;
+if (process.env.PLAN06_SHELTER_PREDECESSOR) {
+  assert.equal(routeMode, "shelters");
+  const previousId = process.env.PLAN06_SHELTER_PREDECESSOR;
+  assert(
+    /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(
+      previousId,
+    ),
+  );
+  const previous = JSON.parse(
+    readFileSync(
+      `artifacts/browser/plan06-layout-${previousId}/results.json`,
+      "utf8",
+    ),
+  );
+  assert.equal(previous.origin, origin);
+  assert.equal(previous.routeMode, "shelters");
+  assert.equal(previous.candidatePck.sha256, expectedPck);
+  assert.equal(previous.candidatePck.decodedBytes, expectedPckBytes);
+  assert.equal(previous.ownTemporaryPlayerRemoved, true);
+  assert(
+    previous.checks.includes(
+      "seven-residents-reach-rain-shelter-stations-on-the-real-night-calendar",
+    ),
+  );
+  const reached = previous.observations.find(
+    (entry) =>
+      entry.name === "left-seven-shelters-player-clears-station-approaches",
+  );
+  assert(reached && Number.isFinite(reached.x) && Number.isFinite(reached.y));
+  assert(
+    Math.hypot(
+      reached.x - shelterWaitPosition.x,
+      reached.y - shelterWaitPosition.y,
+    ) < 5,
+  );
+  const names = [
+    ...WORLD.surface_hub.residents.map((entry) => entry.name),
+    "Bu Darmi",
+  ];
+  const completedResidents = [
+    ...new Set([
+      ...(previous.shelterPredecessor?.completedResidents ?? []),
+      ...names.filter((name) =>
+        previous.checks.includes(
+          `${name}: physical-shelter-access-dialogue-and-resume`,
+        ),
+      ),
+    ]),
+  ];
+  assert(completedResidents.every((name) => names.includes(name)));
+  assert(
+    completedResidents.length > 0 && completedResidents.length < names.length,
+  );
+  shelterPredecessor = {
+    id: previousId,
+    point: { x: reached.x, y: reached.y },
+    completedResidents,
+  };
+}
 assert.equal(WORLD.hub.layoutVersion, 9, "Harness source targets layout 9.");
 let id;
 do {
@@ -457,6 +542,8 @@ async function verifyShelters() {
       a.activity.shelter[1] - b.activity.shelter[1] ||
       a.activity.shelter[0] - b.activity.shelter[0],
   )) {
+    if (shelterPredecessor?.completedResidents.includes(resident.name))
+      continue;
     const [x, y] = resident.activity.shelter;
     await routeTo({ x, y }, "hub");
     await waitState((value) => value.nearby === resident.nearby);
@@ -482,6 +569,10 @@ async function verifyShelters() {
 async function verifyRemainingShelters() {
   assertLeftView(await snapshot(), "hub");
   await responsive(667, 375, "left-seven-shelters-start-667x375");
+  // NPCs pause for nearby players; clear their authored station approaches first.
+  validateShelterWait(world, await snapshot());
+  await routeTo(shelterWaitPosition, "hub");
+  await shot("left-seven-shelters-player-clears-station-approaches");
   await verifyShelters();
   const state = await apiState();
   assert.equal(state.player.progress.day, 2);
@@ -877,7 +968,7 @@ try {
     if (["ocean", "dialogue", "left", "shelters"].includes(routeMode)) {
       initialHub = {
         area: "hub",
-        ...WORLD.surfaceSpawn,
+        ...(shelterPredecessor?.point ?? WORLD.surfaceSpawn),
         layoutVersion: WORLD.hub.layoutVersion,
         playerVersion: 0,
         positionAt: Date.now(),
@@ -1217,7 +1308,11 @@ try {
     );
     assert(Math.hypot(initial.x - initialHub.x, initial.y - initialHub.y) < 30);
     assert.deepEqual(world.surfaceSpawn, WORLD.surfaceSpawn);
-    await shot(`${routeMode}-fixture-start-at-actual-hub-spawn`);
+    await shot(
+      shelterPredecessor
+        ? "shelter-continuation-start-at-previously-reached-quiet-point"
+        : `${routeMode}-fixture-start-at-actual-hub-spawn`,
+    );
     checks.push(`separate-${routeMode}-fixture-starts-on-real-hub-floor`);
   }
   if (routeMode === "shelters") await verifyRemainingShelters();
@@ -1310,6 +1405,7 @@ try {
           origin,
           candidatePck,
           routeMode,
+          shelterPredecessor,
           navigation,
           inputProofs,
           initialLegacy,
