@@ -1,16 +1,16 @@
 # Pengujian Windows dan Samsung S23
 
-Status 10 November 2026: pengguna bersedia menjalankan pengujian pada perangkat asli setelah kandidat siap. Dokumen ini adalah panduan pelaksanaan, bukan hasil pengujian. Build publik yang lama belum mewakili kandidat overnight; integrator harus mengisi pin rilis terlebih dahulu.
+Status 10 November 2026: pengguna bersedia menjalankan pengujian pada perangkat asli setelah kandidat siap. Dokumen ini adalah panduan pelaksanaan, bukan hasil pengujian. Kandidat overnight kini aktif dan smoke publik default lulus; pin di bawah mengikat pengujian perangkat yang akan dilakukan.
 
 ## Identitas kandidat
 
 | Data | Nilai sebelum pengujian |
 |---|---|
-| URL kandidat | Belum ditetapkan untuk pengujian perangkat |
-| Commit sumber runtime | Diisi integrator setelah rilis kandidat |
-| SHA-256 PCK dan ukuran | Diisi integrator dari manifest yang disajikan |
-| Tanggal dan jam aktivasi | Diisi integrator |
-| Hasil startup browser publik | Masih menunggu kandidat baru |
+| URL kandidat | https://staging-jalasmara.ardianryan.com |
+| Commit sumber runtime | `798a47b00a8f471069033a0d6419cd201e7aa008` (image/API), eksporGodot593dc79 |
+| SHA-256 PCK dan ukuran | `1315f34672b0fc5694a5f73684ca68bfbc6b5be1f6f4560b9628cc14ac2ef5e0`,64.491.320byte |
+| Tanggal dan jam aktivasi | 10November2026, sekitar01.04WIB |
+| Hasil startup browser publik | Lulus5pemeriksaan, HTTP/2default, gerak/jurnal/reload dan cleanup; [laporan](../reviews/overnight-public-release.md) |
 
 Integrator memverifikasi pin dan startup publik sebelum meminta pengguna menguji. Hasil recorder lokal pada PCK `1d3c94a5…` memakai SwiftShader dan tidak menjadi pengukuran Windows atau S23.
 
