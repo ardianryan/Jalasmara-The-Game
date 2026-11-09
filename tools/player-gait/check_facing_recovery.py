@@ -17,11 +17,14 @@ def audit(rows, expected_cases, rejections=None):
         feet = pose.get("contacts", {}).get("feet", {})
         if label not in cases:
             cases[label] = {"observations": 0, "desiredChanges": 0, "directions": [], "artworkDirections": [],
-                            "requestedDirectionObservations": 0, "incompleteObservations": 0,
+                            "requestedDirectionObservations": 0, "requestedDirectionMissingObservations": 0,
+                            "incompleteObservations": 0,
                             "body": {}, "left": {}, "right": {}, "lastDesired": None, "priorAccepted": 0.0}
         case = cases[label]
         case["observations"] += 1
         case["requestedDirectionObservations"] += int(bool(requested))
+        if not row.get("fixtureInitial", False) and not requested:
+            case["requestedDirectionMissingObservations"] += 1
         if artwork and artwork not in case["artworkDirections"]:
             case["artworkDirections"].append(artwork)
         if desired is None or body is None or not all("footDirection" in feet.get(side, {}) for side in ["left", "right"]):
@@ -73,12 +76,15 @@ def audit(rows, expected_cases, rejections=None):
         case.pop("lastDesired")
         case.pop("priorAccepted")
     complete = len(cases) == expected_cases and not insufficient
+    raw_insufficient = [label for label, case in cases.items()
+                        if case["requestedDirectionMissingObservations"] or not case["requestedDirectionObservations"]]
     return {"scope": "Actual recorded final source views and hold intervals only; no naturalness or missing-case inference",
             "desiredSource": "requestedDirection when recorded; intermediate artwork target only for older observations",
             "expectedCases": expected_cases, "observedCases": len(cases), "missingCases": missing,
             "completeCaseSet": complete, "incompleteObservationCases": insufficient,
+            "rawRequestedInsufficientCases": raw_insufficient,
             "terminalMismatches": mismatches, "originalRejections": rejections or [],
-            "terminalRecoveryAccepted": complete and not mismatches and not rejections,
+            "terminalRecoveryAccepted": complete and not raw_insufficient and not mismatches and not rejections,
             "cases": cases}
 
 
