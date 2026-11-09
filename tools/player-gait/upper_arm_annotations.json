@@ -1,0 +1,133 @@
+{
+  "identity": "male_nusantara",
+  "status": "Source review only; no runtime phase adapter or native acceptance",
+  "cell": [
+    128,
+    128
+  ],
+  "coordinateSystem": "original128px cell, top-left origin; front anatomical left appears on viewer right",
+  "proposedUpperFrameAtContact": {
+    "left": 4,
+    "right": 0
+  },
+  "proposedAuthoredPhaseOffset": 0.5,
+  "unverifiedViews": [
+    "east",
+    "south_east",
+    "south_west",
+    "west",
+    "north_west",
+    "north",
+    "north_east"
+  ],
+  "sources": {
+    "daily": {
+      "path": "client-godot/resources/art/player-gait/male-nusantara-daily-walk-8way-v1.png",
+      "sha256": "342724d1724490279cd0f65c0340c5b35cdf366ecc36a99af716c51f751b8fc3",
+      "view": "south",
+      "row": 2,
+      "frames": {
+        "0": {
+          "forwardArm": "left",
+          "leftPalmPixel": [
+            74,
+            62
+          ],
+          "rightPalmPixel": [
+            49,
+            65
+          ],
+          "leftPalmRgba": [
+            223,
+            165,
+            120,
+            255
+          ],
+          "rightPalmRgba": [
+            206,
+            157,
+            113,
+            255
+          ]
+        },
+        "4": {
+          "forwardArm": "right",
+          "leftPalmPixel": [
+            81,
+            66
+          ],
+          "rightPalmPixel": [
+            55,
+            63
+          ],
+          "leftPalmRgba": [
+            214,
+            159,
+            111,
+            255
+          ],
+          "rightPalmRgba": [
+            222,
+            171,
+            120,
+            255
+          ]
+        }
+      }
+    },
+    "explorer": {
+      "path": "client-godot/resources/art/player-gait/male-nusantara-explorer-walk-8way-v1.png",
+      "sha256": "a429c378400bd5ac60a45124ac48672b4cb1360beb379cc83297b52ea48ae3b9",
+      "view": "south",
+      "row": 2,
+      "frames": {
+        "0": {
+          "forwardArm": "left",
+          "leftPalmPixel": [
+            74,
+            62
+          ],
+          "rightPalmPixel": [
+            49,
+            65
+          ],
+          "leftPalmRgba": [
+            229,
+            167,
+            113,
+            255
+          ],
+          "rightPalmRgba": [
+            224,
+            164,
+            114,
+            255
+          ]
+        },
+        "4": {
+          "forwardArm": "right",
+          "leftPalmPixel": [
+            81,
+            66
+          ],
+          "rightPalmPixel": [
+            55,
+            63
+          ],
+          "leftPalmRgba": [
+            226,
+            173,
+            123,
+            255
+          ],
+          "rightPalmRgba": [
+            227,
+            178,
+            125,
+            255
+          ]
+        }
+      }
+    }
+  }
+}
