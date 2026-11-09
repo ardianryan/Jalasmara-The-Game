@@ -18,6 +18,9 @@ var _next_side := "right"
 var _floors: Array[PackedVector2Array] = []
 var _obstacles: Array[PackedVector2Array] = []
 var _discontinuities := 0
+var _support_extents:Dictionary={}
+var _right:=Vector3.RIGHT
+const Traversal=preload("res://scripts/SurfaceTraversal.gd")
 
 func configure(owner_renderer: Node) -> void:
 	renderer=owner_renderer
@@ -39,13 +42,41 @@ func _legal(point:Vector2) -> bool:
 		if Geometry2D.is_point_in_polygon(point,polygon): return false
 	return true
 
-func _safe(point:Vector2,origin:Vector2) -> Vector2:
+func _supported(point:Vector2,side:String,required_height:float=NAN) -> bool:
+	var center:=_ground(point)
+	if not is_nan(required_height) and absf(center.z-required_height)>.01: return false
+	var extents:Vector2=_support_extents.get(side,Vector2(-5,5))
+	for extent in [extents.x,0.0,extents.y]:
+		var offset:=_logical_offset(point,_right*float(extent))
+		var endpoint:=point+offset
+		if not _legal(endpoint): return false
+		var actual:=_ground(endpoint)
+		# The original opaque heel and toe share the sole's real horizontal tread.
+		if absf(actual.z-center.z)>.01 or Vector2(actual.x-center.x,actual.y-center.y).distance_to(Vector2(_right.x,_right.y)*float(extent))>.02: return false
+	return true
+
+func _safe(point:Vector2,origin:Vector2,side:String,required_height:float=NAN) -> Vector2:
+	var near_connector:=false
+	var tangent:=Vector2.ZERO
+	for profile in renderer.get("_stair_queries"):
+		if not Traversal.connector_ground(profile,point).is_empty() or not Traversal.connector_ground(profile,origin).is_empty():
+			if str(profile.get("type",""))=="stairs":
+				near_connector=true
+				tangent=(Vector2(profile.end)-Vector2(profile.start)).normalized()
+				break
+	# Preserve the established flat path exactly; only a real stair requires tread-fit search.
+	if near_connector:
+		if _supported(point,side,required_height): return point
+		for step in range(1,41):
+			for sign in [1.0,-1.0]:
+				var candidate:Vector2=point+tangent*float(step)*.5*float(sign)
+				if _supported(candidate,side,required_height): return candidate
 	for step in range(13):
 		var candidate:=point.lerp(origin,float(step)/12.0)
 		var valid:=true
 		for offset in [Vector2.ZERO,Vector2(-3,-2),Vector2(3,-2),Vector2(3,2),Vector2(-3,2)]:
 			if not _legal(candidate+offset): valid=false; break
-		if valid: return candidate
+		if valid and (not near_connector or _supported(candidate,side,required_height)): return candidate
 	return origin
 
 func _ground(at: Vector2) -> Vector3:
@@ -78,7 +109,7 @@ func _begin(side:String,at:Vector2,hips:Dictionary,right:Vector3) -> void:
 	_distance=0.0
 	var entry:Dictionary=_feet[side]
 	entry.from=entry.logical
-	entry.to=_safe(_base(at,float(hips[side]),right)+_heading*(STEP_DISTANCE+LANDING_LEAD)/maxf(.001,_world_motion(at,_heading).length()),at)
+	entry.to=_safe(_base(at,float(hips[side]),right)+_heading*(STEP_DISTANCE+LANDING_LEAD)/maxf(.001,_world_motion(at,_heading).length()),at,side)
 	entry.fromWorld=entry.sole
 	entry.toWorld=_ground(entry.to)
 	entry.grounded=false
@@ -86,7 +117,7 @@ func _begin(side:String,at:Vector2,hips:Dictionary,right:Vector3) -> void:
 func _reset(at:Vector2,hips:Dictionary,right:Vector3) -> void:
 	_feet.clear()
 	for side in ["left","right"]:
-		var point:=_base(at,float(hips[side]),right)
+		var point:=_safe(_base(at,float(hips[side]),right),at,side,_ground(at).z)
 		var world:=_ground(point)
 		_feet[side]={"logical":point,"sole":world,"plant":world,"grounded":true,"from":point,"to":point}
 	_swing=""
@@ -95,7 +126,9 @@ func _reset(at:Vector2,hips:Dictionary,right:Vector3) -> void:
 	_last_at=at
 	_ready=true
 
-func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,delta:float) -> Dictionary:
+func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,delta:float,support_extents:Dictionary={}) -> Dictionary:
+	_support_extents=support_extents
+	_right=right
 	if not _ready: _reset(at,hips,right)
 	if paused: return snapshot()
 	var logical_delta:=at-_last_at
@@ -126,7 +159,7 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 			_distance+=chunk
 			var entry:Dictionary=_feet[_swing]
 			# Retarget only the free foot; an already planted sole never follows the torso.
-			var target:=_safe(_base(sample,float(hips[_swing]),right)+_heading*(_landing_distance-_distance+LANDING_LEAD)/maxf(.001,_world_motion(sample,_heading).length()),sample)
+			var target:=_safe(_base(sample,float(hips[_swing]),right)+_heading*(_landing_distance-_distance+LANDING_LEAD)/maxf(.001,_world_motion(sample,_heading).length()),sample,_swing)
 			entry.to=target
 			entry.toWorld=_ground(target)
 			var u:=clampf(_distance/_landing_distance,0,1)

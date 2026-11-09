@@ -14,6 +14,7 @@ var _direction:=""
 var _facing_frame:=-1
 var _foot_views:Dictionary={}
 var _pivot_offsets:Dictionary={}
+var _support_extents:Dictionary={}
 var _last_distance:=0.0
 const DIRECTIONS:=["east","south_east","south","south_west","west","north_west","north","north_east"]
 
@@ -108,6 +109,16 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 		_outfit=outfit
 		_data=JSON.parse_string(FileAccess.get_file_as_string("res://resources/art/player-lower-body/male-nusantara-"+outfit+"-v1.json"))
 		_atlas=load(str(_data.source))
+		_support_extents.clear()
+		for side in ["left","right"]:
+			var extent:=Vector2.ZERO
+			for source_view in _data.views.values():
+				var source_leg:Dictionary=source_view.legs[side]
+				for endpoint in source_leg.soleEdgePixels:
+					var x:=float(endpoint[0])-float(source_leg.solePixel[0])
+					extent.x=minf(extent.x,x)
+					extent.y=maxf(extent.y,x)
+			_support_extents[side]=extent
 	var camera:Camera3D=renderer.camera_3d
 	var basis:=camera.global_basis.orthonormalized()
 	var up:=basis.y
@@ -143,7 +154,7 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 		sole_offsets[side]=float(view.legs[side].parts.foot[0])+float(view.legs[side].solePixel[0])-64.0
 	var frozen:=bool(state.poseFrozen)
 	var moved:=bool(state.poseWalking) and float(state.speed)>.1
-	var pose:Dictionary=_planner.update(actor.position,moved,frozen,sole_offsets,right,delta)
+	var pose:Dictionary=_planner.update(actor.position,moved,frozen,sole_offsets,right,delta,_support_extents)
 	if frozen and not _last.is_empty():
 		proxy.visible=false
 		return _last.duplicate(true)
