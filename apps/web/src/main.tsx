@@ -8,7 +8,7 @@ import "@fontsource/lora/600.css";
 import { api, session, type AuthState } from "./api";
 import { Brand, Loading, Notice } from "./components";
 import { Play } from "./play";
-import { Admin } from "./admin";
+import { AdminRoute } from "./AdminRoute";
 import "./style.css";
 function Auth({
   mode,
@@ -375,7 +375,7 @@ function App() {
             <p>Halaman ini hanya tersedia untuk pengelola.</p>
           </main>
         ) : (
-          <Admin auth={auth} />
+          <AdminRoute auth={auth} />
         )
       ) : path === "/settings" ? (
         <Settings auth={auth} refresh={refresh} />
