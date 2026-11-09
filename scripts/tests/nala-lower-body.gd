@@ -119,6 +119,8 @@ func _measure(label:String) -> void:
 	for side in ["left","right"]:
 		var entry:Dictionary=pose.contacts.feet[side]
 		var foot:Sprite3D=rig.get("_parts")[side+"_foot"]
+		entry["measuredFootBasis"]=[foot.global_basis.x,foot.global_basis.y,foot.global_basis.z]
+		if not _check(absf(foot.global_basis.x.length()-1)<.003 and absf(foot.global_basis.y.length()-1.0/vertical)<.003 and absf(foot.global_basis.x.dot(foot.global_basis.y))<.003,"Original foot pixel dimensions sheared or stretched "+label+" side="+side): return
 		var direction:Dictionary=rig.get("_data").views[str(entry.footDirection)]
 		var sole:Array=direction.legs[side].solePixel
 		var actual:=foot.to_global(Vector3(float(sole[0])-foot.texture.get_width()*.5,foot.texture.get_height()*.5-float(sole[1]),0))
@@ -148,10 +150,12 @@ func _measure(label:String) -> void:
 			if not _check(exact_centroid,"Actual sole misses rendered triangle "+label+" side="+side+" sole="+str(actual)+" highest="+str(_last_floor_height)): return
 		else:
 			if not _check(is_finite(_last_floor_height) and actual.z>=_last_floor_height-.3,"Airborne sole enters actual terrain "+label+" side="+side): return
+		entry["measuredOpaqueVertices"]=[]
 		for pixel in direction.legs[side].soleEdgePixels:
 			var endpoint:=foot.to_global(Vector3(float(pixel[0])-foot.texture.get_width()*.5,foot.texture.get_height()*.5-float(pixel[1]),0))
 			endpoints.append(endpoint)
 			var exact_endpoint:=_on_mesh(endpoint)
+			entry.measuredOpaqueVertices.append({"sourcePixel":pixel,"world":[endpoint.x,endpoint.y,endpoint.z],"actualTriangleHeight":_last_floor_height})
 			if entry.grounded:
 				if not _check(exact_endpoint,"Actual heel/toe source pixel misses tread "+label+" side="+side+" pixel="+str(pixel)+" highest="+str(_last_floor_height)): return
 			else:

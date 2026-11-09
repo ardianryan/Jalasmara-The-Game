@@ -14,9 +14,11 @@ var _direction:=""
 var _facing_frame:=-1
 var _foot_views:Dictionary={}
 var _pivot_offsets:Dictionary={}
+var _foot_planes:Dictionary={}
 var _support_extents:Dictionary={}
 var _last_distance:=0.0
 const DIRECTIONS:=["east","south_east","south","south_west","west","north_west","north","north_east"]
+const FootPlane=preload("res://scripts/NalaFootPlane.gd")
 
 func configure(owner_renderer:Node,person:Node2D) -> void:
 	renderer=owner_renderer
@@ -71,12 +73,15 @@ func _knee(a:Vector3,b:Vector3,first:float,second:float,hint:Vector3) -> Vector3
 	if bend.length()<.001: bend=Vector3.RIGHT-along*along.x
 	return a+along*offset+bend.normalized()*sqrt(maxf(0,first*first-offset*offset))
 
-func _ankle_offset(side:String,direction:String,right:Vector3,vertical:float) -> Vector3:
+func _ankle_offset(side:String,direction:String,right:Vector3,vertical:float,rotation:Quaternion=Quaternion.IDENTITY) -> Vector3:
 	var leg:Dictionary=_data.views[direction].legs[side]
 	var sole:=_vec(leg.solePixel)
 	var rect:Array=leg.parts.foot
 	var ankle:=_vec(leg.ankle)-Vector2(float(rect[0]),float(rect[1]))
-	return right*(ankle.x-sole.x)+Vector3(0,0,(sole.y-ankle.y)/vertical)
+	return rotation*(right*(ankle.x-sole.x)+Vector3(0,0,(sole.y-ankle.y)/vertical))
+
+func _plane(side:String) -> Quaternion:
+	return _foot_planes.get(side,Quaternion.IDENTITY)
 
 func _rotated_shoe_clear(side:String,direction:String,logical:Vector2,world_sole:Vector3,right:Vector3,vertical:float) -> bool:
 	if not _planner.airborne_clear(logical,world_sole): return false
@@ -84,7 +89,7 @@ func _rotated_shoe_clear(side:String,direction:String,logical:Vector2,world_sole
 	var sole:=_vec(leg.solePixel)
 	for edge in leg.soleEdgePixels:
 		var pixel:=_vec(edge)
-		var world:=world_sole+right*(pixel.x-sole.x)+Vector3(0,0,(sole.y-pixel.y)/vertical)
+		var world:=world_sole+_plane(side)*(right*(pixel.x-sole.x)+Vector3(0,0,(sole.y-pixel.y)/vertical))
 		if not _planner.airborne_clear(logical,world): return false
 	return true
 
@@ -102,7 +107,7 @@ func _anatomy(view:Dictionary,feet:Dictionary,at:Vector2,right:Vector3,vertical:
 		sole_pixel=_vec(foot_leg.solePixel)
 		var foot:Array=foot_leg.parts.foot
 		var ankle_source:=_vec(foot_leg.ankle)-Vector2(float(foot[0]),float(foot[1]))
-		var ankle:Vector3=Vector3(feet[side].sole)+right*(ankle_source.x-sole_pixel.x)+Vector3(0,0,(sole_pixel.y-ankle_source.y)/vertical)
+		var ankle:Vector3=Vector3(feet[side].sole)+_plane(side)*(right*(ankle_source.x-sole_pixel.x)+Vector3(0,0,(sole_pixel.y-ankle_source.y)/vertical))
 		ankles[side]=ankle
 		var first:=_vec(leg.hip).distance_to(_vec(leg.knee))/vertical
 		var second:=_vec(leg.knee).distance_to(_vec(leg.ankle))/vertical
@@ -182,6 +187,9 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 	_last_distance=accepted_distance
 	for side in ["left","right"]:
 		var entry:Dictionary=pose.feet[side]
+		var physical_plane:=bool(actor.get_meta("nala_physical_walk_pilot",false))
+		if not _foot_planes.has(side):
+			_foot_planes[side]=FootPlane.contact_rotation(renderer,entry.logical,right) if physical_plane and bool(entry.grounded) else Quaternion.IDENTITY
 		var correction:Vector3=_pivot_offsets.get(side,Vector3.ZERO)
 		if bool(entry.grounded): correction=Vector3.ZERO
 		else:
@@ -192,12 +200,34 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 			var forward:=posmod(DIRECTIONS.find(direction)-index,8)
 			var candidate:String=DIRECTIONS[posmod(index+(1 if forward<=4 else -1),8)] if direction!=previous_direction else previous_direction
 			if candidate!=previous_direction and float(pose.swingDistance)<float(pose.landingDistance)*.85:
-				var rotated:=correction+_ankle_offset(side,previous_direction,right,vertical)-_ankle_offset(side,candidate,right,vertical)
+				var rotated:=correction+_ankle_offset(side,previous_direction,right,vertical,_plane(side))-_ankle_offset(side,candidate,right,vertical,_plane(side))
 				if _rotated_shoe_clear(side,candidate,entry.logical,Vector3(entry.sole)+rotated,right,vertical):
-					var pivot:Vector3=Vector3(entry.sole)+correction+_ankle_offset(side,previous_direction,right,vertical)
+					var pivot:Vector3=Vector3(entry.sole)+correction+_ankle_offset(side,previous_direction,right,vertical,_plane(side))
 					entry["rotationAnchorWorld"]=[pivot.x,pivot.y,pivot.z]
 					correction=rotated
 					_foot_views[side]=candidate
+		if physical_plane:
+			var current:=_plane(side)
+			var target:Quaternion=FootPlane.contact_rotation(renderer,entry.logical if bool(entry.grounded) else entry.to,right)
+			if bool(entry.grounded):
+				if current.angle_to(target)>.001:
+					visible=false
+					proxy.visible=true
+					entry["unfinishedPlaneAngle"]=current.angle_to(target)
+					_last={"enabled":false,"rejected":true,"reason":"foot-plane rotation unfinished at contact","contacts":pose,"reachValid":false,"rootMotion":false}
+					return _last.duplicate(true)
+			else:
+				var foot_leg:Dictionary=_data.views[str(_foot_views[side])].legs[side]
+				var allowance:=moved_distance if moved_distance>.00001 else maxf(0,delta)*24.0
+				var next:Quaternion=FootPlane.advance(current,target,allowance,FootPlane.radius_about_ankle(foot_leg,vertical))
+				if current.angle_to(next)>.000001:
+					var offset:=_ankle_offset(side,str(_foot_views[side]),right,vertical,current)
+					var pivot:Vector3=Vector3(entry.sole)+correction+offset
+					entry["rotationAnchorWorld"]=[pivot.x,pivot.y,pivot.z]
+					correction+=offset-_ankle_offset(side,str(_foot_views[side]),right,vertical,next)
+					_foot_planes[side]=next
+			var support:Vector3=_plane(side)*right
+			entry["footPlane"]={"rotation":[_plane(side).x,_plane(side).y,_plane(side).z,_plane(side).w],"supportAxis":[support.x,support.y,support.z],"angleRemaining":_plane(side).angle_to(target),"rigidOriginalPixels":true}
 		_pivot_offsets[side]=correction
 		entry.sole=Vector3(entry.sole)+correction
 		entry["pivotCorrectionWorld"]=[correction.x,correction.y,correction.z]
@@ -246,7 +276,7 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 		var foot_rect:Array=foot_leg.parts.foot
 		sprite.texture=_texture(_atlas,Rect2(Vector2(float(foot_view.sourceColumn)*128+float(foot_rect[0]),float(foot_rect[1])),Vector2(float(foot_rect[2]),float(foot_rect[3]))))
 		var sole:=_vec(foot_leg.solePixel)
-		var foot_basis:=Basis(right,Vector3(0,0,1)/vertical,right.cross(Vector3(0,0,1)).normalized())
+		var foot_basis:=Basis(_plane(side))*Basis(right,Vector3(0,0,1)/vertical,right.cross(Vector3(0,0,1)).normalized())
 		var pixel_offset:=foot_basis*Vector3(sole.x-sprite.texture.get_width()*.5,sprite.texture.get_height()*.5-sole.y,0)
 		sprite.transform=Transform3D(foot_basis,Vector3(pose.feet[side].sole)-pixel_offset)
 		sprite.modulate=proxy.modulate
