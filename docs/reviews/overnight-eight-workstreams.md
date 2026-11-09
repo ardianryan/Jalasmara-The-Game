@@ -4,6 +4,22 @@
 
 **Checkpoint 10 November, 06.10 WIB:** [ekspor kelima](overnight-export5-integration.md) aktif: source Docker `bf55342`, ekspor Godot `72b173c`, image559, PCK9a1/64.500.848 byte. Smoke publik baru6/6 PASS pada HTTP/2 default, termasuk rute desa–hutan, jurnal, save/reload dan pemulihan jam server4.994ms;378.388ms/568pulsa/0error, cleanup fixture nol. Full66dunia lokal150.822ms dan browser hutan/label ringkas5/5 lulus. Consumer audio sudah diekspor tetapi tetap tidak terhubung; default Foley lama. Backup restore/count42/0 dan health/hash/env lulus. Context lokal/VPS serta imagea9 lama dibersihkan; aktif559+satu rollback898 disimpan. Pilot Nala tetap OFF: source7e14c09 melewati dua kasus dermaga, lalu tangga pusat naik gagal drop9,047956>8. Full16/freshflat32/native bergerak belum diterima. Proposal lengan SOUTH sudah memperbaiki kepemilikan kain, belum runtime. CI build terakhir gagal penjadwalan runner; bukan full pipeline PASS. Windows/S23 fisik belum diuji; pengguna sudah bersedia membantu. [Handoff](../agent-handoff.md) memegang antrean aktif. Catatan berikut historis.
 
+
+## Bukti dan sisa tiap jalur,06.24WIB
+
+| Jalur | Yang benar-benar tersedia | Sisa penerimaan |
+| --- | --- | --- |
+|1 Pengiriman/loading|Image559/PCK9a1 aktif; publicdefault6PASS, forest5/ocean3 lokal; persentase byte/retry dan single-thread tetap|Pengalaman startup jaringan/perangkat pengguna; CI build belum berhasil mendapat runner|
+|2 Gerak Nala|Pilot terisolasi, frozenhelperPASS; dua arah dermaga selesai; proposal upper WEST/SOUTH terpisah|Full16terrain/freshflat32/raw/facing, dua native bergerak, upper/gear fase kontak; centralUP masih gagal pada7e|
+|3 Performa|Recorder berpin PCK, pembaca offline, qualityAuto/Ringan, benchmark query dan actualsoftware30detik tersimpan|Laporan S23/Windows fisik dan perbandingan sebanding; tidak ada klaim FPS fisik|
+|4 HUD/percakapan|Bingkai/ikon original ringkas, fullscreen/analog, nighttray/customer context, buku/dialog, badgeellipsis terlihat pada9a|Penerimaan kenyamanan sentuh/perangkat asli; artgait bukan bagian penerimaanHUD|
+|5 Warga|13rutinitas/11NPC, kegiatan memancing/menyiram/menenun; commute6warga11.826pose/ramp158|Artwork seluruh arah, telapak/alat semua aktor dan kontak tangga; currentpalm/grip sebagian unknown|
+|6 Desa|10rumah,11lentera, rumahpribadilurah exterior, direktur+RV terpisah, limaLaskar/rute/layanan|Interiorlurah tetap proposal; bukan syarat untuk menutup bug inti|
+|7 Hutan/laut|Lantai kanonis/cache, jembatan/reveal/parallax, batu bertumpu/arus, tiga dekoratifFishGen; aktualocean3PASS|Review perangkat asli/kenyamanan visual bergerak; ocean3 adalah input/save, bukan bukti ulang seluruh air/audio|
+|8 Progres/ekonomi|120API terakhir, jahe4hari10actualchecks, tangkap2induk→anakkeramba8actualchecks, night/garden/retry/reload tersimpan|Pemakaian akun pengguna sesungguhnya dan cakupan fitur lanjutan sesuai PRD; jangan mengubah progress untuk demonstrasi|
+
+Source-art upperSOUTH9CPU dan galeri18gambar adalah authoring proposal, tidak dipasang ke atlas/runtime. Rootreview/push tidak menggantikan seluruh gate di atas. [Handoff](../agent-handoff.md) memegang source dan slot engine terkini.
+
 ## Checkpoint sebelumnya 10 November, 03.15 WIB
 
 [Ekspor ketiga](overnight-export3-integration.md) image2036254/PCK73d45630 sudah aktif dan sehat, termasuk predicate/AABB/cache lantai konsisten, admin35 dan loading pendek16. Full63lokal serta CI63world/120API/CodeQL lulus; job CI build aplikasi masih pending. Smoke publik enam pemeriksaan lulus, termasuk writerbaru dan waktuotoritatifmajusetelahreload. Hutan lokal3/3 joystick–jembatan–reload lulus; rute kiri panjang sebelumnya berhenti pada budget dan tidak disembunyikan. Backup baru42dokumen/0gagal lulus restore. Pilot Nala tetapOFF; datar32 dan tread pusat terarah lulus, tetapi fullterrain16 belum selesai karena opaque sole di ramp. Lengan tujuh arah dan dua native sequence masih terbuka. Perangkat fisik menunggu pengguna; seluruh delapan jalur belum selesai. Catatan di bawah adalah riwayat.
