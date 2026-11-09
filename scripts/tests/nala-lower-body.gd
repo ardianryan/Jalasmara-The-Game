@@ -16,6 +16,9 @@ const OUTPUT:="res://../artifacts/godot/overnight-nala-lower"
 func _initialize() -> void: call_deferred("run")
 func _check(valid:bool,message:String) -> bool:
 	if not valid:
+		if is_instance_valid(renderer):
+			var record:={"message":message,"checks":checks,"position":[player.position.x,player.position.y],"pose":renderer.actors_3d.counts.get("nalaLowerBody",{})}
+			FileAccess.open("res://../.runtime/nala-lower-failure.json",FileAccess.WRITE).store_string(JSON.stringify(record,"  "))
 		push_error(message)
 		quit(1)
 	return valid
@@ -32,9 +35,11 @@ func _index_meshes() -> void:
 				if absf((triangle[1]-triangle[0]).cross(triangle[2]-triangle[0]).normalized().z)>.2: triangles.append(triangle)
 
 func _on_mesh(sole:Vector3) -> bool:
+	var highest:=-INF
 	for triangle in triangles:
-		if Geometry3D.segment_intersects_triangle(sole+Vector3(0,0,.3),sole-Vector3(0,0,.3),triangle[0],triangle[1],triangle[2])!=null: return true
-	return false
+		var hit=Geometry3D.ray_intersects_triangle(sole+Vector3(0,0,256),Vector3(0,0,-1),triangle[0],triangle[1],triangle[2])
+		if hit!=null: highest=maxf(highest,float(hit.z))
+	return absf(highest-sole.z)<.3
 
 func _measure(label:String) -> void:
 	var rig:Node3D=renderer.actors_3d.get("_nala_lower")
