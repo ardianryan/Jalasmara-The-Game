@@ -1,0 +1,61 @@
+{
+  "identity": "male_nusantara",
+  "status": "Original-source visual coverage audit only; no runtime masks, phase adapter, clean full torso, or native upper-body acceptance",
+  "coordinates": "128x128 original cell; top-left origin; crop rectangles are [x0,y0,x1,y1] with exclusive upper bounds",
+  "cell": [128, 128],
+  "viewOrder": ["east", "south_east", "south", "south_west", "west", "north_west", "north", "north_east"],
+  "frameColumns": [0, 1, 2, 3, 4, 5, 6, 7],
+  "upperRuntimeCutY": 76,
+  "reviewSourceCommit": "character59f0356",
+  "sources": {
+    "dailyWalk": {"path": "client-godot/resources/art/player-gait/male-nusantara-daily-walk-8way-v1.png", "sha256": "342724d1724490279cd0f65c0340c5b35cdf366ecc36a99af716c51f751b8fc3"},
+    "explorerWalk": {"path": "client-godot/resources/art/player-gait/male-nusantara-explorer-walk-8way-v1.png", "sha256": "a429c378400bd5ac60a45124ac48672b4cb1360beb379cc83297b52ea48ae3b9"},
+    "dailyIdle": {"path": "client-godot/resources/art/player-gait/male-nusantara-daily-idle-8way-v1.png", "sha256": "6b5e6f8b3bf19acbd5dbfe1a84429894d2f4de4fd985dc16c024a6bf1f44c054"},
+    "explorerIdle": {"path": "client-godot/resources/art/player-gait/male-nusantara-explorer-idle-8way-v1.png", "sha256": "68fad4626665bb75f41c61c8e950091f3f927428ca0e81090fffa6834c411f3f"}
+  },
+  "evidence": {
+    "annotations": {"path": "tools/player-gait/upper_arm_annotations.json", "sha256": "e4b4f92cf2cb6b9cf017047a738fce7a358bd69b88aefa233571ea085729eecc", "scope": "Existing south row2 palm marks only; not rewritten by this audit"},
+    "dailyUpper64Cells": {"path": "artifacts/godot/nala-upper-source-review.png", "sha256": "bce6eb58bda453b352e23ea1a020488c5bc874e6ed7f00d967d6e4024d514351"},
+    "westAllFrames": {"path": "artifacts/godot/nala-west-upper-original-allframes.png", "sha256": "91eb11cca98f4a4756e74027c653e1a2f977fefb9ed8676c132f52446187ed8d"},
+    "idleFrontWest": {"path": "artifacts/godot/nala-idle-arm-source-review.png", "sha256": "b9120c33394f3a460f313971feb9b7d8d3b18370fead1ef1475515419e983e02"},
+    "frontCoordinateReview": {"path": "artifacts/godot/nala-front-hand-coordinate-review.png", "sha256": "bd2acd0b2e0cd7bf2205b8d3fe158b3252b0d912a2afb7e026218bbd2776b049"}
+  },
+  "verifiedDailyShirtInteriorPatches": [
+    {"view": "south", "row": 2, "frame": 0, "rect": [62, 48, 68, 58], "opaquePixels": 60, "rgbaBytesSha256": "4b5bea858e140c0ab4b544c5ad76f0e91ac1132bfec4a23bf54d264572fbecc4", "use": "Visible central shirt core only"},
+    {"view": "south", "row": 2, "frame": 4, "rect": [62, 48, 68, 58], "opaquePixels": 60, "rgbaBytesSha256": "c627dbbe68a1097f67e70d4c19f80f1b66c484ac9364c54123b1e5c5ff811eb2", "use": "Visible central shirt core only; shading differs from frame0"},
+    {"view": "west", "row": 4, "frame": 0, "rect": [69, 47, 73, 62], "opaquePixels": 60, "rgbaBytesSha256": "3cd5ea7d29995af19545eb83b58d8759e04cf50895e4c93972e5037c6679923f", "use": "Visible posterior shirt strip beside forward near arm"},
+    {"view": "west", "row": 4, "frame": 3, "rect": [72, 47, 75, 61], "opaquePixels": 42, "rgbaBytesSha256": "61b07a71bc719f82ba697892d3bd7716a3158c14ea25ab1eee3106619eb6550d", "use": "Visible posterior shirt strip only; not registered to frame0"},
+    {"view": "west", "row": 4, "frame": 7, "rect": [71, 47, 74, 62], "opaquePixels": 45, "rgbaBytesSha256": "880a912c6998b779ddfd5baaf0000b5919ae992637ad3001e1b0425808770dc1", "use": "Visible posterior shirt strip only; not a hidden arm-area fill"}
+  ],
+  "verifiedDailyWestPalmMarks": [
+    {"row": 4, "frame": 0, "pixel": [49, 64], "rgba": [211, 155, 104, 255]},
+    {"row": 4, "frame": 3, "pixel": [51, 62], "rgba": [204, 152, 104, 255]},
+    {"row": 4, "frame": 7, "pixel": [50, 57], "rgba": [218, 163, 115, 255]}
+  ],
+  "crossOutfitCounterexample": {
+    "view": "west", "row": 4, "frame": 7, "pixel": [50, 57],
+    "dailyRgba": [218, 163, 115, 255], "explorerRgba": [0, 0, 0, 0],
+    "meaning": "A daily hand mask/landmark is not automatically valid in explorer; annotate outfit separately"
+  },
+  "viewCoverage": [
+    {"view": "east", "row": 0, "visuallySupported": "Near-arm posture changes across the eight original frames; torso and far arm remain partly occluded", "recommendation": "Annotate original shoulder/elbow/palm and separate silhouette before any phase mapping", "unknown": ["Complete clean shirt under moving arm", "Anatomical far-arm silhouette"]},
+    {"view": "south_east", "row": 1, "visuallySupported": "Front-diagonal near arm changes between hanging and bent-forward positions", "recommendation": "Original-frame mask candidate; do not transfer south anatomical labels without landmarks", "unknown": ["Clean underarm fill", "All contact-phase arm identities"]},
+    {"view": "south", "row": 2, "visuallySupported": "Both hands visible; existing original frame0/frame4 palm marks establish opposite forward-arm poses for daily and explorer", "recommendation": "First bounded modular-upper candidate: preserve source torso, annotate per-arm source runs/joints and exact rest reconstruction", "unknown": ["Clean torso behind the frame0/frame4 crossing forearm", "Independent upper-arm versus forearm masks", "Runtime contact-to-arm opposition"]},
+    {"view": "south_west", "row": 3, "visuallySupported": "Near arm remains bent toward the facing side across the visible sheet; no approved reverse extreme", "recommendation": "Do not claim a full backswing by changing the column phase", "unknown": ["Verified backward near-arm pose", "Hidden shirt plate", "Separate far arm"]},
+    {"view": "west", "row": 4, "visuallySupported": "Near arm stays in front in all eight walk frames; original idle arm hangs downward and covers a different shirt region", "recommendation": "Retain current authored view until a source-proven clean torso and separate complete limb masks exist; phase shift alone cannot supply missing backswing", "unknown": ["Clean full shirt behind forward near arm", "Original walk near-arm backward extreme", "Full far-arm silhouette", "Same-view frame registration for a coverage union"]},
+    {"view": "north_west", "row": 5, "visuallySupported": "Rear-diagonal shirt and arm fragments are visible, with substantial torso overlap", "recommendation": "Retain original view; explicit anatomical landmarks required before masking", "unknown": ["Front/back anatomical arm ownership in each frame", "Hidden torso texels", "Complete backswing cycle"]},
+    {"view": "north", "row": 6, "visuallySupported": "Central rear shirt visible; both arms remain close to the side silhouette in the inspected sheet", "recommendation": "Rear shirt can be reviewed independently; do not infer forearm depth or opposition from static side silhouettes", "unknown": ["Out-of-plane arm swing", "Hidden arm attachment pixels", "Verified contact-phase opposition"]},
+    {"view": "north_east", "row": 7, "visuallySupported": "Rear-diagonal arm posture changes, but limb overlap and anatomical side are not yet annotated", "recommendation": "Candidate for explicit original-pixel masks after south, not a mirrored counterpart", "unknown": ["Verified anatomical labels/joints", "Clean underarm plate", "Full hand silhouette in every frame"]}
+  ],
+  "maskRules": [
+    "Each proposed limb mask must list immutable source frame/pixel runs and shoulder/elbow/wrist anchors; rectangles above are only verified small cloth patches, not full body masks",
+    "Do not erase an arm and assume newly transparent pixels are a clean shirt; hidden pixels remain unknown",
+    "Do not mirror opposite views, recolor another outfit, invent pixels, or paste a front torso into a west profile",
+    "A union of several original frames needs proven same-view registration and per-pixel provenance; current audit does not authorize unregistered patch filling",
+    "Exact rest recomposition, no doubled sleeve/hand, separate props, runtime foot-arm opposition and actual play-size native sequence are acceptance gates"
+  ],
+  "fullModularUpperViewsAccepted": 0,
+  "newRasterFilesCreated": 0,
+  "sourcePixelsModified": false,
+  "nativeEngineRun": false
+}
