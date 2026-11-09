@@ -3,9 +3,34 @@ extends Node3D
 var renderer: Node
 var _actors: Dictionary = {}
 var _materials: Dictionary = {}
+var _watering_soils:Array[Dictionary]=[]
 
 func configure(owner_renderer: Node) -> void:
 	renderer=owner_renderer
+	_watering_soils.clear()
+	for bed in renderer.map.get("obstacles",[]):
+		if str(bed.get("variant",""))!="raised_beds": continue
+		var size:=Vector2(float(bed.width),float(bed.height))
+		var logical_center:=Vector2(float(bed.x),float(bed.y))+size*.5
+		var center:Vector3=renderer.map_point(logical_center,float(bed.get("elevation",2))*48)
+		var depth:float=center.distance_to(renderer.map_point(logical_center+Vector2(0,size.y),float(bed.get("elevation",2))*48))
+		for index in range(3):
+			var at:=center+Vector3((index-1)*size.x*.3,0,32)
+			var half:=Vector3(size.x*.125,(depth-6)*.5,0)
+			_watering_soils.append({"garden":str(bed.id),"index":index,"low":at-half+Vector3(2,2,0),"high":at+half-Vector3(2,2,0)})
+
+func _watering_target(feet:Vector3) -> Dictionary:
+	var best:Dictionary={}
+	var distance:=INF
+	for soil in _watering_soils:
+		var low:Vector3=soil.low
+		var high:Vector3=soil.high
+		var point:=Vector3(clampf(feet.x,low.x,high.x),clampf(feet.y,low.y,high.y),low.z)
+		var candidate:=feet.distance_squared_to(point)
+		if candidate<distance:
+			distance=candidate
+			best={"point":point,"garden":soil.garden,"bed":soil.index}
+	return best
 
 func _material(color: String) -> Material:
 	if not _materials.has(color):
@@ -69,7 +94,10 @@ func update_actor(actor: Node2D,sprite: Sprite3D) -> void:
 	var body: Dictionary=actor.body_animation_state() if actor.has_method("body_animation_state") else {}
 	var layered:=bool(body.get("layered",false))
 	entry.root.visible=(str(body.get("clip","")) in ["start_work","work_loop","end_work"]) if layered else str(activity.phase)=="work"
-	if not entry.root.visible: return
+	if not entry.root.visible:
+		entry.erase("gripError")
+		entry["gripMeasurement"]={"status":"inactive","reason":"Work prop is hidden"}
+		return
 	var feet: Vector3=renderer.map_point(actor.position,renderer.ground_height(actor.position))
 	var up: Vector3=renderer.camera_up()
 	var hand: Vector3=feet+up*35+Vector3(10,0,0)-renderer.camera_forward()*12
@@ -131,7 +159,8 @@ func update_actor(actor: Node2D,sprite: Sprite3D) -> void:
 			var center:=left.lerp(right,float(index)/4.0)
 			_place_line(lines[index+4],center-vertical,center+vertical)
 		boxes[0].position=left.lerp(right,(motion+1)*.5)+renderer.camera_forward()*-.2
-		entry["gripError"]=0.0
+		entry.erase("gripError")
+		entry["gripMeasurement"]={"status":"unknown","reason":"Frame follows hand sockets; no independent palm or shuttle contact annotation"}
 	elif kind=="gardening":
 		var center:=hand-up*4
 		boxes[0].position=center
@@ -140,11 +169,17 @@ func update_actor(actor: Node2D,sprite: Sprite3D) -> void:
 		_place_line(lines[1],center+Vector3(-3,0,0),hand-Vector3(3,0,0))
 		_place_line(lines[2],hand-Vector3(3,0,0),hand+Vector3(3,0,0))
 		_place_line(lines[3],hand+Vector3(3,0,0),center+Vector3(3,0,0))
+		var target:Dictionary=_watering_target(feet)
+		var landing:Vector3=target.get("point",spout)
+		entry["wateringTarget"]=target
 		for index in range(5):
 			var t:=fposmod(float(index)/5.0+pose_time*.8,1)
-			boxes[index+1].position=spout.lerp(feet+Vector3(95,0,30),t)-Vector3(0,0,sin(t*PI)*5)
-			boxes[index+1].visible=phase=="pour" and not EnvironmentState.reduced_motion
-		entry["gripError"]=0.0
+			var drop:=spout.lerp(landing,t)
+			drop.z=lerpf(spout.z,landing.z,t*t)
+			boxes[index+1].position=drop
+			boxes[index+1].visible=not target.is_empty() and phase=="pour" and not EnvironmentState.reduced_motion
+		entry.erase("gripError")
+		entry["gripMeasurement"]={"status":"unknown","reason":"Can handle follows hand sockets; no independent palm grip pixel authored"}
 	elif kind=="pump":
 		var pivot:=hand+Vector3(motion*2,0,0)
 		_place_line(lines[0],pivot-up*9,pivot+up*9)
