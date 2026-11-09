@@ -162,6 +162,18 @@ test("pinned Godot loader consumes verified chunks and reports actual decoded by
   };
   context.globalThis = context;
   const code = withSegmentedPck(withTrackedStreamErrors(fixture), manifest);
+  assert.equal(
+    withTrackedStreamErrors(code),
+    code,
+    "The actual exported loader remains verifiable after its reviewed PCK substitution",
+  );
+  assert.throws(
+    () =>
+      withTrackedStreamErrors(
+        code.replace("DOWNLOAD_ATTEMPTS_MAX = 4", "DOWNLOAD_ATTEMPTS_MAX = 5"),
+      ),
+    /implementation changed/,
+  );
   const Loader = vm.runInNewContext(code + "\nPreloader;", context),
     loader = new Loader();
   loader.setProgressFunc((loaded, total) => progress.push([loaded, total]));

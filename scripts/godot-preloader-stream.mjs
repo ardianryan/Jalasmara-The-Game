@@ -33,9 +33,14 @@ export function withTrackedStreamErrors(source) {
   ) {
     throw new Error("Godot 4.7.2 tracked-stream export pattern changed");
   }
-  const originalSection = source
-    .slice(start, end + 3)
-    .replace(PATCHED, ORIGINAL);
+  let originalSection = source.slice(start, end + 3).replace(PATCHED, ORIGINAL);
+  if (
+    source.startsWith("const jalasmaraAssetFetch = (function createPckFetch(")
+  )
+    originalSection = originalSection.replace(
+      "return jalasmaraAssetFetch(file).then(function (response) {",
+      "return fetch(file).then(function (response) {",
+    );
   if (
     createHash("sha256").update(originalSection).digest("hex") !==
     PRELOADER_SHA256

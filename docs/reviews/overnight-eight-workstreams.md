@@ -71,3 +71,6 @@ Root fullworld gabungan ketiga selesai **56/56 lulus**, disusul verifikasi10spes
 
 
 Paket berikutnya364afe0 mencakup HUD desktop18,33px/body,48,3pxutility,56,7pxaksi; gambar pertama yang memotong bingkai ditolak dan diganti skala lengkap9-slice. Bacaan PC18px/mobile16px dipertahankan. Fixture HUD semula hang43detik pada frame_post_draw di headless; proses milikroot dihentikan143, captureguard diperbaiki tanpa menghapus assertion. Runner57perlu pengulangan. [Unduhan bertahap](overnight-segmented-pck.md) terbukti asetpublik64MB1,55detik defaultH2, kandidatproduksi lulus120API+37loader; belum startupgame/rilis.
+
+
+Root fullworld keempat pada43d293f selesai **59/59 lulus**,10spesies/722bingkai tetap lulus. Ini mencakup rigoriginal enamwarga, selector/lifecycle produksi, perubahan9-slice HUD desktop,18pxbacaanPC dan captureguardheadless. Source baru berikutnya hanya menjaga verifikasi preloader sesudah substitusi fetchPCK proyek; hashupstream tetap menolak perubahan retry/implementasi. Pengujian export/browser kandidat berjalan berikutnya, belum rilis.
