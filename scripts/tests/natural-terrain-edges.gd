@@ -28,14 +28,23 @@ func run() -> void:
 		var node: Dictionary=profile.nodes[index]
 		var next: Dictionary=profile.nodes[(index+1)%profile.nodes.size()]
 		assert(profile.active[index])
-		assert(node.rings[4].z==-5.0 and node.support==0.0,"Root must meet the actual lower floor, not stop after a fixed 44px wall")
-		for layer in range(4): assert(node.rings[layer].z>node.rings[layer+1].z)
+		assert(node.rings.size()==6 and node.rings.back().z==-5.0 and node.support==0.0,"Root must meet the actual lower floor, not stop after a fixed 44px wall")
+		assert(node.toe>90 and node.toe<=150,"A 96px cliff needs a broad rooted rock slope, not a narrow near-vertical wall")
+		for layer in range(5): assert(node.rings[layer].z>node.rings[layer+1].z)
 		var normal: Vector3=(next.rings[2]-node.rings[2]).cross(node.rings[3]-node.rings[2]).normalized()
 		normals[str(normal.snapped(Vector3(.01,.01,.01)))]=true
 		if node.logical==next.logical:
 			assert(node.rings[1].distance_to(next.rings[1])>1,"Adjacent corner facets must form a continuous fan, not coincident 90-degree wall corners")
 			fans+=1
 	assert(fans==8 and normals.size()>16,"Shoulders need real noncoplanar facets, not a flat wall with scattered prop rocks")
+	synthetic.map["routes"]=[[[400,750],[700,750]]]
+	var restricted: Dictionary=helper.make_profile(synthetic,square,_polygon(square.polygon),96)
+	var clipped_routes:=0
+	for node in restricted.nodes:
+		if node.logical.y==650 and node.logical.x>440 and node.logical.x<660:
+			assert(node.toe<50,"Wider rock shoulders cannot swallow the actual lower route corridor")
+			clipped_routes+=1
+	assert(clipped_routes>=4)
 	for material in ["dock","wood","bridge"]:
 		var wood: Dictionary=square.duplicate(true)
 		wood.material=material
@@ -75,7 +84,7 @@ func run() -> void:
 				if not shape.active[index]: continue
 				for at: Vector3 in node.rings:
 					assert(not renderer._connector_at(renderer.ground_projection(at)),"Natural edge vertices must clear actual stair/ramp cutouts at their true height")
-				assert(node.rings[4].z<=node.support-4.99)
+				assert(node.rings.back().z<=node.support-4.99)
 				if node.support> -40.0: supports+=1
 				actual_nodes+=1
 		for stair in renderer.map.stairs:

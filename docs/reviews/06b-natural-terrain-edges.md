@@ -54,3 +54,20 @@ GODOT=/Users/ardianryan/Documents/Jalasmara/.runtime/godot/Godot.app/Contents/Ma
 Inspect every log for parse/script/render errors, then inspect images for continuous broken corners, solid roots, no residual rectangular stone wall, no strip gaps, visible stair mouths and unaltered wooden decks. The current source has not passed that gate. Root must repeat the full combined world suite and player-driven hub/forest stair/bridge/coast movement before accepting the package. Cross-area continuity and gateway backing are separate root work, not claimed solved by this helper.
 
 Tools so far: Git, Node's TypeScript loader for existing map-clearance queries, Python availability check, source editing/review. The geometry is original Godot code using the existing project materials and renderer. No third-party pixels/code were added, and existing license notices remain unchanged.
+
+## Integrator check and rejected first visual result
+
+The integrator subsequently applied the hook in candidate `b694824` and reported the actual focused test passing: seven surfaces, 493 active nodes, 472 cutouts and 316 supported nodes in `.runtime/06b2-natural.log`. The integrator's native fixture also completed 18 frames at `artifacts/godot/06b2-natural-color/`. This lane did not launch that engine/browser session. It visually inspected `hub-central-steps-day.png` and `forest-upper-west-bank-day.png` directly. The higher hub terrace still reads as a near-vertical concrete wall: correctness of the first connected bands did not satisfy the requested natural-rock appearance. That visual result is rejected, not called finished.
+
+The new source iteration changes the narrow fixed-width shoulder into six joined rings. Toe width depends on the physical drop (bounded at 150 world units); upper/middle stone tiers have staggered vertices and alternate existing stone/shade/root materials. Shade colors derive from the current stone palette rather than imposing a hardcoded gray. Convex corners keep their shared fans. The expanded skirt stops before re-entering its own contour and before lower authored route corridors; existing connector guards remain. Focused tests now require a broad slope for a controlled 96 px drop, six monotonically descending rings, and narrowing against a real lower-route corridor. **This iteration has not run in Godot or native rendering yet.** Root must apply it after its active suite, rerun the focused test without weakening cutout checks, then inspect the same central-steps/coast/bank images.
+
+## Read-only seam peer review
+
+The integrated natural hook correctly returns before the old stone `TerraceFace` loop; wood still falls through to its existing path. No duplicate preview tree was found on an authoritative local walking floor in a CPU transform check: all eight selected forest trees in the hub preview and the one selected hub tree in the forest preview lie outside local walkable ground. The `vista` flag also avoids registering their canopies as local foreground blockers.
+
+Two concrete seam limitations were found in root-owned `LandAreaSeam3D.gd`:
+
+- Remote terrain is emitted by `_top()` only, bypassing the natural side/root skin. The hub preview's clipped forest terrain lies at world Z 144 beyond the local landmass; its exposed clipping border remains a flat unsupported sheet.
+- Exact frame transformation and polygon intersection find 48,678.84 logical square units of remote `garden_wing` in the forest preview at world Z −48 (remote floor96 minus portal144). Local opaque water planes are at −14/−20 and the forest backing is at 0, so this slice cannot read as visible village terrain. The clipped remote ridge, 122,212.5 logical square units, remains at Z 0.
+
+These are source/CPU geometric findings, not a new native screenshot acceptance claim. They were sent to the integrator; seam transforms, preview support and cross-area continuity remain root ownership. The natural bank helper deliberately preserves the old outer/top/bottom forest-bank exclusions and only shapes exposed river-facing runs; the inspected upper-bank frame therefore does not prove every outer forest corner has been softened.
