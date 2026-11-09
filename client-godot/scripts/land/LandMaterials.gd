@@ -10,6 +10,7 @@ uniform bool has_atlas = false;
 uniform sampler2D micro_texture : source_color, filter_nearest, repeat_enable;
 uniform bool has_micro = false;
 uniform int atlas_cell = 0;
+uniform bool soften_edge = false;
 varying vec3 at;
 varying vec3 normal_world;
 float hash(vec3 p) { return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453); }
@@ -21,6 +22,7 @@ void fragment() {
 	if(abs(normal_world.z)>.85) NORMAL=normalize((VIEW_MATRIX*vec4(0.0,0.0,1.0,0.0)).xyz);
 	vec2 planar=abs(normal_world.z)>.6 ? at.xy : abs(normal_world.y)>.6 ? at.xz : at.yz;
 	vec2 pixel=floor(planar/2.7);
+	if(soften_edge && COLOR.a < hash(vec3(pixel,17.0))) discard;
 	float fine=floor(hash(vec3(pixel,0.0))*5.0)/4.0;
 	vec2 broad_at=planar/110.0;
 	vec2 blend=smoothstep(vec2(0.0),vec2(1.0),fract(broad_at));
@@ -95,3 +97,11 @@ func get_material(id: String) -> ShaderMaterial:
 	material.set_shader_parameter("atlas_cell",maxi(0,int(data[2])))
 	_cache[key]=material
 	return material
+
+func get_edge_material(id: String) -> ShaderMaterial:
+	var key:="edge_"+id
+	if not _cache.has(key):
+		var material:=get_material(id).duplicate() as ShaderMaterial
+		material.set_shader_parameter("soften_edge",true)
+		_cache[key]=material
+	return _cache[key]

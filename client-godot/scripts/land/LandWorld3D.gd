@@ -50,6 +50,9 @@ var _plot_updates := 0
 var _surface_queries: Array[Dictionary] = []
 var _stair_queries: Array[Dictionary] = []
 var _cloth: Array[Dictionary] = []
+var _canopy_readability = preload("res://scripts/land/CanopyReadability3D.gd").new()
+var _soft_ground_patches := 0
+var _soft_ground_vertices := 0
 
 func _compute_garden_state() -> int:
 	var progress: Dictionary = GameState.player.get("progress",{})
@@ -151,6 +154,9 @@ func set_area(place: String) -> void:
 	_components.clear()
 	_bridges.clear()
 	_leaves.clear()
+	_canopy_readability=preload("res://scripts/land/CanopyReadability3D.gd").new()
+	_soft_ground_patches=0
+	_soft_ground_vertices=0
 	_lanterns.clear()
 	_cloth.clear()
 	_garden_state=_compute_garden_state()
@@ -242,7 +248,7 @@ func _polygon(points: Array) -> PackedVector2Array:
 	for point in points: result.append(_v2(point))
 	return result
 
-func _mesh(label: String, vertices: PackedVector3Array, triangles: PackedInt32Array, material: Material, parent: Node3D=null) -> MeshInstance3D:
+func _mesh(label: String, vertices: PackedVector3Array, triangles: PackedInt32Array, material: Material, parent: Node3D=null, colors: PackedColorArray=PackedColorArray()) -> MeshInstance3D:
 	_components[label]=int(_components.get(label,0))+1
 	var tool:=SurfaceTool.new()
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
@@ -251,9 +257,11 @@ func _mesh(label: String, vertices: PackedVector3Array, triangles: PackedInt32Ar
 		var b:=vertices[triangles[index+1]]
 		var c:=vertices[triangles[index+2]]
 		var normal: Vector3=-(b-a).cross(c-a).normalized()
-		for point in [a,b,c]:
+		for corner in range(3):
+			var point:=vertices[triangles[index+corner]]
 			tool.set_normal(normal)
 			tool.set_uv(Vector2(point.x,point.y)/128.0)
+			if not colors.is_empty(): tool.set_color(colors[triangles[index+corner]])
 			tool.add_vertex(point)
 	var mesh:=MeshInstance3D.new()
 	mesh.name=label.validate_node_name()
@@ -346,18 +354,60 @@ func _build_surface(surface: Dictionary) -> void:
 			clipped["elevation"]=floor_surface.get("elevation",0)
 			_build_surface_geometry(clipped)
 
+func _nearest_edge_point(point: Vector2, polygon: PackedVector2Array) -> Vector2:
+	var nearest:=polygon[0]
+	var distance_to_edge:=INF
+	for index in range(polygon.size()):
+		var candidate:=Geometry2D.get_closest_point_to_segment(point,polygon[index],polygon[(index+1)%polygon.size()])
+		if point.distance_squared_to(candidate)<distance_to_edge:
+			distance_to_edge=point.distance_squared_to(candidate)
+			nearest=candidate
+	return nearest
+
+func _build_soft_ground_edge(surface: Dictionary, polygon: PackedVector2Array, height: float, triangles: PackedInt32Array) -> void:
+	var vertices:=PackedVector3Array()
+	var colors:=PackedColorArray()
+	var indices:=PackedInt32Array()
+	var insets:=Geometry2D.offset_polygon(polygon,-12.0)
+	if insets.size()!=1 or insets[0].size()<3:
+		for point in polygon: vertices.append(map_point(point,height))
+		_mesh(str(surface.id),vertices,triangles,_materials.get_material(str(surface.material)))
+		return
+	var inner: PackedVector2Array=insets[0]
+	for point in inner:
+		vertices.append(map_point(point,height))
+		colors.append(Color.WHITE)
+	indices=Geometry2D.triangulate_polygon(inner)
+	# Only the twelve-unit rim is subdivided; the opaque interior stays triangulated.
+	for index in range(polygon.size()):
+		var a:=polygon[index]
+		var b:=polygon[(index+1)%polygon.size()]
+		var steps:=maxi(1,ceili(a.distance_to(b)/12.0))
+		for part in range(steps):
+			var outer_a:=a.lerp(b,float(part)/steps)
+			var outer_b:=a.lerp(b,float(part+1)/steps)
+			var start:=vertices.size()
+			for point in [outer_a,outer_b,_nearest_edge_point(outer_b,inner),_nearest_edge_point(outer_a,inner)]:
+				vertices.append(map_point(point,height))
+			colors.append_array(PackedColorArray([Color(1,1,1,0),Color(1,1,1,0),Color.WHITE,Color.WHITE]))
+			indices.append_array(PackedInt32Array([start,start+1,start+2,start,start+2,start+3]))
+	_mesh(str(surface.id),vertices,indices,_materials.get_edge_material(str(surface.material)),null,colors)
+	_soft_ground_patches+=1
+	_soft_ground_vertices+=vertices.size()
+
 func _build_surface_geometry(surface: Dictionary) -> void:
 	if str(surface.get("material",""))=="bridge":
 		_build_bridge(surface)
 		return
 	var polygon:=_polygon(surface.polygon)
 	if polygon.size()<3: return
-	if not bool(surface.get("walkable",true)) and str(surface.get("material",""))=="grass":
-		polygon=_ragged_patch(polygon)
 	var height:=float(surface.get("heightPixels",float(surface.get("elevation",0))*LEVEL_HEIGHT))+float(surface.get("priority",0))*.018
 	var vertices:=PackedVector3Array()
 	for point in polygon: vertices.append(map_point(point,height))
 	var indices:=Geometry2D.triangulate_polygon(polygon)
+	if not bool(surface.get("walkable",true)) and str(surface.material) in ["grass","dirt"]:
+		_build_soft_ground_edge(surface,polygon,height,indices)
+		return
 	for i in range(0,indices.size(),3):
 		if (vertices[indices[i+1]]-vertices[indices[i]]).cross(vertices[indices[i+2]]-vertices[indices[i]]).z<0:
 			var swap:=indices[i+1]
@@ -761,6 +811,7 @@ func _atlas_canopy(at: Vector3,width: float,index: int) -> bool:
 	sprite.pixel_size=width/cell.x
 	sprite.position=at+camera_up()*width*.08
 	_geometry.add_child(sprite)
+	_canopy_readability.register(sprite,frame,width)
 	_leaves.append({"node":sprite,"home":sprite.position,"phase":float(_trees)})
 	return true
 
@@ -1150,6 +1201,7 @@ func _process(delta: float) -> void:
 	for cloth in _cloth:
 		var panel: Node3D=cloth.node
 		panel.rotation.y=sin(float(Time.get_ticks_msec())*.0014+float(cloth.phase))*.035*sway
+	_canopy_readability.update(map_point(actor.position,ground_height(actor.position)),camera_up(),camera_forward(),delta)
 	_weather_clock+=delta
 	if _weather_clock>.25:
 		_weather_clock=0
@@ -1166,7 +1218,7 @@ func _process(delta: float) -> void:
 		environment.ambient_light_color=(Color("9faeae") if area=="home" else Color("8da4a8")).lerp(Color("bdc0b5"),daylight)
 
 func debug_status() -> Dictionary:
-	return {"active":active,"area":area,"renderer":"LandSubViewport3D","viewport":[viewport_3d.size.x,viewport_3d.size.y],"quality":RenderQuality.get_profile(),"performance":{"staticBuilds":_static_builds,"plotUpdates":_plot_updates},"tilt":55,"elevationDegrees":35,"meshes":_meshes,"houses":_houses,"trees":_trees,"glbModels":_models,"stairTreads":_stair_treads,"surfaces":map.get("surfaces",[]).size(),"obstacles":map.get("obstacles",[]).size(),"actors":actors_3d.counts if is_instance_valid(actors_3d) else {},"maxFootError":actors_3d.max_foot_error if is_instance_valid(actors_3d) else 0,"camera":[_center.x,_center.y],"warmLanterns":_lanterns.size(),"gardenState":_garden_state,"streamCleared":_stream_cleared,"components":_components.duplicate(),"bridges":_bridges.duplicate(true),"bitmapGround":false,"water":water_node.debug_status() if is_instance_valid(water_node) else {}}
+	return {"active":active,"area":area,"renderer":"LandSubViewport3D","viewport":[viewport_3d.size.x,viewport_3d.size.y],"quality":RenderQuality.get_profile(),"performance":{"staticBuilds":_static_builds,"plotUpdates":_plot_updates,"softGroundPatches":_soft_ground_patches,"softGroundVertices":_soft_ground_vertices},"readability":_canopy_readability.debug_status(),"tilt":55,"elevationDegrees":35,"meshes":_meshes,"houses":_houses,"trees":_trees,"glbModels":_models,"stairTreads":_stair_treads,"surfaces":map.get("surfaces",[]).size(),"obstacles":map.get("obstacles",[]).size(),"actors":actors_3d.counts if is_instance_valid(actors_3d) else {},"maxFootError":actors_3d.max_foot_error if is_instance_valid(actors_3d) else 0,"camera":[_center.x,_center.y],"warmLanterns":_lanterns.size(),"gardenState":_garden_state,"streamCleared":_stream_cleared,"components":_components.duplicate(),"bridges":_bridges.duplicate(true),"bitmapGround":false,"water":water_node.debug_status() if is_instance_valid(water_node) else {}}
 
 func _build_bridge(surface: Dictionary) -> void:
 	var polygon:=_polygon(surface.polygon)
@@ -1269,23 +1321,6 @@ func _bridge_rail(entry: Dictionary) -> void:
 			if _bridges.has(id):
 				_bridges[id].railPosts=int(_bridges[id].railPosts)+posts+1
 				_bridges[id].railBeams=int(_bridges[id].railBeams)+2
-
-func _ragged_patch(polygon: PackedVector2Array) -> PackedVector2Array:
-	var center:=Vector2.ZERO
-	for point in polygon: center+=point
-	center/=polygon.size()
-	var result:=PackedVector2Array()
-	for index in range(polygon.size()):
-		var a:=polygon[index]
-		var b:=polygon[(index+1)%polygon.size()]
-		var count:=maxi(2,ceili(a.distance_to(b)/15.0))
-		for part in range(count):
-			var point:=a.lerp(b,float(part)/count)
-			var seed_value:=sin(point.x*.127+point.y*.193)*4375.43
-			var inward:=(center-point).normalized()*(3.0+fposmod(seed_value,1)*7.0)
-			var candidate:=point+inward
-			result.append(candidate if Geometry2D.is_point_in_polygon(candidate,polygon) else point)
-	return result
 
 func _build_wet_banks() -> void:
 	if area!="forest": return
