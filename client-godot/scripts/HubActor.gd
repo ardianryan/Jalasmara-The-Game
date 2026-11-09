@@ -34,8 +34,15 @@ var _route_retry_in := 0.0
 var _blocked_seconds := 0.0
 var _body_animation := preload("res://scripts/NpcAnimationState.gd").new()
 var moved_velocity := Vector2.ZERO
+var resident_id := ""
+var visual_profile: Dictionary = {}
+var body_scale := 1.0
 
 func configure_activity(profile: Dictionary) -> void:
+	resident_id=str(profile.get("id",""))
+	visual_profile=profile.get("visual",{}).duplicate(true)
+	if not visual_profile.is_empty(): visual_profile["age"]=int(profile.get("age",0))
+	body_scale=clampf(float(profile.get("bodyScale",1.0)),.5,1.15)
 	activity_profile=profile.get("activity",{}).duplicate(true)
 	if activity_profile.is_empty(): return
 	activity_kind=str(activity_profile.get("kind","idle"))
