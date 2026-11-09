@@ -199,6 +199,21 @@ async function routeTo(point, inside = false) {
 }
 async function openAt(point, nearby, inside = false) {
   await routeTo(point, inside);
+  if (inside) {
+    const target = world.homestead.interior[nearby];
+    for (let attempt = 0; target && attempt < 16; attempt++) {
+      const at = await snapshot();
+      if (at.nearby === nearby) break;
+      const dx = target.x - at.x,
+        dy = target.y - at.y;
+      const key =
+        Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "d" : "a") : dy > 0 ? "s" : "w";
+      await page.keyboard.down(key);
+      await page.waitForTimeout(65);
+      await page.keyboard.up(key);
+      await page.waitForTimeout(260);
+    }
+  }
   await waitState((s) => s.nearby === nearby);
   await page.keyboard.press("e");
   await waitState((s) => s.homePanel === true);
