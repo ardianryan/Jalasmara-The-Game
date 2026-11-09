@@ -15,13 +15,38 @@ export function createPckFetch(manifest, fetchAsset, options) {
     !manifest.hashes.every(validHash)
   )
     throw new Error("Invalid PCK manifest");
+  manifest = Object.freeze({
+    version: manifest.version,
+    sha256: manifest.sha256,
+    bytes: manifest.bytes,
+    partSize: manifest.partSize,
+    hashes: Object.freeze(manifest.hashes.slice()),
+  });
   const pckUrl = new URL("index.pck", baseUrl);
   const partBase = new URL(`pck/${manifest.sha256}/`, pckUrl);
+  let verifiedIdentity = null;
+  let identityRequest = 0;
+  try {
+    if (
+      options.identityTarget &&
+      Object.isExtensible(options.identityTarget) &&
+      !Object.hasOwn(options.identityTarget, "jalasmaraPckIdentity")
+    )
+      Object.defineProperty(options.identityTarget, "jalasmaraPckIdentity", {
+        get: () => verifiedIdentity,
+        configurable: false,
+        enumerable: false,
+      });
+  } catch {
+    // Optional metadata must not block a verified game download.
+  }
 
   return function pckFetch(file) {
     const url = new URL(file, baseUrl);
     if (url.origin !== pckUrl.origin || url.pathname !== pckUrl.pathname)
       return fetchAsset(file);
+    const requestIdentity = ++identityRequest;
+    verifiedIdentity = null;
     if (!subtle?.digest)
       return Promise.reject(
         new Error("Buka game melalui HTTPS agar aset dapat diverifikasi."),
@@ -101,6 +126,15 @@ export function createPckFetch(manifest, fetchAsset, options) {
             if (next === manifest.hashes.length) {
               stop();
               controller.close();
+              // All parts reached the consumer; this does not attest Godot READY.
+              if (requestIdentity === identityRequest)
+                verifiedIdentity = Object.freeze({
+                  schemaVersion: 1,
+                  pckSha256: manifest.sha256,
+                  pckBytes: manifest.bytes,
+                  partCount: manifest.hashes.length,
+                  verification: "all-parts-verified-manifest",
+                });
             }
           } catch (error) {
             stop();
@@ -132,7 +166,7 @@ export function withSegmentedPck(source, manifest) {
   )
     throw new Error("Godot 4.7.2 PCK fetch export pattern changed");
   return (
-    `const jalasmaraAssetFetch = (${createPckFetch.toString()})(${JSON.stringify(manifest)}, globalThis.fetch.bind(globalThis), {baseUrl: globalThis.location.href, subtle: globalThis.crypto?.subtle});\n` +
+    `const jalasmaraAssetFetch = (${createPckFetch.toString()})(${JSON.stringify(manifest)}, globalThis.fetch.bind(globalThis), {baseUrl: globalThis.location.href, subtle: globalThis.crypto?.subtle, identityTarget: globalThis});\n` +
     source.replace(
       before,
       "return jalasmaraAssetFetch(file).then(function (response) {",

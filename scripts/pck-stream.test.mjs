@@ -180,6 +180,12 @@ test("pinned Godot loader consumes verified chunks and reports actual decoded by
   sameBytes(await loader.loadPromise("index.pck", source.length));
   loader.animateProgress();
   assert.deepEqual(progress.at(-1), [source.length, source.length]);
+  assert.equal(context.jalasmaraPckIdentity.pckSha256, manifest.sha256);
+  assert.equal(context.jalasmaraPckIdentity.pckBytes, source.length);
+  assert.equal(
+    context.jalasmaraPckIdentity.verification,
+    "all-parts-verified-manifest",
+  );
   assert.throws(() => withSegmentedPck(code, manifest), /pattern changed/);
   assert.throws(
     () => withSegmentedPck("changed upstream", manifest),

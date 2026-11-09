@@ -26,6 +26,70 @@ export function distribution(values: number[]) {
   };
 }
 
+export function assetIdentity(value: unknown) {
+  if (!value || typeof value !== "object") return null;
+  try {
+    const source = value as Record<string, unknown>;
+    const schemaVersion = source.schemaVersion;
+    const verification = source.verification;
+    const sha = source.pckSha256;
+    const bytes = source.pckBytes;
+    const parts = source.partCount;
+    if (
+      schemaVersion !== 1 ||
+      verification !== "all-parts-verified-manifest" ||
+      typeof sha !== "string" ||
+      !/^[a-f0-9]{64}$/.test(sha) ||
+      typeof bytes !== "number" ||
+      !Number.isSafeInteger(bytes) ||
+      bytes < 1 ||
+      bytes > 512 * 1024 * 1024 ||
+      parts !== Math.ceil(bytes / (1024 * 1024))
+    )
+      return null;
+    return {
+      schemaVersion: 1,
+      pckSha256: sha,
+      pckBytes: bytes,
+      partCount: parts as number,
+      verification: "all-parts-verified-manifest",
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function assetProvenance(
+  start: unknown,
+  end: unknown,
+  sameDocument?: boolean,
+) {
+  const first = assetIdentity(start);
+  const last = assetIdentity(end);
+  const status =
+    sameDocument === false
+      ? "changed-document"
+      : !first && !last
+        ? "unavailable"
+        : !first || !last
+          ? "incomplete"
+          : first.pckSha256 !== last.pckSha256 ||
+              first.pckBytes !== last.pckBytes
+            ? "changed"
+            : "unchanged-loader-pin";
+  return {
+    status,
+    document:
+      sameDocument === undefined
+        ? "unobserved"
+        : sameDocument
+          ? "same"
+          : "changed",
+    start: first,
+    end: last,
+  };
+}
+
 export function engineSample(value: unknown) {
   if (!value || typeof value !== "object") return {};
   const source = value as Record<string, unknown>;
@@ -151,12 +215,21 @@ export function buildReport(
     quality: string;
   },
   device: ReturnType<typeof deviceMetadata>,
+  assets: { start: unknown; end: unknown; sameDocument?: boolean } = {
+    start: null,
+    end: null,
+  },
 ) {
   return {
     schemaVersion: 1,
     kind: "jalasmara-device-performance",
     session,
     device,
+    assetProvenance: assetProvenance(
+      assets.start,
+      assets.end,
+      assets.sameDocument,
+    ),
     frameScheduling: frames.summary(),
     engine: Object.fromEntries(
       METRICS.map((key) => [
@@ -181,6 +254,8 @@ export function buildReport(
         "No account, email, cookie, token, game inventory, world coordinates, API data or page URL is included. This file is generated locally and is not uploaded.",
       limitations:
         "GPU time, VRAM and WASM memory are not measured. Hardware strings are reported by this browser and may identify a software renderer or be unavailable.",
+      assetProvenance:
+        "Allowlisted identity from this iframe loader after each PCK part passed SHA-256 and reached its consumer. The whole-file hash is the manifest declaration, not a new whole-file digest, proof of Godot READY or a runtime attestation. Older loaders report unavailable. No manifest or API request is made by this recorder.",
     },
   };
 }
@@ -201,20 +276,47 @@ export function recordPerformance(
   const start = performance.now();
   const startedAt = new Date().toISOString();
   const device = deviceMetadata(target);
+  const originalDocument = target.document;
+  const readIdentity = () => {
+    try {
+      return assetIdentity(
+        (target as Window & { jalasmaraPckIdentity?: unknown })
+          .jalasmaraPckIdentity,
+      );
+    } catch {
+      return null;
+    }
+  };
+  const sameDocument = () => {
+    try {
+      return target.document === originalDocument;
+    } catch {
+      return false;
+    }
+  };
+  const startIdentity = readIdentity();
   const frames = new FrameCapture();
   const samples: Parameters<typeof buildReport>[1] = [];
+  const cancelFrame = target.cancelAnimationFrame.bind(target);
   let request = 0,
     stopped = false;
   const paused = () =>
-    document.hidden || target.document.hidden || options.paused();
+    !sameDocument() ||
+    document.hidden ||
+    originalDocument.hidden ||
+    options.paused();
   const tick = (timestamp: number) => {
     if (stopped) return;
+    if (!frame.isConnected || !sameDocument()) {
+      stop("game-frame-replaced");
+      return;
+    }
     frames.frame(timestamp, !paused());
     request = target.requestAnimationFrame(tick);
   };
   request = target.requestAnimationFrame(tick);
   const sample = window.setInterval(() => {
-    if (!frame.isConnected) {
+    if (!frame.isConnected || !sameDocument()) {
       stop("game-frame-replaced");
       return;
     }
@@ -240,9 +342,13 @@ export function recordPerformance(
   );
   function cancel() {
     stopped = true;
-    target!.cancelAnimationFrame(request);
     clearInterval(sample);
     clearTimeout(deadline);
+    try {
+      cancelFrame(request);
+    } catch {
+      // A replaced document may revoke access to its original animation handle.
+    }
   }
   function stop(reason = "user-stopped") {
     if (stopped) return;
@@ -259,6 +365,11 @@ export function recordPerformance(
           quality: options.quality,
         },
         device,
+        {
+          start: startIdentity,
+          end: readIdentity(),
+          sameDocument: sameDocument(),
+        },
       ),
     );
   }
