@@ -1,0 +1,66 @@
+{
+  "authority": "Current WORLD hub layout11; shared landPointInPolygon + mapFootMaterial, dock ramp0-to48 over1190-to1125",
+  "layoutVersion": 11,
+  "cases": [
+    {
+      "point": [
+        1135.271484375,
+        1125.010009765625
+      ],
+      "groundHeight": 47.992608173076924,
+      "onConnector": true,
+      "material": "wood",
+      "floorWinner": "dock_gangway_floor",
+      "bodyLift": 0,
+      "paceScale": 0.96
+    },
+    {
+      "point": [
+        1135.271484375,
+        1125.0009765625
+      ],
+      "groundHeight": 47.99927884615384,
+      "onConnector": true,
+      "material": "wood",
+      "floorWinner": "dock_gangway_floor",
+      "bodyLift": 0,
+      "paceScale": 0.96
+    },
+    {
+      "point": [
+        1135.271484375,
+        1125
+      ],
+      "groundHeight": 48,
+      "onConnector": true,
+      "material": "wood",
+      "floorWinner": "dock_gangway_floor",
+      "bodyLift": 0,
+      "paceScale": 0.96
+    },
+    {
+      "point": [
+        1135.271484375,
+        1124.9990234375
+      ],
+      "groundHeight": 48,
+      "onConnector": false,
+      "material": "dirt",
+      "floorWinner": "village_dirt_lower_court_segment_5_0",
+      "bodyLift": 0,
+      "paceScale": 1
+    },
+    {
+      "point": [
+        1135.271484375,
+        1124.989990234375
+      ],
+      "groundHeight": 48,
+      "onConnector": false,
+      "material": "dirt",
+      "floorWinner": "village_dirt_lower_court_segment_5_0",
+      "bodyLift": 0,
+      "paceScale": 1
+    }
+  ]
+}
