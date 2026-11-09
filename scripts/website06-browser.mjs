@@ -28,9 +28,26 @@ const question = {
 const catalog = {
   questions: [question],
   fragments: [],
-  abilities: [],
+  abilities: [
+    {
+      id: "oxygen",
+      name: "Tabung",
+      description: "Oksigen",
+      prices: [0, 100, 200],
+      values: [100, 140, 180],
+      unit: "O₂",
+    },
+    {
+      id: "bag",
+      name: "Ransel",
+      description: "Beban",
+      prices: [0, 150, 300],
+      values: [12, 16, 20],
+      unit: "kg",
+    },
+  ],
   recipes: [],
-  balance: {},
+  balance: { starMultipliers: [0.5, 1, 1.5] },
 };
 let context;
 
@@ -56,6 +73,9 @@ async function fixture(viewport, role = "owner") {
     firstLoad: false,
     requests: [],
     accountActions: 0,
+    contentCatalog: structuredClone(catalog),
+    contentWrites: [],
+    publications: 0,
   };
   await page.route("**/api/**", async (route) => {
     const url = new URL(route.request().url()),
@@ -152,7 +172,12 @@ async function fixture(viewport, role = "owner") {
           ],
         },
       });
-    if (path === "/api/admin/content/fixture-draft")
+    if (path === "/api/admin/content/fixture-draft") {
+      if (route.request().method() === "PUT") {
+        const body = route.request().postDataJSON();
+        state.contentWrites.push(body);
+        state.contentCatalog = body.catalog;
+      }
       return route.fulfill({
         json: {
           hash: "fixture-hash",
@@ -160,10 +185,15 @@ async function fixture(viewport, role = "owner") {
             id: "fixture-draft",
             label: "Draft fixture",
             state: "draft",
-            catalog,
+            catalog: state.contentCatalog,
           },
         },
       });
+    }
+    if (path === "/api/admin/content/fixture-draft/publish") {
+      state.publications++;
+      return route.fulfill({ json: { ok: true } });
+    }
     if (path === "/api/admin/audit")
       return route.fulfill({ json: { total: 0, audits: [] } });
     throw new Error(`Unexpected fixture request: ${path}`);
@@ -335,6 +365,166 @@ try {
       checks.push({
         label:
           "return to versions clears the dirty draft guard after confirmed discard",
+      });
+      await page.getByRole("button", { name: "Buka", exact: true }).click();
+      await page
+        .getByRole("button", { name: "Kemampuan", exact: true })
+        .click();
+      const prices = page.getByLabel("Harga per level (array JSON)", {
+        exact: true,
+      });
+      await prices.fill("[0,");
+      await prices.press("Tab");
+      await page
+        .getByLabel("Alasan penyimpanan/publikasi")
+        .fill("Perbaikan harga alat");
+      assert.equal(await prices.getAttribute("aria-invalid"), "true");
+      await prices.press("Enter");
+      assert.equal(state.contentWrites.length, 0);
+      await page.screenshot({
+        path: `${output}/admin-invalid-json-desktop.png`,
+        fullPage: true,
+      });
+      await page.setViewportSize({ width: 390, height: 844 });
+      await fits(page, "admin invalid JSON issue 390");
+      await page.screenshot({
+        path: `${output}/admin-invalid-json-mobile.png`,
+        fullPage: true,
+      });
+      await page.setViewportSize(viewport);
+      assert.equal(
+        await page
+          .getByRole("button", { name: "Simpan draft", exact: true })
+          .isDisabled(),
+        true,
+      );
+      assert.equal(
+        await page
+          .getByRole("button", { name: "Tinjau publikasi", exact: true })
+          .isDisabled(),
+        true,
+      );
+      // Exercise the actual click handler independently of its disabled button.
+      await page
+        .getByRole("button", { name: "Simpan draft", exact: true })
+        .evaluate((button) => {
+          button.disabled = false;
+          button.click();
+          button.disabled = true;
+        });
+      await page
+        .getByText(
+          "Perbaiki array JSON yang belum valid sebelum menyimpan atau meninjau publikasi.",
+          { exact: true },
+        )
+        .waitFor();
+      assert.equal(state.contentWrites.length, 0);
+      await page
+        .getByRole("button", { name: "Tinjau publikasi", exact: true })
+        .evaluate((button) => {
+          button.disabled = false;
+          button.click();
+          button.disabled = true;
+        });
+      assert.equal(
+        await page
+          .getByRole("dialog", { name: "Publikasikan konten?", exact: true })
+          .count(),
+        0,
+      );
+      assert.equal(state.publications, 0);
+      assert(
+        await page.evaluate(() => {
+          const event = new Event("beforeunload", { cancelable: true });
+          dispatchEvent(event);
+          return event.defaultPrevented;
+        }),
+        "Invalid raw JSON alone must register unsaved navigation protection",
+      );
+      await page.getByLabel("Pilih abilities").selectOption("1");
+      assert.equal(await prices.inputValue(), "[0,150,300]");
+      await page
+        .getByLabel("Nilai tiap level (array JSON)", { exact: true })
+        .fill("[12,");
+      await page
+        .getByRole("button", { name: "Keseimbangan", exact: true })
+        .click();
+      await page
+        .getByLabel("Pengali bintang 1–3 (array JSON)", { exact: true })
+        .fill("[0.5,1,2]");
+      assert.equal(
+        await page
+          .getByRole("button", { name: "Simpan draft", exact: true })
+          .isDisabled(),
+        true,
+      );
+      await page
+        .getByRole("button", { name: "Kemampuan", exact: true })
+        .click();
+      assert.equal(await prices.inputValue(), "[0,");
+      page.once("dialog", (dialog) => dialog.dismiss());
+      await page.getByRole("button", { name: "Pemain", exact: true }).click();
+      assert.equal(await prices.inputValue(), "[0,");
+      await prices.fill("[0, 110, 220]");
+      assert.equal(await prices.getAttribute("aria-invalid"), null);
+      assert.equal(
+        await page
+          .getByRole("button", { name: "Simpan draft", exact: true })
+          .isDisabled(),
+        true,
+        "Another record's invalid raw array must still prevent saving",
+      );
+      await page.getByLabel("Pilih abilities").selectOption("1");
+      assert.equal(
+        await page
+          .getByLabel("Nilai tiap level (array JSON)", { exact: true })
+          .inputValue(),
+        "[12,",
+      );
+      await page
+        .getByLabel("Nilai tiap level (array JSON)", { exact: true })
+        .fill("[12,18,24]");
+      const save = page.getByRole("button", {
+        name: "Simpan draft",
+        exact: true,
+      });
+      assert.equal(await save.isEnabled(), true);
+      await save.focus();
+      await page.keyboard.press("Enter");
+      await page
+        .getByText("Draft disimpan. Tinjau sebelum publikasi.", { exact: true })
+        .waitFor();
+      assert.equal(state.contentWrites.length, 1);
+      assert.deepEqual(
+        state.contentWrites[0].catalog.abilities[0].prices,
+        [0, 110, 220],
+      );
+      assert.deepEqual(
+        state.contentWrites[0].catalog.abilities[1].values,
+        [12, 18, 24],
+      );
+      assert.deepEqual(
+        state.contentWrites[0].catalog.balance.starMultipliers,
+        [0.5, 1, 2],
+      );
+      assert.equal(await save.isDisabled(), true);
+      assert.equal(
+        await page
+          .getByRole("button", { name: "Tinjau publikasi", exact: true })
+          .isEnabled(),
+        true,
+      );
+      assert.equal(
+        await page.evaluate(() => {
+          const event = new Event("beforeunload", { cancelable: true });
+          dispatchEvent(event);
+          return event.defaultPrevented;
+        }),
+        false,
+      );
+      checks.push({
+        label:
+          "invalid JSON raw drafts survive record/category and canceled navigation; disabled controls and actual handlers reject writes, keyboard saves only repaired arrays",
       });
     }
     await page.goto(`${origin}/settings`);

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import type {
   Catalog,
   ContentVersion,
@@ -49,15 +49,22 @@ const labels: Record<string, string> = {
   bossHits: "Jumlah perisai boss",
   bossDamage: "Kerusakan serangan boss",
 };
+type ArrayDraft = { raw: string; invalid: boolean };
+
 function EditFields({
   value,
   onChange,
+  arrayDrafts,
+  onArrayChange,
   disabled = false,
 }: {
   value: Record<string, any>;
   onChange: (v: Record<string, any>) => void;
+  arrayDrafts: Record<string, ArrayDraft>;
+  onArrayChange: (key: string, raw: string) => void;
   disabled?: boolean;
 }) {
+  const fieldId = useId();
   return (
     <div className="fields-grid">
       {Object.entries(value).map(([key, v]) =>
@@ -84,22 +91,22 @@ function EditFields({
             {labels[key] ?? key}
             <input
               disabled={disabled}
-              key={`${key}:${JSON.stringify(v)}`}
-              defaultValue={JSON.stringify(v)}
-              onBlur={(e) => {
-                try {
-                  const parsed = JSON.parse(e.target.value);
-                  if (!Array.isArray(parsed)) throw Error();
-                  onChange({ ...value, [key]: parsed });
-                  e.target.setCustomValidity("");
-                } catch {
-                  e.target.setCustomValidity(
-                    "Vektor JSON diperlukan, contoh [100,140,180].",
-                  );
-                  e.target.reportValidity();
-                }
-              }}
+              aria-label={labels[key] ?? key}
+              value={arrayDrafts[key]?.raw ?? JSON.stringify(v)}
+              aria-invalid={arrayDrafts[key]?.invalid || undefined}
+              aria-describedby={
+                arrayDrafts[key]?.invalid
+                  ? `${fieldId}-${key}-error`
+                  : undefined
+              }
+              onChange={(e) => onArrayChange(key, e.target.value)}
             />
+            {arrayDrafts[key]?.invalid && (
+              <small id={`${fieldId}-${key}-error`} role="alert">
+                Array JSON diperlukan, contoh [100,140,180]. Perbaiki sebelum
+                menyimpan atau meninjau publikasi.
+              </small>
+            )}
           </label>
         ) : key === "subject" ? (
           <label key={key}>
@@ -183,6 +190,9 @@ export function Admin({ auth }: { auth: AuthState }) {
     [content, setContent] = useState<ContentVersion>(),
     [hash, setHash] = useState(""),
     [dirty, setDirty] = useState(false),
+    [arrayDrafts, setArrayDrafts] = useState<
+      Record<string, Record<string, ArrayDraft>>
+    >({}),
     [category, setCategory] = useState<keyof Catalog>("questions"),
     [record, setRecord] = useState(0),
     [reason, setReason] = useState(""),
@@ -351,11 +361,16 @@ export function Admin({ auth }: { auth: AuthState }) {
       setContent(r.content);
       setHash(r.hash);
       setDirty(false);
+      setArrayDrafts({});
       setRecord(0);
       setReason("");
     });
   }
   const editable = content?.state === "draft";
+  const editorKey = `${category}:${record}`;
+  const invalidArrays = Object.values(arrayDrafts).some((fields) =>
+    Object.values(fields).some((field) => field.invalid),
+  );
   const rows =
     content && category !== "balance"
       ? (content.catalog[category] as any[])
@@ -372,6 +387,28 @@ export function Admin({ auth }: { auth: AuthState }) {
     else (next.catalog[category] as any[])[record] = v;
     setContent(next);
     setDirty(true);
+  }
+  function editArray(key: string, raw: string) {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      parsed = undefined;
+    }
+    const invalid = !Array.isArray(parsed);
+    setArrayDrafts((drafts) => ({
+      ...drafts,
+      [editorKey]: { ...drafts[editorKey], [key]: { raw, invalid } },
+    }));
+    setDirty(true);
+    if (!invalid) editRecord({ ...current, [key]: parsed });
+  }
+  function requireValidArrays() {
+    if (!invalidArrays) return true;
+    setError(
+      "Perbaiki array JSON yang belum valid sebelum menyimpan atau meninjau publikasi.",
+    );
+    return false;
   }
   function addRecord() {
     if (!content) return;
@@ -418,6 +455,7 @@ export function Admin({ auth }: { auth: AuthState }) {
     setDirty(true);
   }
   async function saveContent() {
+    if (busy || !requireValidArrays()) return;
     await run(async () => {
       const r = await api(
         `/admin/content/${content!.id}`,
@@ -427,6 +465,7 @@ export function Admin({ auth }: { auth: AuthState }) {
       setContent(r.content);
       setHash(r.hash);
       setDirty(false);
+      setArrayDrafts({});
       setNotice("Draft disimpan. Tinjau sebelum publikasi.");
     });
   }
@@ -492,6 +531,7 @@ export function Admin({ auth }: { auth: AuthState }) {
                 setDetail(undefined);
                 setContent(undefined);
                 setDirty(false);
+                setArrayDrafts({});
                 setNotice("");
               }}
             >
@@ -977,6 +1017,7 @@ export function Admin({ auth }: { auth: AuthState }) {
                 ) {
                   setContent(undefined);
                   setDirty(false);
+                  setArrayDrafts({});
                   void run(loadVersions);
                 }
               }}
@@ -1024,6 +1065,12 @@ export function Admin({ auth }: { auth: AuthState }) {
                 </button>
               ))}
             </div>
+            {invalidArrays && (
+              <Notice error>
+                Ada array JSON yang belum valid. Teksnya tetap tersimpan dalam
+                draft lokal meskipun Anda berpindah entri atau kategori.
+              </Notice>
+            )}
             <div className="content-editor">
               <aside>
                 {category !== "balance" && (
@@ -1050,8 +1097,9 @@ export function Admin({ auth }: { auth: AuthState }) {
                         <div className="actions">
                           <button onClick={addRecord}>Tambah entri</button>
                           <button
-                            disabled={!current}
+                            disabled={!current || invalidArrays}
                             onClick={() => {
+                              if (!requireValidArrays()) return;
                               if (
                                 !confirm(
                                   "Hapus entri dari draft lokal? Publikasi akan memeriksa referensinya.",
@@ -1065,6 +1113,7 @@ export function Admin({ auth }: { auth: AuthState }) {
                               );
                               setRecord(0);
                               setContent(next);
+                              setArrayDrafts({});
                               setDirty(true);
                             }}
                           >
@@ -1105,14 +1154,27 @@ export function Admin({ auth }: { auth: AuthState }) {
                     </label>
                     <button
                       className="primary"
-                      disabled={busy || !dirty || reason.trim().length < 5}
+                      disabled={
+                        busy ||
+                        !dirty ||
+                        invalidArrays ||
+                        reason.trim().length < 5
+                      }
                       onClick={() => void saveContent()}
                     >
                       Simpan draft
                     </button>
                     <button
-                      disabled={busy || dirty || reason.trim().length < 5}
-                      onClick={() => setPending({ publish: true })}
+                      disabled={
+                        busy ||
+                        dirty ||
+                        invalidArrays ||
+                        reason.trim().length < 5
+                      }
+                      onClick={() => {
+                        if (requireValidArrays() && !dirty)
+                          setPending({ publish: true });
+                      }}
                     >
                       Tinjau publikasi
                     </button>
@@ -1131,8 +1193,10 @@ export function Admin({ auth }: { auth: AuthState }) {
                   <EditFields
                     key={`${category}:${record}:${content.id}`}
                     value={current}
-                    disabled={!editable}
+                    disabled={!editable || busy}
                     onChange={editRecord}
+                    arrayDrafts={arrayDrafts[editorKey] ?? {}}
+                    onArrayChange={editArray}
                   />
                 ) : (
                   <Notice>
@@ -1373,7 +1437,9 @@ export function Admin({ auth }: { auth: AuthState }) {
               <button
                 className="primary"
                 disabled={busy || reason.trim().length < 5}
-                onClick={() =>
+                onClick={() => {
+                  if (pending.publish && (!requireValidArrays() || dirty))
+                    return;
                   void run(async () => {
                     if (pending.clone) {
                       const r = await api("/admin/content/draft", {
@@ -1384,18 +1450,21 @@ export function Admin({ auth }: { auth: AuthState }) {
                       setContent(r.content);
                       setHash(r.hash);
                       setDirty(false);
+                      setArrayDrafts({});
                     } else {
                       await api(
                         `/admin/content/${content!.id}/${pending.publish ? "publish" : "archive"}`,
                         pending.publish ? { hash, reason } : { reason },
                       );
                       setContent(undefined);
+                      setDirty(false);
+                      setArrayDrafts({});
                       await loadVersions();
                     }
                     setPending(undefined);
                     setNotice("Perubahan konten tercatat.");
-                  })
-                }
+                  });
+                }}
               >
                 Konfirmasi
               </button>
