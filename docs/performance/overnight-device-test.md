@@ -7,12 +7,12 @@ Status 10 November 2026: pengguna bersedia menjalankan pengujian pada perangkat 
 | Data | Nilai sebelum pengujian |
 |---|---|
 | URL kandidat | https://staging-jalasmara.ardianryan.com |
-| Commit sumber runtime | `e17173436e1adbdd11ee29e340f3bb5b48769c61` (image/API/host), eksporGodotb0f2ef8 tetap |
-| SHA-256 PCK dan ukuran | `73d45630ab69033ac36a64740ecc73ecdb7363c9f99805222b6a9237dcb2d18b`,64.494.656byte |
-| Tanggal dan jam aktivasi | 10November2026, 03.36:45WIB |
-| Hasil startup browser publik | Host a9 lulus6pemeriksaan khusus login/READY/reload/clock serta pemisahan modul Admin, HTTP/2default; [laporan host](../reviews/overnight-lazy-admin-public-host.md). Gerak/jurnal/rute dunia6/6 sebelumnya pada host203 dengan PCK sama; [laporan dunia](../reviews/overnight-export3-public-smoke.md) |
+| Commit sumber runtime | `0bc6479c9c7fe5dfbc693128493cd6f6aec1e18b` (image/API/host), ekspor Godot `28a3c6d03908581e47843c7ceaa453d83550b5df` |
+| SHA-256 PCK dan ukuran | `b34d95211a61354eebf9cd218455d1c2f4e4b99723b57e4cfbe2b0a113f0ba26`, 64.495.984 byte/62 bagian |
+| Tanggal dan jam aktivasi | 10 November 2026, 04.45.14 WIB |
+| Hasil startup browser publik | Image898/PCKb34d lulus6/6 pemeriksaan baru pada HTTP/2 default: login/READY, rute desa–hutan, jurnal, save/reload dan pemulihan jam server; [laporan publik](../reviews/overnight-b34d-public-smoke.md) |
 
-Integrator memverifikasi pin dan startup publik sebelum meminta pengguna menguji. Hasil recorder lokal pada PCK `1d3c94a5…` memakai SwiftShader dan tidak menjadi pengukuran Windows atau S23.
+Integrator telah memverifikasi pin dan startup publik. Recorder pada kandidat ini menyertakan identitas PCK dari loader di awal/akhir rekaman; hasil lama tanpa identitas tetap ditandai tidak tersedia, bukan diisi dengan kandidat saat ini. Hasil recorder lokal pada PCK `1d3c94a5…` memakai SwiftShader dan tidak menjadi pengukuran Windows atau S23.
 
 ## Sesi singkat, sekitar lima menit per perangkat
 
@@ -42,3 +42,8 @@ Jika ada masalah, cukup catat langkah pemicu dan hasil yang terlihat. Jangan men
 ## Cara membaca hasil
 
 Integrator mengikat setiap laporan pada pin kandidat, perangkat, profil, dan rute yang diuji. Interval RAF menunjukkan penjadwalan browser, bukan waktu GPU. Heap JavaScript bukan total memori WASM, VRAM, atau proses. Nilai renderer yang disembunyikan browser tetap dicatat sebagai tidak tersedia. Kesimpulan optimasi harus mengikuti hasil perangkat dan pengulangan yang sebanding; panduan ini tidak menjanjikan FPS tertentu.
+
+
+## Pemeriksaan laporan oleh pengembang
+
+Setelah berkas dikembalikan, gunakan [pembaca offline](device-report-summary.md) untuk memeriksa identitas PCK, metadata perangkat, sampel aktif/jeda dan profil efektif. Pembaca tidak mengunggah atau mengubah laporan. Dua laporan hanya dibandingkan jika metadata pengukuran cocok dan pin PCK sama; Auto yang memilih Ringan tidak dianggap profil efektif berbeda dari Ringan manual. Rekaman lama tanpa pin tetap tidak diketahui. Contoh regresi yang disimpan berasal dari SwiftShader, bukan pengganti pengujian perangkat pengguna.

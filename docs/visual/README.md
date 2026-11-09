@@ -1,6 +1,25 @@
 # Jalasmara visual evidence
 
-Thirteen original evidence images, copied without cropping, recoloring, recompression or new image generation. This is a small review gallery, not an asset kit or a complete acceptance report. Total PNG payload: **2,845,460 bytes**. Released-world images and uninstalled authoring proposals are labelled separately.
+Fifteen original evidence images, copied without cropping, recoloring, recompression or new image generation. This is a small review gallery, not an asset kit or a complete acceptance report. Total PNG payload: **3,293,558 bytes**. Released-world images, local browser evidence and uninstalled authoring proposals are labelled separately.
+
+## Export4: actual modular equipment in local browser
+
+PCK `b34d95211a61354eebf9cd218455d1c2f4e4b99723b57e4cfbe2b0a113f0ba26`,64,495,984bytes, Godot export source28a3c6d. These are actual844×390 local browser captures. The same image898/PCKb34d was activated subsequently, but its public-route acceptance is a separate [release report](/docs/reviews/overnight-export4-integration.md). The physical lower-body pilot is absent from these images.
+
+![Actual dock frame with Nala and the detachable teal tank clear of the changing-booth roof.](/docs/visual/export4-dock-modular-gear.png)
+
+[Wardrobe gate7/7](/docs/reviews/overnight-actual-gear-browser.md) physically crossed the booth, checked hysteresis, visited the ocean, extracted and reloaded. At the actual reached dock corner, the body and teal tank are clear of the roof. Actual node reports independently show tank6/net12 visible meshes while diving and none while daily. This single idle image does not certify every mesh's pixel visibility, facing, item contact or natural gait.
+
+![Actual rainy evening forest bridge with Nala in explorer clothing and the separate hip bag.](/docs/visual/export4-forest-explorer.png)
+
+[Explorer gate5/5](/docs/reviews/overnight-explorer-node-browser.md) used touch input, crossed the upper bridge and reloaded. All three actual checkpoints showed4satchel meshes visible, with tank/net/model vest hidden. This rainy-evening frame retains dark foliage and readable body/hip item; it is not new daytime/color-grading or all-direction art acceptance.
+
+Original own-fixture artifacts were copied byte-for-byte after root image/privacy/metadata review; no account names, emails, credentials or user moodboards occur. Project original-art terms remain; these are documentation, not a reusable asset kit.
+
+| Gallery file | Original evidence | Bytes | SHA256 |
+| --- | --- | ---: | --- |
+| `export4-dock-modular-gear.png` | `plan06-layout-07b25c0f-4ab0-4e93-b2d7-7a9b5378c64a/wardrobe-next-export-actual-gear-at-unobscured-dock-candidate.png` |183,436|`2979a4ceb4948283bf77388ca3c73932f5b5a592645b6d7aea443862929044b1`|
+| `export4-forest-explorer.png` | `plan06-layout-ae6106ad-c495-4593-8d82-428b9c63910b/left-bridge-upper-crossed.png` |264,662|`45d8535f283fa54d151b51416ac4d77b02ab08371cb9b2d16d1cfbcb4cefe242`|
 
 ## WEST arm authoring proposal: not installed
 
