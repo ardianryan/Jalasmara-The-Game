@@ -43,4 +43,12 @@ Harness dapat dijalankan terhadap server lokal melalui `WEBSITE_TEST_ORIGIN`. Ia
 
 ## Batas penerimaan
 
-Ini paket ketahanan website 06-D, bukan penerimaan seluruh backlog website. Pengujian menggunakan viewport emulasi dan API fixture; ia tidak membuktikan OIDC provider, pengiriman undangan/reset, mutasi pemain, publikasi konten, pembaca layar menyeluruh, atau perangkat Windows/S23 fisik. Perlindungan navigasi keluar `beforeunload` tersedia pada source; dialog konfirmasi browser untuk menutup tab belum diuji terpisah. Perubahan terakhir yang membersihkan status dirty pada tombol Kembali ke versi ditinjau melalui source dan typecheck setelah putaran browser. Pengelolaan konten dan data nyata tetap memerlukan regresi integrasi pada kandidat gabungan sebelum rilis.
+Ini paket ketahanan website 06-D, bukan penerimaan seluruh backlog website. Pengujian menggunakan viewport emulasi dan API fixture; ia tidak membuktikan OIDC provider, pengiriman undangan/reset, mutasi pemain, publikasi konten, pembaca layar menyeluruh, atau perangkat Windows/S23 fisik. Dialog konfirmasi browser untuk menutup tab belum diuji terpisah. Pengelolaan konten dan data nyata tetap memerlukan regresi integrasi pada kandidat gabungan sebelum rilis.
+
+## Verifikasi kandidat gabungan
+
+Putaran ulang memakai build production pada worktree integrasi: mulai pada `3dd715d`, selesai pada `e27d613`. Commit di antaranya hanya menambahkan shelter; diff `apps/web/src` dan harness website kosong. Build berhasil dan harness terbaru lulus **32 pemeriksaan, nol kesalahan JavaScript** pada empat ukuran yang sama, dengan 12 PNG baru serta `results.json` pada `Jalasmara-06-integration/artifacts/browser/website06`.
+
+Pemeriksaan tambahan membuktikan draft yang berubah mendaftarkan penjagaan `beforeunload`. Setelah tombol **Kembali ke versi** dan konfirmasi buang perubahan, daftar versi muncul dan penjagaan itu sudah hilang. Pengujian penjagaan memakai event cancelable sintetis, sedangkan dialog konfirmasi pembuangan draft merupakan dialog browser yang sebenarnya. Tidak menyamakan ini dengan pengujian menutup tab fisik.
+
+Identitas build yang diuji: JavaScript `index-3BEtAxmh.js`, SHA-256 `35c28912572d2f25a12690be297f9a96790d6161573f7009e5341124f01ca10b`; CSS `index-D7EtCQ2g.css`, SHA-256 `063d234774eaf3f16a51a0bee07b5e7edf1729cf9cec96e588525a05ec61d056`. Capture pengelola 390 px diinspeksi ulang. Tidak ada kegagalan yang memerlukan perubahan source. Browser dan server preview ditutup setelah pengujian.
