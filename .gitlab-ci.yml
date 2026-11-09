@@ -1,7 +1,5 @@
 workflow:
   rules:
-    - if: '$CI_SERVER_HOST != "git.ppti.me"'
-      when: never
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
     - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS'
       when: never
@@ -11,7 +9,6 @@ workflow:
 stages: [verify, build, analyze, report]
 default:
   image: node:22-bookworm-slim
-  tags: [jalasmara-docker]
   interruptible: true
 variables:
   npm_config_cache: '$CI_PROJECT_DIR/.cache/npm'

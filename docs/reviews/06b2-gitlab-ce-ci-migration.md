@@ -1,5 +1,7 @@
 # GitLab CE CI migration candidate
 
+**Canceled by the user, 9 November 2026.** Do not carry out the CE steps below. CI execution remains on GitLab.com; the CE host-only workflow and runner tag were removed. The verified `python3-pil` dependency and full-history GitHub mirror fix are retained. No CE token, runner or server was configured, and the local `gitlabce` remote was removed. This document preserves the abandoned proposal for context only.
+
 The user selected `https://git.ppti.me/ardianryan/Jalasmara-The-Game.git` as the sole CI/CD authority. GitHub and public GitLab remain source mirrors. This report describes prepared source; authentication, project settings, runner registration, remote synchronization and activation remain root-owned. No CE pipeline or deployment has been claimed as successful.
 
 The candidate starts from main source `9cc72e674e7f4df69420274f99e8f646ec66bdb6`, retaining its loader/WASM/canopy/gateway regression commands. It changes `.gitlab-ci.yml` as follows:
