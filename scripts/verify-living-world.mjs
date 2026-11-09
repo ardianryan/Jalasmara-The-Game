@@ -61,6 +61,7 @@ const scripts = [
   "scripts/tests/natural-terrain-edges.gd",
   "scripts/tests/map-grounding.gd",
   "scripts/tests/surface-traversal.gd",
+  "scripts/tests/stair-foot-grounding.gd",
   "scripts/tests/land-path.gd",
   "scripts/tests/world-clock.gd",
   "scripts/tests/authoritative-calendar.gd",

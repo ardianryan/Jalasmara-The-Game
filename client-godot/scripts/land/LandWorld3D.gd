@@ -469,7 +469,7 @@ func _build_soft_ground_edge(surface: Dictionary, polygon: PackedVector2Array, h
 	for index in range(polygon.size()):
 		var a:=polygon[index]
 		var b:=polygon[(index+1)%polygon.size()]
-		var steps:=maxi(1,ceili(a.distance_to(b)/8.0))
+		var steps:=maxi(1,ceili(a.distance_to(b)/12.0))
 		for part in range(steps):
 			var outer_a:=a.lerp(b,float(part)/steps)
 			var outer_b:=a.lerp(b,float(part+1)/steps)

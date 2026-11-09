@@ -76,7 +76,7 @@ func run() -> void:
 			for phase in [.1,.5,.9]:
 				var progress: float=(index+phase)/count
 				for across in [-.3,0.0,.3]:
-					var logical:=start.lerp(end,progress)+side*float(connector.width)*across
+					var logical: Vector2=start.lerp(end,progress)+side*float(connector.width)*float(across)
 					var ground:=Traversal.connector_ground(profile,logical)
 					var support: Vector3=renderer.ground_point(logical)
 					assert(absf(support.z-float(ground.groundHeight))<.001)
@@ -89,7 +89,7 @@ func run() -> void:
 					var actual: Vector2=renderer.view_projection.render_to_host(renderer.camera_3d.unproject_position(support),Rect2(renderer.display.position,renderer.display.size))
 					assert(host.distance_to(actual)<.01)
 					if renderer.ground_projection(support).distance_to(logical)>1: legacy_inverse_misses+=1
-					var original_point:=logical
+					var original_point: Vector2=logical
 					for velocity in [along*80,-along*80,Vector2.ZERO]:
 						var result: Dictionary=traversal.sample(logical,velocity,.033)
 						assert(absf(float(result.groundHeight)-support.z)<.001)

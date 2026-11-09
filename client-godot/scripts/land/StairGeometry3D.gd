@@ -67,12 +67,15 @@ static func build(renderer: Node,stair: Dictionary) -> Dictionary:
 		if stairs:
 			var left_bottom:=Vector3(left_start.x,left_start.y,previous)
 			var right_bottom:=Vector3(right_start.x,right_start.y,previous)
-			renderer._face("Riser",[left_start,right_start,right_bottom,left_bottom],material)
+			var riser: Array[Vector3]=[left_start,right_start,right_bottom,left_bottom]
+			renderer._face("Riser",riser,material)
 		var base:=minf(lower,upper)-12
 		var left_base_start:=Vector3(left_start.x,left_start.y,base)
 		var left_base_end:=Vector3(left_end.x,left_end.y,base)
 		var right_base_start:=Vector3(right_start.x,right_start.y,base)
 		var right_base_end:=Vector3(right_end.x,right_end.y,base)
-		renderer._face("StairSideCheek",[left_start,left_end,left_base_end,left_base_start],material)
-		renderer._face("StairSideCheek",[right_end,right_start,right_base_start,right_base_end],material)
+		var left_cheek: Array[Vector3]=[left_start,left_end,left_base_end,left_base_start]
+		var right_cheek: Array[Vector3]=[right_end,right_start,right_base_start,right_base_end]
+		renderer._face("StairSideCheek",left_cheek,material)
+		renderer._face("StairSideCheek",right_cheek,material)
 	return {"id":str(stair.id),"type":str(stair.type),"count":count,"treads":treads}
