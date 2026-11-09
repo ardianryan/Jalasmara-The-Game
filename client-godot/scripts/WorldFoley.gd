@@ -2,6 +2,7 @@ extends Node
 
 const WaterFieldScript = preload("res://scripts/land/WaterField.gd")
 const CREST_PHASE := 0.34
+const MAX_CONTACT_BATCH := 64
 
 var actor: Node2D
 var area := "hub"
@@ -78,6 +79,12 @@ func _poll_foot_contacts(underwater: bool, relocated: bool) -> Dictionary:
 		_contact_audio.lastReason = "source_barrier"
 		return {"handled":true,"contacts":[]}
 	if mode=="legacy": return {"handled":false,"contacts":[]}
+	if events.size()>MAX_CONTACT_BATCH:
+		_contact_sequence = maxi(_contact_sequence,latest)
+		_contact_audio.invalidBatches += 1
+		_contact_audio.discarded += events.size()
+		_contact_audio.lastReason = "oversized_batch"
+		return {"handled":true,"contacts":[]}
 	var suppressed := mode!="pilot" or epoch.is_empty() or not bool(batch.get("validated",false)) or bool(batch.get("paused",false)) or _contact_paused() or underwater or relocated or not AudioManager.can_play_environment()
 	if suppressed:
 		_contact_sequence = maxi(_contact_sequence,latest)
@@ -212,7 +219,7 @@ func _process(delta: float) -> void:
 		_was_underwater = underwater
 	var travelled := actor.position.distance_to(_previous)
 	_previous = actor.position
-	var pilot_contacts := {"handled":false,"contacts":[]}
+	var pilot_contacts: Variant = null
 	if _foot_source_configured: pilot_contacts = _poll_foot_contacts(underwater,travelled>80)
 	if travelled>80:
 		_distance = 0
@@ -248,7 +255,7 @@ func _process(delta: float) -> void:
 			AudioManager.play_sfx("water_drip",0.88+float(_step%4)*0.04,-22)
 	else:
 		_distance += travelled
-		if bool(pilot_contacts.handled):
+		if pilot_contacts!=null and bool(pilot_contacts.handled):
 			_distance = 0.0
 			_cadence = 0.0
 			for event in pilot_contacts.contacts:

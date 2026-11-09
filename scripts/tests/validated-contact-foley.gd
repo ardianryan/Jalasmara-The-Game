@@ -29,7 +29,7 @@ func _check(condition: bool, message: String) -> bool:
 	return true
 
 func _event(sequence: int, material := "wood", kind := "landing") -> Dictionary:
-	return {"sequence":sequence,"side":"left" if sequence%2==0 else "right","kind":kind,"logical":Vector2(220,50),"worldPlant":Vector3(220,-50,0),"supportId":"wood_platform","material":material,"acceptedDistance":float(sequence*32),"physicsFrame":sequence,"processFrame":sequence}
+	return {"sequence":sequence,"side":"left" if sequence%2==0 else "right","kind":kind,"logical":Vector2(50,50) if material=="stone" else Vector2(220,50),"worldPlant":Vector3(50,-50,0) if material=="stone" else Vector3(220,-50,0),"supportId":"court" if material=="stone" else "wood_platform","material":material,"acceptedDistance":float(sequence*32),"physicsFrame":sequence,"processFrame":sequence}
 
 func _offer(epoch: String, latest: int, events: Array, paused := false, valid := true, mode := "pilot") -> void:
 	source.batch = {"mode":mode,"epoch":epoch,"latestSequence":latest,"contacts":events,"paused":paused,"validated":valid}
@@ -173,7 +173,19 @@ func _run() -> void:
 	_offer("B",2,[_event(2)])
 	_tick()
 	if not _check(_played()==before,"Mode barriers within one epoch must not rewind its contact watermark"): return
-	_offer("B",3,[_event(3)])
+	var oversized: Array = []
+	for i in range(3,68): oversized.append(_event(i))
+	_offer("B",68,oversized)
+	_tick()
+	if not _check(_played()==before and foley.debug_status().contactSource.audio.lastReason=="oversized_batch","Oversized producer batch must atomically discard without per-event playback"): return
+	_offer("B",68,[_event(68)])
+	_tick()
+	if not _check(_played()==before,"Oversized batch watermark must prevent deferred replay"): return
+	_offer("B",69,[_event(69)])
+	_tick()
+	if not _check(_played()==before+1,"Fresh bounded batch after an oversized rejection must recover"): return
+	before = _played()
+	_offer("B",70,[_event(70)])
 	state.dive = {"id":"consumer-underwater"}
 	_tick()
 	state.dive = {}
@@ -181,7 +193,7 @@ func _run() -> void:
 	if not _check(_played()==before,"Underwater land contacts must be drained without surfacing replay"): return
 	actor.position.x += 100
 	_legacy_contact()
-	_offer("B",4,[_event(4)])
+	_offer("B",71,[_event(71)])
 	_tick()
 	_tick()
 	if not _check(_played()==before and actor.swim_sprite.locomotion_state().pendingContacts==0,"Relocation must drain both sources, not play stale contacts"): return
