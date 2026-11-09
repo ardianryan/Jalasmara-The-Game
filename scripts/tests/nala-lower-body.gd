@@ -115,7 +115,7 @@ func _measure(label:String) -> void:
 	previous["body"]={"height":pose.contacts.bodyHeight,"distance":pose.contacts.acceptedDistance}
 	var equipment:Node3D=renderer.actors_3d.get("_equipment")
 	var full_body_anchor:Vector3=upper.global_position-renderer.camera_up()*26
-	if not _check(equipment.global_position.distance_to(full_body_anchor)<.003,"Separate equipment must follow actual lowered torso "+label): return
+	if not _check(equipment.global_position.distance_to(full_body_anchor)<.003,"Separate equipment must follow actual lowered torso "+label+" actualGap="+str(equipment.global_position.distance_to(full_body_anchor))): return
 	for side in ["left","right"]:
 		var entry:Dictionary=pose.contacts.feet[side]
 		var foot:Sprite3D=rig.get("_parts")[side+"_foot"]
