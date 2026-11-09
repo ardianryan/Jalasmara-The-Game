@@ -119,6 +119,7 @@ func set_locomotion(velocity: Vector2,delta: float,visual_velocity := Vector2.IN
 		_advance_settle(delta)
 		return
 	_settle_frames.clear()
+	_settle_elapsed=0.0
 	var stride:=_stride()
 	var before:=floori(_travel/(stride*.5))
 	_travel+=_speed*delta
@@ -154,6 +155,11 @@ func _advance_facing(distance:float) -> void:
 
 func _advance_settle(delta:float) -> void:
 	if _settle_frames.is_empty():
+		_settle_elapsed+=delta
+		while _settle_elapsed>=SETTLE_FRAME_SECONDS and _artwork_direction!=_requested_direction:
+			_settle_elapsed-=SETTLE_FRAME_SECONDS
+			_advance_facing(TURN_DISTANCE)
+		if _artwork_direction==_requested_direction: _settle_elapsed=0.0
 		_pose_walking=false
 		_pose_frame=0
 		_pose_phase=0.0

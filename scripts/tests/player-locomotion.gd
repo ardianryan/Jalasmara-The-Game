@@ -145,6 +145,15 @@ func _run() -> void:
 				visual.animate(false,false,1,0)
 				assert(visual.vframes==1 and visual.frame==index)
 				assert(visual.locomotion_state().distance==before)
+			visual.set_locomotion(Vector2(100,0),.2)
+			visual.animate(true,false,1,0)
+			visual.set_locomotion(Vector2(-100,0),.01)
+			visual.animate(true,false,-1,0)
+			var turn_stop_distance:float=visual.locomotion_state().distance
+			visual.set_locomotion(Vector2.ZERO,.4)
+			visual.animate(false,false,-1,0)
+			assert(visual.vframes==1 and visual.frame==4 and visual.get_equipment_state().facingDirection=="west","All12sets must finish a pending turn while standing, rather than retain an unrelated intermediate direction")
+			assert(visual.locomotion_state().distance==turn_stop_distance)
 	visual.consume_foot_contacts()
 	var before: float=visual.locomotion_state().distance
 	visual.set_locomotion(Vector2(64,0),1)
