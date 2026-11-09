@@ -1,5 +1,7 @@
 # Handoff aktif agent
 
+Checkpoint terbaru lanjutan: **jangan aktifkan imagef319 dahulu**. Night UUID4907b0a6 menyelesaikan7pemeriksaan tetapi mendapat1surface409; cleanuptrue. Trace minimal/fixture rumah siap pada `1ce4e85`; integrator memegang perbaikan state setelah kode konflik diketahui. Transisi Nala digabung `4f5da1a`/`65653a3`/`2019357`, focused/native worktree lulus dan contact sheet ditinjau; belum fullworld/export gabungan. Alpha diagnostic `1563b9f` tidak mengulang gray quad pada native, sehingga tidak ada workaround runtime. Karakter dan alpha sudah release engine; QA memegang browser berikutnya. [Laporan checkpoint](reviews/06b-release-and-core-followup.md) menyimpan angka/batas dan prioritas rumah lain. Staging masih9ba21c6/PCKa937, preparedf319 bukan paket yang sudah dirilis.
+
 Terakhir diperbarui: 9 November 2026, paket integrasi 06-B berjalan. Baca berkas ini bersama [AGENTS.md](../AGENTS.md), [PRD](PRD.md) dan [Rencana 06](plans/06-finishing-dunia-npc-dan-perluasan-desa.md). Bagian ini ditimpa dengan keadaan terbaru; log singkat di bawah ditambah saat paket selesai. Laporan historis tetap disimpan.
 
 [Laporan progres paket06-B](reviews/06b-progress.md) merangkum perubahan, hasil tes, tool/lisensi dan urutan pengembangan berikutnya. Browser acceptance masih berjalan; lihat laporan QA untuk hasil setiap iterasi.
