@@ -147,6 +147,63 @@ def main():
         distance=math.dist(hip,ankle)
         assert abs(first-second)<=distance<=first+second
         annuli[side]={'hipToAnkle':distance,'originalInner':abs(first-second),'originalOuter':first+second}
+    offsets_original=[offset(point) for point in original]
+    left_entry=rejected['pose']['contacts']['feet']['left']
+    left_leg=view['legs']['left']
+    left_ankle=add(vector(left_entry['sole']),(0,0,(left_leg['solePixel'][1]-(left_leg['ankle'][1]-left_leg['parts']['foot'][1]))*vertical_scale))
+    def frozen_pose(phase,baseline):
+        u=phase/duration
+        smooth=u*u*(3-2*u)
+        correction=scale(old_foot['pivotCorrectionWorld'],(duration-phase)/(duration-phase0))
+        axy=add((start[0],start[1]-path_xy*smooth,0),add(correction,ankle_offset))
+        support=max(ground_y(axy[1]+point[1])-point[2] for point in offsets_original)
+        ankle=(axy[0],axy[1],support+3*math.sin(math.pi*u)+foot['rampCurvePlan']['fromSupportOffset']*(1-smooth))
+        # Actor remains on the captured upper flat throughout this interval.
+        actor_x=previous['position'][0]
+        actor_y=previous['position'][1]+(phase-phase0)*math.cos(tilt)
+        ground=(actor_x,-actor_y/math.cos(tilt)-high*math.tan(tilt),high)
+        lower=0.0
+        limbs=[]
+        for side,actual in [('left',left_ankle),('right',ankle)]:
+            limb=view['legs'][side]
+            hip=add(ground,add(scale(right,limb['hip'][0]-64),(0,0,baseline-high+28*vertical_scale)))
+            first=math.dist(limb['hip'],limb['knee'])*vertical_scale
+            second=math.dist(limb['knee'],limb['ankle'])*vertical_scale
+            horizontal=(hip[0]-actual[0])**2+(hip[1]-actual[1])**2
+            assert horizontal<(first+second-.1)**2
+            lower=max(lower,hip[2]-actual[2]-math.sqrt((first+second-.1)**2-horizontal))
+            limbs.append((side,hip,actual,first,second))
+        measured={}
+        for side,hip,actual,first,second in limbs:
+            hip=add(hip,(0,0,-lower))
+            length=math.dist(hip,actual)
+            assert abs(first-second)<=length<=first+second
+            measured[side]={'distance':length,'inner':abs(first-second),'outer':first+second}
+        return {'dropPixels':lower/vertical_scale,'rightAnkle':ankle,'effectiveHipZ':baseline+28*vertical_scale-lower,'limbs':measured}
+    endpoint_modes={}
+    for label,steps in [('60hz',[100/60]),('30hz',[100/30]),('mixed',[100/60,100/30,100*.133333333333333]),('capturedMerged',[phase_end-phase0])]:
+        phase=phase0
+        baseline=high
+        count=0
+        peak=frozen_pose(phase,baseline)['dropPixels']
+        rate_peak=0.0
+        while phase<phase_end:
+            nxt=min(phase_end,phase+steps[count%len(steps)])
+            target=shadow(nxt,original)[1]
+            before=baseline
+            baseline=max(target,baseline-(nxt-phase)) if baseline>target else min(target,baseline+(nxt-phase))
+            rate_peak=max(rate_peak,abs(baseline-before)/(nxt-phase))
+            peak=max(peak,frozen_pose(nxt,baseline)['dropPixels'])
+            phase=nxt
+            count+=1
+        assert rate_peak<=1.00000001
+        endpoint_modes[label]={'observations':count,'terminalBaseline':baseline,'maxBaselineRate':rate_peak,
+                               'maxFrozenNWDropPixelsAtEndpoints':peak,'terminalFrozenNWDropPixels':frozen_pose(phase,baseline)['dropPixels'],
+                               'terminalEffectiveHipZAfterDrop':frozen_pose(phase,baseline)['effectiveHipZ'],
+                               'terminalOriginalAnnuli':frozen_pose(phase,baseline)['limbs']}
+    actual_modeled=frozen_pose(phase_end,body_old)['rightAnkle']
+    actual_recorded=foot['supportPlanTranslation']['after']
+    assert math.dist(actual_modeled,actual_recorded)<.005
     result = {
         'scope':'Conditional captured constantQ/C-decay footprint replay, not changed body/view/landing feedback or runtime acceptance',
         'sourceRun':str(args.run), 'worldSha256':source['fixtureWorldSha256'],
@@ -164,6 +221,9 @@ def main():
         'bodyMarginTo8px':required_body-body,
         'conditionalFinalOriginalBoneAnnuliFrozenNW':annuli,
         'currentLeadingGroundHeightAtEnd':shadow(phase_end,original)[1],
+        'frozenCurrentRightAnkleReplayError':math.dist(actual_modeled,actual_recorded),
+        'endpointTimingComparisons':endpoint_modes,
+        'timingModeScope':'Frozen NW/Q/C original footprint; reduced motion has no additional change in this CPU formula, not actual reduced fixture proof',
         'sampleOrder':'Hypothetical body target queries original current footprint AFTER current chunk logical/Q/C; old before-chunk query not modeled as fixed',
         'groundScope':'Authored dock continuous bare physical profile, not painted triangle clearance or global floors',
         'notProven':['body and original foot view changes','Q/H/clearance feedback','both-leg annulus across unrecorded frames','discrete runtime chunk scheduling','six-pixel admission','full ascent-descent runtime or native gait']}

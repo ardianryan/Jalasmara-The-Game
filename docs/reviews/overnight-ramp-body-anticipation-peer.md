@@ -41,4 +41,23 @@ python3 tools/player-gait/model_ramp_body_anticipation.py \
 - `rejected.json` SHA256 `78aa7e36b887d28c54d57606abbaa8e186230e76ab7447dadc031d7b46d3353d`.
 - `samples.jsonl` SHA256 `8cd51fe09305a5dae21c0bd4fdef5c42ef2f76536abdea2486f5b3b58d4c062f`.
 - `source.json` SHA256 `a9461a0b15ec57891b56e9b81929f8c8e7908ce934aa1e654d20858bd61c7dd5`.
-- CPU output SHA256 `a841556393f9ca062d65ddc4160cdb68b25c6f02f7ded911ceae43aedf4198a0`; it remains an ignored artifact, not a shipped asset.
+- CPU output SHA256 `aef08ca8f82dae063126f7ad7ca8a21d77c263f9c004438c11f930939c6e4c55`; it remains an ignored artifact, not a shipped asset.
+
+## Endpoint transfer proposal: independent timing replay
+
+The subsequent four-file character WIP moves the support query after Lower has committed the current foot view, Q, H and C, before anatomy. It reads `entry.sole` with correction already applied and queries original current corners/markers, rather than the previous planner geometry. The planner then commits from **stored body height before update** toward this current-ground target, bounded by the whole accepted-distance allowance once. This replaces the provisional chunk result; adding the allowance to an already advanced planner height would double-count motion and is not the reviewed design. Initial empty feet, physical-only mode, discontinuity counters and frozen-return guards preserve initialization/default/pause behavior.
+
+The new endpoint update is not the earlier continuous witness. Extending the CPU reproducer reconstructs the captured final right ankle using original-mask H to within0.000764world. With its original NW/Q/C sequence frozen, step budgets corresponding to100worldXY/s give:
+
+| Endpoint samples | Final body baseline | Final requested pelvis drop | Final effective hipZ after drop |
+| --- | ---: | ---: | ---: |
+|60Hz steps|41.333659|7.604957px|66.231410|
+|30Hz steps|41.333659|7.604957px|66.231410|
+|Mixed60/30/merged|39.666992|6.239703px|66.231410|
+|One captured13.333-unit merged step|34.666992|2.143943px|66.231410|
+
+Every virtual endpoint respects baseline displacement≤accepted distance and the original inner/outer leg annuli. Reduced motion does not alter this frozen CPU formula; that is not an actual reduced-motion fixture result. These schedules start at the recorded phase5.782715, not a separate retimed full controller run. The source-independent continuous reference stays41.782492.
+
+The baseline difference is important, but is **not itself a seven-world-unit visual crouch**: the positive anatomy pelvis correction cancels it in this frozen case, yielding the same final effective hip. Baseline changes still affect subsequent un-dropped body-view admission and thus future foot/view/Q/H feedback; only real coupled execution and native sequence review can settle that behavior. The tool explicitly checks the frozen endpoint annuli rather than inferring them from the baseline number alone.
+
+One lifecycle edge was sent to the author before committing the runtime candidate: `fixedRampTarget` persists after contact, so a historical ramp plan plus both grounded feet could enter the endpoint block with zero accepted XY while no foot settlement is active. An unrestricted24δ allowance there would create new torso-only idle settlement. The zero-XY allowance must use the explicitly permitted existing settlement state, or that broader idle behavior needs its own deliberate contract/test; it cannot be silently justified by a stale plan flag. Paused states return before the block. This peer did not edit character source or grant engine execution.
