@@ -314,18 +314,18 @@ func _next_tread(side:String,at:Vector2,provisional:Vector2) -> Dictionary:
 		return {"valid":true,"target":target,"connectorId":profile.id,"landingOrdinal":ordinal,"landingHeight":height,"supportOrdinal":support_ordinal,"treadDistance":depth}
 	return {}
 
-func _terrain_duration(from:Vector3,to:Vector3,minimum:float,span:float) -> Dictionary:
+func _terrain_duration(from:Vector3,to:Vector3,minimum:float,span:float,continuous_ramp:bool=false) -> Dictionary:
 	var rise:=to.z-from.z
 	var duration:=maxf(_start_distance,minimum)
 	var bound:=INF
 	for attempt in range(257):
-		var window:=clampf(absf(rise)/(duration*3.0),.25,.65)
-		var delay:=window*.5
+		var window:=1.0 if continuous_ramp else clampf(absf(rise)/(duration*3.0),.25,.65)
+		var delay:=0.0 if continuous_ramp else window*.5
 		var peak:=0.0
 		for index in range(1025):
 			var u:=float(index)/1024.0
-			var advance:=clampf((u-delay)/(1.0-delay) if rise>0 else u/(1.0-delay),0,1)
-			var elevation:=clampf(u/window if rise>0 else (u-(1.0-window))/window,0,1)
+			var advance:=u if continuous_ramp else clampf((u-delay)/(1.0-delay) if rise>0 else u/(1.0-delay),0,1)
+			var elevation:=u if continuous_ramp else clampf(u/window if rise>0 else (u-(1.0-window))/window,0,1)
 			var horizontal:=span*6.0*advance*(1.0-advance)/(1.0-delay)
 			var vertical:=rise*6.0*elevation*(1.0-elevation)/window+PI*TOE_CLEARANCE*cos(u*PI)
 			peak=maxf(peak,Vector2(horizontal,vertical).length())
@@ -334,7 +334,7 @@ func _terrain_duration(from:Vector3,to:Vector3,minimum:float,span:float) -> Dict
 		bound=(peak+curvature/2048.0)/duration
 		if bound<=4.9: break
 		duration+=.25
-	return {"distance":duration,"curveSpeedBound":bound,"curveOnly":true,"valid":bound<=4.9,"fromWorld":from,"toWorld":to,"fixedPathWorldXY":span}
+	return {"distance":duration,"curveSpeedBound":bound,"curveOnly":true,"valid":bound<=4.9,"fromWorld":from,"toWorld":to,"fixedPathWorldXY":span,"curveType":"ramp_synchronous" if continuous_ramp else "stair_clearance"}
 
 func _begin(side:String,at:Vector2,hips:Dictionary,right:Vector3) -> void:
 	_swing=side
@@ -373,7 +373,7 @@ func _begin(side:String,at:Vector2,hips:Dictionary,right:Vector3) -> void:
 			entry.treadPlan.merge(budget,true)
 	elif _physical_contract and _ramp_landing(entry.from,entry.to):
 		var path:=_path_metrics(entry.from,entry.to)
-		var budget:=_terrain_duration(entry.fromWorld,entry.toWorld,_landing_distance,float(path.total))
+		var budget:=_terrain_duration(entry.fromWorld,entry.toWorld,_landing_distance,float(path.total),true)
 		_landing_distance=float(budget.distance)
 		entry.fixedRampTarget=true
 		entry["rampCurvePlan"]=budget
@@ -432,7 +432,7 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 			var entry:Dictionary=_feet[_swing]
 			if _physical_contract and (bool(entry.get("fixedTreadTarget",false)) or bool(entry.get("fixedRampTarget",false))):
 				var path:=_path_metrics(entry.from,entry.to)
-				var budget:=_terrain_duration(entry.fromWorld,entry.toWorld,_turn_distance,float(path.total))
+				var budget:=_terrain_duration(entry.fromWorld,entry.toWorld,_turn_distance,float(path.total),bool(entry.get("fixedRampTarget",false)))
 				_landing_distance=float(budget.distance)
 				if bool(entry.get("fixedTreadTarget",false)): entry.treadPlan.merge(budget,true)
 				else: entry.rampCurvePlan=budget
@@ -470,7 +470,7 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 			var advance:=u
 			var elevation:=u
 			var rise:=Vector3(entry.toWorld).z-Vector3(entry.fromWorld).z
-			if absf(rise)>.01:
+			if absf(rise)>.01 and not bool(entry.get("fixedRampTarget",false)):
 				var window:=clampf(absf(rise)/(_landing_distance*3.0),.25,.65)
 				var delay:=window*.5
 				if rise>0:

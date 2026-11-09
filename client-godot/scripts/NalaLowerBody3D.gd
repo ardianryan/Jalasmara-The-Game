@@ -303,6 +303,15 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 		return _last.duplicate(true)
 	drop=clampf(drop,0,drop_limit)
 	root_hip.z-=drop
+	for side in ["left","right"]:
+		var hip:=root_hip+right*float(hips[side])
+		var limb:Vector2=lengths[side]
+		var distance:float=hip.distance_to(ankles[side])
+		if distance<absf(limb.x-limb.y):
+			visible=false
+			proxy.visible=true
+			_last={"enabled":false,"rejected":true,"reason":"fixed-length inner reach","direction":direction,"desiredDirection":desired,"contacts":pose,"reachValid":false,"innerReachViolation":{"side":side,"distance":distance,"minimum":absf(limb.x-limb.y),"hipWorld":[hip.x,hip.y,hip.z],"ankleWorld":[ankles[side].x,ankles[side].y,ankles[side].z]},"rootMotion":false}
+			return _last.duplicate(true)
 	var heading:Vector3=renderer.map_point(actor.position+{"east":Vector2.RIGHT,"west":Vector2.LEFT,"north":Vector2.UP,"south":Vector2.DOWN,"north_east":Vector2(1,-1),"north_west":Vector2(-1,-1),"south_east":Vector2(1,1),"south_west":Vector2(-1,1)}[direction],0)-renderer.map_point(actor.position,0)
 	if actor.has_meta("nala_last_world_heading"): heading=actor.get_meta("nala_last_world_heading")
 	var raw_velocity:Vector2=actor.get("velocity") if "velocity" in actor else Vector2.ZERO
