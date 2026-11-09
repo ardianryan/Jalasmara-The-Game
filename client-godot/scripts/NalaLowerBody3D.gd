@@ -243,7 +243,7 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 				if _rotated_shoe_clear(side,candidate,entry.logical,Vector3(entry.sole)+rotated,right,vertical):
 					var pivot:Vector3=Vector3(entry.sole)+correction+_ankle_offset(side,previous_direction,right,vertical,_plane(side))
 					var after:=Vector3(entry.sole)+rotated+_ankle_offset(side,candidate,right,vertical,_plane(side))
-					entry["viewRotationPivot"]={"before":[pivot.x,pivot.y,pivot.z],"after":[after.x,after.y,after.z]}
+					entry["viewRotationPivot"]={"before":[pivot.x,pivot.y,pivot.z],"after":[after.x,after.y,after.z],"previousDirection":previous_direction,"nextDirection":candidate}
 					entry["rotationAnchorWorld"]=[pivot.x,pivot.y,pivot.z]
 					correction=rotated
 					_foot_views[side]=candidate
@@ -280,6 +280,19 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 					if not entry.has("settlingTarget"):
 						var phase:=clampf(float(pose.swingDistance)/float(pose.landingDistance),0,1)
 						var progress:=phase*phase*(3.0-2.0*phase)
+						if entry.has("viewRotationPivot"):
+							var old_direction:=str(entry.viewRotationPivot.previousDirection)
+							var old_mask:Dictionary={"leg":_data.views[old_direction].legs[side],"vertices":_opaque_vertices[old_direction+"/"+side],"right":right,"vertical":vertical}
+							var old_support:=FootPlane.ankle_support(renderer,entry.logical,old_mask,ankle,next)
+							if not bool(old_support.valid):
+								visible=false
+								proxy.visible=true
+								_last={"enabled":false,"rejected":true,"reason":"previous shoe support envelope has no ground inverse","contacts":pose,"reachValid":false,"rootMotion":false}
+								return _last.duplicate(true)
+							var before:float=entry.rampCurvePlan.fromSupportOffset
+							var remaining:=maxf(.000001,1.0-progress)
+							entry.rampCurvePlan.fromSupportOffset=before+(float(old_support.height)-float(support.height))/remaining
+							entry["viewSupportContinuity"]={"previousDirection":old_direction,"nextDirection":foot_direction,"previousSupport":old_support.height,"nextSupport":support.height,"offsetBefore":before,"offsetAfter":entry.rampCurvePlan.fromSupportOffset,"remainingProgress":remaining}
 						lift=sin(phase*PI)*3.0
 						carried=float(entry.rampCurvePlan.fromSupportOffset)*(1.0-progress)
 					var planned_z:float=maxf(ankle.z,float(support.height)+.02) if entry.has("settlingTarget") else float(support.height)+maxf(.02,lift+carried)
@@ -291,7 +304,7 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 						var source_anchor:Array=entry.rotationAnchorWorld
 						entry["rotationAnchorWorld"]=[float(source_anchor[0]),float(source_anchor[1]),float(source_anchor[2])+adjustment]
 					entry["supportPlanTranslation"]={"before":[before_plan.x,before_plan.y,before_plan.z],"after":[ankle.x,ankle.y,ankle.z],"deltaZ":adjustment}
-					_planner.commit_raw_support(side,entry.sole)
+					_planner.commit_raw_support(side,entry.sole,float(entry.rampCurvePlan.fromSupportOffset))
 					entry["supportEnvelope"]={"ankleSupportHeight":support.height,"sineLift":lift,"carriedStartOffset":carried,"rawHeightAdjustment":adjustment,"originalPoints":support.points,"baseCurveBoundIncludesEnvelope":false,"minimumAirborneClearance":.02}
 				var current_clear:=FootPlane.airborne_clear(renderer,entry.logical,mask,ankle-_ankle_offset(side,foot_direction,right,vertical,current),current)
 				var backtracks:=0

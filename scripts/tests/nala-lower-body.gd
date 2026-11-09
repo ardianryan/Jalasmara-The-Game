@@ -151,6 +151,11 @@ func _measure(label:String) -> void:
 			var before:Array=recorded.before
 			var after:Array=recorded.after
 			if not _check(Vector3(float(before[0]),float(before[1]),float(before[2])).distance_to(Vector3(float(after[0]),float(after[1]),float(after[2])))<.003,"Shoe rotation changed ankle within its own planned pose "+label+" operation="+operation): return
+		if entry.has("viewSupportContinuity"):
+			var continuity:Dictionary=entry.viewSupportContinuity
+			var before_height:float=float(continuity.previousSupport)+float(continuity.offsetBefore)*float(continuity.remainingProgress)
+			var after_height:float=float(continuity.nextSupport)+float(continuity.offsetAfter)*float(continuity.remainingProgress)
+			if not _check(absf(before_height-after_height)<.003,"Original shoe view changed its planned support trajectory "+label): return
 		if entry.has("supportPlanTranslation"):
 			var translation:Dictionary=entry.supportPlanTranslation
 			var before:Array=translation.before

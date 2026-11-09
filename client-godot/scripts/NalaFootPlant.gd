@@ -369,9 +369,10 @@ func _ramp_duration(from:Vector2,to:Vector2,from_world:Vector3,minimum:float,sid
 		else: valid=false
 	return {"distance":distance,"curveSpeedBound":bound,"curveOnly":true,"valid":valid and bound<=4.9,"fromWorld":from_world,"toWorld":_ground(to),"fixedPathWorldXY":span,"curveType":"ramp_support_profile","fromGroundOffset":offset,"groundKnots":knots,"effectiveVerticalSpan":vertical_span,"fromSupportOffset":support_offset,"originalFootSupportEnvelope":true,"envelopeIncludedInBaseCurveBound":false}
 
-func commit_raw_support(side:String,world:Vector3) -> void:
+func commit_raw_support(side:String,world:Vector3,support_offset:float=NAN) -> void:
 	if _physical_contract and _feet.has(side) and not bool(_feet[side].grounded) and bool(_feet[side].get("fixedRampTarget",false)):
 		_feet[side].sole=world
+		if not is_nan(support_offset): _feet[side].rampCurvePlan.fromSupportOffset=support_offset
 
 func _begin(side:String,at:Vector2,hips:Dictionary,right:Vector3) -> void:
 	_swing=side
