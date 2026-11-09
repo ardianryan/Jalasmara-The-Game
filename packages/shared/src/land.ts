@@ -70,6 +70,7 @@ export type LandShelter = {
   attachmentHeight: number;
   outerHeight: number;
   existing?: boolean;
+  material?: "thatch" | "metal";
 };
 export type LandPosition = { x: number; y: number };
 const rectangle = (
@@ -326,6 +327,21 @@ const hubStairs: LandStair[] = [
 ];
 const hubSurfaces: LandSurface[] = [
   floor(
+    "wirabhumi_home_terrace",
+    [
+      [40, 110],
+      [95, 80],
+      [250, 85],
+      [330, 120],
+      [350, 330],
+      [305, 375],
+      [80, 375],
+      [40, 330],
+    ],
+    "grass",
+    2,
+  ),
+  floor(
     "residential_court",
     [
       [330, 100],
@@ -549,10 +565,36 @@ for (const [routeIndex, route] of hubRoutes.slice(-4).entries()) {
     });
   }
 }
+hubRoutes.push(
+  [
+    [465, 320],
+    [350, 300],
+    [270, 300],
+    [192.5, 310],
+  ],
+  [
+    [1950, 300],
+    [1830, 310],
+    [1770, 310],
+    [1770, 240],
+  ],
+  [
+    [1840, 140],
+    [1840, 280],
+    [1830, 310],
+  ],
+  [
+    [400, 720],
+    [275, 720],
+    [275, 850],
+  ],
+);
 const hubObstacles: LandObstacle[] = [
   alignedLegacyHouse("kedai_waras", 360, 420, 400, 175, 155, "thatch", 2),
   alignedLegacyHouse("galangan_beno", 1090, 390, 420, 170, 125, "workshop", 2),
   alignedLegacyHouse("pos_cakrawala", 1840, 140, 300, 105, 135, "metal", 3),
+  rectangularHouse("rumah_lurah", 80, 130, 225, 120, 180, "lurah_home", 2),
+  rectangularHouse("rumah_direktur", 1715, 135, 110, 70, 120, "director_rv", 3),
   rectangularHouse("griya_sasmita", 78, 420, 164, 145, 122, "sasmita", 2),
   obstacle("home_plot_1", "garden", 65, 760, 80, 70, 24, "home_plot", 2),
   obstacle("home_plot_2", "garden", 165, 760, 80, 70, 24, "home_plot", 2),
@@ -655,6 +697,7 @@ function attachedShelter(buildingId: string, reach: number): LandShelter {
     attachmentHeight:
       house.variant === "balai" ? 126 : house.height3d * 0.7 + 22,
     outerHeight: house.variant === "balai" ? 108 : house.height3d * 0.7 + 8,
+    material: house.variant === "director_rv" ? "metal" : "thatch",
   };
 }
 const hubShelters = [
@@ -663,6 +706,8 @@ const hubShelters = [
   attachedShelter("rumah_sari", 105),
   attachedShelter("rumah_tedi", 100),
   attachedShelter("griya_sasmita", 90),
+  attachedShelter("rumah_lurah", 85),
+  attachedShelter("rumah_direktur", 58),
 ];
 for (const shelter of hubShelters) {
   for (const [index, point] of shelter.posts.entries()) {
@@ -894,9 +939,11 @@ for (const [i, x, y] of [
 export const LAND_MAPS: Record<"hub" | "forest", LandMap> = {
   hub: {
     id: "hub",
-    layoutVersion: 10,
+    layoutVersion: 11,
     landmass: [
-      [240, 80],
+      [40, 110],
+      [95, 65],
+      [250, 70],
       [680, 60],
       [1080, 80],
       [1530, 80],
@@ -969,7 +1016,7 @@ const hubMarginTrees: readonly (readonly [number, number, number])[] = [
   [1000, 705, 2],
   [1770, 700, 2],
   [2145, 700, 2],
-  [1710, 150, 3],
+  [2250, 315, 3],
   [1770, 340, 3],
   [2180, 130, 3],
   [2290, 350, 3],
@@ -1175,7 +1222,13 @@ LAND_MAPS.hub.gateways = [
     id: "hub_forest_gate",
     label: "HubForestGate",
     elevation: 3,
-    route: { segment: [[2295, 230], [2295, 125]], fraction: 95 / 105 },
+    route: {
+      segment: [
+        [2295, 230],
+        [2295, 125],
+      ],
+      fraction: 95 / 105,
+    },
     roadSurfaceId: hubGatewayRoad.id,
     roadPolygon: hubGatewayRoad.polygon,
     colliderIds: ["forest_gate_west", "forest_gate_east"],
@@ -1189,7 +1242,13 @@ const forestGateway = createLandGateway({
   id: "forest_entry_gate",
   label: "ForestEntryGate",
   elevation: 0,
-  route: { segment: [[85, 1378], [200, 1320]], fraction: 0.65 },
+  route: {
+    segment: [
+      [85, 1378],
+      [200, 1320],
+    ],
+    fraction: 0.65,
+  },
   roadSurfaceId: forestGatewayRoad.id,
   roadPolygon: forestGatewayRoad.polygon,
   colliderIds: ["forest_entry_gate_post_0", "forest_entry_gate_post_1"],
@@ -1198,11 +1257,20 @@ LAND_MAPS.forest.gateways = [forestGateway];
 for (const [index, footprint] of forestGateway.postFootprints.entries()) {
   const xs = footprint.map((point) => point[0]);
   const ys = footprint.map((point) => point[1]);
-  LAND_MAPS.forest.obstacles.push(obstacle(
-    forestGateway.colliderIds[index], "fence", Math.min(...xs), Math.min(...ys),
-    Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys),
-    118, "gateway_post", forestGateway.elevation, footprint,
-  ));
+  LAND_MAPS.forest.obstacles.push(
+    obstacle(
+      forestGateway.colliderIds[index],
+      "fence",
+      Math.min(...xs),
+      Math.min(...ys),
+      Math.max(...xs) - Math.min(...xs),
+      Math.max(...ys) - Math.min(...ys),
+      118,
+      "gateway_post",
+      forestGateway.elevation,
+      footprint,
+    ),
+  );
 }
 LAND_MAPS.hub = decorateVillageGround(LAND_MAPS.hub);
 

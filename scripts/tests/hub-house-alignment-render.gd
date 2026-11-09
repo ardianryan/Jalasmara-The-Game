@@ -15,7 +15,7 @@ func run() -> void:
 	state.player={"appearance":"male_nusantara","coins":200,"inventory":[],"progress":{"day":2,"stage":"dive","tutorial":true}}
 	state.dive={}
 	var old_map: Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://../apps/api/test/fixtures/hub-layout9.json"))
-	assert(old_map.layoutVersion==9 and state.world.landMaps.hub.layoutVersion==10)
+	assert(old_map.layoutVersion==9 and state.world.landMaps.hub.layoutVersion==11)
 	var clock:=root.get_node("EnvironmentState")
 	clock.set_process(false)
 	clock.clock_paused=true
@@ -23,7 +23,7 @@ func run() -> void:
 	clock.reduced_motion=true
 	root.get_node("RenderQuality").set_profile("balanced",false)
 	var reports: Array=[]
-	for layout in [{"id":"before9","map":old_map},{"id":"after10","map":state.world.landMaps.hub}]:
+	for layout in [{"id":"before9","map":old_map},{"id":"after11","map":state.world.landMaps.hub}]:
 		var stage:=Node2D.new()
 		root.add_child(stage)
 		var player: Node2D=load("res://scripts/Player.gd").new()
@@ -74,5 +74,5 @@ func run() -> void:
 		await process_frame
 	assert(reports.size()==28)
 	FileAccess.open(output+"/results.json",FileAccess.WRITE).store_string(JSON.stringify(reports,"  "))
-	print("HUB HOUSE ALIGNMENT RENDER PASS:28 component frames,7 unchanged identities,old9/new10,day/night,shared fixed camera markers on real floors; no route/browser acceptance claim")
+	print("HUB HOUSE ALIGNMENT RENDER PASS:28 component frames,7 unchanged identities,old9/new11,day/night,shared fixed camera markers on real floors; no route/browser acceptance claim")
 	quit()

@@ -2308,9 +2308,9 @@ function checkHubActivityRoute(
   }
 }
 
-test("rute enam warga desa berada pada lantai bersama dan tidak memotong prop atau tebing", () => {
+test("rute dua belas warga desa berada pada lantai bersama dan tidak memotong prop atau tebing", () => {
   const residents = WORLD.surface_hub.residents;
-  assert.equal(residents.length, 6);
+  assert.equal(residents.length, 12);
   assert.equal(
     new Set(residents.map((resident) => resident.id)).size,
     residents.length,

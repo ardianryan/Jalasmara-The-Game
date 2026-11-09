@@ -64,7 +64,25 @@ export const WORLD = {
     interior: HOMESTEAD_INTERIOR,
     market: { x: 620, y: 1030 },
     permitBoard: { x: 940, y: 310 },
-    fishPen: { interaction: { x: 275, y: 850 }, waterAnchor: { x: 360, y: 940, z: -11 }, speciesId: "reef_seruni" },
+    fishPen: {
+      interaction: { x: 275, y: 850 },
+      waterAnchor: { x: 360, y: 940, z: -11 },
+      speciesId: "reef_seruni",
+    },
+    privateHomes: [
+      {
+        id: "rumah_lurah",
+        residentId: "npc_ki_lurah_wirabhumi",
+        name: "Dalem Wirabhumi",
+        door: { x: 192.5, y: 310 },
+      },
+      {
+        id: "rumah_direktur",
+        residentId: "npc_direktur_cakrawala",
+        name: "Hunian Kontainer Direktur",
+        door: { x: 1770, y: 240 },
+      },
+    ],
   },
   width: 6144,
   height: 3584,

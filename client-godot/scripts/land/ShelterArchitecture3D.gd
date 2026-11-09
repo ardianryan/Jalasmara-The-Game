@@ -55,7 +55,8 @@ func update(renderer: Node,delta: float) -> void:
 func _awning(renderer: Node, shelter: Dictionary) -> void:
 	var wood: Material=renderer._materials.get_material("wood")
 	var bamboo: Material=renderer._materials.get_material("bamboo")
-	var roof_material:=_panel_material(renderer,"thatch")
+	var roof_kind:=str(shelter.get("material","thatch"))
+	var roof_material:=_panel_material(renderer,roof_kind)
 	var soffit_material:=_panel_material(renderer,"bamboo")
 	var elevation: float=float(shelter.elevation)*renderer.LEVEL_HEIGHT
 	var corners: Array[Vector3]=[]
@@ -75,7 +76,7 @@ func _awning(renderer: Node, shelter: Dictionary) -> void:
 	for index in range(4):
 		var next:=(index+1)%4
 		var fascia: Array[Vector3]=[corners[index],corners[next],bottom[next],bottom[index]]
-		renderer._face(id+"_Fascia",fascia,renderer._materials.get_material("thatch"))
+		renderer._face(id+"_Fascia",fascia,renderer._materials.get_material(roof_kind))
 	for index in range(6):
 		var fraction:=float(index)/5
 		renderer._column(bottom[0].lerp(bottom[1],fraction),bottom[3].lerp(bottom[2],fraction),2.4,wood)

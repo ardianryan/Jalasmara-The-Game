@@ -30,6 +30,12 @@ const map = WORLD.landMaps.hub;
 const oldMapV9: LandMap = JSON.parse(
   readFileSync(new URL("./fixtures/hub-layout9.json", import.meta.url), "utf8"),
 );
+const oldMapV10: LandMap = JSON.parse(
+  readFileSync(
+    new URL("./fixtures/hub-layout10.json", import.meta.url),
+    "utf8",
+  ),
+);
 const profiles = [
   ...WORLD.surface_hub.residents,
   { name: "Bu Darmi", ...WORLD.surface_hub.districtActivities["Bu Darmi"] },
@@ -120,7 +126,7 @@ const houseCornersV9 = [
   ],
 ] as const;
 
-test("seven rain stations have body clearance under physical roofs in legacy and left views", () => {
+test("thirteen rain stations have body clearance under physical roofs in legacy and left views", () => {
   for (const profile of profiles) {
     const station = point(profile.activity.shelter);
     assert.ok(isLandWalkable(map, station), profile.name);
@@ -221,10 +227,12 @@ test("stations, bridge, changing booth and forest portal stay connected", () => 
 });
 
 test("layout migration from each newly blocked support retains connected land", () => {
-  assert.equal(map.layoutVersion, 10);
+  assert.equal(map.layoutVersion, 11);
   let migrated = 0;
   for (const post of map.obstacles.filter(
-    (entry) => entry.variant === "shelter_post",
+    (entry) =>
+      entry.variant === "shelter_post" &&
+      oldMapV9.obstacles.some((old) => old.id === entry.id),
   )) {
     for (const [dx, dy] of [
       [0, 0],
@@ -292,9 +300,9 @@ test("Griya follows both deck axes and keeps body-sized access around its change
   }
 });
 
-for (const legacyVersion of [8, 9])
+for (const legacyVersion of [8, 9, 10])
   test(
-    `layout 10 API migrates layout${legacyVersion} saves and persists legal movement without touching player state`,
+    `layout 11 API migrates layout${legacyVersion} saves and persists legal movement without touching player state`,
     { timeout: 30000 },
     async (t) => {
       const runId = randomUUID().replaceAll("-", "");
@@ -391,7 +399,11 @@ for (const legacyVersion of [8, 9])
           legacyVersion === 8
             ? [
                 ...map.obstacles
-                  .filter((entry) => entry.variant === "shelter_post")
+                  .filter(
+                    (entry) =>
+                      entry.variant === "shelter_post" &&
+                      oldMapV9.obstacles.some((old) => old.id === entry.id),
+                  )
                   .map((post) => ({ ...post, legacyVersion: 8 })),
                 ...griyaOldCorners.map((value, index) => ({
                   id: `griya_old_corner_${index}`,
@@ -402,23 +414,43 @@ for (const legacyVersion of [8, 9])
                   legacyVersion: 8,
                 })),
               ]
-            : houseCornersV9.flatMap(([house, corners]) =>
-                corners.map((at, index) => ({
-                  id: `${house}_layout9_corner_${index}`,
-                  x: at[0],
-                  y: at[1],
+            : legacyVersion === 10
+              ? [
+                  ["director_home", 1770, 170],
+                  ["director_porch_west", 1723, 251],
+                  ["director_porch_east", 1817, 251],
+                  ["lurah_porch_clearance", 313, 323],
+                  ["relocated_ridge_tree", 2250, 315],
+                ].map(([sampleId, x, y]) => ({
+                  id: String(sampleId),
+                  x: Number(x),
+                  y: Number(y),
                   width: 0,
                   height: 0,
-                  legacyVersion: 9,
-                })),
-              );
+                  legacyVersion: 10,
+                }))
+              : houseCornersV9.flatMap(([house, corners]) =>
+                  corners.map((at, index) => ({
+                    id: `${house}_layout9_corner_${index}`,
+                    x: at[0],
+                    y: at[1],
+                    width: 0,
+                    height: 0,
+                    legacyVersion: 9,
+                  })),
+                );
         for (const post of samples) {
           const previous = {
             x: post.x + post.width / 2,
             y: post.y + post.height / 2,
           };
-          const legacyMap = post.legacyVersion === 9 ? oldMapV9 : oldMapV8;
-          if (post.legacyVersion === 9)
+          const legacyMap =
+            post.legacyVersion === 10
+              ? oldMapV10
+              : post.legacyVersion === 9
+                ? oldMapV9
+                : oldMapV8;
+          if (post.legacyVersion !== 8)
             assert.ok(isLandWalkable(legacyMap, previous, 13), post.id);
           if (!isLandWalkable(legacyMap, previous)) continue;
           assert.equal(isLandWalkable(map, previous), false, post.id);
@@ -438,7 +470,7 @@ for (const legacyVersion of [8, 9])
           const resumed = await request("/adventure/state");
           assert.equal(resumed.status, 200, post.id);
           const saved = resumed.data.surface;
-          assert.equal(saved.layoutVersion, 10);
+          assert.equal(saved.layoutVersion, 11);
           assert.equal(saved.area, "hub");
           assert.ok(
             isLandWalkable(map, saved, 13),
@@ -506,7 +538,7 @@ for (const legacyVersion of [8, 9])
             { x: moved.data.surface.x, y: moved.data.surface.y },
             destination,
           );
-          assert.equal(moved.data.surface.layoutVersion, 10);
+          assert.equal(moved.data.surface.layoutVersion, 11);
           assert.deepEqual(
             (await request("/adventure/state")).data.surface,
             moved.data.surface,
@@ -520,7 +552,7 @@ for (const legacyVersion of [8, 9])
         }
         assert.equal(
           migrated,
-          14,
+          legacyVersion === 10 ? 5 : 14,
           "Exercise ten legal layout8 support centres plus four Griya corners, or two layout9 corners per changed house",
         );
         for (const value of [[160, 400], ...deckAisles]) {

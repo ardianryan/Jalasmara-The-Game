@@ -16,8 +16,17 @@ const map = LAND_MAPS.hub;
 const oldMap: LandMap = JSON.parse(
   readFileSync(new URL("./fixtures/hub-layout9.json", import.meta.url), "utf8"),
 );
+const alignedMap: LandMap = JSON.parse(
+  readFileSync(
+    new URL("./fixtures/hub-layout10.json", import.meta.url),
+    "utf8",
+  ),
+);
 const houses = map.obstacles.filter(
-  (entry) => entry.kind === "house" && entry.id !== "griya_sasmita",
+  (entry) =>
+    entry.kind === "house" &&
+    entry.id !== "griya_sasmita" &&
+    oldMap.obstacles.some((old) => old.id === entry.id),
 );
 const point = (p: readonly number[]): LandPosition => ({ x: p[0], y: p[1] });
 const changedCorners: Record<string, number> = {
@@ -40,9 +49,12 @@ function groundElevation(layout: LandMap, at: LandPosition) {
 
 test("layout10 removes house shear while retaining centres, real floors and existing identities", () => {
   assert.equal(oldMap.layoutVersion, 9);
-  assert.equal(map.layoutVersion, 10);
+  assert.equal(map.layoutVersion, 11);
   assert.deepEqual(
-    map.surfaces.filter((s) => s.walkable !== false),
+    map.surfaces.filter(
+      (s) =>
+        s.walkable !== false && oldMap.surfaces.some((old) => old.id === s.id),
+    ),
     oldMap.surfaces
       .filter((s) => s.walkable !== false)
       .map((surface) =>
@@ -52,7 +64,9 @@ test("layout10 removes house shear while retaining centres, real floors and exis
       ),
   );
   assert.deepEqual(
-    map.obstacles.map((o) => [o.id, o.kind, o.variant]),
+    map.obstacles
+      .filter((o) => oldMap.obstacles.some((old) => old.id === o.id))
+      .map((o) => [o.id, o.kind, o.variant]),
     oldMap.obstacles.map((o) => [o.id, o.kind, o.variant]),
   );
   assert.deepEqual(
@@ -247,9 +261,10 @@ test(
           const previous = { x, y };
           if (
             !isLandWalkable(oldMap, previous, 13) ||
-            isLandWalkable(map, previous, 13)
+            isLandWalkable(alignedMap, previous, 13)
           )
             continue;
+          assert.equal(isLandWalkable(map, previous, 13), false);
           const safe = nearestSafeLandPoint(map, previous);
           assert.ok(
             isLandWalkable(map, safe, 13),

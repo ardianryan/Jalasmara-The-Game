@@ -67,6 +67,7 @@ var _shelter_architecture = preload("res://scripts/land/ShelterArchitecture3D.gd
 var _gateway_architecture = preload("res://scripts/land/GatewayArchitecture3D.gd").new()
 var _area_seam = preload("res://scripts/land/LandAreaSeam3D.gd").new()
 var _natural_edges = preload("res://scripts/land/NaturalTerrainEdges3D.gd").new()
+var _fish_pen = preload("res://scripts/land/HomesteadFishPen3D.gd").new()
 
 func _compute_garden_state() -> int:
 	var progress: Dictionary = GameState.player.get("progress",{})
@@ -200,6 +201,7 @@ func set_area(place: String) -> void:
 	_shelter_architecture.build(self)
 	_build_ground_details()
 	_build_wet_banks()
+	_fish_pen.build(self)
 	_batch_static_geometry()
 	if is_instance_valid(actors_3d): actors_3d.queue_free()
 	actors_3d=preload("res://scripts/land/LandActors3D.gd").new()
@@ -614,6 +616,9 @@ func _house_parts(entry: Dictionary, rect: Rect2, center: Vector3) -> void:
 	if str(entry.get("variant",""))=="metal":
 		_corporate_office(center,width,depth,height)
 		return
+	if str(entry.get("variant",""))=="director_rv":
+		_director_residence(center,width,depth,height)
+		return
 	if str(entry.get("variant",""))=="balai":
 		_balai_parts(center,width,depth,height)
 		return
@@ -629,12 +634,17 @@ func _house_parts(entry: Dictionary, rect: Rect2, center: Vector3) -> void:
 		_box("PorchPost",center+Vector3(side*(width*.5-16),-depth*.5+12,wall*.5+floor_height),Vector3(12,12,wall),wood)
 		_box("InteriorPost",center+Vector3(side*width*.20,-depth*.5+12,wall*.5+floor_height),Vector3(9,9,wall),wood)
 	_box("FrontCrossbeam",center+Vector3(0,-depth*.5+12,wall+floor_height-5),Vector3(width,12,10),wood)
-	_box("FrontCounter",center+Vector3(0,-depth*.20,35),Vector3(width*.58,22,45),wood)
+	if str(entry.get("variant",""))!="lurah_home":
+		_box("FrontCounter",center+Vector3(0,-depth*.20,35),Vector3(width*.58,22,45),wood)
 	for index in range(4):
 		var x: float=-width*.34+index*width*.23
 		_box("WovenPanel",center+Vector3(x,depth*.5-12,wall*.55),Vector3(width*.17,5,wall*.5),bamboo)
 	var eave:=center+Vector3(0,0,wall+floor_height)
-	if str(entry.get("variant",""))=="home_pelana":
+	if str(entry.get("variant",""))=="lurah_home":
+		_gabled_roof("WirabhumiLowerRoof",eave,width,depth,height*.26,_materials.get_material("roof_tiles"))
+		_box("WirabhumiRoofLantern",eave+Vector3(0,0,height*.26),Vector3(width*.48,depth*.34,22),bamboo)
+		_gabled_roof("WirabhumiUpperRoof",eave+Vector3(0,0,height*.26+14),width*.62,depth*.52,height*.19,roof)
+	elif str(entry.get("variant",""))=="home_pelana":
 		_gabled_roof("GabledHomeRoof",eave,width,depth,height*.43,_materials.get_material("roof_tiles"))
 	else:
 		var corners: Array[Vector3]=[eave+Vector3(-width*.55,-depth*.57,0),eave+Vector3(width*.55,-depth*.57,0),eave+Vector3(width*.55,depth*.57,0),eave+Vector3(-width*.55,depth*.57,0)]
@@ -677,6 +687,10 @@ func _house_parts(entry: Dictionary, rect: Rect2, center: Vector3) -> void:
 
 
 	if area=="hub" and str(entry.get("id","")) in ["kedai_waras","galangan_beno"]: _house_trade_details(str(entry.get("variant","")),center,width,depth,wall)
+	if str(entry.get("variant",""))=="lurah_home":
+		_box("WirabhumiPrivateDoor",center+Vector3(0,front_y-4,wall*.34+floor_height),Vector3(width*.17,4,wall*.67),wood)
+		_box("WirabhumiDoorSeam",center+Vector3(0,front_y-7,wall*.34+floor_height),Vector3(2,2,wall*.67),bamboo)
+		_cloth_panel(center+Vector3(-width*.30,front_y-9,wall*.95),width*.18,28,_materials.get_material("cloth_teal"))
 
 
 func _gabled_roof(label: String, eave: Vector3, width: float, depth: float, rise: float, material: Material) -> void:
@@ -766,6 +780,30 @@ func _house_trade_details(variant: String, center: Vector3, width: float, depth:
 			var basket:=center+Vector3(side*width*.43,-depth*.5+21,14)
 			_column(basket,basket+Vector3(0,0,17),11,_materials.get_material("bamboo"))
 			_box("HerbBasketLeaves",basket+Vector3(0,0,18),Vector3(19,15,5),_materials.get_material("leaves"))
+
+func _director_residence(center: Vector3, width: float, depth: float, height: float) -> void:
+	var shell:Material=_materials.get_material("office_shell")
+	var metal:Material=_materials.get_material("metal")
+	var glass:Material=_materials.get_material("office_glass")
+	var copper:Material=_materials.get_material("corporate_copper")
+	var wall:=height*.70
+	_box("DirectorRVChassis",center+Vector3(0,0,9),Vector3(width,depth,18),metal)
+	_box("DirectorRVContainer",center+Vector3(0,0,wall*.5+18),Vector3(width-6,depth-6,wall),shell)
+	_box("DirectorRVFlatRoof",center+Vector3(0,0,wall+22),Vector3(width+5,depth+5,8),metal)
+	for i in range(8):
+		var x:float=-width*.43+i*width*.123
+		_box("DirectorRVCorrugation",center+Vector3(x,-depth*.5,wall*.5+18),Vector3(2,3,wall*.84),metal)
+	for side in [-1.0,1.0]:
+		for axle in [-.30,.30]:
+			var at:=center+Vector3(width*axle,side*(depth*.5-6),12)
+			_column(at-Vector3(0,6,0),at+Vector3(0,6,0),12,metal)
+		_box("DirectorRVShutterFrame",center+Vector3(side*width*.29,-depth*.5-3,wall*.62+18),Vector3(width*.21,5,wall*.40),metal)
+		_box("DirectorRVWindow",center+Vector3(side*width*.29,-depth*.5-6,wall*.62+18),Vector3(width*.17,2,wall*.32),glass)
+	_box("DirectorRVPrivateDoor",center+Vector3(0,-depth*.5-3,wall*.40+18),Vector3(width*.18,5,wall*.78),metal)
+	_box("DirectorRVNameplate",center+Vector3(0,-depth*.5-7,wall*.87+18),Vector3(width*.29,3,13),copper)
+	_box("DirectorRVHandle",center+Vector3(width*.055,-depth*.5-7,wall*.35+18),Vector3(3,3,10),copper)
+	_box("DirectorRVSolarPanel",center+Vector3(-width*.21,0,wall+29),Vector3(width*.35,depth*.62,4),glass)
+	_lantern(center+Vector3(width*.37,-depth*.5-5,wall*.77))
 
 func _corporate_office(center: Vector3, width: float, depth: float, height: float) -> void:
 	var shell: Material=_materials.get_material("office_shell")
@@ -1020,7 +1058,7 @@ func _garden(_entry: Dictionary,rect: Rect2,center: Vector3) -> void:
 func _plot_signature(id: String) -> String:
 	for plot in _homestead_state.get("plots",[]):
 		if str(plot.get("id",""))==id.trim_prefix("home_"):
-			return str([plot.get("stage","empty"),plot.get("needsCare",false)])
+			return str([plot.get("cropId",""),plot.get("stage","empty"),plot.get("needsCare",false)])
 	return str(["empty",false])
 
 func _build_home_plot(entry: Dictionary,rect: Rect2,center: Vector3) -> void:
@@ -1063,11 +1101,13 @@ func _update_home_plots() -> void:
 func _home_plot(entry: Dictionary, rect: Rect2, center: Vector3) -> void:
 	var stage:="empty"
 	var needs_care:=false
+	var crop_id:="kangkung"
 	var plot_id:=str(entry.id).trim_prefix("home_")
 	for plot in _homestead_state.get("plots",[]):
 		if str(plot.get("id",""))==plot_id:
 			stage=str(plot.get("stage","empty"))
 			needs_care=bool(plot.get("needsCare",false))
+			crop_id=str(plot.get("cropId","kangkung"))
 	_box("HomeGardenBed",center+Vector3(0,0,10),Vector3(rect.size.x,rect.size.y/cos(TILT),20),_materials.get_material("wood"))
 	_box("HomeGardenSoil",center+Vector3(0,0,21),Vector3(rect.size.x-8,rect.size.y/cos(TILT)-8,3),_materials.get_material("dirt"))
 	if stage in ["empty","locked"]: return
@@ -1080,7 +1120,12 @@ func _home_plot(entry: Dictionary, rect: Rect2, center: Vector3) -> void:
 			var tall:=12.0 if stage in ["sprout","seedling"] else 31.0 if mature else 23.0
 			var material:Material=_materials.get_material("thatch" if needs_care or stage in ["needs_care","needsCare","wilted"] else "leaves")
 			_column(plant,plant+Vector3(0,0,tall),1.5,material)
-			_box("HomeCropLeaves",plant+Vector3(0,0,tall*.7),Vector3(tall*.7,10,4),material)
+			if crop_id=="jahe":
+				for level in range(3):
+					var side:=1.0 if level%2==0 else -1.0
+					_column(plant+Vector3(0,0,tall*(.35+level*.17)),plant+Vector3(side*11,2,tall*(.48+level*.17)),2.8,material)
+				if mature: _box("HomeGingerRhizome",plant+Vector3(0,0,2),Vector3(16,9,5),_materials.get_material("sand"))
+			else: _box("HomeCropLeaves",plant+Vector3(0,0,tall*.7),Vector3(tall*.7,10,4),material)
 			if mature:
 				for side in [-1.0,1.0]: _box("HomeHarvestLeaf",plant+Vector3(side*7,0,tall-2),Vector3(16,9,3),material)
 
@@ -1258,6 +1303,7 @@ func _process(delta: float) -> void:
 		panel.rotation.y=sin(float(Time.get_ticks_msec())*.0014+float(cloth.phase))*.035*sway
 	_canopy_readability.update(ground_point(actor.position),camera_up(),camera_forward(),delta,camera_right())
 	_shelter_architecture.update(self,delta)
+	_fish_pen.update(self,float(Time.get_ticks_msec())*.001)
 	_weather_clock+=delta
 	if _weather_clock>.25:
 		_weather_clock=0

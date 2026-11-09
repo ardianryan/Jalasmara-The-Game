@@ -38,7 +38,7 @@ function reachesSpawn(start: LandPosition) {
 }
 
 test("both gateways share real road orientation and authoritative collision openings", () => {
-  assert.equal(LAND_MAPS.hub.layoutVersion, 10);
+  assert.equal(LAND_MAPS.hub.layoutVersion, 11);
   assert.equal(forest.layoutVersion, 6);
   for (const map of Object.values(LAND_MAPS)) {
     assert.equal(map.gateways!.length, 1);

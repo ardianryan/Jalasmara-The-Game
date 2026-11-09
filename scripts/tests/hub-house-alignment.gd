@@ -41,7 +41,7 @@ func run() -> void:
 			assert(not collision.is_walkable(at),"The client's real collider must block each house corner")
 			corners+=1
 		houses+=1
-	assert(houses==8 and corners==32)
+	assert(houses==10 and corners==40)
 	for shelter in renderer.map.shelters:
 		if bool(shelter.get("existing",false)): continue
 		var building: Node3D=renderer._geometry.get_node(str(shelter.buildingId))
@@ -50,8 +50,8 @@ func run() -> void:
 		var outward: Vector3=roof[3]-roof[0]
 		outward.z=0
 		assert(outward.normalized().dot(building.global_basis.y)<-.99999,"Physical awning must share the house frame, without independent skew")
-	assert(renderer._shelter_architecture.support_count==10)
+	assert(renderer._shelter_architecture.support_count==14)
 	assert(renderer.camera_azimuth==-45 and renderer.camera_elevation==35)
-	print("HUB HOUSE ALIGNMENT PASS: 8 actual native frames,32 transformed footprint/collider corners,5 physical roof plans,10 supports; default left camera unchanged")
+	print("HUB HOUSE ALIGNMENT PASS: 10 actual native frames,40 transformed footprint/collider corners,7 physical roof plans,14 supports; default left camera unchanged")
 	stage.free()
 	quit()
