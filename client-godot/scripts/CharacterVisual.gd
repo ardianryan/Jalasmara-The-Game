@@ -16,6 +16,17 @@ var _locomotion_driven := false
 var _travel := 0.0
 var _speed := 0.0
 var _requested_direction := "east"
+var _artwork_direction := "east"
+var _turn_travel := 0.0
+var _turn_sign := 1
+var _pose_frame := 0
+var _pose_phase := 0.0
+var _pose_walking := false
+var _pose_frozen := false
+var _settle_frames: Array[int] = []
+var _settle_elapsed := 0.0
+const TURN_DISTANCE := 4.0
+const SETTLE_FRAME_SECONDS := 0.05
 var _last_horizontal := 1
 var _foot_contacts: Array[Dictionary] = []
 var _alpha_bottom: Dictionary = {}
@@ -28,6 +39,7 @@ func set_appearance(id: String) -> void:
 	if appearance==id and texture:
 		return
 	appearance = id
+	_settle_frames.clear()
 	var stem := "res://resources/art/"+id.replace("_","-")
 	modular_ready = ResourceLoader.exists(stem+"-base-v1.png")
 	var path := stem+("-base-v1.png" if modular_ready else ".png")
@@ -46,6 +58,7 @@ func set_outfit(id: String) -> void:
 	var chosen := id if id in ["daily","explorer","diving"] else "daily"
 	if outfit==chosen: return
 	outfit=chosen
+	_settle_frames.clear()
 	_load_directional()
 
 func _load_directional() -> void:
@@ -60,9 +73,9 @@ func get_equipment_state() -> Dictionary:
 	var result := equipment_state(outfit,equipment,modular_ready,_in_water)
 	result["clothingAtlas"] = clothing_ready and not _in_water
 	if clothing_ready and not _in_water: result["vest"] = false
-	result["facingDirection"]=_requested_direction if _locomotion_driven else "west" if flip_h else "east"
-	result["gaitPhase"]=fposmod(_travel/_stride(),1.0) if _speed>.1 else 0.0
-	result["moving"]=_speed>.1
+	result["facingDirection"]=_artwork_direction if directional_pilot_active() else _requested_direction if _locomotion_driven else "west" if flip_h else "east"
+	result["gaitPhase"]=_pose_phase if directional_pilot_active() and _pose_walking else fposmod(_travel/_stride(),1.0) if _speed>.1 else 0.0
+	result["moving"]=_pose_walking if directional_pilot_active() else _speed>.1
 	return result
 
 static func equipment_state(id: String,overrides: Dictionary,modular: bool,in_water := false) -> Dictionary:
@@ -82,8 +95,30 @@ func _stride() -> float:
 
 func set_locomotion(velocity: Vector2,delta: float,visual_velocity := Vector2.INF) -> void:
 	_locomotion_driven=true
+	var previous_speed:=_speed
+	var was_frozen:=_pose_frozen
 	_speed=velocity.length()
-	if delta<=0 or _speed<.1 or _in_water: return
+	var parent:=get_parent()
+	_pose_frozen=not _in_water and (EnvironmentState.clock_paused or ViewportLayout.host_paused or (is_instance_valid(parent) and "frozen" in parent and bool(parent.get("frozen"))))
+	if _pose_frozen or delta<=0: return
+	if _speed<.1 or _in_water:
+		if _in_water:
+			_settle_frames.clear()
+			_pose_walking=false
+			return
+		if (previous_speed>.1 or (was_frozen and _settle_frames.is_empty())) and _pose_walking and appearance=="male_nusantara" and outfit in ["daily","explorer"]:
+			# Existing reviewed lowering poses; no new actor displacement or step event.
+			var landing:=1 if _pose_frame<4 else 5
+			_settle_frames.assign([_pose_frame])
+			for next in range(_pose_frame-1,landing-1,-1): _settle_frames.append(next)
+			if _pose_frame<landing: _settle_frames.append(landing)
+			var turns:=absi(DIRECTIONS.find(_requested_direction)-DIRECTIONS.find(_artwork_direction))
+			turns=mini(turns,8-turns)
+			while _settle_frames.size()<turns: _settle_frames.append(landing)
+			_settle_elapsed=0.0
+		_advance_settle(delta)
+		return
+	_settle_frames.clear()
 	var stride:=_stride()
 	var before:=floori(_travel/(stride*.5))
 	_travel+=_speed*delta
@@ -92,12 +127,49 @@ func set_locomotion(velocity: Vector2,delta: float,visual_velocity := Vector2.IN
 		_foot_contacts.append({"side":"left" if contact%2==0 else "right","distance":contact*stride*.5,"phase":0.0 if contact%2==0 else .5})
 		if _foot_contacts.size()>8: _foot_contacts.pop_front()
 	var facing_velocity:=velocity if not visual_velocity.is_finite() else visual_velocity
-	if facing_velocity.is_zero_approx(): return
-	if absf(facing_velocity.x)>.1: _last_horizontal=1 if facing_velocity.x>0 else -1
-	var octant:=posmod(roundi(facing_velocity.angle()/(PI*.25)),8)
-	var previous:=DIRECTIONS.find(_requested_direction)
-	var difference:=absf(angle_difference(previous*PI*.25,facing_velocity.angle()))
-	if difference>PI*.125+deg_to_rad(5): _requested_direction=DIRECTIONS[octant]
+	if not facing_velocity.is_zero_approx():
+		if absf(facing_velocity.x)>.1: _last_horizontal=1 if facing_velocity.x>0 else -1
+		var octant:=posmod(roundi(facing_velocity.angle()/(PI*.25)),8)
+		var previous:=DIRECTIONS.find(_requested_direction)
+		var difference:=absf(angle_difference(previous*PI*.25,facing_velocity.angle()))
+		if difference>PI*.125+deg_to_rad(5): _requested_direction=DIRECTIONS[octant]
+	_advance_facing(_speed*delta)
+	_pose_phase=fposmod(_travel/stride,1.0)
+	_pose_frame=floori(_pose_phase*8)%8
+	_pose_walking=true
+
+func _advance_facing(distance:float) -> void:
+	var current:=DIRECTIONS.find(_artwork_direction)
+	var target:=DIRECTIONS.find(_requested_direction)
+	if current==target:
+		_turn_travel=0.0
+		return
+	_turn_travel+=distance
+	while _turn_travel>=TURN_DISTANCE and current!=target:
+		var clockwise:=posmod(target-current,8)
+		if clockwise!=4: _turn_sign=1 if clockwise<4 else -1
+		current=posmod(current+_turn_sign,8)
+		_turn_travel-=TURN_DISTANCE
+	_artwork_direction=DIRECTIONS[current]
+
+func _advance_settle(delta:float) -> void:
+	if _settle_frames.is_empty():
+		_pose_walking=false
+		_pose_frame=0
+		_pose_phase=0.0
+		return
+	_settle_elapsed+=delta
+	while _settle_elapsed>=SETTLE_FRAME_SECONDS and not _settle_frames.is_empty():
+		_settle_elapsed-=SETTLE_FRAME_SECONDS
+		_settle_frames.pop_front()
+		_advance_facing(TURN_DISTANCE)
+	_pose_walking=not _settle_frames.is_empty()
+	if _pose_walking:
+		_pose_frame=_settle_frames[0]
+		_pose_phase=float(_pose_frame)/8.0
+	else:
+		_pose_frame=0
+		_pose_phase=0.0
 
 func consume_foot_contacts() -> Array[Dictionary]:
 	var result:=_foot_contacts.duplicate()
@@ -107,18 +179,19 @@ func consume_foot_contacts() -> Array[Dictionary]:
 func locomotion_state() -> Dictionary:
 	var phase:=fposmod(_travel/_stride(),1.0)
 	var pilot:=directional_pilot_active()
-	return {"driven":_locomotion_driven,"distance":_travel,"speed":_speed,"phase":phase,"frame":floori(phase*8)%8,"requestedDirection":_requested_direction,"artworkDirection":_requested_direction if pilot else "east" if _last_horizontal>0 else "west","supportedDirections":DIRECTIONS if pilot else ["east","west"],"directionalFallback":not pilot and _requested_direction not in ["east","west"],"directionalPilot":pilot,"phaseName":["contact","down","passing","up"][floori(phase*8)%4],"stride":_stride(),"rootMotion":false,"pendingContacts":_foot_contacts.size()}
+	return {"driven":_locomotion_driven,"distance":_travel,"speed":_speed,"phase":phase,"frame":_pose_frame if pilot else floori(phase*8)%8,"posePhase":_pose_phase,"settling":not _settle_frames.is_empty(),"poseFrozen":_pose_frozen,"poseWalking":_pose_walking,"requestedDirection":_requested_direction,"artworkDirection":_artwork_direction if pilot else "east" if _last_horizontal>0 else "west","supportedDirections":DIRECTIONS if pilot else ["east","west"],"directionalFallback":not pilot and _requested_direction not in ["east","west"],"directionalPilot":pilot,"phaseName":["contact","down","passing","up"][floori(phase*8)%4],"stride":_stride(),"rootMotion":false,"pendingContacts":_foot_contacts.size()}
 
 func animate(moving: bool, in_water: bool, facing: int, elapsed: float) -> void:
 	_in_water = in_water
 	if in_water: _foot_contacts.clear()
 	if not in_water and directional_pilot_active():
-		var walking:=_locomotion_driven and _speed>.1
+		if _pose_frozen: return
+		var walking:=_pose_walking
 		texture=_directional_walk if walking else _directional_idle
 		hframes=8
 		vframes=8 if walking else 1
-		var direction:=DIRECTIONS.find(_requested_direction)
-		frame=direction*8+floori(fposmod(_travel/_stride(),1.0)*8)%8 if walking else direction
+		var direction:=DIRECTIONS.find(_artwork_direction)
+		frame=direction*8+_pose_frame if walking else direction
 		flip_h=false
 		scale=Vector2.ONE
 		position.y=-40

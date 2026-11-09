@@ -47,12 +47,18 @@ func run() -> void:
 				if tick==12: root.get_texture().get_image().save_png(directory+"/speed-%d-direction-%d.png"%[speed,direction])
 				frame+=1
 			results.append({"speed":speed,"direction":direction,"gait":visuals[0].locomotion_state()})
+		var stopped:Array=[]
+		for visual in visuals:
+			stopped.append(visual.locomotion_state().distance)
+			visual.consume_foot_contacts()
 		for tick in range(15):
-			for visual in visuals:
+			for index in range(visuals.size()):
+				var visual:=visuals[index]
 				visual.set_locomotion(Vector2.ZERO,1.0/30)
 				visual.animate(false,false,1,0)
 				visual.scale=Vector2(1.3,1.3)
-				assert(visual.vframes==1)
+				assert(visual.locomotion_state().distance==stopped[index] and visual.consume_foot_contacts().is_empty())
+				if tick>=7: assert(visual.vframes==1,"The visual landing must finish within200ms without physical movement")
 			await process_frame
 			await RenderingServer.frame_post_draw
 			root.get_texture().get_image().save_png(directory+"/%04d.png"%frame)
