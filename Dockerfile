@@ -7,6 +7,7 @@ COPY packages/shared/package.json ./packages/shared/
 RUN npm ci
 COPY apps ./apps
 COPY packages ./packages
+COPY client-godot/resources/art/hud-bahari-v1/button-normal.png ./client-godot/resources/art/hud-bahari-v1/button-normal.png
 RUN test -s apps/web/public/game/index.wasm && npm run build -w @jalasmara/web && npm run build -w @jalasmara/api && npm prune --omit=dev
 
 FROM node:22-bookworm-slim AS runtime
