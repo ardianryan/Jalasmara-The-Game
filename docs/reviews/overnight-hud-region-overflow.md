@@ -22,3 +22,9 @@ Final evidence in the integration worktree:
 - The first U+2026 failed PNG and `hud-region-after.log` remain original. Default headless execution refreshed `after/results.json`; the earlier log retains the first attempt's complete node measurements. No original failure is relabelled as PASS.
 
 GPU ownership was released after each authorized batch. No import/export, browser interaction, account access or published package change was performed for this fix. Root owns final combined-suite registration and any later export/release.
+
+
+Root independently viewed all three native images: baseline and explicitU+2026 remained visually identical without a marker; final ASCII image displays the three dots. Source width tests alone were not accepted as a visual fix. The final fixture is registered as world check66, headless-safe and independent of ignored baseline artifacts. Focused native/headless acceptance does not replace a future full66 or actual Web export/browser check. The last full65 source run predates this narrow HUD change; active staging remains b34d, without this fix.
+
+
+Root focused regressions on the corrected source: `hud-footprint.gd`, `hud-oxygen.gd` and `dialogue-compact.gd` all PASS/exit0, no SCRIPTERROR/ERROR. The old unsupported sample-playback warning remains in dialogue-compact; the other two logs contain no warning. Logs `.runtime/overnight-region-regression-*.log`, summary `overnight-region-regressions.json`. No new browser/export or full66 acceptance is implied.

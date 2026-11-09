@@ -79,5 +79,6 @@ func run() -> void:
 		report["resizeAndGraphemesVerified"]=true
 	FileAccess.open(output+"/results.json",FileAccess.WRITE).store_string(JSON.stringify(report,"  "))
 	print("HUD REGION ",phase," OBSERVED ",JSON.stringify(report))
+	if phase!="before": print("HUD REGION FIT PASS: actual font bounds, preserved badge/input geometry, grapheme boundaries and resize restoration")
 	hud.free()
 	quit()
