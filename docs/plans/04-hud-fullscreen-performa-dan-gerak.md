@@ -2,6 +2,10 @@
 
 Tanggal: 9 November 2026. Status: **implementasi inti tersedia dan diuji lokal; penerimaan perangkat nyata belum selesai**. Disusun dari laporan Windows/Samsung S23, tangkapan layar pengguna, audit kode, dan brief HUD sebelumnya. Dokumen ini terpisah dari [Rencana 03](03-desa-hidup-dan-siklus-harian.md); keberhasilan fitur rumah dan kalender tidak berarti performa HP atau seluruh pemolesan animasi selesai. Hasil dan batas bukti tersedia pada [laporan pemeriksaan](../reviews/plan04-delivery.md).
 
+## Revisi artwork HUD
+
+Setelah baseline `3d648e8`, pengguna meminta penggantian tampilan HUD dengan kit pixel art yang lebih nyata: bingkai kayu–kuningan, kertas, lencana, dan ikon bahari asli. Tampilan sebelumnya belum diterima secara visual. Pengerjaan ini merupakan kelanjutan terpisah dari bukti fungsi yang sudah lulus, dengan referensi contoh IndigoLay dari pengguna tanpa menyalin asetnya. Integrasi mencakup HUD, percakapan, SmaraPedia, tas, dan atlas melalui helper tekstur bersama; tidak menambahkan bar HP/MP atau statistik fiktif. Hasil perlu diperiksa kembali pada desktop, lanskap sempit, dan portrait, termasuk kontras tekstur, fokus, teks 16 px fisik, serta target sentuh yang sudah ditetapkan.
+
 ## 1. Hasil yang dituju
 
 Permainan memenuhi area layar yang tersedia, mempunyai tombol fullscreen yang berfungsi, dan tetap nyaman ketika keluar fullscreen atau berganti orientasi. HUD serta percakapan memakai bahasa visual kayu–kuningan Jalasmara dengan teks yang mudah dibaca. Kontrol sentuh menjadi joystick analog bulat. Nala berjalan dengan perpindahan berat badan dan kontak kaki yang jelas dalam delapan arah. Dunia tetap mempunyai kamera tiga perempat, terrain, air bergerak, parallax, dan atmosfer; optimasi tidak boleh menghilangkan identitas tersebut.

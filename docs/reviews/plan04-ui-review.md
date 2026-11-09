@@ -2,6 +2,16 @@
 
 Tanggal: 9 November 2026. Ruang lingkup: HUD Godot, percakapan, SmaraPedia, tas, atlas, dan menu browser. Ini laporan bukti UI; keputusan rilis, performa perangkat, serta penerimaan keseluruhan tetap dilaporkan terpisah oleh pengelola integrasi.
 
+## Revisi artwork setelah penilaian pengguna
+
+Pengguna menolak tampilan HUD pada baseline `3d648e8`, walaupun pemeriksaan fungsi dan ukuran di bawah sudah lulus. Bukti tersebut tetap berlaku untuk perilaku yang diuji; **bukan persetujuan mutu visual**. Referensi baru menekankan kit HUD pixel art yang mempunyai bingkai, lencana, slot, dan ikon nyata, seperti karakter material pada contoh IndigoLay yang diberikan pengguna. Referensi itu menjadi arah bentuk dan keterbacaan, bukan aset yang disalin.
+
+Pengerjaan berikutnya memakai artwork asli `hud-bahari-v1`: kayu gelap, kuningan, kertas, serta ikon bahari. `HudSkin.gd` menyediakan bingkai tekstur sembilan bagian untuk HUD dan menu Godot; buku, tas, percakapan, dan atlas memakai sumber yang sama. Ukuran teks, area sentuh, sumber data, pause, dan akses keyboard harus tetap terjaga. Penerimaan visual baru menunggu pemeriksaan render desktop/lanskap/portrait dari aset yang sudah diimpor. Rasio warna datar pada laporan lama belum membuktikan kontras di seluruh tekstur baru.
+
+### Pemeriksaan awal kit Bahari
+
+Integrasi awal tersedia pada `artifacts/godot/hud-bahari/menus/`: 15 capture komponen native pada 960×540, 667×375, dan 390×844. Bingkai sembilan bagian, tombol empat state, ikon berwarna, slot inventori, portrait, bar oksigen, cincin joystick, dan rim minimap memakai PNG asli. Minimap tetap GeoMap yang sama, dipotong melingkar; dekorasinya tidak mengganti koordinat dunia. Uji HUD oksigen, buku/tas, serta analog/percakapan lulus pada tahap ini. Capture pertama menemukan pola kertas berulang, teks terang pada panel percakapan krem, dan label tab portrait yang terjepit; ketiganya sudah diperbaiki. Capture ulang setelah penyesuaian kontras hover dan padding percakapan selesai; tiga uji komponen yang sama tetap lulus tanpa kesalahan engine. Ini bukti komponen, bukan pengujian seluruh alur permainan lewat browser. Belum ada bukti baru dari perangkat fisik atau penerimaan visual pengguna.
+
 ## Bukti dan batas pemeriksaan
 
 - Capture komponen native tersedia di `artifacts/godot/plan04-ui/`: ukuran fisik 960×540, 667×375, dan 390×844. Capture menggunakan kontrol Godot nyata di atas tangkapan dunia milik Jalasmara sebagai latar fixture. Ini bukan rekaman sesi dunia yang sedang berjalan dan bukan pengukuran FPS.

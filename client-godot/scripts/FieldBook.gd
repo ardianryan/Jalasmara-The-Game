@@ -1,6 +1,7 @@
 extends Control
 signal close_requested
 
+const HudArt = preload("res://scripts/HudSkin.gd")
 const BODY = preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2")
 const HEADING = preload("res://resources/fonts/ark-pixel-12px-proportional-latin.otf")
 const Icons = preload("res://scripts/ItemIcons.gd")
@@ -45,16 +46,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		close()
 
-func _style(color: Color = PAPER) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = color
-	style.border_color = Color("8a633d")
-	style.set_border_width_all(2)
-	style.content_margin_left = 16
-	style.content_margin_right = 16
-	style.content_margin_top = 12
-	style.content_margin_bottom = 12
-	return style
+func _style(_color: Color = PAPER) -> StyleBox:
+	return HudArt.panel("paper")
 
 func _label(parent: Node,text: String,heading := false) -> Label:
 	var label := Label.new()
@@ -75,15 +68,7 @@ func _button(parent: Node,text: String,callback: Callable) -> Button:
 	button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	button.add_theme_font_override("font",BODY)
 	button.add_theme_font_size_override("font_size",_font_size)
-	button.add_theme_color_override("font_color",INK)
-	for state in ["font_hover_color","font_pressed_color","font_focus_color"]: button.add_theme_color_override(state,INK)
-	button.add_theme_stylebox_override("normal",_style(Color("ead7ac")))
-	button.add_theme_stylebox_override("hover",_style(Color("f8ebcc")))
-	button.add_theme_stylebox_override("pressed",_style(Color("d6bd8e")))
-	var focus := _style(Color.TRANSPARENT)
-	focus.border_color = Color("80501f")
-	focus.set_border_width_all(4)
-	button.add_theme_stylebox_override("focus",focus)
+	HudArt.apply_button(button)
 	button.pressed.connect(callback)
 	parent.add_child(button)
 	return button
@@ -125,9 +110,10 @@ func _rebuild() -> void:
 			_rebuild()
 		)
 		back.size_flags_horizontal=Control.SIZE_SHRINK_END
-		back.custom_minimum_size.x=100
+		back.custom_minimum_size.x=120
 	var close_button := _button(header,"Tutup",close)
-	close_button.custom_minimum_size.x = 100
+	if not _compact: HudArt.set_icon(close_button,"close",28)
+	close_button.custom_minimum_size.x = 120
 	close_button.size_flags_horizontal = Control.SIZE_SHRINK_END
 	var tabs := HBoxContainer.new()
 	tabs.add_theme_constant_override("separation",6)
@@ -143,7 +129,8 @@ func _rebuild() -> void:
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.toggle_mode = true
 		button.button_pressed = _tab==i
-		if _tab==i: button.add_theme_stylebox_override("normal",_style(Color("d6bd8e")))
+		if not _compact: HudArt.set_icon(button,["compass","journal","character","quest-scroll"][i],28)
+		if _tab==i: button.add_theme_stylebox_override("normal",HudArt.button("selected"))
 	_entries = entries_for(_state,TABS[_tab])
 	_selected = clampi(_selected,0,maxi(0,_entries.size()-1))
 	_pages = HBoxContainer.new()

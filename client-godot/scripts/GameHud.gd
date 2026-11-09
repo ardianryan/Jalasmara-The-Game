@@ -11,6 +11,7 @@ signal character_requested
 signal move_changed(direction: Vector2)
 signal objective_requested(text: String)
 
+const HudArt = preload("res://scripts/HudSkin.gd")
 const INK := Color("202d3a")
 const CREAM := Color("f1e1bc")
 const WOOD := Color("654733")
@@ -20,48 +21,14 @@ const LAMUN := Color("6faba2")
 class Plate extends Panel:
 	var paper := false
 	func _draw() -> void:
-		var w := size.x
-		var h := size.y
-		var outline := PackedVector2Array([Vector2(3,0),Vector2(w-3,0),Vector2(w-3,3),Vector2(w,3),Vector2(w,h-3),Vector2(w-3,h-3),Vector2(w-3,h),Vector2(3,h),Vector2(3,h-3),Vector2(0,h-3),Vector2(0,3),Vector2(3,3)])
-		draw_colored_polygon(outline,Color("654733"))
-		draw_rect(Rect2(2,2,w-4,h-5),Color("f1e1bc") if paper else Color(0.21,0.14,0.10,0.94))
-		draw_line(Vector2(4,2),Vector2(w-4,2),Color("af8759"),1)
-		for x in range(8,int(w)-7,12):
-			draw_rect(Rect2(x,h-3,3,1),Color("af8759"))
+		preload("res://scripts/HudSkin.gd").panel("paper" if paper else "dark").draw(get_canvas_item(),Rect2(Vector2.ZERO,size))
 
 class HudIcon extends Control:
 	var kind := "map"
 	var ink := Color("f1e1bc")
 	func _draw() -> void:
-		draw_set_transform(size/2,0,Vector2.ONE*minf(size.x,size.y)/26.0)
-		match kind:
-			"map":
-				draw_polyline(PackedVector2Array([Vector2(-10,-8),Vector2(-3,-10),Vector2(4,-7),Vector2(10,-9),Vector2(10,8),Vector2(4,10),Vector2(-3,7),Vector2(-10,9),Vector2(-10,-8)]),ink,1.8)
-				draw_line(Vector2(-3,-9),Vector2(-3,7),ink,1.2)
-				draw_line(Vector2(4,-7),Vector2(4,9),ink,1.2)
-			"journal":
-				draw_rect(Rect2(-8,-10,16,20),ink,false,1.8)
-				draw_line(Vector2(-4,-10),Vector2(-4,10),ink,1.2)
-				for y in [-4,0,4]: draw_line(Vector2(-1,y),Vector2(5,y),ink,1.2)
-			"bag":
-				draw_rect(Rect2(-8,-5,16,15),ink,false,1.8)
-				draw_arc(Vector2(0,-5),5,PI,TAU,12,ink,1.8)
-				draw_line(Vector2(-8,0),Vector2(8,0),ink,1.2)
-				draw_rect(Rect2(-2,-1,4,4),ink,false,1.2)
-			"character":
-				draw_circle(Vector2(0,-5),4,ink,false,1.8)
-				draw_arc(Vector2(0,7),8,PI,TAU,14,ink,1.8)
-				draw_line(Vector2(-8,7),Vector2(8,7),ink,1.8)
-			"net":
-				draw_circle(Vector2(-2,-3),8,ink,false,1.8)
-				draw_line(Vector2(3,3),Vector2(10,11),ink,2.4)
-				for x in [-6,-2,2]: draw_line(Vector2(x,-9),Vector2(x,3),ink,0.8)
-				for y in [-6,-2,2]: draw_line(Vector2(-8,y),Vector2(4,y),ink,0.8)
-			"action":
-				draw_circle(Vector2.ZERO,8,ink,false,1.8)
-				draw_line(Vector2(-4,0),Vector2(4,0),ink,1.8)
-				draw_line(Vector2(0,-4),Vector2(0,4),ink,1.8)
-		draw_set_transform(Vector2.ZERO)
+		var glyph := preload("res://scripts/HudSkin.gd").icon("interact-hand" if kind=="action" else kind)
+		if glyph!=null: draw_texture_rect(glyph,Rect2(Vector2.ZERO,size),false)
 
 class DiveInstrument extends Control:
 	var ratio := 1.0
@@ -69,33 +36,25 @@ class DiveInstrument extends Control:
 	var reduced_motion := false
 	var loss_feedback := 0.0
 	func _draw() -> void:
-		var edge := Color("af8759")
-		var fill := Color("6faba2")
-		if ratio<=0.35:
-			edge = Color("e6bd76")
-			fill = Color("e6bd76")
-		if ratio<=0.15:
-			edge = Color("f0a080")
-			fill = Color("f0a080")
-		var shape := PackedVector2Array([Vector2(8,0),Vector2(size.x-8,0),Vector2(size.x,8),Vector2(size.x,size.y-8),Vector2(size.x-8,size.y),Vector2(8,size.y),Vector2(0,size.y-8),Vector2(0,8)])
-		draw_colored_polygon(shape,Color("202d3a"))
-		draw_polyline(PackedVector2Array([Vector2(8,1),Vector2(size.x-8,1),Vector2(size.x-1,8),Vector2(size.x-1,size.y-8),Vector2(size.x-8,size.y-1),Vector2(8,size.y-1),Vector2(1,size.y-8),Vector2(1,8),Vector2(8,1)]),edge,2)
-		# The segmented cylinder remains readable without relying on its colour.
-		draw_rect(Rect2(12,20,26,60),edge,false,2)
-		draw_rect(Rect2(19,13,12,7),edge)
-		draw_line(Vector2(18,10),Vector2(31,10),edge,2)
-		for index in range(10):
-			var lit := ratio>float(index)/10.0
-			draw_rect(Rect2(16,73-index*5,18,3),fill if lit else Color("3d5055"))
-		draw_line(Vector2(150,14),Vector2(150,size.y-14),Color("654733"),1)
-		if ratio<=0.15:
-			var alpha := 0.18 if reduced_motion else 0.18+0.035*sin(phase*2)
-			draw_rect(Rect2(3,3,size.x-6,size.y-6),Color(0.94,0.63,0.5,alpha),false,2)
-		if loss_feedback>0.0:
-			draw_line(Vector2(49,65),Vector2(138,65),Color(1.0,0.81,0.67,minf(1.0,loss_feedback*2)),2)
+		var art := preload("res://scripts/HudSkin.gd")
+		art.panel("dark").draw(get_canvas_item(),Rect2(Vector2.ZERO,size))
+		var tank := art.icon("oxygen")
+		if tank!=null: draw_texture_rect(tank,Rect2(9,26,34,62),false)
+		var bar := Rect2(49,87,96,16)
+		var frame := art.texture("bar-frame")
+		var fill := art.texture("bar-fill")
+		if fill!=null and ratio>0:
+			var tint := Color.WHITE if ratio>.35 else Color("ffd27e") if ratio>.15 else Color("ff9a78")
+			draw_texture_rect_region(fill,Rect2(bar.position+Vector2(3,3),Vector2((bar.size.x-6)*clampf(ratio,0,1),bar.size.y-6)),Rect2(Vector2.ZERO,Vector2(fill.get_width()*clampf(ratio,0,1),fill.get_height())),tint)
+		if frame!=null: draw_texture_rect(frame,bar,false)
+		if ratio<=.15:
+			var alpha := .18 if reduced_motion else .18+.035*sin(phase*2)
+			draw_rect(Rect2(6,6,size.x-12,size.y-12),Color(.94,.63,.5,alpha),false,2)
+		if loss_feedback>0: draw_line(Vector2(49,78),Vector2(138,78),Color(1,.81,.67,minf(1,loss_feedback*2)),2)
 
 var _sound_button: Button
 var _navigation: GeoMap
+var _minimap_shell: Control
 var root_control: Control
 var status_label: Label
 var touch_enabled := false
@@ -123,6 +82,8 @@ var _net_charge: ColorRect
 var _deck: Panel
 var _dpad: Control
 var _utility_plate: Panel
+var _identity_portrait: TextureRect
+var _portrait_identity := ""
 var _identity_plate: Panel
 var _objective_toggle: Button
 var _utilities: Array[Button] = []
@@ -181,18 +142,7 @@ func _theme() -> Theme:
 	theme.default_font_size = 12
 	theme.set_color("font_color","Label",CREAM)
 	for kind in ["normal","hover","pressed","disabled","focus"]:
-		var style := StyleBoxFlat.new()
-		style.bg_color = INK if kind=="normal" else WOOD
-		style.set_border_width_all(1)
-		style.border_color = COPPER
-		style.border_width_bottom = 3
-		if kind=="disabled":
-			style.bg_color = Color("28343b")
-			style.border_color = Color("59615b")
-		if kind=="focus":
-			style.bg_color = Color.TRANSPARENT
-			style.border_color = CREAM
-		theme.set_stylebox(kind,"Button",style)
+		theme.set_stylebox(kind,"Button",HudArt.button("normal" if kind=="disabled" else kind))
 	for state in ["font_color","font_hover_color","font_pressed_color"]:
 		theme.set_color(state,"Button",CREAM)
 	theme.set_color("font_disabled_color","Button",Color("87928d"))
@@ -244,6 +194,18 @@ func _icon(parent: Node,kind: String,at: Vector2,dimensions: Vector2) -> void:
 
 func _build_identity() -> void:
 	_identity_plate = _panel(Rect2(12,10,340,94),false)
+	_identity_portrait = TextureRect.new()
+	_identity_portrait.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
+	_identity_portrait.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_identity_portrait.texture_filter=CanvasItem.TEXTURE_FILTER_NEAREST
+	_identity_portrait.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	root_control.add_child(_identity_portrait)
+	var badge:=TextureRect.new()
+	badge.texture=HudArt.texture("portrait-frame")
+	badge.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
+	badge.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	badge.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	_identity_portrait.add_child(badge)
 	_region = _label(root_control,"Bandar Hujung",Vector2(18,12),Vector2(310,23),18 if touch_enabled else 16)
 	_resources = _label(root_control,"",Vector2(18,38),Vector2(300,22),14 if touch_enabled else 12)
 	_resources.add_theme_color_override("font_color",CREAM)
@@ -305,7 +267,8 @@ func _build_utilities() -> void:
 	_sound_button = _button("",Rect2(start+cell*4,14,cell,cell),func():AudioManager.toggle_mute())
 	_sound_button.add_theme_font_size_override("font_size",18 if touch_enabled else 12)
 	var refresh: Callable = func(_muted: bool):
-		_sound_button.text = "Sunyi" if AudioManager.muted else "Suara"
+		_sound_button.text = ""
+		HudArt.set_icon(_sound_button,"speaker-off" if AudioManager.muted else "speaker-on",32)
 		_sound_button.tooltip_text = "Suara nonaktif [V]" if AudioManager.muted else "Suara aktif [V]"
 	AudioManager.mute_changed.connect(refresh)
 	refresh.call(AudioManager.muted)
@@ -385,12 +348,16 @@ func _layout() -> void:
 				child.size=Vector2(32,32)
 	_sound_button.add_theme_font_size_override("font_size",body)
 	_sound_button.add_theme_font_override("font",preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2"))
-	_sound_button.text="Sunyi" if AudioManager.muted else "Suara"
+	_sound_button.text=""
+	HudArt.set_icon(_sound_button,"speaker-off" if AudioManager.muted else "speaker-on",32)
 	var width:=minf(410,viewport.x-margin.x-24) if portrait else minf(370,viewport.x-cell*5-48)
 	_identity_plate.position=margin-Vector2(6,6)
 	_identity_plate.size=Vector2(width+12,identity_height)
-	_region.position=margin
-	_region.size=Vector2(width-cell-8 if compact_dive else width,line)
+	_identity_portrait.position=margin
+	_identity_portrait.size=Vector2(46,line)
+	_identity_portrait.visible=not _modal
+	_region.position=margin+Vector2(54,0)
+	_region.size=Vector2((width-cell-8 if compact_dive else width)-54,line)
 	_region.add_theme_font_size_override("font_size",body+2)
 	_resources.position=margin+Vector2(0,line)
 	_resources.size=Vector2(width,line)
@@ -454,7 +421,7 @@ func _layout() -> void:
 	_depth.size.y=36
 	_bag.position.y=80
 	_bag.size.y=56
-	_oxygen_loss.position=Vector2(49,82)
+	_oxygen_loss.position=Vector2(49,70)
 	_oxygen_loss.size=Vector2(96,28)
 	for label in [_oxygen_caption,_depth_caption,_oxygen_max,_bag,_oxygen_loss]:
 		label.add_theme_font_override("font",preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2"))
@@ -472,7 +439,7 @@ func _layout() -> void:
 	_warning_plate.position=_warning.position-Vector2(6,3)
 	_warning_plate.size=_warning.size+Vector2(12,6)
 	_warning_plate.visible=_warning.visible
-	if is_instance_valid(_navigation): _navigation.position=Vector2(viewport.x/2-64,bottom-94)
+	if is_instance_valid(_minimap_shell): _minimap_shell.position=Vector2(viewport.x/2-64,bottom-128)
 	_status_panel.position=Vector2(viewport.x/2-210,viewport.y/2-60)
 	_status_panel.size=Vector2(420,120)
 	status_label.size=Vector2(400,100)
@@ -482,6 +449,17 @@ func _layout() -> void:
 func update_state(state: Dictionary) -> void:
 	_state = state.duplicate()
 	if not is_instance_valid(root_control): return
+	var identity := str(GameState.player.get("appearance","male_default"))
+	if identity!=_portrait_identity:
+		_portrait_identity=identity
+		var path := "res://resources/art/"+identity.replace("_","-")+"-outfits-v1.png"
+		if ResourceLoader.exists(path):
+			var sheet:=load(path) as Texture2D
+			var cell:=sheet.get_size()/Vector2(3,3)
+			var face:=AtlasTexture.new()
+			face.atlas=sheet
+			face.region=Rect2(cell*Vector2(.2,.02),cell*Vector2(.62,.45))
+			_identity_portrait.texture=face
 	var diving := bool(state.get("diving",false))
 	_region.text = str(state.get("area","Bandar Hujung"))
 	_region.tooltip_text = _region.text
@@ -543,7 +521,7 @@ func update_state(state: Dictionary) -> void:
 
 func set_modal(open: bool) -> void:
 	_modal = open
-	if is_instance_valid(_navigation): _navigation.visible = not open
+	if is_instance_valid(_minimap_shell): _minimap_shell.visible = not open
 	if open:
 		_dpad.release()
 		move_changed.emit(Vector2.ZERO)
@@ -585,13 +563,12 @@ func _process(delta: float) -> void:
 func set_navigation(data: Dictionary,area: String,point: Vector2) -> void:
 	if not is_instance_valid(root_control): return
 	if not is_instance_valid(_navigation):
-		_navigation = GeoMap.new()
-		_navigation.mini = true
-		_navigation.position = Vector2(360,12) if touch_enabled else Vector2(326,428)
-		_navigation.size = Vector2(144,94) if touch_enabled else Vector2(128,94)
-		root_control.add_child(_navigation)
+		_minimap_shell=preload("res://scripts/HudMiniMap.gd").new()
+		_minimap_shell.size=Vector2(128,128)
+		root_control.add_child(_minimap_shell)
+		_navigation=_minimap_shell.map
 	_navigation.configure(data,area,point)
-	_navigation.visible = not _modal
+	_minimap_shell.visible = not _modal
 	_layout()
 
 func debug_layout() -> Dictionary:

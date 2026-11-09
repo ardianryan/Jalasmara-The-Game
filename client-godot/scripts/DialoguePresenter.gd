@@ -1,6 +1,7 @@
 extends PanelContainer
 
 signal advance_requested
+const HudArt = preload("res://scripts/HudSkin.gd")
 const BODY = preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2")
 var text_view: RichTextLabel
 var nameplate: Label
@@ -35,18 +36,8 @@ class Emote extends Control:
 
 func _ready() -> void:
 	set_meta("dialogue",true)
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color("362419")
-	style.border_color = Color("c89240")
-	style.set_border_width_all(3)
-	style.shadow_color = Color("140d08")
-	style.shadow_size = 0
-	style.shadow_offset = Vector2(0,5)
-	style.content_margin_left = 22
-	style.content_margin_right = 22
-	style.content_margin_top = 20
-	style.content_margin_bottom = 16
-	add_theme_stylebox_override("panel",style)
+	add_theme_stylebox_override("panel",HudArt.panel("dialogue"))
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation",18)
 	add_child(row)
@@ -57,6 +48,13 @@ func _ready() -> void:
 	portrait.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(portrait)
+	var portrait_border := TextureRect.new()
+	portrait_border.texture = HudArt.texture("portrait-frame")
+	portrait_border.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	portrait_border.stretch_mode = TextureRect.STRETCH_SCALE
+	portrait_border.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	portrait_border.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	portrait.add_child(portrait_border)
 	_emote = Emote.new()
 	_emote.position = Vector2(68,-8)
 	_emote.size = Vector2(30,28)
@@ -68,7 +66,7 @@ func _ready() -> void:
 	column.add_theme_constant_override("separation",10)
 	row.add_child(column)
 	nameplate = Label.new()
-	nameplate.add_theme_color_override("font_color",Color("ffd18a"))
+	nameplate.add_theme_color_override("font_color",Color("654733"))
 	nameplate.add_theme_font_size_override("font_size",22)
 	nameplate.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	column.add_child(nameplate)
@@ -84,19 +82,13 @@ func _ready() -> void:
 	text_view.scroll_active = false
 	text_view.add_theme_font_override("normal_font",BODY)
 	text_view.add_theme_font_override("bold_font",BODY)
-	text_view.add_theme_color_override("default_color",Color("f4ebd9"))
+	text_view.add_theme_color_override("default_color",Color("302d2a"))
 	_scroll.add_child(text_view)
 	next_button = Button.new()
 	next_button.text = "Lanjut"
 	next_button.add_theme_font_override("font",BODY)
-	for state in ["font_color","font_hover_color","font_pressed_color","font_focus_color"]:
-		next_button.add_theme_color_override(state,Color("f4ebd9"))
-	for state in ["normal","hover","pressed"]:
-		var button_style := StyleBoxFlat.new()
-		button_style.bg_color=Color("543b28") if state=="normal" else Color("694b32") if state=="hover" else Color("362419")
-		button_style.border_color=Color("c89240")
-		button_style.set_border_width_all(2)
-		next_button.add_theme_stylebox_override(state,button_style)
+	HudArt.apply_button(next_button)
+	HudArt.set_icon(next_button,"interact-hand",28)
 	next_button.custom_minimum_size.y = 56
 	next_button.pressed.connect(advance)
 	column.add_child(next_button)
@@ -114,7 +106,7 @@ static func formatted(raw: String) -> String:
 	var result := ""
 	for index in range(parts.size()):
 		var part := str(parts[index]).replace("\u0001","[lb]").replace("\u0002","[rb]")
-		result += "[color=#8ee0ce]"+part+"[/color]" if index%2==1 else part
+		result += "[color=#16655f]"+part+"[/color]" if index%2==1 else part
 	return result
 
 func present(speaker: String,text: String,emotion := "neutral") -> void:

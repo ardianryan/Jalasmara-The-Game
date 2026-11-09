@@ -1,5 +1,6 @@
 extends Control
 signal close_requested
+const HudArt = preload("res://scripts/HudSkin.gd")
 var _panel: PanelContainer
 var _atlas: WorldAtlas
 var _point := Vector2.ZERO
@@ -11,6 +12,7 @@ func configure(area: String,point: Vector2) -> void:
 	if is_instance_valid(_atlas):
 		_atlas.configure(GameState.world,GameState.player,_area)
 		_atlas.set_player_position(_point)
+		_skin_controls(_atlas)
 
 func _ready() -> void:
 	set_meta("world_map",true)
@@ -20,20 +22,13 @@ func _ready() -> void:
 	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(dim)
 	_panel = PanelContainer.new()
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color("f1e1bc")
-	style.border_color = Color("8a633d")
-	style.set_border_width_all(3)
-	style.content_margin_left = 16
-	style.content_margin_right = 16
-	style.content_margin_top = 12
-	style.content_margin_bottom = 12
-	_panel.add_theme_stylebox_override("panel",style)
+	_panel.add_theme_stylebox_override("panel",HudArt.panel("paper"))
 	add_child(_panel)
 	_atlas = preload("res://scripts/WorldAtlas.gd").new()
 	_panel.add_child(_atlas)
 	_atlas.configure(GameState.world,GameState.player,_area)
 	_atlas.set_player_position(_point)
+	_skin_controls(_atlas)
 	_atlas.close_requested.connect(func():close_requested.emit())
 	get_viewport().size_changed.connect(_layout)
 	_layout()
@@ -49,3 +44,9 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
 		get_viewport().set_input_as_handled()
 		close_requested.emit()
+
+func _skin_controls(node: Node) -> void:
+	if node is Button:
+		HudArt.apply_button(node)
+		if node.text=="Tutup": HudArt.set_icon(node,"close",28)
+	for child in node.get_children(): _skin_controls(child)

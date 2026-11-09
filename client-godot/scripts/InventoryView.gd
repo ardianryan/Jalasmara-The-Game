@@ -1,6 +1,7 @@
 extends Control
 signal close_requested
 
+const HudArt = preload("res://scripts/HudSkin.gd")
 const Icons = preload("res://scripts/ItemIcons.gd")
 const BODY = preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2")
 const INK := Color("302d2a")
@@ -33,16 +34,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		close()
 
-func _paper(background := Color("f1e1bc")) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = background
-	style.border_color = Color("8a633d")
-	style.set_border_width_all(2)
-	style.content_margin_left = 14
-	style.content_margin_right = 14
-	style.content_margin_top = 12
-	style.content_margin_bottom = 12
-	return style
+func _paper(_background := Color("f1e1bc")) -> StyleBox:
+	return HudArt.panel("paper")
 
 func _text(parent: Node,value: String,heading := false) -> Label:
 	var label := Label.new()
@@ -58,15 +51,7 @@ func _text(parent: Node,value: String,heading := false) -> Label:
 func _button_style(button: Button) -> void:
 	button.add_theme_font_override("font",BODY)
 	button.add_theme_font_size_override("font_size",_body_size)
-	button.add_theme_color_override("font_color",INK)
-	for state in ["font_hover_color","font_pressed_color","font_focus_color"]: button.add_theme_color_override(state,INK)
-	button.add_theme_stylebox_override("normal",_paper(Color("ead7ac")))
-	button.add_theme_stylebox_override("hover",_paper(Color("f8ebcc")))
-	button.add_theme_stylebox_override("pressed",_paper(Color("d6bd8e")))
-	var focus := _paper(Color.TRANSPARENT)
-	focus.border_color = Color("80501f")
-	focus.set_border_width_all(4)
-	button.add_theme_stylebox_override("focus",focus)
+	HudArt.apply_button(button)
 
 func _build() -> void:
 	for child in get_children():
@@ -99,8 +84,9 @@ func _build() -> void:
 	_text(header,"Tas Nala · %d koin" % int(_player.get("coins",0)),true)
 	var close_button := Button.new()
 	close_button.text = "Tutup"
-	close_button.custom_minimum_size = Vector2(110,_target)
+	close_button.custom_minimum_size = Vector2(160,_target)
 	_button_style(close_button)
+	HudArt.set_icon(close_button,"close",28)
 	close_button.pressed.connect(close)
 	header.add_child(close_button)
 	var summary := "Fragmen yang sudah dibawa pulang tersimpan permanen."
@@ -144,6 +130,7 @@ func _build() -> void:
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.tooltip_text = GameState.fragment_name(str(item.get("fragmentId","")))
 		_button_style(button)
+		button.add_theme_stylebox_override("normal",HudArt.slot())
 		button.pressed.connect(func():
 			_selected=index
 			_show_detail()

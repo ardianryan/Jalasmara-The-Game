@@ -59,12 +59,12 @@ func _set_direction(value: Vector2) -> void:
 	direction_changed.emit(direction)
 
 func _draw() -> void:
-	var center := size / 2.0
-	var radius := size.x * 0.45
-	draw_circle(center + Vector2(0, 3), radius, Color(0.06, 0.04, 0.03, 0.55))
-	draw_circle(center, radius, Color(0.14, 0.10, 0.07, 0.68))
-	draw_circle(center, radius, Color("c89240"), false, 2.0)
-	draw_circle(center, radius * 0.72, Color(0.77, 0.57, 0.31, 0.24), false, 1.0)
-	draw_circle(center + _thumb + Vector2(0, 3), radius * 0.37, Color("231710"))
-	draw_circle(center + _thumb, radius * 0.37, Color("b88e57") if pointer >= 0 else Color("65503b"))
-	draw_circle(center + _thumb, radius * 0.37, Color("f3d49c"), false, 2.0)
+	var art := preload("res://scripts/HudSkin.gd")
+	var ring := art.texture("joystick-ring")
+	var thumb := art.texture("joystick-thumb")
+	var diameter := size.x*.90
+	var center := size/2.0
+	if ring!=null: draw_texture_rect(ring,Rect2(center-Vector2.ONE*diameter/2,Vector2.ONE*diameter),false)
+	if thumb!=null:
+		var thumb_size := Vector2.ONE*diameter*.40
+		draw_texture_rect(thumb,Rect2(center+_thumb-thumb_size/2,thumb_size),false)

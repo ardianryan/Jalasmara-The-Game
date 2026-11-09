@@ -1,6 +1,13 @@
 extends SceneTree
 func _initialize() -> void: call_deferred("run")
 func run() -> void:
+	var artwork=load("res://scripts/HudSkin.gd")
+	assert(artwork.assets_ready(),"All actual HUD kit frames must be imported; a flat fallback is not visual delivery")
+	assert(artwork.panel("dark") is StyleBoxTexture)
+	assert(artwork.panel("paper") is StyleBoxTexture)
+	for state in ["normal","hover","pressed","selected"]:
+		assert(artwork.button(state) is StyleBoxTexture)
+	assert(artwork.button("normal").texture!=artwork.button("pressed").texture)
 	var hud=load("res://scripts/GameHud.gd").new()
 	root.add_child(hud)
 	hud.set_process(false)
@@ -61,6 +68,8 @@ func run() -> void:
 				assert(label.get_theme_font_size("font_size")*scale>=16,"Primary HUD text needs16physical pixels")
 				assert(label.size.y>=label.get_theme_font("font").get_height(label.get_theme_font_size("font_size")),"Readable text needs a complete line box")
 			var sound:Button=hud.get("_sound_button")
+			assert(sound.icon!=null,"Mute status uses the actual colored sound icon with accessible tooltip")
+			assert(not sound.tooltip_text.is_empty())
 			assert(sound.get_theme_font("font").get_string_size(sound.text,HORIZONTAL_ALIGNMENT_LEFT,-1,sound.get_theme_font_size("font_size")).x<=sound.size.x-4,"Sound label must fit without truncation")
 			var menu:=Rect2(Vector2(view.size.x/2-44*ratio,0),Vector2(88*ratio,52*ratio))
 			for plate in [hud.get("_identity_plate"),hud.get("_utility_plate")]:
