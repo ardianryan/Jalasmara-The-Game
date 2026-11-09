@@ -56,8 +56,10 @@ def main():
 
     up = (0, 0, 1 / math.cos(math.radians(35)))
     rows = []
+    envelope_checks = []
     for outfit in ["daily", "explorer"]:
         data = json.loads((root / f"client-godot/resources/art/player-lower-body/male-nusantara-{outfit}-v1.json").read_text())
+        source_image = Image.open(root / "client-godot" / data["source"].removeprefix("res://")).convert("RGBA")
         for direction, view in data["views"].items():
             for side, leg in view["legs"].items():
                 rect, sole = leg["parts"]["foot"], leg["solePixel"]
@@ -77,6 +79,28 @@ def main():
                 # R*theta bounds each source corner's motion about the actual ankle.
                 step = .1 / radius
                 assert max(math.dist(p, rotate(p, step)) for p in [add(q, old_offset, -1) for q in corners]) <= .1 + 1e-12
+                pixels = set(tuple(p) for p in leg["soleEdgePixels"])
+                for y in range(rect[3]):
+                    for x in range(rect[2]):
+                        if source_image.getpixel((view["sourceColumn"] * 128 + rect[0] + x, rect[1] + y))[3] >= 128:
+                            pixels.update([(x, y), (x + 1, y), (x + 1, y + 1), (x, y + 1)])
+                ankle_xy = (1125, -2031)
+                fields = {"flat": lambda x, y: 48,
+                          "incline": lambda x, y: (y + 2074.70166) * 48 / (2074.70166 - 2029.92871),
+                          "crest": lambda x, y: min(48, max(0, (y + 2074.70166) * 48 / (2074.70166 - 2029.92871)))}
+                for fraction in [0, .5, 1]:
+                    offsets = [rotate(add(local(pixel), old_offset, -1), angle * fraction) for pixel in pixels]
+                    for field_name, field in fields.items():
+                        required = [field(ankle_xy[0] + p[0], ankle_xy[1] + p[1]) - p[2] for p in offsets]
+                        support = max(required)
+                        gaps = [support - value for value in required]
+                        assert min(gaps) >= -1e-12 and abs(min(gaps)) < 1e-12
+                        start_height = support + 1.92587363
+                        carried = start_height - support
+                        assert abs((support + carried) - start_height) < 1e-12
+                        envelope_checks.append({"outfit": outfit, "direction": direction, "side": side,
+                                                "planeFraction": fraction, "terrain": field_name,
+                                                "originalCornersAndMarkers": len(pixels), "ankleSupportHeight": support})
                 rows.append({"outfit": outfit, "direction": direction, "side": side,
                              "originalSoleWidth": math.dist(*edges), "ankleSoleCorrection": correction,
                              "maximumQuadRadiusAboutAnkle": radius})
@@ -135,6 +159,7 @@ def main():
               "fixedOrientationSettlementClock": {"ticks": settlement_ticks, "budgetPerTick": budget,
                                                    "rawAndPivotRemaining": [raw, pivot]},
               "originalFootChecks": rows,
+              "supportEnvelopeOriginalFootChecks": envelope_checks,
               "notProven": ["airborne support clearance", "ankle continuity across moving rig",
                             "same-source flat/stair/ramp matrix", "native appearance or natural gait"]}
     if args.rotation_rejected:

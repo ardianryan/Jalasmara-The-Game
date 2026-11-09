@@ -336,7 +336,7 @@ func _terrain_duration(from:Vector3,to:Vector3,minimum:float,span:float) -> Dict
 		duration+=.25
 	return {"distance":duration,"curveSpeedBound":bound,"curveOnly":true,"valid":bound<=4.9,"fromWorld":from,"toWorld":to,"fixedPathWorldXY":span,"curveType":"stair_clearance"}
 
-func _ramp_duration(from:Vector2,to:Vector2,from_world:Vector3,minimum:float) -> Dictionary:
+func _ramp_duration(from:Vector2,to:Vector2,from_world:Vector3,minimum:float,side:String) -> Dictionary:
 	var path:=_path_metrics(from,to)
 	var span:float=path.total
 	var offset:=from_world.z-_ground(from).z
@@ -358,7 +358,20 @@ func _ramp_duration(from:Vector2,to:Vector2,from_world:Vector3,minimum:float) ->
 	var numerator:=1.5*Vector2(span,vertical_span).length()+PI*TOE_CLEARANCE
 	var distance:=maxf(maxf(_start_distance,minimum),ceilf(numerator/4.9*4.0)*.25)
 	var bound:=numerator/distance
-	return {"distance":distance,"curveSpeedBound":bound,"curveOnly":true,"valid":valid and bound<=4.9,"fromWorld":from_world,"toWorld":_ground(to),"fixedPathWorldXY":span,"curveType":"ramp_support_profile","fromGroundOffset":offset,"groundKnots":knots,"effectiveVerticalSpan":vertical_span}
+	var support_offset:=0.0
+	if not _landing_geometry.has(side): valid=false
+	else:
+		var geometry:Dictionary=_landing_geometry[side]
+		var plane:Quaternion=geometry.plane
+		var actual_ankle:=from_world+Vector3(geometry.pivot)+FootPlane.ankle_offset(geometry,plane)
+		var support:=FootPlane.ankle_support(renderer,from,geometry,actual_ankle,plane)
+		if bool(support.valid): support_offset=actual_ankle.z-float(support.height)
+		else: valid=false
+	return {"distance":distance,"curveSpeedBound":bound,"curveOnly":true,"valid":valid and bound<=4.9,"fromWorld":from_world,"toWorld":_ground(to),"fixedPathWorldXY":span,"curveType":"ramp_support_profile","fromGroundOffset":offset,"groundKnots":knots,"effectiveVerticalSpan":vertical_span,"fromSupportOffset":support_offset,"originalFootSupportEnvelope":true,"envelopeIncludedInBaseCurveBound":false}
+
+func commit_raw_support(side:String,world:Vector3) -> void:
+	if _physical_contract and _feet.has(side) and not bool(_feet[side].grounded) and bool(_feet[side].get("fixedRampTarget",false)):
+		_feet[side].sole=world
 
 func _begin(side:String,at:Vector2,hips:Dictionary,right:Vector3) -> void:
 	_swing=side
@@ -396,7 +409,7 @@ func _begin(side:String,at:Vector2,hips:Dictionary,right:Vector3) -> void:
 			_landing_distance=float(budget.distance)
 			entry.treadPlan.merge(budget,true)
 	elif _physical_contract and _ramp_landing(entry.from,entry.to):
-		var budget:=_ramp_duration(entry.from,entry.to,entry.fromWorld,_landing_distance)
+		var budget:=_ramp_duration(entry.from,entry.to,entry.fromWorld,_landing_distance,side)
 		_landing_distance=float(budget.distance)
 		entry.fixedRampTarget=true
 		entry["rampCurvePlan"]=budget
@@ -455,7 +468,7 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 			var entry:Dictionary=_feet[_swing]
 			if _physical_contract and (bool(entry.get("fixedTreadTarget",false)) or bool(entry.get("fixedRampTarget",false))):
 				var path:=_path_metrics(entry.from,entry.to)
-				var budget:Dictionary=_ramp_duration(entry.from,entry.to,entry.fromWorld,_turn_distance) if bool(entry.get("fixedRampTarget",false)) else _terrain_duration(entry.fromWorld,entry.toWorld,_turn_distance,float(path.total))
+				var budget:Dictionary=_ramp_duration(entry.from,entry.to,entry.fromWorld,_turn_distance,_swing) if bool(entry.get("fixedRampTarget",false)) else _terrain_duration(entry.fromWorld,entry.toWorld,_turn_distance,float(path.total))
 				_landing_distance=float(budget.distance)
 				if bool(entry.get("fixedTreadTarget",false)): entry.treadPlan.merge(budget,true)
 				else: entry.rampCurvePlan=budget

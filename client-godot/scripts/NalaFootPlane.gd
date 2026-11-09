@@ -52,6 +52,33 @@ static func airborne_clear(renderer:Node,logical:Vector2,geometry:Dictionary,wor
 		if not bool(actual.valid) or point.z<Vector3(actual.ground).z+.02: return false
 	return not geometry.vertices.is_empty()
 
+static func ankle_offset(geometry:Dictionary,rotation:Quaternion) -> Vector3:
+	var leg:Dictionary=geometry.leg
+	var rect:Array=leg.parts.foot
+	var ankle:=Vector2(float(leg.ankle[0])-float(rect[0]),float(leg.ankle[1])-float(rect[1]))
+	var sole:=Vector2(float(leg.solePixel[0]),float(leg.solePixel[1]))
+	var right:Vector3=geometry.right
+	var vertical:float=geometry.vertical
+	return rotation*(right*(ankle.x-sole.x)+Vector3(0,0,(sole.y-ankle.y)/vertical))
+
+static func ankle_support(renderer:Node,logical:Vector2,geometry:Dictionary,ankle:Vector3,rotation:Quaternion) -> Dictionary:
+	var leg:Dictionary=geometry.leg
+	var rect:Array=leg.parts.foot
+	var source_ankle:=Vector2(float(leg.ankle[0])-float(rect[0]),float(leg.ankle[1])-float(rect[1]))
+	var right:Vector3=geometry.right
+	var vertical:float=geometry.vertical
+	var points:PackedVector2Array=geometry.vertices.duplicate()
+	for edge in leg.soleEdgePixels: points.append(Vector2(float(edge[0]),float(edge[1])))
+	var height:float=-INF
+	for pixel in points:
+		var local:=right*(pixel.x-source_ankle.x)+Vector3(0,0,(source_ankle.y-pixel.y)/vertical)
+		var offset:=rotation*local
+		var point:=ankle+offset
+		var actual:=ground_below(renderer,logical,point)
+		if not bool(actual.valid): return {"valid":false}
+		height=maxf(height,Vector3(actual.ground).z-offset.z)
+	return {"valid":is_finite(height),"height":height,"points":points.size()}
+
 static func contact_rotation(renderer:Node,logical:Vector2,right:Vector3) -> Quaternion:
 	for profile in renderer.get("_stair_queries"):
 		if str(profile.type)!="ramp" or Traversal.connector_ground(profile,logical).is_empty(): continue

@@ -189,7 +189,7 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 	if physical_plane:
 		for side in ["left","right"]:
 			var foot_direction:=str(_foot_views[side])
-			geometry[side]={"id":outfit+"/"+foot_direction+"/"+side,"leg":_data.views[foot_direction].legs[side],"vertices":_opaque_vertices[foot_direction+"/"+side],"right":right,"vertical":vertical}
+			geometry[side]={"id":outfit+"/"+foot_direction+"/"+side,"leg":_data.views[foot_direction].legs[side],"vertices":_opaque_vertices[foot_direction+"/"+side],"right":right,"vertical":vertical,"plane":_plane(side),"pivot":_pivot_offsets.get(side,Vector3.ZERO)}
 	var planner_delta:=delta
 	var settlement_budget:=0.0
 	var settlement_ready:=true
@@ -249,8 +249,9 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 			var current:=_plane(side)
 			var target:Quaternion=FootPlane.contact_rotation(renderer,entry.logical if bool(entry.grounded) else entry.to,right)
 			var current_terrain:Quaternion=FootPlane.contact_rotation(renderer,entry.logical,right)
-			if not bool(entry.grounded) and current_terrain.angle_to(Quaternion.IDENTITY)>.001: target=current_terrain
-			entry["orientationFollowsCurrentRamp"]=not bool(entry.grounded) and current_terrain.angle_to(Quaternion.IDENTITY)>.001
+			var envelope_active:=not bool(entry.grounded) and bool(entry.get("fixedRampTarget",false))
+			if not bool(entry.grounded) and not envelope_active and current_terrain.angle_to(Quaternion.IDENTITY)>.001: target=current_terrain
+			entry["orientationFollowsCurrentRamp"]=not bool(entry.grounded) and not envelope_active and current_terrain.angle_to(Quaternion.IDENTITY)>.001
 			if bool(entry.grounded):
 				if current.angle_to(target)>.001:
 					visible=false
@@ -265,6 +266,26 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 				var foot_direction:=str(_foot_views[side])
 				var mask:Dictionary={"leg":foot_leg,"vertices":_opaque_vertices[foot_direction+"/"+side],"right":right,"vertical":vertical}
 				var ankle:=Vector3(entry.sole)+correction+_ankle_offset(side,foot_direction,right,vertical,current)
+				if envelope_active:
+					var support:=FootPlane.ankle_support(renderer,entry.logical,mask,ankle,next)
+					if not bool(support.valid):
+						visible=false
+						proxy.visible=true
+						_last={"enabled":false,"rejected":true,"reason":"original foot support envelope has no ground inverse","contacts":pose,"reachValid":false,"rootMotion":false}
+						return _last.duplicate(true)
+					var lift:=0.0
+					var carried:=0.0
+					if not entry.has("settlingTarget"):
+						var phase:=clampf(float(pose.swingDistance)/float(pose.landingDistance),0,1)
+						var progress:=phase*phase*(3.0-2.0*phase)
+						lift=sin(phase*PI)*3.0
+						carried=float(entry.rampCurvePlan.fromSupportOffset)*(1.0-progress)
+					var planned_z:float=maxf(ankle.z,float(support.height)+.02) if entry.has("settlingTarget") else float(support.height)+maxf(.02,lift+carried)
+					var adjustment:=planned_z-ankle.z
+					entry.sole=Vector3(entry.sole)+Vector3(0,0,adjustment)
+					ankle.z=planned_z
+					_planner.commit_raw_support(side,entry.sole)
+					entry["supportEnvelope"]={"ankleSupportHeight":support.height,"sineLift":lift,"carriedStartOffset":carried,"rawHeightAdjustment":adjustment,"originalPoints":support.points,"baseCurveBoundIncludesEnvelope":false,"minimumAirborneClearance":.02}
 				var current_clear:=FootPlane.airborne_clear(renderer,entry.logical,mask,ankle-_ankle_offset(side,foot_direction,right,vertical,current),current)
 				var backtracks:=0
 				var next_clear:=FootPlane.airborne_clear(renderer,entry.logical,mask,ankle-_ankle_offset(side,foot_direction,right,vertical,next),next)
