@@ -50,6 +50,8 @@ python3 tools/player-gait/review_runtime_sequence.py artifacts/godot/nala-gait-t
 
 The helper makes a transition sheet, a restart-failure sheet when that sequence exists, and a manifest linking every selected frame SHA256 to the source results hash. It crops the960×540 native fixture; it does not regenerate or repaint any character pose. Restart invariants and the remaining knee pop are documented in `docs/reviews/06e-nala-restart-invariants.md`.
 
+`python3 tools/player-gait/test_restart_support.py --output artifacts/godot/nala-restart-source` validates the hash-pinned east support marks and compares low-pose restart displacement with the old raised pose. The112 CPU traces do not certify physical left/right or world foot lock. The separate restart pilot and pending engine checks are documented in `docs/reviews/06e-nala-restart-pilot.md`.
+
 ```sh
 python3 tools/player-gait/assemble_batch.py --out .runtime/rebuilt-gait
 python3 tools/player-gait/test_eightway.py
