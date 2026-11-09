@@ -92,3 +92,10 @@ Root menutup geometri commute pada855748e:11.826pose actual6warga normal/reduced
 
 
 Root full61 pada9497fc2/08c737b berhenti:50kasus pertama lulus, kedai-resume gagal assertion actualPlayerunlock line63 lalu timeout60detik. Focused sebelumnya lulus; log penuh `.runtime/overnight-world-integrated-5.log` dan perkasus tetap. Lanewebsite meneliti timing manualphysics padafixture, tidak mengubahprodukagar assertionlulus. Belum ada ekspor2 atau browserbaru; full59 lama tetap hasil suite lengkap terakhir.
+
+
+## Checkpoint01.07 WIB: kandidat aktif dan penerimaan publik berjalan
+
+Image798a47b/d044/PCK1315 sudahaktif. CI3046335495:61world/120API/3audit0; SARIF1warning/2notes dengan dua perbaikansasaran terverifikasi. ActualpublicdefaultH2 mencapai ready, semua62PCKbagian selesai; rute fisik/jurnal/reload masih berjalan. Jangan menyebut seluruhsmoke lulus sebelumcleanup. Firstactivationscript otomatisrollback karena curlhosttidaktersedia; scriptkedua/verifyterpisah berhasil, tanpa proxy/datachanges.
+
+Lokalnight11/garden5/PCKfault4/WASM3PASS; Sarasnightattention legalview2 menunjukkan tubuh penuh tanpa graybackplate di situsitu. Perangkatfisik belum diuji. Actualauto30recorder dan realcapture→parent→breedingharness kini tergabung sourceQA, belumactualrun. RouteCPU2/authcleanup2 didaftarkanCI. Nala physical32world helper masih experimentalOFF; independentreview menemukan lowanalogcreep dan gradienheldinput perlu pemeriksaan. Default produk tidak diganti agar teslulus. Tiga lane tetap bekerja/menunggu slotGPUserial.

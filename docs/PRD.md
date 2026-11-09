@@ -27,6 +27,8 @@ Nala datang ke Kota Apung Bandar Hujung, menjelajah desa/hutan/gua daratan, meny
 
 ## Prioritas pengembangan
 
+Checkpoint10November: kandidat798a47b/image d044/PCK1315 sudah aktif di staging, CI61world/120API lulus. Startupdefault mencapai actualready; rute publik penuh masih berjalan. HUDmalam/kebun/retry lokal lulus, perangkat Windows/S23 dibantu pengguna nanti. Nala lowerbodytetapOFF dan siklus akuisisiparent→breedingbrowser masih terbuka. Status ini tidak mengubah kriteria penerimaan tabel.
+
 Arahan aktif pengguna: kerjakan seluruh [delapan jalur overnight](reviews/overnight-eight-workstreams.md) melalui tiga subagent dan satu integrator, bukan berhenti setelah rencana. Kandidat runtime tetap terpisah dari staging sampai tes gabungan dan browser diterima. Pengguna bersedia membantu Windows/S23 fisik setelah recorder siap; angka target performa di atas belum hasil pengukuran perangkat tersebut.
 
 Keputusan operasional terbaru: migrasi GitLab CE dibatalkan pengguna. GitLab.com tetap menjalankan CI, GitHub menjadi mirror; pekerjaan auth/runner CE dihentikan. Prioritas adalah rilis finishing yang sudah diterima lokal dan penutupan startup publik, lalu sisa gerak/rig sebelum perluasan desa.

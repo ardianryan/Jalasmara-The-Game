@@ -1,14 +1,16 @@
 # Status pengembangan
 
-## Kandidat overnight, 10 November 2026
+## Kandidat overnight aktif, 10 November 2026
 
-Build lokal memakai source `593dc7912b4b691363633f198a898196cd18fc5b`, PCK `1315f34672b0fc5694a5f73684ca68bfbc6b5be1f6f4560b9628cc14ac2ef5e0`, **64.491.320 byte**. Ekspor Godot, web dan API lulus. Preview3111 sudah dimulai ulang agar manifest dan route bagian PCK cocok.
+Image source `798a47b00a8f471069033a0d6419cd201e7aa008`, image `d044202760953c6cb295df49073f9e44a788f1b672c7618a4d313f8467eb9964`, ekspor593dc79/PCK `1315f34672b0fc5694a5f73684ca68bfbc6b5be1f6f4560b9628cc14ac2ef5e0`/**64.491.320byte** kini aktif di staging. Health/manifest/part0 serta hash seluruhPCK dalamimage terverifikasi. Data, `.env`, containerMongo/Redis dan sharedproxy tetap; d60 disimpan sebagai rollback.
 
-Suite dunia lengkap **61/61 lulus**, termasuk 11.826 pose perjalanan enam warga, 158 kontak ramp, 576 pose rig dan 1.242 kontak Ujang. Rute enam warga yang diuji tidak melewati tangga; tidak ada klaim cakupan tangga dari sampel tersebut. Uji kedai kini memakai tick fisika terjadwal, setelah satu kegagalan fixture manual yang tetap disimpan. Terakhir, **24 tes performa CPU** lulus; pengulangan typecheck/API berjalan terpisah. Angka CPU dan hasil SwiftShader bukan FPS Windows/S23.
+[CI3046335495](reviews/overnight-ci-candidate.md) lulus empatjob:61dunia,120API dan tiga auditdependency0. [SARIFaktual](reviews/overnight-final-ci-sarif-798a47b.md) mencatat1warning+2notes, bukan noltemuan. Dua temuan yang ditargetkan telah hilang. Hasil LinuxCI dan paketMac yang dirilis dipatok terpisah.
 
-HUD ringkas, teks bacaan desktop18px,13rutinitas, rumah pribadi lurah, direktur dan RV terpisah, lima Laskar, jahe, keramba serta pilot Fish Gen sudah terintegrasi lokal. Browser kandidat baru sedang memeriksa transaksi malam, touch, reentry dan fault/retry unduhan; kebun/keramba menyusul. Pilot kaki modular Nala tetap nonaktif: guard kontak tangga dan cadence produksi belum diterima. Perangkat Windows/S23 tersedia untuk pengujian dengan bantuan pengguna setelah pin rilis siap; [panduan](performance/overnight-device-test.md) tersedia.
+Browser lokal PCK1315 lulus night11, garden5, retryPCK4 dan WASM3 dengan seluruhfixture dibersihkan. HUDmalam touch/keyboard, penguncian selama giliranaktif, transaksijahe/ikan, retryidempotent dan reload telah dibuktikan. Sarasnightattention terlihat penuh tanpa grayquad di dua legalview; situsrestpertama terhalangpalm tetap dilaporkan. Uji publik default sudah mencapai actualgameready; rute gerak–jurnal–reload masih berjalan, belum dinyatakan lulus lengkap.
 
-**Staging belum berubah:** image d60aab/PCK5f5baf tetap aktif. Kandidat lokal belum menjadi rilis, hasil asset-only potongan HTTP/2 belum membuktikan startup game publik. [Handoff](agent-handoff.md) dan [delapan jalur](reviews/overnight-eight-workstreams.md) memegang antrean serta hasil aktual. Cache/output lama yang dilepas sudah dihapus sebanyak265.089.024allocatedbyte; data pemain dan build aktif tetap. Galeri kini memuat delapan gambar original dengan pin dan batas bukti.
+HUD ringkas, bacaan desktop18px,13rutinitas, rumah pribadi lurah, direktur/RVterpisah, limaLaskar, jahe/keramba serta tiga ikan dekoratifFishGen ada dalam kandidat aktif. Commute enam warga lulus11.826pose/ramp158/stairs0; tidak membuktikan tangga atau delapanarah artwork lengkap. Pilot kaki modular Nala tetapOFF karena guardtangga/cadence belum diterima. Actualbrowser capture→dua parents→duafeedsettlements dan recorderauto30 berikutnya; CPUroute2/authcleanup2 lulus.
+
+Pengguna bersedia membantu Windows/S23, [panduan](performance/overnight-device-test.md) akan dipatok setelah smoke lengkap. Tidak ada hasilFPSfisik. Cachelimaoutput terlepas265.089.024allocatedbyte sudah dihapus; tar/imageintermediate menunggu penerimaanpublik. [Handoff](agent-handoff.md) dan [delapanjalur](reviews/overnight-eight-workstreams.md) menyimpan antrean; seluruhdelapan belum selesai.
 
 Bagian di bawah adalah riwayat paket sebelumnya. Status kandidat dan rilis aktif di atas mengatasi pernyataan lama mengenai fitur atau cabang yang belum digabung.
 
