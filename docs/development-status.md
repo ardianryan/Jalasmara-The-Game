@@ -1,6 +1,6 @@
 # Status pengembangan
 
-Checkpoint terbaru: finishing06-B2 sudah diekspor (PCK5f5baf/64.333.184byte), 100API/50world serta gateway7/canopy4/body-fault6 browser lulus lokal. Belum staging baru; [handoff aktif](agent-handoff.md) memegang pin rilis. Pengguna membatalkan GitLab CE; lanjutkan GitLab.com CI dan pekerjaan inti. HTTP2 publik, natural gait lengkap dan FPS perangkat fisik tetap terbuka.
+Checkpoint terbaru: finishing06-B2 sudah aktif di staging (image d60aab/PCK5f5baf,64.333.184byte), CI3045337293 lulus5job/API100/world50. [Galeri pengembangan](visual/README.md) sudah tersedia di GitHub. Default browser publik masih gagal startup120detik pada slowtransfer; health/hash publik benar, bukan penerimaan gameplay. Kandidat Nala restart lulus fullworld/native terpisah tetapi belum digabung/dirilis. GitLabCE dibatalkan; GitLab.com tetapCI. Detail dan pin/rollback pada [handoff aktif](agent-handoff.md).
 
 ## Kandidat lokal06-B2: terrain dan warna
 

@@ -57,3 +57,7 @@ Unknown terrain/entities are errors. Render hints, stamps, schedules, combat, lo
 ## Provenance
 
 The pinned OpenWorld schema/example references and license distinctions are recorded in `source.json`. This implementation and the synthetic fixtures are original; no upstream code or source map is redistributed. The reference format is pinned to commit `076ab27d5312416cbabe19c12b90e086f5fc32d7`. Upstream code uses MIT, with separate exceptions for some artwork/audio/font directories; those assets are outside this adapter.
+
+## Visual development reference
+
+The [Jalasmara development gallery](https://github.com/ardianryan/Jalasmara-The-Game/tree/main/docs/visual) contains selected runtime screenshots and animation comparisons with source hashes, provenance and test limits. It shows the game context around the geometry contract; it is not proof that this adapter generated every pictured building or effect. Original game artwork retains the separate asset license described in the gallery and is not part of this MIT code kit.
