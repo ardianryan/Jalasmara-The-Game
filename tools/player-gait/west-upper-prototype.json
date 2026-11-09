@@ -15,7 +15,7 @@
     73,
     62
   ],
-  "knownGap": "No clean original torso beneath forward near arm and no complete hidden far shoulder exist. Torso repair, far sleeve/upper-arm extension and joint seals below are newly authored using original palette, not recovered source artwork.",
+  "knownGap": "No clean original torso beneath forward near arm and no complete hidden far shoulder exist. Torso repair, far sleeve/upper-arm extension and joint seals below are newly authored using original palette, not recovered source artwork. Compact near sleeve replaces source sleeve to remove dark cuff seam; its pixels are authored, not original cutout.",
   "torsoRepairEnvelope": [
     [
       61,
@@ -56,7 +56,7 @@
   ],
   "arms": {
     "near": {
-      "depth": "in front of torso; anatomical side unresolved",
+      "depth": "in front of torso; intended anatomical left under existing cross-view annotation convention, not independently visible WEST proof",
       "shoulder": [
         62,
         48
@@ -184,10 +184,88 @@
             63
           ]
         ]
-      }
+      },
+      "authoredSleeve": [
+        [
+          60,
+          46
+        ],
+        [
+          63,
+          46
+        ],
+        [
+          65,
+          49
+        ],
+        [
+          65,
+          52
+        ],
+        [
+          63,
+          55
+        ],
+        [
+          60,
+          55
+        ],
+        [
+          58,
+          53
+        ],
+        [
+          58,
+          50
+        ]
+      ],
+      "authoredSleeveHighlight": [
+        [
+          60,
+          47
+        ],
+        [
+          62,
+          47
+        ],
+        [
+          64,
+          50
+        ],
+        [
+          64,
+          52
+        ],
+        [
+          62,
+          53
+        ],
+        [
+          59,
+          52
+        ],
+        [
+          59,
+          50
+        ]
+      ],
+      "authoredCuff": [
+        [
+          60,
+          55
+        ],
+        [
+          63,
+          55
+        ],
+        [
+          64,
+          54
+        ]
+      ]
     },
     "far": {
-      "depth": "behind torso; anatomical side unresolved",
+      "depth": "behind shirt, including palm; intended anatomical right under existing cross-view annotation convention, not independently visible WEST proof",
       "shoulder": [
         74,
         51
@@ -343,37 +421,130 @@
           74,
           57
         ]
-      ]
+      ],
+      "authoredSleeveVisible": false
     }
   },
   "poses": [
     {
       "frame": 0,
+      "cycleWeight": 0.0,
       "near": {
-        "upperDeg": 0,
-        "foreRelativeDeg": 0,
+        "upperDeg": -0.0,
+        "foreRelativeDeg": -0.0,
         "palmRelativeDeg": 0
       },
       "far": {
-        "upperDeg": 0,
-        "foreRelativeDeg": 0,
+        "upperDeg": 0.0,
+        "foreRelativeDeg": -0.0,
         "palmRelativeDeg": 0
       },
-      "label": "near forward / far back"
+      "label": "cyclic arm proposal 0/8"
+    },
+    {
+      "frame": 1,
+      "cycleWeight": 0.1464466094067262,
+      "near": {
+        "upperDeg": -8.054563517369942,
+        "foreRelativeDeg": -2.9289321881345245,
+        "palmRelativeDeg": 0
+      },
+      "far": {
+        "upperDeg": 12.447961799571727,
+        "foreRelativeDeg": -0.7322330470336311,
+        "palmRelativeDeg": 0
+      },
+      "label": "cyclic arm proposal 1/8"
+    },
+    {
+      "frame": 2,
+      "cycleWeight": 0.49999999999999994,
+      "near": {
+        "upperDeg": -27.499999999999996,
+        "foreRelativeDeg": -9.999999999999998,
+        "palmRelativeDeg": 0
+      },
+      "far": {
+        "upperDeg": 42.49999999999999,
+        "foreRelativeDeg": -2.4999999999999996,
+        "palmRelativeDeg": 0
+      },
+      "label": "cyclic arm proposal 2/8"
+    },
+    {
+      "frame": 3,
+      "cycleWeight": 0.8535533905932737,
+      "near": {
+        "upperDeg": -46.94543648263006,
+        "foreRelativeDeg": -17.071067811865476,
+        "palmRelativeDeg": 0
+      },
+      "far": {
+        "upperDeg": 72.55203820042827,
+        "foreRelativeDeg": -4.267766952966369,
+        "palmRelativeDeg": 0
+      },
+      "label": "cyclic arm proposal 3/8"
     },
     {
       "frame": 4,
+      "cycleWeight": 1.0,
       "near": {
-        "upperDeg": -55,
-        "foreRelativeDeg": -20,
+        "upperDeg": -55.0,
+        "foreRelativeDeg": -20.0,
         "palmRelativeDeg": 0
       },
       "far": {
-        "upperDeg": 85,
-        "foreRelativeDeg": -5,
+        "upperDeg": 85.0,
+        "foreRelativeDeg": -5.0,
         "palmRelativeDeg": 0
       },
-      "label": "near back / far forward"
+      "label": "cyclic arm proposal 4/8"
+    },
+    {
+      "frame": 5,
+      "cycleWeight": 0.8535533905932738,
+      "near": {
+        "upperDeg": -46.945436482630065,
+        "foreRelativeDeg": -17.071067811865476,
+        "palmRelativeDeg": 0
+      },
+      "far": {
+        "upperDeg": 72.55203820042827,
+        "foreRelativeDeg": -4.267766952966369,
+        "palmRelativeDeg": 0
+      },
+      "label": "cyclic arm proposal 5/8"
+    },
+    {
+      "frame": 6,
+      "cycleWeight": 0.5000000000000001,
+      "near": {
+        "upperDeg": -27.500000000000007,
+        "foreRelativeDeg": -10.000000000000002,
+        "palmRelativeDeg": 0
+      },
+      "far": {
+        "upperDeg": 42.50000000000001,
+        "foreRelativeDeg": -2.5000000000000004,
+        "palmRelativeDeg": 0
+      },
+      "label": "cyclic arm proposal 6/8"
+    },
+    {
+      "frame": 7,
+      "cycleWeight": 0.14644660940672632,
+      "near": {
+        "upperDeg": -8.054563517369948,
+        "foreRelativeDeg": -2.9289321881345263,
+        "palmRelativeDeg": 0
+      },
+      "far": {
+        "upperDeg": 12.447961799571738,
+        "foreRelativeDeg": -0.7322330470336316,
+        "palmRelativeDeg": 0
+      },
+      "label": "cyclic arm proposal 7/8"
     }
   ],
   "phaseContract": {
@@ -382,9 +553,9 @@
       4
     ],
     "nearFarArmsOppose": true,
-    "footContactMapping": "Not wired. Near/far are view-depth labels; anatomical leg mapping and accepted displacement phase must be reviewed before runtime use.",
+    "footContactMapping": "Intended near-left/far-right follows cross-view lower annotation; actual contact phase/contralateral locomotion untested and not wired.",
     "upperTorsoHeadSourceFrame": 0,
-    "lowerBodyContactSheetOnly": "Original corresponding frame0/4 below y76; no lower-body correction claimed"
+    "lowerBodyContactSheetOnly": "Original matching frame0..7 below y76 for context; no lower-body correction or alignment acceptance."
   },
   "paletteSamples": {
     "sleeve": [
@@ -404,5 +575,97 @@
       61
     ]
   },
-  "authoring": "Original source cutouts, rigid nearest-neighbor joint transforms; original-palette torso repair and far hidden sleeve/arm proposal. No image API, moodboard, mirror, scale change or new character identity."
+  "authoring": "Original source cutouts, rigid nearest-neighbor joint transforms; original-palette torso repair and far hidden sleeve/arm proposal. No image API, moodboard, mirror, scale change or new character identity.",
+  "occlusion": {
+    "far": "All far parts remain behind the repaired shirt. Any palm texel inside torso alpha is hidden; no hand is pasted over the shirt. Shoulder cap is omitted because the transformed cap protruded as a second sleeve.",
+    "near": "Original near upper-sleeve cutout is removed and replaced with an explicitly authored compact sleeve. Forearm and palm retain exact source cutouts; sleeve/skin join seals authored."
+  },
+  "anatomicalMapping": {
+    "status": "intended annotation convention only; not accepted physical foot-contact phase",
+    "near": "left",
+    "far": "right",
+    "source": "tools/player-gait/annotate_lower_body.py HIP_X and male-nusantara-daily-v1.json",
+    "westHips": {
+      "left": [
+        61,
+        76
+      ],
+      "right": [
+        64,
+        76
+      ]
+    },
+    "crossViewHipX": {
+      "left": [
+        71,
+        68,
+        61,
+        59,
+        58
+      ],
+      "right": [
+        58,
+        58,
+        64,
+        70,
+        71
+      ],
+      "views": [
+        "south",
+        "south_west",
+        "west",
+        "north_west",
+        "north"
+      ]
+    },
+    "limitation": "WEST both legs occludedReuse=true. No asymmetric garment marker proves anatomical identity in generated profile; mapping follows front and cross-view annotation, never screenX alone.",
+    "lowerAnnotation": {
+      "path": "tools/player-gait/annotate_lower_body.py",
+      "commit": "ff5a2c21effa3ce81e859eefb17ec95518657f2d",
+      "sha256": "aa2870ff8a4bf5abab87bb98c58ae2762fb19ed2ba99c3975ebc8fc8aa855910"
+    },
+    "lowerMetadata": {
+      "path": "client-godot/resources/art/player-lower-body/male-nusantara-daily-v1.json",
+      "commit": "ff5a2c21effa3ce81e859eefb17ec95518657f2d",
+      "sha256": "f46253f21b32fc5e4ff027c4dce5e36c9be317ade6feffb1a7174fd1774b8d48"
+    },
+    "westOccludedReuse": {
+      "left": true,
+      "right": true
+    }
+  },
+  "cycle": {
+    "frames": 8,
+    "weight": "(1-cos(2*pi*frame/8))/2",
+    "endpoint0": {
+      "frame": 0,
+      "near": {
+        "upperDeg": 0,
+        "foreRelativeDeg": 0,
+        "palmRelativeDeg": 0
+      },
+      "far": {
+        "upperDeg": 0,
+        "foreRelativeDeg": 0,
+        "palmRelativeDeg": 0
+      },
+      "label": "near forward / far back"
+    },
+    "endpoint4": {
+      "frame": 4,
+      "near": {
+        "upperDeg": -55,
+        "foreRelativeDeg": -20,
+        "palmRelativeDeg": 0
+      },
+      "far": {
+        "upperDeg": 85,
+        "foreRelativeDeg": -5,
+        "palmRelativeDeg": 0
+      },
+      "label": "near back / far forward"
+    },
+    "loopClosureFrame": 8,
+    "claim": "Smooth geometric arm proposal only; lower-body contact phases not measured."
+  }
 }

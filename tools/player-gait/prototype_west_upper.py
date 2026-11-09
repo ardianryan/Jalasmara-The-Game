@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Author two review-only WEST upper-body poses; never modify game resources."""
+"""Author one eight-frame review-only WEST upper-body loop; never modify game resources."""
 import argparse
 from collections import Counter
 import hashlib
@@ -111,7 +111,10 @@ def main():
     plate.alpha_composite(repair)
     far_extension=Image.new('RGBA',(SIZE,SIZE));draw=ImageDraw.Draw(far_extension)
     draw.polygon([tuple(p) for p in spec['arms']['far']['authoredUpperGap']],fill=palette['skinShadow'])
-    draw.polygon([tuple(p) for p in spec['arms']['far']['authoredSleeve']],fill=palette['sleeve'])
+    # Keep the hidden far shoulder beneath the shirt, rather than adding a second cap.
+    near_sleeve=Image.new('RGBA',(SIZE,SIZE));d=ImageDraw.Draw(near_sleeve)
+    for key,color in [('authoredSleeve','sleeve'),('authoredSleeveHighlight','shirtShadow'),('authoredCuff','sleeve')]:
+        d.polygon([tuple(p) for p in spec['arms']['near'][key]],fill=palette[color])
     args.output.mkdir(parents=True)
     source.save(args.output/'original-west-frame0.png')
     plate.save(args.output/'torso-plate-authored-repair.png')
@@ -122,6 +125,7 @@ def main():
         source_parts_manifest[name]={'file':filename,'sourceCellRunsYX0X1':runs(opaque_mask(layer)),
                                       'opaquePixels':sum(v!=0 for v in layer.getchannel('A').getdata())}
     far_extension.save(args.output/'authored-far-shoulder-extension.png')
+    near_sleeve.save(args.output/'authored-near-sleeve.png')
     panels=[];pose_manifest=[]
     for pose in spec['poses']:
         rendered=Image.new('RGBA',(SIZE,SIZE));semantic=Image.new('L',(SIZE,SIZE))
@@ -134,6 +138,8 @@ def main():
             transforms[arm]={'upper':upper,'fore':fore,'palm':palm}
         # Far arm is behind the original shirt plate; near arm is in front.
         composite(rendered,semantic,transformed(far_extension,transforms['far']['upper']),3)
+        far_palm=transformed(source_parts['far/palm'],transforms['far']['palm'])
+        far_palm_hidden=sum(bool(far_palm.getpixel((x,y))[3] and plate.getpixel((x,y))[3]) for y in range(SIZE) for x in range(SIZE))
         for part in ('upper','fore','palm'):
             composite(rendered,semantic,transformed(source_parts['far/'+part],transforms['far'][part]),20)
         composite(rendered,semantic,plate,1)
@@ -144,13 +150,14 @@ def main():
             x,y=point(matrix,spec['arms']['near'][name]);x,y=round(x),round(y)
             d.ellipse((x-1,y-1,x+1,y+1),fill=palette['skinShadow'])
         composite(rendered,semantic,joint_seals,4)
-        for part in ('upper','fore','palm'):
+        composite(rendered,semantic,transformed(near_sleeve,transforms['near']['upper']),5)
+        for part in ('fore','palm'):
             composite(rendered,semantic,transformed(source_parts['near/'+part],transforms['near'][part]),10)
         # Do not include the unmodified lower body in the actual prototype texture.
         rendered=rendered.crop((0,0,SIZE,spec['upperCutY']))
         sem=semantic.crop((0,0,SIZE,spec['upperCutY']))
         filename=f"proposal-west-{pose['frame']}.png";rendered.save(args.output/filename)
-        colors={1:(84,99,102,255),2:(242,62,188,255),3:(242,62,188,255),4:(242,62,188,255),10:(44,216,215,255),20:(250,191,70,255)}
+        colors={1:(84,99,102,255),2:(242,62,188,255),3:(242,62,188,255),4:(242,62,188,255),5:(242,62,188,255),10:(44,216,215,255),20:(250,191,70,255)}
         mask=Image.new('RGBA',rendered.size)
         for y in range(rendered.height):
             for x in range(rendered.width):
@@ -162,29 +169,43 @@ def main():
         counts=Counter(sem.getdata())
         pose_manifest.append({'frame':pose['frame'],'label':pose['label'],'texture':filename,
                               'jointTransforms':transforms,'transformedWristAnchors':palms,
-                              'visibleAuthoredPixels':sum(counts[k] for k in (2,3,4)),
+                              'transformedShoulderAnchors':{a:list(point(transforms[a]['upper'],spec['arms'][a]['shoulder'])) for a in ('near','far')},
+                              'transformedElbowAnchors':{a:list(point(transforms[a]['upper'],spec['arms'][a]['elbow'])) for a in ('near','far')},
+                              'farPalmTexelsOccludedByShirt':far_palm_hidden,
+                              'visibleAuthoredPixels':sum(counts[k] for k in (2,3,4,5)),
                               'visibleNearSourcePixels':counts[10],'visibleFarSourcePixels':counts[20],
                               'semanticMask':f"provenance-west-{pose['frame']}.png"})
         original=atlas.crop((pose['frame']*SIZE,row*SIZE,(pose['frame']+1)*SIZE,(row+1)*SIZE))
         proposed=original.copy();proposed.paste((0,0,0,0),(0,0,SIZE,spec['upperCutY']));proposed.paste(rendered,(0,0))
         fullmask=Image.new('RGBA',(SIZE,SIZE));fullmask.paste(mask,(0,0))
         panels.append((original,proposed,fullmask))
-    scale=3;cell=SIZE*scale;header=42;gap=18
-    sheet=Image.new('RGB',(3*cell+4*gap,2*(cell+header)+gap),(23,39,43));d=ImageDraw.Draw(sheet)
-    for row_index,(original,proposed,mask) in enumerate(panels):
-        for column,(im,label) in enumerate(zip((original,proposed,mask),('ORIGINAL','AUTHORED PROPOSAL','PROVENANCE'))):
-            x=gap+column*(cell+gap);y=gap+row_index*(cell+header)
-            d.text((x,y),f"{label} WEST {spec['poses'][row_index]['frame']}",fill=(244,227,189))
+    # Each frame has original/proposal/provenance at an identical integer scale.
+    scale=2;cell=SIZE*scale;header=28;gap=12;block=3*(cell+gap)
+    sheet=Image.new('RGB',(2*block+gap,4*(cell+header+gap)+gap),(23,39,43));d=ImageDraw.Draw(sheet)
+    strip=Image.new('RGBA',(SIZE*8,SIZE))
+    upper_strip=Image.new('RGBA',(SIZE*8,spec['upperCutY']))
+    for index,(original,proposed,mask) in enumerate(panels):
+        strip.paste(proposed,(index*SIZE,0))
+        upper_strip.paste(proposed.crop((0,0,SIZE,spec['upperCutY'])),(index*SIZE,0))
+        row_index,column_index=divmod(index,2)
+        for column,(im,label) in enumerate(zip((original,proposed,mask),('ORIGINAL','PROPOSAL','PROVENANCE'))):
+            x=gap+column_index*block+column*(cell+gap);y=gap+row_index*(cell+header+gap)
+            d.text((x,y),f"{label} WEST {spec['poses'][index]['frame']}",fill=(244,227,189))
             scaled=im.resize((cell,cell),Image.Resampling.NEAREST)
             sheet.paste(scaled,(x,y+header),scaled)
     sheet.save(args.output/'west-upper-before-after.png')
+    strip.save(args.output/'west-upper-eight-frame-strip.png')
+    upper_strip.save(args.output/'west-upper-eight-frame-textures.png')
     manifest={'status':spec['status'],'sourceSha256':sha(source_path),'specSha256':sha(args.spec),
               'scriptSha256':sha(Path(__file__)),'sourceParts':source_parts_manifest,
               'authoredTorsoRepairPixels':repair_provenance,'poses':pose_manifest,
-              'paletteSourceSamples':spec['paletteSamples'],'originalSourceUnchanged':sha(source_path)==spec['sourceSha256'],
-              'limits':['One WEST daily proposal, two endpoints only; not full gait or runtime',
+              'anatomicalMapping':spec['anatomicalMapping'],'occlusion':spec['occlusion'],
+              'authoredNearSleeveRunsYX0X1':runs(opaque_mask(near_sleeve)),
+              'omittedSourceParts':['near/upper (replaced by authored sleeve)'],
+              'cycle':spec['cycle'],'paletteSourceSamples':spec['paletteSamples'],'originalSourceUnchanged':sha(source_path)==spec['sourceSha256'],
+              'limits':['One WEST daily eight-frame arm proposal; not full eight-view gait or runtime',
                         'Hidden torso/far sleeve pixels are authored, not recovered',
-                        'Near/far anatomical leg correspondence unresolved',
+                        'Near-left/far-right is intended cross-view convention; no independent WEST anatomical marker or actual foot phase proof',
                         'No native/play-size/terrain/props/arm-to-foot cadence acceptance']}
     (args.output/'manifest.json').write_text(json.dumps(manifest,indent=2)+'\n')
     print(json.dumps({'output':str(args.output),'poses':pose_manifest,'originalUnchanged':manifest['originalSourceUnchanged']},indent=2))
