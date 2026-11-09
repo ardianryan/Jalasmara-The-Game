@@ -99,8 +99,13 @@ function Auth({
                 Masuk kembali
               </a>
             </>
+          ) : (activate || reset) && !storedToken ? (
+            <Notice error>
+              Tautan tidak lengkap. Buka kembali tautan dari pengelola, atau
+              minta tautan baru jika sudah tidak tersedia.
+            </Notice>
           ) : (
-            <form onSubmit={submit}>
+            <form onSubmit={submit} aria-busy={busy}>
               {activate && (
                 <label>
                   Nama pemain
@@ -138,10 +143,13 @@ function Auth({
                   autoComplete={
                     activate || reset ? "new-password" : "current-password"
                   }
+                  aria-describedby={
+                    activate || reset ? "password-guidance" : undefined
+                  }
                 />
               </label>
               {(activate || reset) && (
-                <small>
+                <small id="password-guidance">
                   Minimal 12 karakter. Gunakan password yang tidak dipakai pada
                   layanan lain.
                 </small>
@@ -200,6 +208,7 @@ function Settings({
     e.preventDefault();
     setBusy(true);
     setError("");
+    setMessage("");
     try {
       await api("/auth/reauth", { password });
       setPassword("");
@@ -214,6 +223,8 @@ function Settings({
   }
   async function unlink() {
     setBusy(true);
+    setError("");
+    setMessage("");
     try {
       await api("/auth/oidc/unlink", {});
       await refresh();
@@ -227,7 +238,7 @@ function Settings({
   return (
     <main className="settings sheet">
       <h1>Pengaturan akun</h1>
-      <p>
+      <p className="account-identity">
         {auth.user!.name} · {auth.user!.email}
       </p>
       <h2>Login tambahan</h2>
@@ -237,7 +248,7 @@ function Settings({
       </p>
       {auth.oidcEnabled ? (
         <>
-          <form onSubmit={reauth}>
+          <form onSubmit={reauth} aria-busy={busy}>
             <label>
               Password saat ini
               <input
@@ -248,7 +259,9 @@ function Settings({
                 autoComplete="current-password"
               />
             </label>
-            <button disabled={busy}>Konfirmasi password</button>
+            <button disabled={busy}>
+              {busy ? "Memproses…" : "Konfirmasi password"}
+            </button>
           </form>
           {auth.linked ? (
             <button disabled={busy} onClick={unlink}>
@@ -273,7 +286,9 @@ function Settings({
 }
 function App() {
   const [auth, setAuth] = useState<AuthState>(),
-    [error, setError] = useState("");
+    [error, setError] = useState(""),
+    [logoutError, setLogoutError] = useState(""),
+    [loggingOut, setLoggingOut] = useState(false);
   async function refresh() {
     setAuth(await session());
   }
@@ -327,13 +342,31 @@ function App() {
             )}
             <button
               className="quiet"
-              onClick={() => void logout()}
+              disabled={loggingOut}
+              onClick={async () => {
+                setLoggingOut(true);
+                setLogoutError("");
+                try {
+                  await logout();
+                } catch {
+                  setLogoutError(
+                    "Belum dapat keluar dari akun. Periksa koneksi lalu coba lagi.",
+                  );
+                } finally {
+                  setLoggingOut(false);
+                }
+              }}
               aria-label="Keluar dari akun"
             >
-              Keluar
+              {loggingOut ? "Keluar…" : "Keluar"}
             </button>
           </nav>
         </header>
+      )}
+      {!playing && logoutError && (
+        <div className="account-feedback">
+          <Notice error>{logoutError}</Notice>
+        </div>
       )}
       {path.startsWith("/admin") ? (
         auth.user.role === "player" ? (

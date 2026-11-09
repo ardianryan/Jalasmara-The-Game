@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import type {
   Catalog,
   ContentVersion,
@@ -169,6 +169,10 @@ export function Admin({ auth }: { auth: AuthState }) {
     [total, setTotal] = useState(0),
     [page, setPage] = useState(1),
     [search, setSearch] = useState(""),
+    [appliedSearch, setAppliedSearch] = useState(""),
+    [playersLoading, setPlayersLoading] = useState(true),
+    [playersLoaded, setPlayersLoaded] = useState(false),
+    [playersError, setPlayersError] = useState(""),
     [status, setStatus] = useState("all"),
     [detail, setDetail] = useState<any>(),
     [catalog, setCatalog] = useState<Omit<Catalog, "questions">>(),
@@ -198,6 +202,7 @@ export function Admin({ auth }: { auth: AuthState }) {
     [reauth, setReauth] = useState(""),
     [password, setPassword] = useState("");
   const owner = auth.user!.role === "owner";
+  const playersRequest = useRef(0);
   async function run(fn: () => Promise<void>) {
     setBusy(true);
     setError("");
@@ -210,11 +215,23 @@ export function Admin({ auth }: { auth: AuthState }) {
     }
   }
   async function loadPlayers() {
-    const r = await api(
-      `/admin/players?search=${encodeURIComponent(search)}&status=${status}&page=${page}`,
-    );
-    setPlayers(r.players);
-    setTotal(r.total);
+    const request = ++playersRequest.current;
+    setPlayersLoading(true);
+    setPlayersError("");
+    try {
+      const r = await api(
+        `/admin/players?search=${encodeURIComponent(appliedSearch)}&status=${status}&page=${page}`,
+      );
+      if (request !== playersRequest.current) return;
+      setPlayers(r.players);
+      setTotal(r.total);
+      setPlayersLoaded(true);
+    } catch (e) {
+      if (request === playersRequest.current)
+        setPlayersError((e as Error).message);
+    } finally {
+      if (request === playersRequest.current) setPlayersLoading(false);
+    }
   }
   async function loadVersions() {
     setVersions((await api("/admin/content")).versions);
@@ -227,13 +244,21 @@ export function Admin({ auth }: { auth: AuthState }) {
   useEffect(() => {
     void run(async () => {
       setCatalog((await api("/game/state")).catalog);
-      await loadPlayers();
       await loadVersions();
     });
   }, []);
   useEffect(() => {
-    void run(loadPlayers);
-  }, [page, status]);
+    void loadPlayers();
+    return () => {
+      playersRequest.current++;
+    };
+  }, [page, status, appliedSearch]);
+  useEffect(() => {
+    if (!dirty) return;
+    const warn = (event: BeforeUnloadEvent) => event.preventDefault();
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [dirty]);
   useEffect(() => {
     if (tab === "audit") void run(loadAudit);
   }, [tab, auditPage]);
@@ -457,9 +482,16 @@ export function Admin({ auth }: { auth: AuthState }) {
               key={id}
               aria-current={tab === id ? "page" : undefined}
               onClick={() => {
+                if (tab === id) return;
+                if (
+                  dirty &&
+                  !confirm("Buang perubahan draft yang belum disimpan?")
+                )
+                  return;
                 setTab(id);
                 setDetail(undefined);
                 setContent(undefined);
+                setDirty(false);
                 setNotice("");
               }}
             >
@@ -480,7 +512,8 @@ export function Admin({ auth }: { auth: AuthState }) {
               <div>
                 <h1>Pemain</h1>
                 <p>
-                  {total} akun · Kelola akses dan perjalanan di Palung Smara.
+                  {playersLoaded ? `${total} akun · ` : ""}Kelola akses dan
+                  perjalanan di Palung Smara.
                 </p>
               </div>
               {owner && (
@@ -500,7 +533,10 @@ export function Admin({ auth }: { auth: AuthState }) {
               onSubmit={(e) => {
                 e.preventDefault();
                 setPage(1);
-                void run(loadPlayers);
+                const nextSearch = search.trim();
+                setAppliedSearch(nextSearch);
+                if (page === 1 && appliedSearch === nextSearch)
+                  void loadPlayers();
               }}
             >
               <label>
@@ -525,9 +561,24 @@ export function Admin({ auth }: { auth: AuthState }) {
                   <option value="blocked">Diblokir</option>
                 </select>
               </label>
-              <button disabled={busy}>Cari</button>
+              <button disabled={busy || playersLoading}>Cari</button>
             </form>
-            <div className="table-scroll">
+            {playersLoading && <p role="status">Memuat daftar pemain…</p>}
+            {playersError && (
+              <div className="request-recovery">
+                <Notice error>{playersError}</Notice>
+                <button onClick={() => void loadPlayers()}>
+                  Muat ulang pemain
+                </button>
+              </div>
+            )}
+            <div
+              className="table-scroll"
+              role="region"
+              aria-label="Daftar pemain, geser untuk melihat semua kolom"
+              tabIndex={0}
+              aria-busy={playersLoading}
+            >
               <table>
                 <thead>
                   <tr>
@@ -555,6 +606,7 @@ export function Admin({ auth }: { auth: AuthState }) {
                       <td>
                         <button
                           className="quiet"
+                          disabled={busy || playersLoading}
                           onClick={() => void openPlayer(p.id)}
                         >
                           Kelola
@@ -565,19 +617,22 @@ export function Admin({ auth }: { auth: AuthState }) {
                 </tbody>
               </table>
             </div>
-            {!players.length && (
-              <Notice>Tidak ada pemain yang cocok dengan pencarian.</Notice>
-            )}
+            {playersLoaded &&
+              !playersLoading &&
+              !playersError &&
+              !players.length && (
+                <Notice>Tidak ada pemain yang cocok dengan pencarian.</Notice>
+              )}
             <div className="pagination">
               <button
-                disabled={busy || page === 1}
+                disabled={busy || playersLoading || page === 1}
                 onClick={() => setPage((x) => x - 1)}
               >
                 Sebelumnya
               </button>
               <span>Halaman {page}</span>
               <button
-                disabled={busy || page * 20 >= total}
+                disabled={busy || playersLoading || page * 20 >= total}
                 onClick={() => setPage((x) => x + 1)}
               >
                 Berikutnya
@@ -921,6 +976,7 @@ export function Admin({ auth }: { auth: AuthState }) {
                   confirm("Buang perubahan draft yang belum disimpan?")
                 ) {
                   setContent(undefined);
+                  setDirty(false);
                   void run(loadVersions);
                 }
               }}

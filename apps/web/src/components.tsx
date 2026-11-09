@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useId, useRef, type ReactNode } from "react";
 export function Dialog({
   title,
   children,
@@ -9,23 +9,29 @@ export function Dialog({
   onClose?: () => void;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
+  const closeHandler = useRef(onClose);
+  closeHandler.current = onClose;
   useEffect(() => {
     const d = ref.current!;
+    const previousFocus = document.activeElement;
     d.showModal();
     const close = (e: Event) => {
       e.preventDefault();
-      onClose?.();
+      closeHandler.current?.();
     };
     d.addEventListener("cancel", close);
     return () => {
       d.removeEventListener("cancel", close);
       d.close();
+      if (previousFocus instanceof HTMLElement && previousFocus.isConnected)
+        previousFocus.focus();
     };
   }, []);
   return (
-    <dialog ref={ref} aria-labelledby="dialog-title">
+    <dialog ref={ref} aria-labelledby={titleId}>
       <header className="dialog-heading">
-        <h2 id="dialog-title">{title}</h2>
+        <h2 id={titleId}>{title}</h2>
         {onClose && (
           <button className="quiet" onClick={onClose} aria-label="Tutup dialog">
             Tutup

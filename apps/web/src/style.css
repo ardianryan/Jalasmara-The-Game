@@ -285,6 +285,9 @@ fieldset {
   color: inherit;
   text-decoration: none;
   font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
 }
 .app-header nav a[aria-current="page"] {
   text-decoration: underline;
@@ -714,6 +717,22 @@ meter {
 }
 .settings h1 {
   font-family: "Lora", serif;
+}
+.account-identity,
+.admin-nav > span,
+.admin-sheet .section-heading > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.account-feedback {
+  padding: 0 24px;
+}
+.request-recovery {
+  margin-bottom: 24px;
+}
+.table-scroll:focus-visible {
+  outline: 3px solid #c47926;
+  outline-offset: 3px;
 }
 .settings h2 {
   margin-top: 36px;
@@ -1171,14 +1190,15 @@ dd {
   }
   .app-header nav {
     gap: 14px;
+    flex-wrap: wrap;
   }
   .app-header nav a {
-    font-size: 12px;
+    font-size: 14px;
   }
   .app-header nav button {
-    font-size: 12px;
+    font-size: 14px;
     padding: 8px 0;
-    min-height: 40px;
+    min-height: 44px;
   }
   .play {
     padding: 20px 16px 30px;
