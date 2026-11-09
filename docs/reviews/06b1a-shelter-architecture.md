@@ -43,7 +43,25 @@ Bukti lokal berada di `artifacts/godot/06b-shelter` dan `.runtime/shelter-*-fina
 
 ## Batas paket
 
-Default kamera dan proyeksi tidak berubah di cabang ini. Empat facing bangunan penuh, kontrol kamera menyudut, HUD/browser gabungan serta round-trip save API diuji integrator setelah penggabungan. Hasil CPU migrasi merupakan pemeriksaan fungsi shared dan keterhubungan lantai, bukan klaim transaksi akun staging sudah dijalankan. Efek hujan canvas existing belum menjadi simulasi partikel dengan collision tiap tetes terhadap atap. Windows/S23 fisik belum diukur.
+### Koreksi sumbu Griya terhadap dek
+
+Pengguna menemukan ketidaksejajaran pada pratinjau kiri. Penyebabnya bukan arah kamera: generator footprint rumah lama menambahkan shear `0,16 * width` dan `0,27 * height`, sedangkan dek memakai rectangle sumbu peta. `_house()` menormalisasi dua vektor tersebut tanpa menjadikannya ortogonal. Pada Griya lama, vektor lebar sekitar `(168, -68.256, 0)` dan belakang `(32, 184.544, 0)` mempunyai dot ternormalisasi -0,212585; sisi rumah dan sisi dek memang berlainan sumbu.
+
+Griya sekarang mempunyai footprint eksplisit rectangle `(78,420,164,145)`, dengan pusat tetap `x = 160, y = 492.5`. Basis native terukur menjadi lebar `(1,0,0)` dan belakang `(0,1,0)`, sama dengan dua vektor dek; dot antarsumbu 0. Roof plan, fasad, post dan collider mengikuti data itu, tanpa rotasi model tambahan atau mirror. Width 164 memberi aisle 38 unit pada kedua sisi dek. Memakai rectangle lebar 200 semula hanya menyisakan 20 unit per sisi, kurang dari diameter clearance badan 26, dan akan memutus akses ke lantai belakang rumah. Regresi sekarang melintasi loop kedua aisle serta strip belakang.
+
+Versi 9 tetap kandidat paket yang belum dirilis publik; sumber rilis lama memakai versi 8. Fixture migrasi memakai footprint oblique Griya rilis 8 yang sebenarnya, bukan menganggap bentuk baru sudah ada pada save lama. Full `npm test` terbaru lulus 82/82: 49 sampel post/clearance yang dahulu sah (satu sampel sebelah selatan Ratih sudah berada di luar clearance lantai lama), empat sudut Griya yang dahulu bebas, 14 migrasi API (sepuluh pusat post dan empat sudut), serta lima save lama yang masih sah dan tetap pada koordinatnya. Seluruh posisi migrasi berada pada lantai yang tersambung dan bisa bergerak legal melalui API; koin, inventori, kalender, rumah serta cerita tidak berubah.
+
+Native terbaru lulus 38/38 dan 336 sampel coverage tubuh, ditambah assertion sumbu rumah/dek/roof plan dalam world space. Gambar acuan kiri disimpan di `06b-shelter-left-before-alignment`; 18 pembanding setelah koreksi di `06b-shelter-left-after-alignment`, termasuk siang/malam/hujan serta low/balanced. Hasil malam memakai pencahayaan malam nyata. Sebanyak 42 capture kamera lama di `06b-shelter-after-alignment` juga diperbarui. Ini pembandingan geometri dengan kamera yang sama, bukan klaim kontrol kamera global sudah siap.
+
+Rumah lain masih mempertahankan footprint oblique existing. Audit source menunjukkan kamera -45 dapat memperlihatkan fasad dan sisi kiri kedelapan rumah tanpa memutar footprint sembarang, tetapi koreksi keselarasan sumbu pada paket ini hanya berlaku untuk pilot Griya. Default yang baru untuk seluruh bangunan memerlukan penetapan facing serta migrasi masing-masing, bukan menghapus shear global tanpa peninjauan akses.
+
+### Inti yang masih terbuka menurut Rencana 06
+
+Kamera kiri global masih memerlukan integrasi proyeksi, billboard, arah visual, input dan HUD. Paket B2/B3 masih memerlukan penerimaan empat arah dan kontak alat Ujang, lalu Darmi/Sari serta warga berikutnya. Paket C belum selesai: rumah pribadi lurah, direktur dengan identitas terpisah dari Inspektur Raka dan kantor kontainer, serta dua kelompok Laskar dengan jadwal/interaksi nyata. Paket D seperti keramba, perluasan tanaman dan interior warga tetap mempunyai kontrak server sendiri.
+
+Paket laut 06-A sudah mempunyai collar penyangga dan relief tepi gua pada rilis sebelumnya. Tidak ada pekerjaan laut baru yang diselesaikan di cabang shelter. Saat proyeksi kamera berubah global, inti laut memerlukan pemeriksaan ulang kontur collision, kaki/renang, occlusion karang, kedalaman/parallax, arus/buih dan framing HUD pada build gabungan. Perluasan dekorasi laut bukan prioritas sebelum konsistensi itu terbukti. Pengukuran fisik Windows/S23 tetap terbuka.
+
+Default kamera dan proyeksi tidak berubah di cabang ini. Empat facing bangunan penuh, kontrol kamera menyudut serta HUD/browser gabungan diuji integrator setelah penggabungan. Round-trip API lokal cabang ini sudah lulus; transaksi akun staging belum diuji ulang dengan source gabungan. Efek hujan canvas existing belum menjadi simulasi partikel dengan collision tiap tetes terhadap atap. Windows/S23 fisik belum diukur.
 
 Sistem interior playable, rumah pribadi lurah yang baru, kontainer direktur, keluarga warga baru, farming dan artwork tubuh empat arah tidak termasuk paket konstruksi ini.
 

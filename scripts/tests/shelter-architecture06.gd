@@ -24,6 +24,18 @@ func run() -> void:
 	assert(renderer._components.SasmitaPileFrame==1)
 	assert(renderer._components.SasmitaPileFooting==4)
 	assert(renderer._components.SasmitaSubmergedFoundationBed==1)
+	var griya: Node3D=renderer._geometry.get_node("griya_sasmita")
+	var deck_x: Vector3=(renderer.map_point(Vector2(280,385),96)-renderer.map_point(Vector2(40,385),96)).normalized()
+	var deck_back: Vector3=(renderer.map_point(Vector2(40,385),96)-renderer.map_point(Vector2(40,735),96)).normalized()
+	assert(absf(griya.global_basis.x.dot(griya.global_basis.y))<.00001,"Griya must use an orthogonal house basis, not a baked fake-isometric shear")
+	assert(griya.global_basis.x.normalized().dot(deck_x)>.99999,"House and deck width axes must align in native world space")
+	assert(griya.global_basis.y.normalized().dot(deck_back)>.99999,"House and deck depth axes must align in native world space")
+	var porch: Array=renderer._shelter_architecture.roofs.griya_sasmita_serambi
+	assert((porch[1]-porch[0]).normalized().dot(deck_x)>.99999)
+	var porch_out: Vector3=porch[3]-porch[0]
+	porch_out.z=0
+	assert(porch_out.normalized().dot(deck_back)<-.99999,"Roof plan must follow the same house/deck axes")
+	print("GRIYA AXIS PASS: houseX=",griya.global_basis.x," houseBack=",griya.global_basis.y," deckX=",deck_x," deckBack=",deck_back," dot=",griya.global_basis.x.dot(griya.global_basis.y))
 	var profiles: Array=state.world.surface_hub.residents.duplicate(true)
 	var gardener: Dictionary=state.world.surface_hub.districtActivities["Bu Darmi"].duplicate(true)
 	gardener.name="Bu Darmi"

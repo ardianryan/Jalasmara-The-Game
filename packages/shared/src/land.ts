@@ -89,6 +89,7 @@ const obstacle = (
   height3d: number,
   variant?: string,
   elevation = 0,
+  authoredFootprint?: LandPoint[],
 ): LandObstacle => ({
   id,
   kind,
@@ -98,14 +99,15 @@ const obstacle = (
   height,
   height3d,
   footprint:
-    kind === "house"
+    authoredFootprint ??
+    (kind === "house"
       ? [
           [x + width * 0.16, y],
           [x + width, y + height * 0.27],
           [x + width - width * 0.16, y + height],
           [x, y + height - height * 0.27],
         ]
-      : rectangle(x, y, width, height),
+      : rectangle(x, y, width, height)),
   variant,
   elevation,
 });
@@ -370,7 +372,10 @@ for (const stair of hubStairs)
     connectorId: stair.id,
   });
 const hubRoutes: LandPoint[][] = [
-  [[1210, 1250], [1430, 1260]],
+  [
+    [1210, 1250],
+    [1430, 1260],
+  ],
   [
     [1120, 1230],
     [1350, 1290],
@@ -479,7 +484,18 @@ const hubObstacles: LandObstacle[] = [
   obstacle("kedai_waras", "house", 360, 420, 400, 175, 155, "thatch", 2),
   obstacle("galangan_beno", "house", 1090, 390, 420, 170, 125, "workshop", 2),
   obstacle("pos_cakrawala", "house", 1840, 140, 300, 105, 135, "metal", 3),
-  obstacle("griya_sasmita", "house", 60, 420, 200, 145, 122, "sasmita", 2),
+  obstacle(
+    "griya_sasmita",
+    "house",
+    78,
+    420,
+    164,
+    145,
+    122,
+    "sasmita",
+    2,
+    rectangle(78, 420, 164, 145),
+  ),
   obstacle("home_plot_1", "garden", 65, 760, 80, 70, 24, "home_plot", 2),
   obstacle("home_plot_2", "garden", 165, 760, 80, 70, 24, "home_plot", 2),
   obstacle(

@@ -30,6 +30,39 @@ const profiles = [
   { name: "Bu Darmi", ...WORLD.surface_hub.districtActivities["Bu Darmi"] },
 ];
 const point = (value: readonly number[]) => ({ x: value[0], y: value[1] });
+const oldMapV8 = {
+  ...map,
+  layoutVersion: 8,
+  obstacles: map.obstacles
+    .filter((entry) => entry.variant !== "shelter_post")
+    .map((entry) =>
+      entry.id === "griya_sasmita"
+        ? {
+            ...entry,
+            x: 60,
+            width: 200,
+            footprint: [
+              [92, 420],
+              [260, 459.15],
+              [228, 565],
+              [60, 525.85],
+            ] as typeof entry.footprint,
+          }
+        : entry,
+    ),
+};
+const griyaOldCorners = [
+  [72, 432],
+  [248, 434],
+  [248, 550],
+  [75, 550],
+] as const;
+const deckAisles = [
+  [59, 400],
+  [261, 400],
+  [59, 600],
+  [261, 600],
+] as const;
 
 test("seven rain stations have body clearance under physical roof plans", () => {
   for (const profile of profiles) {
@@ -65,6 +98,7 @@ const routes = [
   ...profiles.map((profile) => profile.activity.commute),
 ];
 const nodes = routes.flatMap((route) => route.map(point));
+nodes.push(...deckAisles.map(point));
 for (const post of map.obstacles.filter(
   (entry) => entry.variant === "shelter_post",
 )) {
@@ -122,13 +156,6 @@ test("stations, bridge, changing booth and forest portal stay connected", () => 
 });
 
 test("layout migration from each newly blocked support retains connected land", () => {
-  const old = {
-    ...map,
-    layoutVersion: 8,
-    obstacles: map.obstacles.filter(
-      (entry) => entry.variant !== "shelter_post",
-    ),
-  };
   assert.equal(map.layoutVersion, 9);
   let migrated = 0;
   for (const post of map.obstacles.filter(
@@ -145,7 +172,7 @@ test("layout migration from each newly blocked support retains connected land", 
         x: post.x + post.width / 2 + dx,
         y: post.y + post.height / 2 + dy,
       };
-      if (!isLandWalkable(old, previous)) continue;
+      if (!isLandWalkable(oldMapV8, previous)) continue;
       assert.equal(isLandWalkable(map, previous), false, post.id);
       const safe = nearestSafeLandPoint(map, previous);
       assert.ok(isLandWalkable(map, safe), post.id);
@@ -156,10 +183,48 @@ test("layout migration from each newly blocked support retains connected land", 
       migrated++;
     }
   }
-  assert.ok(
-    migrated >= 30,
-    `Insufficient previously valid support samples: ${migrated}`,
+  assert.equal(
+    migrated,
+    49,
+    "Forty-nine old support/clearance samples were valid; the southern Ratih sample was already outside floor clearance",
   );
+});
+
+test("Griya follows both deck axes and keeps body-sized access around its changed footprint", () => {
+  const house = map.obstacles.find((entry) => entry.id === "griya_sasmita")!;
+  const deck = map.surfaces.find((entry) => entry.id === "sasmita_deck")!;
+  assert.deepEqual(
+    [house.x + house.width / 2, house.y + house.height / 2],
+    [160, 492.5],
+  );
+  const [a, b, , d] = house.footprint;
+  assert.equal(a[1], b[1]);
+  assert.equal(a[0], d[0]);
+  assert.equal(house.x - deck.polygon[0][0], 38);
+  assert.equal(deck.polygon[1][0] - house.x - house.width, 38);
+  const loop = [
+    [160, 615],
+    deckAisles[2],
+    deckAisles[0],
+    deckAisles[1],
+    deckAisles[3],
+    [160, 615],
+  ];
+  for (let index = 1; index < loop.length; index++)
+    assert.ok(
+      isLandSegmentWalkable(map, point(loop[index - 1]), point(loop[index])),
+      "The strip behind Griya must not become an isolated floor island",
+    );
+  for (const value of griyaOldCorners) {
+    const previous = point(value);
+    assert.ok(isLandWalkable(oldMapV8, previous));
+    assert.equal(isLandWalkable(map, previous), false);
+    const migrated = nearestSafeLandPoint(map, previous);
+    assert.ok(reachesHub(migrated));
+    assert.ok(
+      Math.hypot(migrated.x - previous.x, migrated.y - previous.y) <= 32,
+    );
+  }
 });
 
 test(
@@ -254,22 +319,23 @@ test(
       );
       assert.equal((await request("/adventure/state")).status, 200);
       const before = await store.users.findOne({ id });
-      const oldMap = {
-        ...map,
-        layoutVersion: 8,
-        obstacles: map.obstacles.filter(
-          (entry) => entry.variant !== "shelter_post",
-        ),
-      };
       let migrated = 0;
-      for (const post of map.obstacles.filter(
-        (entry) => entry.variant === "shelter_post",
-      )) {
+      const samples = [
+        ...map.obstacles.filter((entry) => entry.variant === "shelter_post"),
+        ...griyaOldCorners.map((value, index) => ({
+          id: `griya_old_corner_${index}`,
+          x: value[0],
+          y: value[1],
+          width: 0,
+          height: 0,
+        })),
+      ];
+      for (const post of samples) {
         const previous = {
           x: post.x + post.width / 2,
           y: post.y + post.height / 2,
         };
-        if (!isLandWalkable(oldMap, previous)) continue;
+        if (!isLandWalkable(oldMapV8, previous)) continue;
         const oldPositionAt = Date.now() - 5000;
         await store.redis.set(
           `surface:${id}`,
@@ -364,11 +430,40 @@ test(
       }
       assert.equal(
         migrated,
-        9,
-        "Exercise every support whose centre was previously a valid saved position",
+        14,
+        "Exercise ten support centres and four formerly free corners of Griya",
       );
+      for (const value of [[160, 400], ...deckAisles]) {
+        const previous = point(value);
+        assert.ok(isLandWalkable(oldMapV8, previous));
+        assert.ok(isLandWalkable(map, previous));
+        await store.redis.set(
+          `surface:${id}`,
+          JSON.stringify({
+            area: "hub",
+            ...previous,
+            layoutVersion: 8,
+            playerVersion: 7,
+            positionAt: Date.now() - 5000,
+          }),
+          "EX",
+          1800,
+        );
+        const resumed = await request("/adventure/state");
+        assert.equal(resumed.status, 200);
+        assert.deepEqual(
+          { x: resumed.data.surface.x, y: resumed.data.surface.y },
+          previous,
+          "A valid old saved point must be preserved, including the strip behind Griya",
+        );
+        assert.ok(reachesHub(resumed.data.surface));
+        assert.deepEqual(
+          (await request("/adventure/state")).data.surface,
+          resumed.data.surface,
+        );
+      }
       t.diagnostic(
-        `${migrated} old support saves migrated, rejected stale/blocked moves, and completed legal API save/reload round-trips`,
+        `${migrated} old support/corner saves migrated and completed legal API round-trips; five valid old deck points stayed unchanged`,
       );
     } finally {
       if (app) await app.close();
