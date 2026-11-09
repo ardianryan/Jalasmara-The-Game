@@ -1,7 +1,7 @@
 {
   "id": "ujang",
   "name": "Mang Ujang",
-  "atlas": "res://resources/art/npc-rigs/ujang.png",
+  "atlas": "res://resources/art/npc-rigs/ujang-rear-grip-v1.png",
   "cellSize": 64,
   "grid": [
     5,
@@ -232,18 +232,56 @@
       "origin": [
         17,
         18
+      ],
+      "center": [
+        0,
+        -81.5
       ]
     },
     "torso_back": {
       "cell": 15,
       "size": [
-        33,
+        27,
         34
       ],
       "origin": [
-        15,
+        18,
         15
+      ],
+      "center": [
+        0,
+        -52.5
       ]
+    },
+    "hand_rod_west": {
+      "cell": 16,
+      "size": [
+        7,
+        7
+      ],
+      "origin": [
+        28,
+        28
+      ],
+      "wristPixel": [
+        3.5,
+        6.0
+      ],
+      "gripPixel": [
+        3.5,
+        3.5
+      ],
+      "rodAxis": [
+        [
+          1.0,
+          6.0
+        ],
+        [
+          6.0,
+          1.0
+        ]
+      ],
+      "facing": "west"
     }
   },
   "joints": {
@@ -266,9 +304,16 @@
   },
   "source": "village-residents-v1.png",
   "sourceSha256": "09fd3e55f16b7a17c5077a1b693d4284e04437c7c19ab90ccbca8f210bc5afde",
-  "method": "original portrait cutouts; covered cloth patched from same portrait; back view simplified from sampled palette",
+  "method": "Original portrait cutouts with original authored rear head/vest and west fishing fist override",
   "neck": [
     0.0,
     -69.140625
-  ]
+  ],
+  "rearGripSource": {
+    "path": "assets/source-2d/ujang-rear-grip-v1/generated.png",
+    "sha256": "8a76ccbdffe5f44a9895fcee8de7172a182e1a43fed8f897566897d32c24095f",
+    "torsoRevisionSha256": "92d8ee207c9fdfa5544b730aa2ece5720037176332f14564821c3c684fa30d13",
+    "method": "Built-in imagegen identity edit; inspected parts, nearest resize and original Ujang palette quantization",
+    "directions": "Rear head/torso only; west fishing fist only; other directional art remains original cutout pilot"
+  }
 }

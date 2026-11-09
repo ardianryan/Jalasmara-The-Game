@@ -136,3 +136,5 @@ def generate(key,spec):
 
 if __name__=='__main__':
     for key,spec in SPECS.items():generate(key,spec)
+    from ujang_rear import pack
+    pack()

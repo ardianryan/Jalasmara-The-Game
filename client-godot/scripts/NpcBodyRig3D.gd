@@ -15,6 +15,7 @@ var _foot_plant:RefCounted
 var _contact_pose:Dictionary={}
 var _sole_pixels:Dictionary={}
 var _pelvis_drop:=0.0
+var _rod_pose:Dictionary={}
 
 func configure(owner_renderer: Node,person: Node2D) -> bool:
 	renderer=owner_renderer
@@ -135,12 +136,24 @@ func update_pose(tint: Color) -> void:
 			_bone("lower_leg_"+side,knee,ankle,depth+.01)
 			_place_part("foot_"+side,ankle+Vector2(0,sole*.5),0,depth+.02)
 	var torso_name:="torso_back" if back else "torso"
-	_place_part(torso_name,_body_transform(_center("torso"),lean),lean,.03)
+	_place_part(torso_name,_body_transform(_center(torso_name) if data.parts[torso_name].has("center") else _center("torso"),lean),lean,.03)
 	var head_angle:=0.0 if reduced else sin(t*2.4)*.035 if clip=="interact" else wave*.008
 	var head_name:="head_back" if back else "head"
-	_place_part(head_name,_body_transform(_center("head"),lean),lean+head_angle,.08)
+	_place_part(head_name,_body_transform(_center(head_name) if data.parts[head_name].has("center") else _center("head"),lean),lean+head_angle,.08)
 	_local_hands.clear()
 	hands.clear()
+	_rod_pose.clear()
+	actor.set_meta("body_rod",{})
+	actor.set_meta("body_grip",{})
+	var rod_hand:bool=_foot_plant!=null and facing=="west" and clip in ["start_work","work_loop","end_work"] and data.parts.has("hand_rod_west")
+	if rod_hand:
+		# The tool frame belongs to the body pose, independently of either IK socket.
+		var mount:=Vector2(13,-54).lerp(Vector2(13,-53),work)
+		var angle:=-PI*.25
+		if str(state.workPhase)=="cast": angle-=sin(clampf((fposmod(t,9)-1)/.8,0,1)*PI)*.16
+		elif str(state.workPhase)=="pull": angle-=.12
+		mount=_body_transform(mount,lean)
+		_rod_pose={"mount":mount,"angle":angle+lean,"depth":.155}
 	for index in range(2):
 		var side:="left" if index==0 else "right"
 		var shoulder:=_body_transform(_v(data.joints[side+"Shoulder"]),lean)
@@ -160,6 +173,12 @@ func update_pose(tint: Color) -> void:
 			if phase=="pour": work_hand+=Vector2(2,-2+wave*.6)
 		elif str(actor.activity_kind)=="weaving": work_hand=Vector2(0 if index==0 else 13,-49+wave*(2 if index==0 else -2))
 		hand=hand.lerp(work_hand,work)
+		var grip_part:Dictionary=data.parts.get("hand_rod_west",{})
+		var palm_angle:=0.0
+		if rod_hand and side=="right":
+			var authored_axis:=(_v(grip_part.rodAxis[1])-_v(grip_part.rodAxis[0])).angle()
+			palm_angle=float(_rod_pose.angle)-authored_axis
+			hand=_rod_pose.mount+(_v(grip_part.wristPixel)-_v(grip_part.gripPixel)).rotated(palm_angle)
 		if clip=="interact" and index==1: hand=shoulder+Vector2(6,-1+wave*2)+Vector2(0,first+second)*.5
 		var reach:=(hand-shoulder).limit_length(first+second-.01)
 		hand=shoulder+reach
@@ -167,7 +186,18 @@ func update_pose(tint: Color) -> void:
 		var depth:=.14 if not back else -.12
 		_bone("upper_arm_"+side,shoulder,elbow,depth)
 		_bone("lower_arm_"+side,elbow,hand,depth+.01)
-		_place_part("hand_"+side,hand+Vector2(0,1.5),0,depth+.03)
+		if rod_hand and side=="right":
+			var size:=_v(grip_part.size)
+			_place_part("hand_rod_west",hand+(size*.5-_v(grip_part.wristPixel)).rotated(palm_angle),palm_angle,depth+.03)
+			var palm:Sprite3D=sprites.hand_rod_west
+			var grip_pixel:=_v(grip_part.gripPixel)
+			var actual_grip:=palm.to_global(Vector3(grip_pixel.x-size.x*.5,size.y*.5-grip_pixel.y,0))
+			var axis_a:=_v(grip_part.rodAxis[0])
+			var axis_b:=_v(grip_part.rodAxis[1])
+			var world_axis:Vector3=palm.global_basis*Vector3(axis_b.x-axis_a.x,axis_a.y-axis_b.y,0)
+			actor.set_meta("body_grip",{"point":actual_grip,"axis":world_axis.normalized(),"part":"hand_rod_west","gripPixel":grip_part.gripPixel})
+		else:
+			_place_part("hand_"+side,hand+Vector2(0,1.5),0,depth+.03)
 		_local_hands[side]=[hand.x,hand.y]
 		var point:=to_global(Vector3(hand.x,-hand.y,depth+.06))
 		hands[side]=point
@@ -176,6 +206,12 @@ func update_pose(tint: Color) -> void:
 		var p: Vector3=hands[side]
 		snapshot_hands[side]=[p.x,p.y,p.z]
 	actor.set_meta("body_hands",snapshot_hands)
+	if rod_hand:
+		var mount:Vector2=_rod_pose.mount
+		var axis:=Vector2.RIGHT.rotated(float(_rod_pose.angle))
+		var a:=mount-axis*9
+		var b:=mount+axis*47
+		actor.set_meta("body_rod",{"base":to_global(Vector3(a.x,-a.y,float(_rod_pose.depth))),"tip":to_global(Vector3(b.x,-b.y,float(_rod_pose.depth))),"source":"independent body-local tool pose"})
 	_last_pose={"clip":clip,"direction":facing,"frame":state.frame,"phase":state.workPhase,"parts":sprites.size(),"handsLocal":_local_hands.duplicate(true),"toolFront":not back,"footPivot":[0,0],"rootMotion":false,"source":"original portrait cutout rig"}
 	if _foot_plant!=null:
 		_last_pose["contacts"]=_contact_pose.duplicate(true)
@@ -185,7 +221,7 @@ func update_pose(tint: Color) -> void:
 			var plant:Vector3=entry.plant
 			entry["worldSole"]=[sole.x,sole.y,sole.z]
 			entry["worldPlant"]=[plant.x,plant.y,plant.z]
-		_last_pose["gripMeasurement"]={"status":"unknown","reason":"No independent palm grip pixel authored"}
+		_last_pose["gripMeasurement"]={"status":"authored" if rod_hand else "inactive","part":"hand_rod_west" if rod_hand else "","scope":"West fishing fist only; other directions remain unmeasured"}
 
 func _fixed_bone(name:String,a:Vector3,b:Vector3) -> void:
 	var up:Vector3=(a-b).normalized()

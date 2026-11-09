@@ -91,6 +91,11 @@ func update_actor(actor: Node2D,sprite: Sprite3D) -> void:
 		var grip: Vector3=(hand-other_hand).normalized()
 		if grip.length()<.5: grip=Vector3(-1,0,0)
 		var tip:=hand+grip*47
+		var rod_base:=other_hand-grip*3
+		var independent:Dictionary=actor.get_meta("body_rod",{}) if str(actor.actor_name)=="Mang Ujang" else {}
+		if not independent.is_empty():
+			rod_base=to_local(independent.base)
+			tip=to_local(independent.tip)
 		var water_point: Vector3=renderer.map_point(actor.position+Vector2(-80,70),0)+Vector3(0,0,-11+motion*.6)
 		var hook:=tip-up*9
 		var float_point:=water_point
@@ -98,10 +103,22 @@ func update_actor(actor: Node2D,sprite: Sprite3D) -> void:
 			if phase in ["prepare","tidy"]: float_point=hook
 			elif phase=="cast": float_point=hook.lerp(water_point,clampf((fposmod(pose_time,9)-1.0)/.8,0,1))
 			elif phase=="pull": float_point=water_point.lerp(hook,clampf((fposmod(pose_time,9)-6.7)/1.3,0,1))
-		_place_line(lines[0],other_hand-grip*3,tip)
+		_place_line(lines[0],rod_base,tip)
 		_place_line(lines[1],tip,float_point)
 		boxes[0].position=float_point
 		entry["gripMeasurement"]={"status":"unknown","reason":"Rod geometry is constructed from the same hand sockets; no independent palm grip pixel authored"}
+		var palm:Dictionary=actor.get_meta("body_grip",{}) if str(actor.actor_name)=="Mang Ujang" else {}
+		if not independent.is_empty() and not palm.is_empty():
+			var rod:MeshInstance3D=lines[0]
+			var end_a:=rod.to_global(Vector3(0,-.5,0))
+			var end_b:=rod.to_global(Vector3(0,.5,0))
+			var point:Vector3=palm.point
+			var error:=_distance_to_segment(point,end_a,end_b)
+			var axis_error:=rad_to_deg(acos(clampf(absf(Vector3(palm.axis).dot((end_b-end_a).normalized())),0,1)))
+			entry["gripError"]=error
+			entry["gripMeasurement"]={"status":"measured","distance":error,"axisDegrees":axis_error,"part":palm.part,"gripPixel":palm.gripPixel,"source":"Authored palm pixel against actual independent rod mesh endpoints"}
+		else:
+			entry.erase("gripError")
 	elif kind=="weaving":
 		var left:=other_hand
 		var right:=hand
