@@ -22,7 +22,17 @@ static func ground_below(renderer:Node,logical:Vector2,world:Vector3) -> Diction
 		var y:Vector3=renderer.ground_point(point+Vector2(0,.125))-ground
 		var determinant:=x.x*y.y-y.x*x.y
 		if absf(determinant)<.000001: break
-		point+=Vector2((error.x*y.y-y.x*error.y)/determinant,(x.x*error.y-error.x*x.y)/determinant).limit_length(128.0)*.125
+		var step:=Vector2((error.x*y.y-y.x*error.y)/determinant,(x.x*error.y-error.x*x.y)/determinant).limit_length(128.0)*.125
+		var improved:=false
+		for backtrack in range(9):
+			var candidate:=point+step
+			var actual:Vector3=renderer.ground_point(candidate)
+			if Vector2(world.x-actual.x,world.y-actual.y).length()<error.length():
+				point=candidate
+				improved=true
+				break
+			step*=.5
+		if not improved: break
 	return {"valid":false}
 
 static func valid_contact(renderer:Node,logical:Vector2,geometry:Dictionary,legal:Callable) -> bool:
