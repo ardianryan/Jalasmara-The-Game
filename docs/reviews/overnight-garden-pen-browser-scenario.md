@@ -28,3 +28,13 @@ Tidak perlu memajukan jam database untuk pertumbuhan: tombol dipan `Lewati hari 
 Tambahkan satu lost-response setelah action feed_pen atau harvest benar-benar committed, menggunakan route fulfillment terkontrol seperti harness homestead terdahulu. Tombol `Coba kirim kegiatan yang sama` harus memakai body + idempotency key asli, mengambil receipt lama dan tidak menggandakan coins/hasil/hari. Response 503 yang disuntik fixture dilabeli expected; 409/4xx lain tidak disembunyikan. Root baru memperbaiki race canonical version/position sebelum await pada extract dan home; trace browser harus tetap memeriksa zero unexpected conflicts.
 
 Screenshot UI bukan bukti pertumbuhan atau reward. Setiap langkah harus menghubungkan input UI, response server, snapshot/revision, reload persistence dan delta inventori/coins. SwiftShader boleh membuktikan alur, bukan FPS Samsung S23/Windows. Scenario ini masih persiapan; belum menjadi hasil browser atau rilis.
+
+## Smoke bounded yang siap dijalankan
+
+File baru `scripts/garden-pen-browser.mjs` menargetkan localhost3111, wajib env `PLAN06_EXPECT_PCK` + `PLAN06_EXPECT_PCK_BYTES`; script menolak remote/existing fixture. Ia membuat player UUID sendiri, calendar/story day2, permit, satu benih jahe, satu produce jahe, dua indukan dan satu offspring sebagai **setup eksplisit**. Tidak mengklaim acquisition atau playthrough pertumbuhan penuh. Initial surface berada tepat di layanan keramba sah [275,850].
+
+Urutan: actual nearest keramba → feed (commit upstream tetapi respons503 disuntik) → retry UI key yang sama/receipt sama/no double coins → harvest offspring → jalan via physicalRoute dan inverse kamera ke plot1 → pilihan jahe + water → jalan ke Wira → UI stock jahe dan ikan → reload → state/version/coins/pantry/pen/plot tetap. Semua operasi berasal dari keyboard pada UI; surface hanya diset sekali untuk spawn fixture. Script tidak memakai teleport di tengah rute atau API action pengganti tombol.
+
+Full trace hanya mencatat action/itemId/revision/version/receipt UUID, tidak cookie/token/password. Cleanup finally memeriksa UUID/email/name/role dan auth-key userId sebelum menghapus keys milik fixture, lalu membuktikan pemain/receipt/keys terhapus. Expected503 hanya boleh action feed dengan code TEST_RESPONSE_LOST; error lain tetap menggagalkan hasil. Semua browser/GPU harus ditutup sebelum RELEASE.
+
+CPU `node --check` dan prettier PASS. Belum dijalankan di browser atau mendapat slot/PCK final pada saat commit ini. Panen jahe empat hari, pertumbuhan anakan dua fed settlements, penangkapan parent dan bonus penyajian tidak termasuk smoke pendek; regresi API dan skenario panjang di atas mencatat bukti serta batasnya terpisah.
