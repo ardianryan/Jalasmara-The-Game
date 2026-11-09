@@ -23,6 +23,8 @@ func _terrain_case(profile:Dictionary,reverse:bool,reduced:bool,label:String) ->
 	var prior:=checks
 	_measure(label+" idle")
 	if checks==prior: return false
+	sample_log.store_line(JSON.stringify({"case":label+" idle","fixtureInitial":true,"position":[player.position.x,player.position.y],"pose":renderer.actors_3d.counts.nalaLowerBody.duplicate(true)}))
+	sample_log.flush()
 	player.get("land_path").call("reset",origin)
 	player.get("swim_sprite").call("consume_foot_contacts")
 	elapsed_physics=0.0

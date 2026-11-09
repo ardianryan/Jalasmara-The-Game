@@ -217,6 +217,64 @@ func _trailing_side(at:Vector2) -> String:
 	if absf(left-right)<.5: return _next_side
 	return "left" if left<right else "right"
 
+func _next_tread(side:String,at:Vector2,provisional:Vector2) -> Dictionary:
+	if not _physical_contract: return {}
+	var support:String="left" if side=="right" else "right"
+	for profile in _stairs:
+		var start:Vector2=profile.start
+		var end:Vector2=profile.end
+		var tangent:Vector2=(end-start).normalized()
+		var along:=_heading.dot(tangent)
+		if absf(along)<.5: continue
+		var progress:float=(provisional-start).dot(end-start)/float(profile.lengthSquared)
+		var support_progress:float=(Vector2(_feet[support].logical)-start).dot(end-start)/float(profile.lengthSquared)
+		if along>0 and (progress<0 or support_progress>1): continue
+		if along<0 and (progress>1 or support_progress<0): continue
+		var base:=_base(at,float(_feet[side].lateralOffset),_right)
+		var across:=Vector2(-tangent.y,tangent.x)
+		var lane:float=(base-start).dot(across)
+		if absf(lane)>float(profile.width): continue
+		var count:=int(profile.steps)
+		var riser:float=(float(profile.to)-float(profile.from))/count
+		if absf(riser)<.001: continue
+		var support_ordinal:=roundi((Vector3(_feet[support].plant).z-float(profile.from))/riser)
+		var ordinal:=clampi(support_ordinal+(1 if along>0 else -1),0,count+1)
+		# The next new contact follows the opposite support, not this foot's old tread.
+		var center:=start.lerp(end,(float(ordinal)-.5)/count)+across*lane
+		var height:=lerpf(float(profile.from),float(profile.to),float(clampi(ordinal,0,count))/count)
+		var target:=_safe(center,at,side,height)
+		if not _supported(target,side,height):
+			return {"valid":false,"connectorId":profile.id,"landingOrdinal":ordinal,"landingHeight":height}
+		var quarter:Vector2=(end-start)/float(count)*.25
+		var midpoint:Vector2=start.lerp(end,.5)+across*lane
+		var first:=_ground(midpoint-quarter)
+		var second:=_ground(midpoint+quarter)
+		var depth:=Vector2(second.x-first.x,second.y-first.y).length()*2.0
+		return {"valid":true,"target":target,"connectorId":profile.id,"landingOrdinal":ordinal,"landingHeight":height,"supportOrdinal":support_ordinal,"treadDistance":depth}
+	return {}
+
+func _terrain_duration(from:Vector3,to:Vector3,minimum:float,span:float) -> Dictionary:
+	var rise:=to.z-from.z
+	var duration:=maxf(_start_distance,minimum)
+	var bound:=INF
+	for attempt in range(257):
+		var window:=clampf(absf(rise)/(duration*3.0),.25,.65)
+		var delay:=window*.5
+		var peak:=0.0
+		for index in range(1025):
+			var u:=float(index)/1024.0
+			var advance:=clampf((u-delay)/(1.0-delay) if rise>0 else u/(1.0-delay),0,1)
+			var elevation:=clampf(u/window if rise>0 else (u-(1.0-window))/window,0,1)
+			var horizontal:=span*6.0*advance*(1.0-advance)/(1.0-delay)
+			var vertical:=rise*6.0*elevation*(1.0-elevation)/window+PI*TOE_CLEARANCE*cos(u*PI)
+			peak=maxf(peak,Vector2(horizontal,vertical).length())
+		# A global second-derivative bound covers between the sampled derivatives.
+		var curvature:=Vector2(6.0*span/pow(1.0-delay,2),6.0*absf(rise)/pow(window,2)+PI*PI*TOE_CLEARANCE).length()
+		bound=(peak+curvature/2048.0)/duration
+		if bound<=4.9: break
+		duration+=.25
+	return {"distance":duration,"curveSpeedBound":bound,"curveOnly":true,"valid":bound<=4.9}
+
 func _begin(side:String,at:Vector2,hips:Dictionary,right:Vector3) -> void:
 	_swing=side
 	_distance=0.0
@@ -235,6 +293,21 @@ func _begin(side:String,at:Vector2,hips:Dictionary,right:Vector3) -> void:
 	entry.fromWorld=entry.sole
 	entry.toWorld=_ground(entry.to)
 	entry.landingHeight=Vector3(entry.toWorld).z
+	entry.fixedTreadTarget=false
+	entry.erase("treadPlan")
+	var tread:=_next_tread(side,at,entry.to)
+	if not tread.is_empty():
+		entry.treadPlan=tread.duplicate(true)
+		if bool(tread.valid):
+			entry.to=tread.target
+			entry.toWorld=_ground(entry.to)
+			entry.landingHeight=float(tread.landingHeight)
+			entry.fixedTreadTarget=true
+			var path:=_path_metrics(entry.from,entry.to)
+			var budget:=_terrain_duration(entry.fromWorld,entry.toWorld,float(tread.treadDistance),float(path.total))
+			budget["fixedPathWorldXY"]=float(path.total)
+			_landing_distance=float(budget.distance)
+			entry.treadPlan.merge(budget,true)
 	entry.grounded=false
 
 func _reset(at:Vector2,hips:Dictionary,right:Vector3) -> void:
@@ -299,7 +372,7 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 			var entry:Dictionary=_feet[_swing]
 			entry.lateralOffset=move_toward(float(entry.lateralOffset),float(hips[_swing]),chunk)
 			# Retarget only the free foot; an already planted sole never follows the torso.
-			var target:=_safe(_forward_point(_base(sample,float(entry.lateralOffset),right),_landing_distance-_distance+_landing_lead),sample,_swing,float(entry.landingHeight))
+			var target:Vector2=entry.to if bool(entry.get("fixedTreadTarget",false)) else _safe(_forward_point(_base(sample,float(entry.lateralOffset),right),_landing_distance-_distance+_landing_lead),sample,_swing,float(entry.landingHeight))
 			entry.to=target
 			entry.toWorld=_ground(target)
 			_transfer_body(sample,chunk,_swing)

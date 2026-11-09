@@ -100,7 +100,7 @@ func _measure(label:String) -> void:
 	var pose:Dictionary=renderer.actors_3d.counts.get("nalaLowerBody",{})
 	trace.append({"case":label,"position":[player.position.x,player.position.y],"pose":pose.duplicate(true)})
 	if trace.size()>16: trace.pop_front()
-	if not _check(bool(pose.get("enabled",false)),"Nala lower-body pilot rejected "+label+" requestedDrop="+str(pose.get("requestedDropPixels",-1))): return
+	if not _check(bool(pose.get("enabled",false)),"Nala lower-body pilot rejected "+label+" reason="+str(pose.get("reason",""))+" requestedDrop="+str(pose.get("requestedDropPixels",-1))): return
 	if not bool(pose.reachValid): rejected+=1
 	if not _check(bool(pose.reachValid),"Unreachable Nala leg "+label+" at "+str(player.position)+" drop="+str(pose.requestedDropPixels)): return
 	if not _check(not bool(pose.rootMotion),"Visual rig may not move actor root"): return

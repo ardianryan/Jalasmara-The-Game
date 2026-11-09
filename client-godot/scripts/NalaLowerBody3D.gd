@@ -168,6 +168,12 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 	var frozen:=bool(state.poseFrozen)
 	var moved:=bool(state.poseWalking) and float(state.speed)>.1
 	var pose:Dictionary=_planner.update(actor.position,moved,frozen,sole_offsets,right,delta,_support_extents)
+	for entry in pose.feet.values():
+		if entry.has("treadPlan") and not bool(entry.treadPlan.valid):
+			visible=false
+			proxy.visible=true
+			_last={"enabled":false,"rejected":true,"reason":"no supported next-tread landing or curve budget","contacts":pose,"reachValid":false,"rootMotion":false}
+			return _last.duplicate(true)
 	if frozen and not _last.is_empty():
 		proxy.visible=false
 		return _last.duplicate(true)
