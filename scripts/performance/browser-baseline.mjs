@@ -21,13 +21,14 @@ assert(['localhost','127.0.0.1'].includes(new URL(redisUrl).hostname));
 const duration=Number(process.env.PROFILE_SAMPLE_MS??15000),warmup=Number(process.env.PROFILE_WARMUP_MS??8000);
 assert(duration>=1000&&duration<=120000&&warmup>=7000&&warmup<=60000);
 const directory=process.env.PROFILE_OUTPUT??'artifacts/performance/06p-baseline';mkdirSync(directory,{recursive:true});
+assert(!existsSync(`${directory}/results.json`),'Choose a new PROFILE_OUTPUT; existing captures are immutable');
 const cases=[
  {id:'village-day',area:'hub',point:WORLD.surfaceSpawn,minute:600,rain:false},
  {id:'forest-day',area:'forest',point:{x:650,y:1050},minute:600,rain:false},
  {id:'ocean-reef',area:'ocean',point:WORLD.hub.divePoint,minute:600,rain:false},
  {id:'village-night',area:'hub',point:{x:595,y:650},minute:1200,rain:false},
  {id:'forest-rain',area:'forest',point:{x:1300,y:660},minute:600,rain:true},
-].filter(value=>!process.env.PROFILE_SCENARIOS||process.env.PROFILE_SCENARIOS.split(',').includes(value.id));
+].map((value,order)=>({...value,order})).filter(value=>!process.env.PROFILE_SCENARIOS||process.env.PROFILE_SCENARIOS.split(',').includes(value.id));
 assert(cases.length>0);
 const report={source:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),runtimeBaseline:process.env.PROFILE_RUNTIME_SHA??'UNVERIFIED',pckSHA256:process.env.PROFILE_PCK_FILE&&existsSync(process.env.PROFILE_PCK_FILE)?createHash('sha256').update(readFileSync(process.env.PROFILE_PCK_FILE)).digest('hex'):null,origin,createdAt:new Date().toISOString(),environment:{platform:platform(),arch:arch(),osRelease:release(),cpuModel:cpus()[0]?.model,cpuCount:cpus().length,totalMemoryBytes:totalmem(),browser:null},method:{device:'Chromium SwiftShader software GPU; not Windows/S23 hardware',viewport:[844,390],diagnostics:true,motion:'Stationary player; actual NPC/fauna/water/weather remain active',sampleMs:duration,warmupMs:warmup,profileOrder:'Alternating low/balanced order per scene; warmup outside measurement',startup:'First scene cold context + same-context warm reload; others fresh contexts',godotSampling:'Latest actual Godot counters sampled at most every100ms; separate from iframe RAF intervals'},results:[],startup:[],errors:[],cleanup:false};
 let browser,context,page,frame;const fixtures=[];const mongo=new MongoClient(mongoUrl),redis=new Redis(redisUrl);
@@ -55,7 +56,7 @@ try{
   const area=scenario.area==='forest'?'forest':'hub';await redis.set(`surface:${id}`,JSON.stringify({area,...scenario.point,layoutVersion:WORLD.landMaps[area].layoutVersion,playerVersion:0,positionAt:Date.now()}),'EX',1800);
   context=await browser.newContext({viewport:{width:844,height:390},hasTouch:true,isMobile:true,deviceScaleFactor:1,serviceWorkers:'block'});page=await context.newPage();page.setDefaultTimeout(60000);
   page.on('pageerror',error=>report.errors.push({scene:scenario.id,type:'pageerror',message:error.message}));page.on('console',message=>{if(message.type()==='error')report.errors.push({scene:scenario.id,type:'console',message:message.text()});});
-  const profiles=index%2?['balanced','low']:['low','balanced'];
+  const profiles=scenario.order%2?['balanced','low']:['low','balanced'];
   await page.addInitScript(initial=>{window.jalasmaraDiagnostics=true;localStorage.setItem('jalasmara.graphicsQuality',initial);if(window!==window.top)return;window.profileLoading={events:[],readyMs:null};addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==document.querySelector('iframe')?.contentWindow)return;if(event.data?.type==='jalasmara:loading')window.profileLoading.events.push({at:performance.now(),phase:event.data.phase,downloadedBytes:event.data.downloadedBytes,totalBytes:event.data.totalBytes});if(event.data?.type==='jalasmara:ready')window.profileLoading.readyMs=performance.now();});},profiles[0]);
   const guest=await(await context.request.get(`${origin}/api/auth/session`)).json();const login=await context.request.post(`${origin}/api/auth/login`,{data:{email,password},headers:{Origin:origin,'X-CSRF-Token':guest.csrf}});assert(login.ok(),`Local fixture login status${login.status()}`);const auth=await login.json();
   if(scenario.area==='ocean'){const dive=await context.request.post(`${origin}/api/dive/start`,{data:{mode:'dive'},headers:{Origin:origin,'X-CSRF-Token':auth.csrf,'Idempotency-Key':randomUUID()}});assert(dive.ok(),`Start ordinary dive status${dive.status()}`);}

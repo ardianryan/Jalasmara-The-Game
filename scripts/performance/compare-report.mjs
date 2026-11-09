@@ -1,0 +1,11 @@
+import {readFileSync,writeFileSync} from 'node:fs';
+import {compareCaptures} from './comparison.mjs';
+const [beforePath,afterPath,outPath]=process.argv.slice(2);
+if(!beforePath||!afterPath||!outPath)throw Error('Usage: node compare-report.mjs before.json after.json output.md');
+const before=JSON.parse(readFileSync(beforePath,'utf8')),after=JSON.parse(readFileSync(afterPath,'utf8'));
+const rows=compareCaptures(before,after),n=value=>Number.isFinite(value)?value.toFixed(2):'unknown';
+const lines=['# Plan 06-P: before / after','',`Before runtime: \`${before.runtimeBaseline}\`, PCK \`${before.pckSHA256}\`.`,`After runtime: \`${after.runtimeBaseline}\`, PCK \`${after.pckSHA256}\`.`, '', '| Scene | Profile | RAF p50 before / after ms | RAF p95 before / after ms | p95 delta ms | Draw calls p50 before / after | Rerun? |','|---|---|---|---|---:|---|---|'];
+for(const row of rows)lines.push(`| ${row.scenario} | ${row.profile} | ${n(row.before.raf.p50)} / ${n(row.after.raf.p50)} | ${n(row.before.raf.p95)} / ${n(row.after.raf.p95)} | ${n(row.rafP95DeltaMs)} | ${n(row.before.drawCalls.p50)} / ${n(row.after.drawCalls.p50)} | ${row.rerunRecommended?'Investigate':'No threshold flag'} |`);
+lines.push('', 'Visible iframe RAF callback intervals are scheduling proxies, not GPU frame times or a physical-device FPS result. Each combination is one sample per batch; calendar, NPCs, fauna, GC, thermal state and the software GPU may vary. A threshold flag requires a same-method isolated rerun; absence of a flag is not proof of optimization. Windows/S23 hardware, GPU timing, total process/WASM memory and Godot node counts remain unmeasured.','', `Before ${before.createdAt}; after ${after.createdAt}. Both batches report clean fixture cleanup and no browser errors.`);
+writeFileSync(outPath,lines.join('\n')+'\n');
+writeFileSync(outPath.replace(/\.md$/,'.json'),JSON.stringify({before:{runtime:before.runtimeBaseline,pck:before.pckSHA256},after:{runtime:after.runtimeBaseline,pck:after.pckSHA256},rows},null,2)+'\n');

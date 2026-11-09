@@ -67,3 +67,22 @@ Trace CPU desa Seimbang yang terpisah berlangsung 5,110 detik; leaf `getParamete
 ## Status dan kelanjutan
 
 Selesai: harness lokal, tiga regresi statistik, sepuluh capture aktual, startup cold/context-warm, dan review gambar. Belum selesai: pengukuran sesudah pada PCK gabungan baru, pengulangan untuk variasi, soak test resource, serta Windows/S23 fisik. Sebelum/sesudah harus memakai fixture, viewport, durasi, diagnostik, dan urutan yang sama serta mencatat hash PCK baru. Target performa Plan 06 belum dinyatakan lulus.
+
+## Pembanding otomatis
+
+Harness menolak direktori yang telah memiliki `results.json`; gunakan output baru untuk setiap batch atau rerun. Filter adegan tetap mempertahankan urutan kualitas asli, sehingga rerun satu adegan tidak mengubah profil yang lebih dahulu diukur.
+
+```sh
+node --test scripts/performance/metrics.test.mjs scripts/performance/comparison.test.mjs
+PROFILE_OUTPUT=artifacts/performance/06p-after \
+PROFILE_RUNTIME_SHA=SOURCE_SHA_DARI_ROOT \
+PROFILE_PCK_FILE=/absolute/path/to/new/served/game/index.pck \
+APP_TEST_ORIGIN=http://localhost:3100 \
+node --import tsx scripts/performance/browser-baseline.mjs
+node scripts/performance/compare-report.mjs \
+  docs/performance/06p-baseline.json \
+  artifacts/performance/06p-after/results.json \
+  artifacts/performance/06p-after/comparison.md
+```
+
+Pembanding menolak viewport/metode berbeda, PCK sama, capture yang tidak bersih, kombinasi hilang/duplikat, dan p95 tidak tersedia. Kenaikan RAF p95 di atas 1,5 kali sekaligus lebih dari 10 ms hanya menandai kebutuhan investigasi/rerun, bukan regresi terkonfirmasi. Gunakan `PROFILE_SCENARIOS=nama-adegan` dan output terpisah untuk rerun; jangan menggabungkan subset menjadi batch penuh atau mengubah sampel baseline.
