@@ -18,7 +18,11 @@ import { WORLD } from "../packages/shared/src/world.ts";
 import { isLandWalkable } from "../packages/shared/src/land.ts";
 import { fetchWorld } from "./game-navigation.mjs";
 import { physicalRoute } from "./plan06-physical-route.mjs";
-import { keyboardPulse, projectLogicalDelta } from "./land-view-navigation.mjs";
+import {
+  keyboardPulse,
+  corridorTargets,
+  projectLogicalDelta,
+} from "./land-view-navigation.mjs";
 
 const origin = process.env.APP_TEST_ORIGIN ?? "http://localhost:3101";
 const mongoUrl =
@@ -155,16 +159,8 @@ async function shot(name) {
 async function walkTo(x, y) {
   const from = await snapshot();
   const onLand = !from.diving && from.area !== "home" && from.land?.active;
-  const steps = onLand
-    ? Math.max(1, Math.ceil(Math.hypot(x - from.x, y - from.y) / 24))
-    : 1;
-  // Absolute corridor targets prevent eight-key heading error accumulating along a long segment.
-  for (let index = 1; index <= steps; index++) {
-    await walkDirect(
-      from.x + ((x - from.x) * index) / steps,
-      from.y + ((y - from.y) * index) / steps,
-    );
-  }
+  const targets = onLand ? corridorTargets([from.x, from.y], [x, y]) : [[x, y]];
+  for (const [targetX, targetY] of targets) await walkDirect(targetX, targetY);
 }
 async function walkDirect(x, y) {
   await frame.locator("canvas").focus();
