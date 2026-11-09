@@ -385,12 +385,26 @@ try {
       assert.equal(await prices.getAttribute("aria-invalid"), "true");
       await prices.press("Enter");
       assert.equal(state.contentWrites.length, 0);
+      const errorGap = (input) => {
+        const message = document.getElementById(
+          input.getAttribute("aria-describedby"),
+        );
+        return (
+          message.getBoundingClientRect().top -
+          input.getBoundingClientRect().bottom
+        );
+      };
+      assert(
+        (await prices.evaluate(errorGap)) >= 8,
+        "Inline error must clear the six-pixel focus outline",
+      );
       await page.screenshot({
         path: `${output}/admin-invalid-json-desktop.png`,
         fullPage: true,
       });
       await page.setViewportSize({ width: 390, height: 844 });
       await fits(page, "admin invalid JSON issue 390");
+      assert((await prices.evaluate(errorGap)) >= 8);
       await page.screenshot({
         path: `${output}/admin-invalid-json-mobile.png`,
         fullPage: true,

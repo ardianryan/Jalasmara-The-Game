@@ -1043,6 +1043,11 @@ dd {
 .content-editor > section {
   min-width: 0;
 }
+.content-editor .array-field-error {
+  margin-top: 8px;
+  color: var(--danger);
+  font-weight: 600;
+}
 .preview-columns {
   display: grid;
   grid-template-columns: 1fr 1fr;

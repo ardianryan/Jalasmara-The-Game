@@ -102,7 +102,11 @@ function EditFields({
               onChange={(e) => onArrayChange(key, e.target.value)}
             />
             {arrayDrafts[key]?.invalid && (
-              <small id={`${fieldId}-${key}-error`} role="alert">
+              <small
+                className="array-field-error"
+                id={`${fieldId}-${key}-error`}
+                role="alert"
+              >
                 Array JSON diperlukan, contoh [100,140,180]. Perbaiki sebelum
                 menyimpan atau meninjau publikasi.
               </small>
