@@ -145,6 +145,18 @@ func _measure(label:String) -> void:
 		var source_rect:Array=source_leg.parts.foot
 		var ankle_pixel:=Vector2(float(source_leg.ankle[0])-float(source_rect[0]),float(source_leg.ankle[1])-float(source_rect[1]))
 		var actual_ankle:=foot.to_global(Vector3(ankle_pixel.x-foot.texture.get_width()*.5,foot.texture.get_height()*.5-ankle_pixel.y,0))
+		for operation in ["viewRotationPivot","planeRotationPivot"]:
+			if not entry.has(operation): continue
+			var recorded:Dictionary=entry[operation]
+			var before:Array=recorded.before
+			var after:Array=recorded.after
+			if not _check(Vector3(float(before[0]),float(before[1]),float(before[2])).distance_to(Vector3(float(after[0]),float(after[1]),float(after[2])))<.003,"Shoe rotation changed ankle within its own planned pose "+label+" operation="+operation): return
+		if entry.has("supportPlanTranslation"):
+			var translation:Dictionary=entry.supportPlanTranslation
+			var before:Array=translation.before
+			var after:Array=translation.after
+			var measured_delta:=Vector3(float(after[0])-float(before[0]),float(after[1])-float(before[1]),float(after[2])-float(before[2]))
+			if not _check(measured_delta.distance_to(Vector3(0,0,float(translation.deltaZ)))<.003,"Support plan changed more than its declared vertical trajectory "+label): return
 		if entry.has("rotationAnchorWorld"):
 			var pivot:Array=entry.rotationAnchorWorld
 			if not _check(actual_ankle.distance_to(Vector3(float(pivot[0]),float(pivot[1]),float(pivot[2])))<.003,"Airborne shoe view changed actual ankle pivot "+label): return

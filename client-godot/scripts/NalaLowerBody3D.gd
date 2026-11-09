@@ -242,6 +242,8 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 				var rotated:=correction+_ankle_offset(side,previous_direction,right,vertical,_plane(side))-_ankle_offset(side,candidate,right,vertical,_plane(side))
 				if _rotated_shoe_clear(side,candidate,entry.logical,Vector3(entry.sole)+rotated,right,vertical):
 					var pivot:Vector3=Vector3(entry.sole)+correction+_ankle_offset(side,previous_direction,right,vertical,_plane(side))
+					var after:=Vector3(entry.sole)+rotated+_ankle_offset(side,candidate,right,vertical,_plane(side))
+					entry["viewRotationPivot"]={"before":[pivot.x,pivot.y,pivot.z],"after":[after.x,after.y,after.z]}
 					entry["rotationAnchorWorld"]=[pivot.x,pivot.y,pivot.z]
 					correction=rotated
 					_foot_views[side]=candidate
@@ -282,8 +284,13 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 						carried=float(entry.rampCurvePlan.fromSupportOffset)*(1.0-progress)
 					var planned_z:float=maxf(ankle.z,float(support.height)+.02) if entry.has("settlingTarget") else float(support.height)+maxf(.02,lift+carried)
 					var adjustment:=planned_z-ankle.z
+					var before_plan:=ankle
 					entry.sole=Vector3(entry.sole)+Vector3(0,0,adjustment)
 					ankle.z=planned_z
+					if entry.has("rotationAnchorWorld"):
+						var source_anchor:Array=entry.rotationAnchorWorld
+						entry["rotationAnchorWorld"]=[float(source_anchor[0]),float(source_anchor[1]),float(source_anchor[2])+adjustment]
+					entry["supportPlanTranslation"]={"before":[before_plan.x,before_plan.y,before_plan.z],"after":[ankle.x,ankle.y,ankle.z],"deltaZ":adjustment}
 					_planner.commit_raw_support(side,entry.sole)
 					entry["supportEnvelope"]={"ankleSupportHeight":support.height,"sineLift":lift,"carriedStartOffset":carried,"rawHeightAdjustment":adjustment,"originalPoints":support.points,"baseCurveBoundIncludesEnvelope":false,"minimumAirborneClearance":.02}
 				var current_clear:=FootPlane.airborne_clear(renderer,entry.logical,mask,ankle-_ankle_offset(side,foot_direction,right,vertical,current),current)
@@ -300,6 +307,8 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 					var pivot:Vector3=Vector3(entry.sole)+correction+offset
 					entry["rotationAnchorWorld"]=[pivot.x,pivot.y,pivot.z]
 					correction+=offset-_ankle_offset(side,str(_foot_views[side]),right,vertical,next)
+					var after:=Vector3(entry.sole)+correction+_ankle_offset(side,str(_foot_views[side]),right,vertical,next)
+					entry["planeRotationPivot"]={"before":[pivot.x,pivot.y,pivot.z],"after":[after.x,after.y,after.z]}
 					_foot_planes[side]=next
 			var support:Vector3=_plane(side)*right
 			entry["footPlane"]={"rotation":[_plane(side).x,_plane(side).y,_plane(side).z,_plane(side).w],"supportAxis":[support.x,support.y,support.z],"angleRemaining":_plane(side).angle_to(target),"rigidOriginalPixels":true}
