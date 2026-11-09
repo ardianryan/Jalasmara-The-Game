@@ -1,6 +1,6 @@
 # Ujang: fase lepas tumpuan pada kamera kiri
 
-9 November 2026. Kandidat source `d3bbc19`, branch `work/06b-foot-boundary-next`, worktree `Jalasmara-06-foot-next`, dibuat dari HEAD view `944f945`. Hanya `UjangFootPlant.gd` diubah; camera-facing rig dan target alat tetap milik agent shelter. Belum dirilis atau dinyatakan lulus engine.
+9 November 2026. Kandidat source `d3bbc19`, branch `work/06b-foot-boundary-next`, worktree `Jalasmara-06-foot-next`, dibuat dari HEAD view `944f945`. Hanya `UjangFootPlant.gd` diubah; camera-facing rig dan target alat tetap milik agent shelter. Agent shelter menggabungkannya sebagai `e9797e6` dan focused fixture kini lulus; belum dirilis.
 
 ## Repro actual yang diterima
 
@@ -36,3 +36,9 @@ Agent shelter menerima kandidat untuk digabungkan ke source view miliknya lalu m
 Review native Ujang/Darmi/Sari kamera kiri masih menunggu gambar. Saat checkpoint ini dibuat, worktree view belum mempunyai direktori `artifacts/`; tidak ada gambar baru yang diklaim sudah ditinjau. Review source alat/facing terdahulu ada di `06b-left-rig-source-audit.md` (commit doc-only `39fbeca` pada branch dialog), dan agent shelter sedang memperbaiki target air serta orientasi kerja stasiun.
 
 Tool aktual: Git/worktree, ripgrep, Python3 standard-library; tanpa aset, generator gambar, API berbayar atau dependensi baru. Tidak ada perubahan lisensi.
+
+## Hasil focused sesudah integrasi oleh shelter
+
+Log `Jalasmara-06-view/.runtime/view-ujang-foot-contact.log` sesudah `e9797e6` memuat PASS 1.242 sampel termasuk 168 sharp turns; max pelvis **6.98886826**, alpha-sole stance drift **0.000349122**, knee join **0.000272984**, dan 26 grip poses max error **0.01535710**. Scan read-only seluruh log oleh agent karakter mendapati nol `SCRIPT ERROR`, `ERROR:` atau assertion. Agent karakter tidak menjalankan engine bersamaan. Kegagalan 9.0749 di atas tetap dicatat sebagai sejarah repro yang telah ditutup; batas pelvis8 tetap dipertahankan.
+
+Native `06b-left-runtime/ujang-work.png` telah ditinjau: western head terbaca, kaki penyangga tetap di kanan anatomis, arah rod/line kini ke kiri. Pelampung berada di luar frame gambar closeup, sehingga gambar itu sendiri tidak membuktikan endpoint air. `darmi-work.png` masih tertutup palm, dan `sari-work.png` memotong kepala/torso/alat di atas canvas; agent shelter diminta membetulkan framing. Ketiga pilot memakai zoom3.0, berbeda dari ordinary viewport zoom1.15; tidak mengklaim acceptance visual pada ukuran main atau gerak natural dari still image. Tidak ada native loop baru yang dijalankan oleh agent karakter.
