@@ -61,6 +61,7 @@ var _canopy_readability = preload("res://scripts/land/CanopyReadability3D.gd").n
 var _soft_ground_patches := 0
 var _soft_ground_vertices := 0
 var _shelter_architecture = preload("res://scripts/land/ShelterArchitecture3D.gd").new()
+var _gateway_architecture = preload("res://scripts/land/GatewayArchitecture3D.gd").new()
 
 func _compute_garden_state() -> int:
 	var progress: Dictionary = GameState.player.get("progress",{})
@@ -187,6 +188,7 @@ func set_area(place: String) -> void:
 	for stair in map.get("stairs",[]): _build_stair(stair)
 	for obstacle in map.get("obstacles",[]): _build_obstacle(obstacle)
 	_build_corridor_landmarks()
+	_gateway_architecture.build(self)
 	_shelter_architecture.build(self)
 	_build_ground_details()
 	_build_wet_banks()
@@ -579,6 +581,9 @@ func _build_stair(stair: Dictionary) -> void:
 		_stair_treads+=1
 
 func _build_obstacle(entry: Dictionary) -> void:
+	if str(entry.get("variant",""))=="gateway_post": return
+	for gate in map.get("gateways",[]):
+		if gate.get("colliderIds",[]).has(str(entry.id)): return
 	var rect:=Rect2(float(entry.x),float(entry.y),float(entry.width),float(entry.height))
 	var height:=float(entry.get("elevation",0))*LEVEL_HEIGHT
 	var center:=map_point(rect.get_center(),height)
@@ -1278,7 +1283,7 @@ func _process(delta: float) -> void:
 		environment.ambient_light_color=(Color("9faeae") if area=="home" else Color("8da4a8")).lerp(Color("bdc0b5"),daylight)
 
 func debug_status() -> Dictionary:
-	return {"active":active,"area":area,"renderer":"LandSubViewport3D","viewport":[viewport_3d.size.x,viewport_3d.size.y],"quality":RenderQuality.get_profile(),"performance":{"staticBuilds":_static_builds,"plotUpdates":_plot_updates,"softGroundPatches":_soft_ground_patches,"softGroundVertices":_soft_ground_vertices},"readability":_canopy_readability.debug_status(),"tilt":55,"elevationDegrees":camera_elevation,"azimuthDegrees":camera_azimuth,"view":{"azimuth":camera_azimuth,"elevation":camera_elevation,"input":"screen-relative","motion":view_projection.motion_contract(ground_gradient(actor.position)),"targetHeight":ground_height(actor.position)},"meshes":_meshes,"houses":_houses,"trees":_trees,"glbModels":_models,"stairTreads":_stair_treads,"surfaces":map.get("surfaces",[]).size(),"obstacles":map.get("obstacles",[]).size(),"actors":actors_3d.counts if is_instance_valid(actors_3d) else {},"maxFootError":actors_3d.max_foot_error if is_instance_valid(actors_3d) else 0,"camera":[_center.x,_center.y],"warmLanterns":_lanterns.size(),"gardenState":_garden_state,"streamCleared":_stream_cleared,"components":_components.duplicate(),"bridges":_bridges.duplicate(true),"bitmapGround":false,"water":water_node.debug_status() if is_instance_valid(water_node) else {}}
+	return {"active":active,"area":area,"renderer":"LandSubViewport3D","viewport":[viewport_3d.size.x,viewport_3d.size.y],"quality":RenderQuality.get_profile(),"performance":{"staticBuilds":_static_builds,"plotUpdates":_plot_updates,"softGroundPatches":_soft_ground_patches,"softGroundVertices":_soft_ground_vertices},"readability":_canopy_readability.debug_status(),"tilt":55,"elevationDegrees":camera_elevation,"azimuthDegrees":camera_azimuth,"view":{"azimuth":camera_azimuth,"elevation":camera_elevation,"input":"screen-relative","motion":view_projection.motion_contract(ground_gradient(actor.position)),"targetHeight":ground_height(actor.position)},"meshes":_meshes,"houses":_houses,"trees":_trees,"glbModels":_models,"stairTreads":_stair_treads,"surfaces":map.get("surfaces",[]).size(),"obstacles":map.get("obstacles",[]).size(),"actors":actors_3d.counts if is_instance_valid(actors_3d) else {},"maxFootError":actors_3d.max_foot_error if is_instance_valid(actors_3d) else 0,"camera":[_center.x,_center.y],"warmLanterns":_lanterns.size(),"gardenState":_garden_state,"streamCleared":_stream_cleared,"components":_components.duplicate(),"bridges":_bridges.duplicate(true),"gateways":_gateway_architecture.debug_status(),"bitmapGround":false,"water":water_node.debug_status() if is_instance_valid(water_node) else {}}
 
 func _build_bridge(surface: Dictionary) -> void:
 	var polygon:=_polygon(surface.polygon)
@@ -1449,34 +1454,6 @@ func _wet_bank_clear(point: Vector2,placed: Array[Vector2]) -> bool:
 			if Geometry2D.is_point_in_polygon(point+sample,polygon): return false
 	return true
 
-func _gateway_arch(label: String, post_a: Vector2, post_b: Vector2, elevation_z: float) -> void:
-	if _glow_material==null:
-		_glow_material=StandardMaterial3D.new()
-		_glow_material.albedo_color=Color("f4cc88")
-		_glow_material.emission_enabled=true
-		_glow_material.emission=Color("ffc773")
-		_glow_material.emission_energy_multiplier=.38
-	var wood: Material=_materials.get_material("wood")
-	var bamboo: Material=_materials.get_material("bamboo")
-	var thatch: Material=_materials.get_material("thatch")
-	var stone: Material=_materials.get_material("stone")
-	var a3:=map_point(post_a,elevation_z)
-	var b3:=map_point(post_b,elevation_z)
-	var mid:=(a3+b3)*.5
-	for post in [a3,b3]:
-		_box(label+"_Base",post+Vector3(0,0,10),Vector3(18,18,20),stone)
-		_column(post+Vector3(0,0,16),post+Vector3(0,0,118),6.5,wood)
-		_column(post+Vector3(0,0,28),post+Vector3(0,0,112),4.0,bamboo)
-	_column(a3+Vector3(0,0,98),b3+Vector3(0,0,98),5.0,wood)
-	_column(a3+Vector3(0,0,114),b3+Vector3(0,0,114),6.0,bamboo)
-	var span:=a3.distance_to(b3)+26.0
-	_box(label+"_LintelRoof",mid+Vector3(0,0,122),Vector3(span,26,12),thatch)
-	_box(label+"_Signboard",mid+Vector3(0,0,105),Vector3(span*.55,8,14),wood)
-	var lamp_pos:=a3.lerp(b3,0.18)+Vector3(0,0,84)
-	_box(label+"_LanternGlass",lamp_pos,Vector3(9,9,14),_glow_material)
-	_box(label+"_LanternCap",lamp_pos+Vector3(0,0,8),Vector3(13,13,4),wood)
-	_box(label+"_LanternBase",lamp_pos-Vector3(0,0,8),Vector3(13,13,4),wood)
-
 func _build_corridor_landmarks() -> void:
 	var wood: Material=_materials.get_material("wood")
 	var bamboo: Material=_materials.get_material("bamboo")
@@ -1497,7 +1474,6 @@ func _build_corridor_landmarks() -> void:
 		for sign_y in [-1.0,1.0]:
 			_cloth_panel(booth_mid+Vector3(0,sign_y*(canopy_half-4),0),76,45,_materials.get_material("cloth_cream"))
 		var ridge_z:=3.0*LEVEL_HEIGHT
-		_gateway_arch("HubForestGate",Vector2(2248,108),Vector2(2326,108),ridge_z)
 		for side_x in [1720.0,1840.0]:
 			var step_pillar:=map_point(Vector2(side_x,392),ridge_z)
 			_box("RidgeStepPillar",step_pillar+Vector3(0,0,16),Vector3(16,16,32),stone)
@@ -1508,7 +1484,6 @@ func _build_corridor_landmarks() -> void:
 		for backdrop_pt in [Vector2(2205,48),Vector2(2355,52)]:
 			_tree({"height3d":185,"variant":"broadleaf"},Rect2(backdrop_pt-Vector2(16,16),Vector2(32,32)),map_point(backdrop_pt,ridge_z-2.0))
 	elif area=="forest":
-		_gateway_arch("ForestEntryGate",Vector2(108,1358),Vector2(188,1358),0.0)
 		var sign_at:=map_point(Vector2(228,1348),0.0)
 		_column(sign_at,sign_at+Vector3(0,0,58),4.5,wood)
 		_box("ForestDirectionSign",sign_at+Vector3(0,0,48),Vector3(38,8,14),wood)
