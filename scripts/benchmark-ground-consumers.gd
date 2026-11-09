@@ -13,8 +13,9 @@ class LegacyTraversal extends "res://scripts/SurfaceTraversal.gd":
 		return selected
 
 class LegacyFoley extends "res://scripts/WorldFoley.gd":
+	var baseline_state: Node
 	func material_at(point: Vector2) -> String:
-		var maps: Dictionary = GameState.world.get("landMaps",{})
+		var maps: Dictionary = baseline_state.world.get("landMaps",{})
 		var map: Dictionary = maps.get(area,{})
 		if _has_traversal:
 			var traversal: Dictionary = actor.get("traversal_state")
@@ -110,7 +111,7 @@ func _run() -> void:
 	var state: Node = root.get_node("GameState")
 	_original_world = state.world
 	state.world = world
-	var metadata := {"baselineCommit":BASELINE_COMMIT,"baselineSurfaceBodySHA256":BASELINE_SURFACE_BODY_SHA256,"baselineFoleyBodySHA256":BASELINE_FOLEY_BODY_SHA256,"corpusSHA256":FileAccess.get_sha256(corpus_path),"manifestSHA256":FileAccess.get_sha256(world_path),"engine":Engine.get_version_info(),"os":OS.get_name(),"cacheBuildIncluded":false,"points":corpus.cases.size(),"rounds":ROUNDS,"repeats":REPEATS,"sourceSHA256":{}}
+	var metadata := {"baselineCommit":BASELINE_COMMIT,"baselineSurfaceBodySHA256":BASELINE_SURFACE_BODY_SHA256,"baselineFoleyBodySHA256":BASELINE_FOLEY_BODY_SHA256,"baselineFoleyWorldAccess":"Same GameState Node captured before timing; standalone baseline replaces only global alias with cached reference","corpusSHA256":FileAccess.get_sha256(corpus_path),"manifestSHA256":FileAccess.get_sha256(world_path),"engine":Engine.get_version_info(),"os":OS.get_name(),"cacheBuildIncluded":false,"points":corpus.cases.size(),"rounds":ROUNDS,"repeats":REPEATS,"sourceSHA256":{}}
 	for path in ["res://scripts/SurfaceTraversal.gd","res://scripts/WorldFoley.gd","res://scripts/land/LandSurfaceQueryCache.gd","res://scripts/land/LandGeometry.gd","res://../scripts/benchmark-ground-consumers.gd"]:
 		metadata.sourceSHA256[path]=FileAccess.get_sha256(path)
 	if corpus.cases.size()!=324:
@@ -128,6 +129,7 @@ func _run() -> void:
 		var legacy_traversal := LegacyTraversal.new()
 		var canonical_foley = load("res://scripts/WorldFoley.gd").new()
 		var legacy_foley := LegacyFoley.new()
+		legacy_foley.baseline_state = state
 		_instances.append_array([actor,canonical_traversal,legacy_traversal,canonical_foley,legacy_foley])
 		canonical_traversal.configure(map)
 		legacy_traversal.configure(map)
