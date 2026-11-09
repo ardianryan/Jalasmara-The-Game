@@ -13,6 +13,7 @@ import {
   freshCalendar,
   freshHomestead,
   calendarRain,
+  HOMESTEAD_DEFINITIONS,
 } from "../packages/shared/src/index.ts";
 import { WORLD } from "../packages/shared/src/world.ts";
 import { isLandWalkable } from "../packages/shared/src/land.ts";
@@ -78,6 +79,7 @@ if (routeMode === "shelters") validateShelterWait(WORLD, WORLD.surfaceSpawn);
 const navigation = { matrixPulses: 0, legacyPulses: 0 };
 const inputProofs = [];
 const fixtureStoryDay = routeMode === "dialogue" ? 1 : 2;
+const fixtureMissions = routeMode === "shelters" ? ["akar"] : [];
 const expectedPck = process.env.PLAN06_EXPECT_PCK;
 const expectedPckBytes = Number(process.env.PLAN06_EXPECT_PCK_BYTES);
 assert(
@@ -89,6 +91,10 @@ assert(
   "Set PLAN06_EXPECT_PCK_BYTES to the exact exported PCK size.",
 );
 let shelterPredecessor;
+assert(
+  !process.env.PLAN06_SHELTER_PREDECESSOR_PCK ||
+    process.env.PLAN06_SHELTER_PREDECESSOR,
+);
 if (process.env.PLAN06_SHELTER_PREDECESSOR) {
   assert.equal(routeMode, "shelters");
   const previousId = process.env.PLAN06_SHELTER_PREDECESSOR;
@@ -103,10 +109,19 @@ if (process.env.PLAN06_SHELTER_PREDECESSOR) {
       "utf8",
     ),
   );
+  const previousPck = process.env.PLAN06_SHELTER_PREDECESSOR_PCK;
+  assert(
+    /^[a-f0-9]{64}$/.test(previousPck ?? ""),
+    "A shelter predecessor requires its explicit PCK SHA-256.",
+  );
   assert.equal(previous.origin, origin);
   assert.equal(previous.routeMode, "shelters");
-  assert.equal(previous.candidatePck.sha256, expectedPck);
-  assert.equal(previous.candidatePck.decodedBytes, expectedPckBytes);
+  assert.equal(previous.candidatePck.sha256, previousPck);
+  if (previousPck === expectedPck)
+    assert.equal(previous.candidatePck.decodedBytes, expectedPckBytes);
+  assert.equal(previous.initialHub.layoutVersion, WORLD.hub.layoutVersion);
+  assert.equal(previous.lastSnapshot.land.view.azimuth, -45);
+  assert.equal(previous.lastSnapshot.land.view.elevation, 35);
   assert.equal(previous.ownTemporaryPlayerRemoved, true);
   assert(
     previous.checks.includes(
@@ -144,6 +159,12 @@ if (process.env.PLAN06_SHELTER_PREDECESSOR) {
   );
   shelterPredecessor = {
     id: previousId,
+    candidatePck: previous.candidatePck,
+    currentCandidatePck: {
+      sha256: expectedPck,
+      decodedBytes: expectedPckBytes,
+    },
+    crossesPackage: previousPck !== expectedPck,
     point: { x: reached.x, y: reached.y },
     completedResidents,
   };
@@ -546,7 +567,19 @@ async function verifyShelters() {
       continue;
     const [x, y] = resident.activity.shelter;
     await routeTo({ x, y }, "hub");
-    await waitState((value) => value.nearby === resident.nearby);
+    const chiefService =
+      resident.name === "Ki Lurah Wirabhumi" &&
+      Math.hypot(
+        x - world.homestead.permitBoard.x,
+        y - world.homestead.permitBoard.y,
+      ) < 2;
+    await waitState(
+      (value) =>
+        value.nearby === resident.nearby ||
+        (chiefService &&
+          value.nearby === "balai" &&
+          Math.hypot(value.x - x, value.y - y) <= 80),
+    );
     const before = await snapshot();
     assert.equal(
       before.land.actors.residentStates[resident.name].phase,
@@ -556,13 +589,56 @@ async function verifyShelters() {
       `shelter-${resident.name.replaceAll(" ", "-")}-before-conversation`,
     );
     await page.keyboard.press("e");
+    if (chiefService) {
+      await waitState((value) => value.homePanel && value.weather.clockPaused);
+      await shot("shelter-chief-shared-talk-and-permit-service-panel");
+      await page.keyboard.press("Enter");
+      await waitState(
+        (value) =>
+          value.modal &&
+          !value.homePanel &&
+          value.dialogue?.speaker === resident.name,
+      );
+      checks.push(
+        "overlapping-chief-and-board-open-real-chief-dialogue-through-shared-service",
+      );
+    }
     await waitState((value) => value.modal && value.weather.clockPaused);
+    assert.equal((await snapshot()).dialogue?.speaker, resident.name);
     await shot(`shelter-${resident.name.replaceAll(" ", "-")}-conversation`);
     await closeDialogue();
     await waitState((value) => !value.modal && !value.weather.clockPaused);
     checks.push(
       `${resident.name}: physical-shelter-access-dialogue-and-resume`,
     );
+    if (chiefService && fixtureMissions.includes("akar")) {
+      const beforePermit = await apiState();
+      assert(beforePermit.player.progress.missions.includes("akar"));
+      assert.equal(beforePermit.homestead.permit, false);
+      await page.keyboard.press("e");
+      await waitState((value) => value.homePanel && value.weather.clockPaused);
+      await page.keyboard.press("Tab");
+      const granted = await pressAndPost("homestead/action", "permit");
+      assert.equal(granted.homestead.permit, true);
+      assert.equal(
+        granted.homestead.seeds.benih_kangkung,
+        beforePermit.homestead.seeds.benih_kangkung +
+          HOMESTEAD_DEFINITIONS.starterSeeds,
+      );
+      assert.equal(granted.player.coins, beforePermit.player.coins);
+      assert.deepEqual(granted.player.inventory, beforePermit.player.inventory);
+      assert.deepEqual(granted.player.progress, beforePermit.player.progress);
+      await waitState((value) => value.homePanel && value.homestead.permit);
+      await shot("shelter-chief-permit-button-acknowledged-with-starter-seeds");
+      await page.keyboard.press("Escape");
+      await waitState(
+        (value) =>
+          !value.modal && !value.homePanel && !value.weather.clockPaused,
+      );
+      checks.push(
+        "balai-permit-action-remains-accessible-and-awards-only-defined-starter-seeds",
+      );
+    }
   }
 }
 
@@ -579,9 +655,10 @@ async function verifyRemainingShelters() {
   assert.equal(state.player.progress.stage, "dive");
   assert.equal(state.player.coins, 200);
   assert.equal(state.player.inventory.length, 0);
+  assert.deepEqual(state.player.progress.missions, fixtureMissions);
   assert.equal(state.calendar.dayLengthMs, 36 * 60 * 1000);
   checks.push(
-    "seven-left-view-shelter-conversations-preserve-server-progress-and-rewards",
+    "tested-left-view-shelter-conversations-preserve-server-progress-and-coins-with-explicit-permit-seeds",
   );
 }
 async function verifyLowerBridge() {
@@ -947,6 +1024,7 @@ try {
         day: fixtureStoryDay,
         stage: "dive",
         tutorial: true,
+        missions: fixtureMissions,
       },
       adventure: { discoveries: [], puzzles: [], keyItems: [] },
       calendar: {
@@ -1406,6 +1484,7 @@ try {
           candidatePck,
           routeMode,
           shelterPredecessor,
+          fixtureMissions,
           navigation,
           inputProofs,
           initialLegacy,
