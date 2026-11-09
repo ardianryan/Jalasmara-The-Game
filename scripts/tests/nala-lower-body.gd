@@ -66,7 +66,7 @@ func _measure(label:String) -> void:
 	if not _check(bool(pose.reachValid),"Unreachable Nala leg "+label+" at "+str(player.position)+" drop="+str(pose.requestedDropPixels)): return
 	if not _check(not bool(pose.rootMotion),"Visual rig may not move actor root"): return
 	var upper:Sprite3D=rig.get("_parts").upper
-	var vertical:=renderer.camera_up().dot(Vector3(0,0,1))
+	var vertical:float=renderer.camera_up().dot(Vector3(0,0,1))
 	var actual_baseline:Vector3=upper.global_position-renderer.camera_up()*38+Vector3(0,0,(float(pose.pelvisDropPixels)-28.0)/vertical)
 	if not _check(absf(actual_baseline.z-float(pose.contacts.bodyHeight))<.003,"Actual upper body disagrees with support transfer "+label): return
 	if previous.has("body"):
