@@ -17,11 +17,10 @@ npm ci
 npm run build:game
 docker compose build app
 docker compose up -d
-docker compose exec -T app node apps/api/dist/apps/api/src/cli.js seed
 curl --fail http://10.1.0.8:3000/api/health
 ```
 
-Jalankan dari checkout yang akan dirilis. `APP_VERSION` dapat diisi commit singkat agar image rilis sebelumnya tetap tersedia. Jangan menghapus volume saat pembaruan. `docker compose down -v` menghapus database.
+Jalankan dari checkout yang akan dirilis. `APP_VERSION` dapat diisi commit singkat agar image rilis sebelumnya tetap tersedia. Pembaruan aplikasi tidak menjalankan seed; pertahankan konten pengelola dan progres pemain yang sudah ada. Perintah seed hanya untuk instalasi awal pada database kosong yang memang disiapkan untuk itu. Jangan menghapus volume saat pembaruan. `docker compose down -v` menghapus database.
 
 Kandidat overnight juga menulis `pck-manifest.json` berisi versi/hash seluruh PCK dan setiap bagian1MiB. Server memverifikasi file saat startup; loader hanya meminta bagian berurutan yang lolos hash, dengan empat request maksimum paralel. Route `/game/pck/<sha>/<index>` memakai file PCK yang sama, bukan salinan potongan di disk. File PCK langsung tetap tersedia untuk pemeriksaan hash/legacy. Jangan memasang manifest dari build lain atau mengubah proxy untuk fitur ini. Lihat [bukti dan batas](reviews/overnight-segmented-pck.md); kandidat belum dirilis.
 
