@@ -10,6 +10,10 @@ const mode = process.env.PLAN06_TRANSPORT_ASSET;
 assert(["pck", "wasm"].includes(mode));
 const origin = "https://staging-jalasmara.ardianryan.com";
 const asset = `${origin}/game/index.${mode}`;
+const range = process.env.PLAN06_TRANSPORT_RANGE ?? null;
+assert(range === null || (mode === "pck" && range === "bytes=0-"));
+const protocol = process.env.PLAN06_TRANSPORT_PROTOCOL ?? "default";
+assert(["default", "http1"].includes(protocol));
 const documentUrl = `${origin}/__qa_transport_blank`;
 const id = randomUUID(),
   directory = `artifacts/browser/transport-${mode}-${id}`;
@@ -31,6 +35,7 @@ try {
       "--use-gl=angle",
       "--use-angle=swiftshader",
       "--enable-unsafe-swiftshader",
+      ...(protocol === "http1" ? ["--disable-http2"] : []),
     ],
   });
   context = await browser.newContext({
@@ -136,64 +141,68 @@ try {
   }, 5000);
   try {
     consumer = await Promise.race([
-      page.evaluate(async (url) => {
-        const controller = new AbortController(),
-          begin = performance.now();
-        const timeout = setTimeout(() => controller.abort(), 20000);
-        let bytes = 0,
-          chunks = 0,
-          status,
-          headers,
-          outcome;
-        try {
-          const response = await fetch(url, {
-            signal: controller.signal,
-            cache: "no-store",
-          });
-          status = response.status;
-          headers = Object.fromEntries(
-            ["content-encoding", "content-length", "content-type"].map(
-              (key) => [key, response.headers.get(key)],
-            ),
-          );
-          if (!response.ok)
-            throw new Error("Asset response was not successful");
-          const reader = response.body.getReader();
-          while (true) {
-            const part = await reader.read();
-            if (part.done) {
-              outcome = "body-completed";
-              break;
+      page.evaluate(
+        async ({ url, range }) => {
+          const controller = new AbortController(),
+            begin = performance.now();
+          const timeout = setTimeout(() => controller.abort(), 20000);
+          let bytes = 0,
+            chunks = 0,
+            status,
+            headers,
+            outcome;
+          try {
+            const response = await fetch(url, {
+              signal: controller.signal,
+              cache: "no-store",
+              headers: range ? { Range: range } : undefined,
+            });
+            status = response.status;
+            headers = Object.fromEntries(
+              ["content-encoding", "content-length", "content-type"].map(
+                (key) => [key, response.headers.get(key)],
+              ),
+            );
+            if (!response.ok)
+              throw new Error("Asset response was not successful");
+            const reader = response.body.getReader();
+            while (true) {
+              const part = await reader.read();
+              if (part.done) {
+                outcome = "body-completed";
+                break;
+              }
+              bytes += part.value.byteLength;
+              chunks++;
             }
-            bytes += part.value.byteLength;
-            chunks++;
+          } catch (error) {
+            outcome = controller.signal.aborted
+              ? "aborted-at-20-second-budget"
+              : "body-failed";
+            if (!controller.signal.aborted)
+              return {
+                outcome,
+                name: error.name,
+                status,
+                headers,
+                decodedBytesRead: bytes,
+                chunks,
+                elapsedMs: performance.now() - begin,
+              };
+          } finally {
+            clearTimeout(timeout);
           }
-        } catch (error) {
-          outcome = controller.signal.aborted
-            ? "aborted-at-20-second-budget"
-            : "body-failed";
-          if (!controller.signal.aborted)
-            return {
-              outcome,
-              name: error.name,
-              status,
-              headers,
-              decodedBytesRead: bytes,
-              chunks,
-              elapsedMs: performance.now() - begin,
-            };
-        } finally {
-          clearTimeout(timeout);
-        }
-        return {
-          outcome,
-          status,
-          headers,
-          decodedBytesRead: bytes,
-          chunks,
-          elapsedMs: performance.now() - begin,
-        };
-      }, asset),
+          return {
+            outcome,
+            status,
+            headers,
+            decodedBytesRead: bytes,
+            chunks,
+            elapsedMs: performance.now() - begin,
+          };
+        },
+        { url: asset, range },
+      ),
       new Promise((_, reject) =>
         setTimeout(
           () =>
@@ -210,7 +219,7 @@ try {
   await page.waitForTimeout(200);
   assert.equal(requests.filter((request) => !request.synthetic).length, 1);
   assert.equal(transfers.length, 1);
-  assert.equal(consumer.status, 200);
+  assert([200, 206].includes(consumer.status));
   assert(consumer.decodedBytesRead > 0);
   assert.deepEqual(errors, []);
 } catch (error) {
@@ -227,6 +236,8 @@ try {
       gameplayAccepted: false,
       origin,
       asset: `/game/index.${mode}`,
+      requestRange: range,
+      requestedProtocol: protocol,
       budgetMs: 20000,
       consumer,
       transfers,
