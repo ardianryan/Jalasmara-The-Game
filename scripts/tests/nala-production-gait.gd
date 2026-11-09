@@ -14,10 +14,14 @@ var last_physics_frame:=0
 var began_usec:=0
 var windows:Dictionary={}
 var prior_planner_contacts:=0
+var physical_pilot:=false
+var delivered_input:=Vector2.ZERO
+const PhysicalMotion=preload("res://scripts/NalaPhysicalMotion.gd")
 
 func _input(value:Vector2) -> void:
-	if controller.has_method("_is_walkable"): controller.set("touch_direction",value)
-	else: player.set("touch",value)
+	delivered_input=PhysicalMotion.screen_input(renderer,value,player.position) if physical_pilot else value
+	if controller.has_method("_is_walkable"): controller.set("touch_direction",delivered_input)
+	else: player.set("touch",delivered_input)
 
 func _controller_enabled(enabled:bool) -> void:
 	if controller.has_method("_is_walkable"): controller.set_physics_process(enabled)
@@ -56,9 +60,28 @@ func _open(outfit:String) -> void:
 		player.set("visual_motion_transform",renderer.visual_locomotion)
 		player.get("surface_traversal").configure(root.get_node("GameState").world.landMaps.hub)
 	player.set_meta("nala_lower_body_pilot",true)
+	player.set_meta("nala_physical_walk_pilot",physical_pilot)
 	player.get("swim_sprite").call("set_appearance","male_nusantara")
 	renderer.set_process(false)
 	_index_meshes()
+
+func _physical_inputs(at:Vector2) -> bool:
+	var probes:=0
+	for heading in range(32):
+		for magnitude in [.25,.5,1.0]:
+			var input:=Vector2.from_angle(heading*TAU/32.0)*float(magnitude)
+			var logical:=PhysicalMotion.logical_input(renderer,input,at)
+			if not _check(logical.length()<=input.length()+.00001,"Physical input exceeds canonical logical cap"): return false
+			var wrapped:Vector2=renderer.input_motion(PhysicalMotion.screen_input(renderer,input,at),at)
+			if not _check(wrapped.distance_to(logical)<.00001,"Fixture screen-amplitude wrapper differs from intended renderer hook"): return false
+			var actual:Vector3=renderer.ground_point(at+logical)-renderer.ground_point(at)
+			var expected:=input.length()*PhysicalMotion.WORLD_XY_SPEED/float(PhysicalMotion.LOGICAL_CAP)
+			if not _check(absf(Vector2(actual.x,actual.y).length()-expected)<.0003,"Actual flat ground metric fails physical-speed input contract"): return false
+			var screen:Vector2=renderer.view_projection.logical_motion_to_view(logical)
+			if not _check(absf(screen.normalized().cross(input.normalized()))<.00001 and screen.dot(input)>0,"Physical input changes requested screen direction"): return false
+			probes+=1
+	print("NALA PHYSICAL INPUT PASS ",probes," actual-ground magnitude/direction/cap/wrapper probes")
+	return true
 
 func _origin() -> Vector2:
 	for y in range(450,1200,30):
@@ -116,7 +139,7 @@ func _production_tick(value:Vector2,label:String) -> bool:
 	var swing:=str(pose.contacts.swingSide)
 	var planner_phase:Variant=null
 	if swing!="": planner_phase=(0.0 if swing=="right" else .5)+float(pose.contacts.swingDistance)/maxf(.001,float(pose.contacts.landingDistance))*.5
-	var record:={"case":label,"physicsFrame":now,"physicsDelta":last_delta,"elapsedPhysics":elapsed_physics,"elapsedWall":float(Time.get_ticks_usec()-began_usec)/1000000.0,"input":[value.x,value.y],"position":[player.position.x,player.position.y],"acceptedLogical":logical_travel,"acceptedPhysical":physical_travel,"source":source,"upperAtlasRegion":[region.position.x,region.position.y,region.size.x,region.size.y],"actualEquipmentState":equipment.get("state").duplicate(true),"plannerCyclePhase":planner_phase,"legacyContacts":legacy_contacts,"pose":pose.duplicate(true)}
+	var record:={"case":label,"physicsFrame":now,"physicsDelta":last_delta,"elapsedPhysics":elapsed_physics,"elapsedWall":float(Time.get_ticks_usec()-began_usec)/1000000.0,"input":[value.x,value.y],"deliveredInput":[delivered_input.x,delivered_input.y],"physicalPilot":physical_pilot,"position":[player.position.x,player.position.y],"acceptedLogical":logical_travel,"acceptedPhysical":physical_travel,"source":source,"upperAtlasRegion":[region.position.x,region.position.y,region.size.x,region.size.y],"actualEquipmentState":equipment.get("state").duplicate(true),"plannerCyclePhase":planner_phase,"legacyContacts":legacy_contacts,"pose":pose.duplicate(true)}
 	sample_log.store_line(JSON.stringify(record))
 	sample_log.flush()
 	if capture and checks%capture_stride==0:
@@ -131,6 +154,7 @@ func _production_tick(value:Vector2,label:String) -> bool:
 
 func run() -> void:
 	root.size=Vector2i(1440,810)
+	physical_pilot=OS.get_environment("NALA_PHYSICAL_WALK")=="1"
 	first_case=clampi(int(OS.get_environment("NALA_PRODUCTION_FIRST")) if OS.has_environment("NALA_PRODUCTION_FIRST") else 0,0,31)
 	case_limit=clampi(int(OS.get_environment("NALA_PRODUCTION_CASES")) if OS.has_environment("NALA_PRODUCTION_CASES") else 32,1,32-first_case)
 	capture=OS.get_environment("NALA_LOWER_CAPTURE")=="1"
@@ -141,8 +165,8 @@ func run() -> void:
 	sample_log=FileAccess.open(output+"/samples.jsonl",FileAccess.WRITE)
 	capture_log=FileAccess.open(output+"/frames.jsonl",FileAccess.WRITE)
 	var hashes:Dictionary={}
-	for path in ["res://scripts/Player.gd","res://scripts/Forest.gd","res://scripts/CharacterVisual.gd","res://scripts/NalaFootPlant.gd","res://scripts/NalaLowerBody3D.gd","res://scripts/land/LandActors3D.gd","res://../scripts/tests/nala-production-gait.gd","res://../scripts/tests/nala-lower-body.gd"]: hashes[path]=FileAccess.get_sha256(path)
-	FileAccess.open(output+"/source.json",FileAccess.WRITE).store_string(JSON.stringify({"files":hashes,"firstCase":first_case,"requestedCases":case_limit,"physicsHz":Engine.physics_ticks_per_second,"captureStride":capture_stride,"acceptance":"Geometry diagnostic; cadence and arm opposition require sequence review. No default adoption."},"  "))
+	for path in ["res://scripts/Player.gd","res://scripts/Forest.gd","res://scripts/CharacterVisual.gd","res://scripts/NalaFootPlant.gd","res://scripts/NalaLowerBody3D.gd","res://scripts/NalaPhysicalMotion.gd","res://scripts/land/LandActors3D.gd","res://../scripts/tests/nala-production-gait.gd","res://../scripts/tests/nala-lower-body.gd"]: hashes[path]=FileAccess.get_sha256(path)
+	FileAccess.open(output+"/source.json",FileAccess.WRITE).store_string(JSON.stringify({"files":hashes,"firstCase":first_case,"requestedCases":case_limit,"physicalPilot":physical_pilot,"physicsHz":Engine.physics_ticks_per_second,"captureStride":capture_stride,"acceptance":"Geometry diagnostic; cadence and arm opposition require sequence review. No default adoption."},"  "))
 	var state:=root.get_node("GameState")
 	state.world=JSON.parse_string(FileAccess.get_file_as_string("res://../.runtime/world-map.json"))
 	state.player={"appearance":"male_nusantara","progress":{"day":2,"stage":"dive"}}
@@ -160,6 +184,7 @@ func run() -> void:
 		_open(outfit)
 		var origin:=_origin()
 		if not _check(is_finite(origin.x),"No 105-logical-radius authoritative flat floor for "+outfit): return
+		if physical_pilot and not _physical_inputs(origin): return
 		for reduced in [false,true]:
 			clock.reduced_motion=reduced
 			for heading in range(8):

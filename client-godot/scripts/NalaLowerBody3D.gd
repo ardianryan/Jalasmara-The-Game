@@ -22,7 +22,8 @@ func configure(owner_renderer:Node,person:Node2D) -> void:
 	renderer=owner_renderer
 	actor=person
 	_planner=preload("res://scripts/NalaFootPlant.gd").new()
-	_planner.configure(renderer)
+	var contract:Dictionary=preload("res://scripts/NalaPhysicalMotion.gd").gait_contract() if bool(person.get_meta("nala_physical_walk_pilot",false)) else {}
+	_planner.configure(renderer,contract)
 	for name in ["upper","left_thigh","left_shin","left_foot","right_thigh","right_shin","right_foot"]:
 		var sprite:=Sprite3D.new()
 		sprite.name=name

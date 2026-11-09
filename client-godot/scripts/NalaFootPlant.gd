@@ -24,14 +24,28 @@ var _stairs:Array=[]
 var _body_height:=0.0
 var _body_rate:=1.0
 var _stair_transfer:=false
+var _steady_distance:=STEP_DISTANCE
+var _landing_lead:=LANDING_LEAD
+var _start_distance:=STEP_DISTANCE
+var _turn_distance:=STEP_DISTANCE*.5
+var _turn_cosine:=.5
+var _physical_contract:=false
+var _transition_next:=true
 const Traversal=preload("res://scripts/SurfaceTraversal.gd")
 
-func configure(owner_renderer: Node) -> void:
+func configure(owner_renderer: Node,contract:Dictionary={}) -> void:
 	renderer=owner_renderer
+	_physical_contract=not contract.is_empty()
+	_steady_distance=float(contract.get("steadyDistance",STEP_DISTANCE))
+	_landing_lead=float(contract.get("landingLead",LANDING_LEAD))
+	_start_distance=float(contract.get("startDistance",STEP_DISTANCE))
+	_turn_distance=float(contract.get("turnDistance",STEP_DISTANCE*.5))
+	_turn_cosine=float(contract.get("turnCosine",.5))
+	_landing_distance=_start_distance
 	for profile in renderer.get("_stair_queries"):
 		if str(profile.get("type",""))=="stairs":
 			_stairs.append(profile)
-			_body_rate=maxf(_body_rate,absf(float(profile.to)-float(profile.from))/float(profile.steps)/STEP_DISTANCE*1.5)
+			_body_rate=maxf(_body_rate,absf(float(profile.to)-float(profile.from))/float(profile.steps)/_steady_distance*1.5)
 	for surface in renderer.map.get("surfaces",[]):
 		if bool(surface.get("walkable",true)): _floors.append(_polygon(surface.polygon))
 	for obstacle in renderer.map.get("obstacles",[]): _obstacles.append(_polygon(obstacle.footprint))
@@ -201,9 +215,16 @@ func _begin(side:String,at:Vector2,hips:Dictionary,right:Vector3) -> void:
 	_swing=side
 	_distance=0.0
 	var entry:Dictionary=_feet[side]
+	if _physical_contract and _transition_next:
+		var heading:=_world_motion(at,_heading).normalized()
+		var projection:float=(Vector3(entry.sole)-_ground(at)).dot(heading)
+		# A cubic trajectory peaks at 1.5 times average speed. Reserve one of the
+		# existing five-world continuity units for changing the lateral foot lane.
+		_landing_distance=maxf(_start_distance,ceilf(1.5*(_landing_lead-projection)/2.5))
+	_transition_next=false
 	entry.from=entry.logical
 	entry.lateralOffset=float(hips[side])
-	entry.to=_safe(_forward_point(_base(at,float(hips[side]),right),_landing_distance+LANDING_LEAD),at,side)
+	entry.to=_safe(_forward_point(_base(at,float(hips[side]),right),_landing_distance+_landing_lead),at,side)
 	entry.fromWorld=entry.sole
 	entry.toWorld=_ground(entry.to)
 	entry.landingHeight=Vector3(entry.toWorld).z
@@ -217,7 +238,8 @@ func _reset(at:Vector2,hips:Dictionary,right:Vector3) -> void:
 		_feet[side]={"logical":point,"sole":world,"plant":world,"grounded":true,"from":point,"to":point}
 	_swing=""
 	_distance=0.0
-	_landing_distance=STEP_DISTANCE
+	_landing_distance=_start_distance
+	_transition_next=true
 	_last_at=at
 	_body_height=_ground(at).z
 	_stair_transfer=_on_stairs(at)
@@ -238,12 +260,13 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 	if moving and physical>.00001:
 		_accepted_distance+=physical
 		var next_heading:=logical_delta.normalized()
-		if _swing!="" and _heading.dot(next_heading)<.5:
+		if _physical_contract and _swing=="" and _heading.dot(next_heading)<_turn_cosine: _transition_next=true
+		if _swing!="" and _heading.dot(next_heading)<_turn_cosine:
 			# Re-anchor the airborne path at its actual pose before changing heading.
 			_feet[_swing].from=_feet[_swing].logical
 			_feet[_swing].fromWorld=_feet[_swing].sole
 			_distance=0.0
-			_landing_distance=STEP_DISTANCE*.5
+			_landing_distance=_turn_distance
 		_heading=next_heading
 		var origin:=_last_at
 		var consumed:=0.0
@@ -258,7 +281,7 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 			var entry:Dictionary=_feet[_swing]
 			entry.lateralOffset=move_toward(float(entry.lateralOffset),float(hips[_swing]),chunk)
 			# Retarget only the free foot; an already planted sole never follows the torso.
-			var target:=_safe(_forward_point(_base(sample,float(entry.lateralOffset),right),_landing_distance-_distance+LANDING_LEAD),sample,_swing,float(entry.landingHeight))
+			var target:=_safe(_forward_point(_base(sample,float(entry.lateralOffset),right),_landing_distance-_distance+_landing_lead),sample,_swing,float(entry.landingHeight))
 			entry.to=target
 			entry.toWorld=_ground(target)
 			_transfer_body(sample,chunk,_swing)
@@ -290,7 +313,7 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 				entry.grounded=true
 				_contact_count+=1
 				_next_side="left" if _swing=="right" else "right"
-				_landing_distance=STEP_DISTANCE
+				_landing_distance=_steady_distance
 				_swing=""
 	elif _swing!="":
 		var entry:Dictionary=_feet[_swing]
@@ -305,8 +328,9 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 			entry.grounded=true
 			_contact_count+=1
 			_next_side="left" if _swing=="right" else "right"
-			_landing_distance=STEP_DISTANCE
+			_landing_distance=_steady_distance
 			_swing=""
+	if not moving: _transition_next=true
 	if _swing=="" and not _on_stairs(at):
 		var ordinary:=_ground(at).z
 		if _stair_transfer:
@@ -317,4 +341,4 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 	return snapshot()
 
 func snapshot() -> Dictionary:
-	return {"bodyHeight":_body_height,"bodyTransferRate":_body_rate,"feet":_feet.duplicate(true),"swingSide":_swing,"swingDistance":_distance,"acceptedDistance":_accepted_distance,"stepDistance":STEP_DISTANCE,"landingDistance":_landing_distance,"contacts":_contact_count,"discontinuityResets":_discontinuities,"actorRootMotion":false,"legacyFoleyChanged":false}
+	return {"bodyHeight":_body_height,"bodyTransferRate":_body_rate,"feet":_feet.duplicate(true),"swingSide":_swing,"swingDistance":_distance,"acceptedDistance":_accepted_distance,"stepDistance":_steady_distance,"landingLead":_landing_lead,"physicalContract":_physical_contract,"landingDistance":_landing_distance,"contacts":_contact_count,"discontinuityResets":_discontinuities,"actorRootMotion":false,"legacyFoleyChanged":false}
