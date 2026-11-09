@@ -363,6 +363,7 @@ func _balai() -> void:
 		var resident: Dictionary=host.service_resident("balai")
 		if not resident.is_empty():
 			_button("Bicara dengan Ki Lurah",func():
+			if busy: return
 				close()
 				host._talk([{"name":resident.name,"text":resident.text}])
 			)
