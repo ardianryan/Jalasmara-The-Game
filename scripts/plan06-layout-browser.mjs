@@ -32,6 +32,7 @@ import {
 } from "./gateway-route-fixture.mjs";
 import { watchGameplayFailures } from "./gameplay-api-failure.mjs";
 import { deriveSarasFixture } from "./saras-alpha-fixture.mjs";
+import { deriveLeftForestFixture } from "./left-forest-fixture.mjs";
 import {
   keyboardPulse,
   corridorTargets,
@@ -58,6 +59,7 @@ assert(
     "ocean",
     "dialogue",
     "left",
+    "left-forest",
     "shelters",
     "lower",
     "canopy",
@@ -66,7 +68,7 @@ assert(
   ].includes(routeMode),
 );
 const routeLimitMs =
-  (["left", "lower", "canopy", "gateways", "saras"].includes(routeMode) ? 5 : 10) *
+  (["left", "left-forest", "lower", "canopy", "gateways", "saras"].includes(routeMode) ? 5 : 10) *
   60 *
   1000;
 const shelterWaitPosition = { x: 800, y: 1000 };
@@ -97,6 +99,7 @@ if (routeMode === "shelters") validateShelterWait(WORLD, WORLD.surfaceSpawn);
 assert(!process.env.PLAN06_SARAS_MINUTE || routeMode === "saras");
 assert(!process.env.PLAN06_SARAS_ATTENTION_WORK || (routeMode === "saras" && process.env.PLAN06_SARAS_ATTENTION_WORK === "1"));
 const sarasFixture = routeMode === "saras" ? deriveSarasFixture(WORLD, Number(process.env.PLAN06_SARAS_MINUTE ?? 1200), process.env.PLAN06_SARAS_ATTENTION_WORK === "1") : null;
+const leftForestFixture = routeMode === "left-forest" ? deriveLeftForestFixture(WORLD) : null;
 const navigation = { matrixPulses: 0, legacyPulses: 0 };
 const inputProofs = [];
 const fixtureStoryDay = routeMode === "dialogue" ? 1 : 2;
@@ -222,6 +225,7 @@ let candidatePck,
   initialHub,
   initialLower,
   initialCanopy,
+  initialLeftForest,
   routeStarted,
   runCompleted = false,
   fixtureAttempted = false;
@@ -325,7 +329,7 @@ async function walkDirect(x, y) {
       !value.diving && value.area !== "home" && value.land?.active
         ? value.land.view?.motion
         : null;
-    if (routeMode === "left")
+    if (["left", "left-forest"].includes(routeMode))
       assert(
         contract,
         "Left-view navigation requires the actual renderer motion contract.",
@@ -781,7 +785,12 @@ async function verifyLeftView() {
   );
   assertLeftView(value, "forest");
   await shot("left-real-forest-entry");
-  await routeTo({ x: 650, y: 1050 }, "forest");
+  await verifyLeftForestRemainder();
+}
+
+async function verifyLeftForestRemainder(focused = false) {
+  assertLeftView(await snapshot(), "forest");
+  if (!focused) await routeTo({ x: 650, y: 1050 }, "forest");
   await responsive(844, 390, "left-forest-touch-844x390");
   const prior = await snapshot();
   const stick = prior.hud.joystick;
@@ -844,7 +853,9 @@ async function verifyLeftView() {
   assert.equal(navigation.legacyPulses, 0);
   await shot("left-forest-position-resumes-after-reload");
   checks.push(
-    "left-real-gate-bridge-and-position-reload-preserve-server-state",
+    focused
+      ? "left-forest-real-bridge-and-position-reload-preserve-server-state"
+      : "left-real-gate-bridge-and-position-reload-preserve-server-state",
   );
 }
 
@@ -1402,6 +1413,16 @@ try {
       };
       assert(isLandWalkable(WORLD.landMaps.hub, initialHub));
       initialSurface = initialHub;
+    } else if (routeMode === "left-forest") {
+      initialLeftForest = {
+        area: "forest",
+        ...leftForestFixture.point,
+        layoutVersion: leftForestFixture.layoutVersion,
+        playerVersion: 0,
+        positionAt: Date.now(),
+      };
+      assert(isLandWalkable(WORLD.landMaps.forest, initialLeftForest, 12));
+      initialSurface = initialLeftForest;
     } else if (routeMode === "canopy") {
       initialCanopy = {
         area: "forest",
@@ -1705,6 +1726,7 @@ try {
       "ocean",
       "dialogue",
       "left",
+      "left-forest",
       "shelters",
       "lower",
       "canopy",
@@ -1741,6 +1763,16 @@ try {
     checks.push(
       "physical-return-portal-keeps-story-coins-and-authoritative-surface",
     );
+  } else if (routeMode === "left-forest") {
+    const actualFixture = deriveLeftForestFixture(world);
+    assert.deepEqual(actualFixture, leftForestFixture);
+    const initial = await waitState(
+      (value) => value.area === "forest" && value.land?.actors?.player === 1,
+    );
+    assert(Math.hypot(initial.x - initialLeftForest.x, initial.y - initialLeftForest.y) < 5);
+    assertLeftView(initial, "forest");
+    await shot("left-forest-declared-upper-bridge-approach-fixture");
+    checks.push("separate-left-forest-fixture-starts-on-shared-derived-clear-approach");
   } else if (routeMode === "canopy") {
     const initial = await waitState(
       (value) => value.area === "forest" && value.land?.actors?.player === 1,
@@ -1778,6 +1810,7 @@ try {
   if (routeMode === "shelters") await verifyRemainingShelters();
   else if (routeMode === "lower") await verifyLowerBridge();
   else if (routeMode === "left") await verifyLeftView();
+  else if (routeMode === "left-forest") await verifyLeftForestRemainder(true);
   else if (routeMode === "canopy") await verifyFocusedCanopy();
   else if (routeMode === "gateways") await verifyFocusedGateways();
   else if (routeMode === "dialogue") await verifyCompactDialogue();
@@ -1878,6 +1911,8 @@ try {
           initialHub,
           initialLower,
           initialCanopy,
+          initialLeftForest,
+          leftForestFixture,
           outcome: runCompleted && cleaned ? "completed" : "failed",
           completed: runCompleted && cleaned,
           errors,

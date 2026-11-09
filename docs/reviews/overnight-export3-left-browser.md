@@ -46,3 +46,19 @@ Integration directory: `artifacts/browser/plan06-layout-8c70f2ba-14e8-465c-8068-
 Actual PNG review: badge frames are closed and text/controls remain separate at667×375; the forest entry shows the gate and Nala, and the last image shows Nala standing on the forest path. This is a night/rain composition, not cheerful daylight color or gait-in-motion evidence. The location badge intentionally truncates the long forest name. No screenshot demonstrates the still-pending joystick/bridge/reload checks.
 
 The next acceptance should retain this prefix and use a separately declared, physically validated continuation fixture at the already reached forest point, or an explicitly granted longer full-flow budget. It must continue with actual input and preserve the bridge/touch/save assertions. No harness threshold, map geometry, product control or proxy was changed to force a pass.
+
+## Prepared narrower forest component gate — not run yet
+
+The integrator subsequently approved a fresh **forest-only component fixture**, rather than another long hub prefix or a runtime teleport. New `PLAN06_ROUTE_MODE=left-forest` derives a clear authored pre-upper-bridge route vertex from the shared/current HTTP world. Current map yields1200/730: the nearer1260/660 vertex does not have the required55-unit joystick probe clearance. Sixteen radial probes and their shared-authority segments, the approach route and the complete upper-bridge segment must remain walkable; malformed/missing bridge metadata or a blocked approach/crossing rejects setup. The initial Redis surface is declared before login; there is no in-game position override.
+
+The existing left flow now calls the extracted same forest remainder. New mode retains actual touch screen-right/release, keyboard traversal to the bridge, >250-unit actual crossing, emitted rail/orientation checks, actual save acknowledgement, reload, camera contract and unchanged coins/story/inventory/calendar checks. Its final check explicitly says `left-forest-real-bridge...`, without claiming a new gate crossing. Five-minute budget and collision/arrival thresholds are unchanged. Setup and full derived metadata are recorded in the result.
+
+Three CPU tests passed against current WORLD: legal derived approach/complete route with no WORLD mutation; real synthetic authoritative obstacle across the bridge rejected; blocked approach and malformed bridge metadata rejected. The first negative-test draft omitted the obstacle footprint and failed with TypeError; correcting the fixture to the actual obstacle schema produced3/3. `node --check` and `git diff --check` passed. **No browser PASS is claimed for this new mode before its next explicit grant.**
+
+```sh
+APP_TEST_ORIGIN=http://localhost:3111 \
+PLAN06_ROUTE_MODE=left-forest \
+PLAN06_EXPECT_PCK=73d45630ab69033ac36a64740ecc73ecdb7363c9f99805222b6a9237dcb2d18b \
+PLAN06_EXPECT_PCK_BYTES=64494656 \
+node --import tsx scripts/plan06-layout-browser.mjs
+```
