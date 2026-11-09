@@ -12,6 +12,7 @@ import { gameRoutes } from "./game.js";
 import { adminRoutes } from "./admin.js";
 import { homesteadRoutes } from "./homestead.js";
 import { adventureRoutes } from "./adventure.js";
+import { registerPckParts } from "./pck-parts.js";
 export async function buildApp(s: Store, logging = true) {
   const app = Fastify({
     logger: logging
@@ -114,6 +115,7 @@ export async function buildApp(s: Store, logging = true) {
   await adminRoutes(app, s, g);
   const root = resolve(process.env.WEB_DIST ?? "apps/web/dist");
   if (existsSync(root)) {
+    await registerPckParts(app, root);
     await app.register(fastifyStatic, {
       root,
       wildcard: false,

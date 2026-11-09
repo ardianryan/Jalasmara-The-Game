@@ -39,6 +39,7 @@ const scripts = [
   "scripts/tests/ocean-platform06.gd",
   "scripts/tests/character-outfits.gd",
   "scripts/tests/hud-oxygen.gd",
+  "scripts/tests/hud-footprint.gd",
   "scripts/tests/analog-dialogue.gd",
   "scripts/tests/dialogue-compact.gd",
   "scripts/tests/village-portraits.gd",

@@ -62,3 +62,12 @@ Root typecheck dan **112tes API produk** lulus pada checkpoint `ead46b5`, tanpa 
 Nala lowerbody tetap opt-in/offdefault di branch karakter: kandidat masih ditolak oleh batas kontak/panjang kaki, termasuk restart180°8,223px>8. Helper tubuh original enam warga masih dikerjakan terpisah; voxel tidak digabung. Pengguna mengonfirmasi Windows/S23 dapat dipakai pengujian nanti; belum ada hasil fisik. Startup browser publik default belum diterima, staging tetap baseline d60/5f5. Belum ekspor/CI/rilis kandidat overnight.
 
 Tool tambahan paket ini: Godot4.7.2Compatibility untuk focused runtime/atlas dan native yang ditinjau; generator cutout proyek/Pillow11.3 untuk atlas original; TypeScript/tsx untuk kontrak/server. SpriteAI tidak dipakai. Lisensi/provenance original atlas mengikuti source `assets/source-2d/village-expansion-v1`, bukan moodboard distribusi.
+
+
+Root pengulangan API setelah potret/panel malam (`8313420`) selesai: **113/113 lulus**, typecheck lulus,60,23detik. Ini menggantikan hitungan112 di checkpoint terdahulu; tidak ada header transport eksperimen. Log `.runtime/overnight-api-b1c7715.log` dan `overnight-typecheck-b1c7715.log`. Pengulangan penuh56dunia berjalan terpisah dan belum disamakan dengan hasil API.
+
+
+Root fullworld gabungan ketiga selesai **56/56 lulus**, disusul verifikasi10spesies/722bingkai. Renderer53batch,13rutinitas, potret, gardenoptions, nightservice, FishGen dan recorder terdaftar. Ujang tetap1.242kontak/168belok/1.616pemeriksaan arah lutut lulus. Source `8313420`; log `.runtime/overnight-world-integrated-3.log` dan manifest `.runtime/world-check-integrated-3/world-checks.json`. Ini pemeriksaan headless/runtime; bukan pengganti ekspor dan browser baru.
+
+
+Paket berikutnya364afe0 mencakup HUD desktop18,33px/body,48,3pxutility,56,7pxaksi; gambar pertama yang memotong bingkai ditolak dan diganti skala lengkap9-slice. Bacaan PC18px/mobile16px dipertahankan. Fixture HUD semula hang43detik pada frame_post_draw di headless; proses milikroot dihentikan143, captureguard diperbaiki tanpa menghapus assertion. Runner57perlu pengulangan. [Unduhan bertahap](overnight-segmented-pck.md) terbukti asetpublik64MB1,55detik defaultH2, kandidatproduksi lulus120API+37loader; belum startupgame/rilis.

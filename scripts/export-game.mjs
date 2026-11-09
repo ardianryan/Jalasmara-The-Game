@@ -11,6 +11,8 @@ import { gzipSync } from "node:zlib";
 import { withLoadingBridge } from "./game-loading-bridge.mjs";
 import { withTrackedStreamErrors } from "./godot-preloader-stream.mjs";
 import { withWasmInitErrors } from "./godot-wasm-init-errors.mjs";
+import { pckManifest } from "./pck-manifest.mjs";
+import { withSegmentedPck } from "./pck-stream.mjs";
 const candidates = [
   process.env.GODOT_BIN,
   "godot",
@@ -84,9 +86,19 @@ const html = readFileSync(htmlPath, "utf8").replace(
 writeFileSync(htmlPath, html);
 
 const loaderPath = "apps/web/public/game/index.js";
+const manifest = pckManifest(readFileSync("apps/web/public/game/index.pck"));
+writeFileSync(
+  "apps/web/public/game/pck-manifest.json",
+  JSON.stringify(manifest),
+);
 writeFileSync(
   loaderPath,
-  withWasmInitErrors(withTrackedStreamErrors(readFileSync(loaderPath, "utf8"))),
+  withSegmentedPck(
+    withWasmInitErrors(
+      withTrackedStreamErrors(readFileSync(loaderPath, "utf8")),
+    ),
+    manifest,
+  ),
 );
 
 function compressGameAssets(directory) {
