@@ -1,0 +1,14 @@
+{
+  "status": "original source and cutout preparation; not installed as runtime animation",
+  "source": "source.png",
+  "sha256": "9e2c42cd06f3c438e4eae194edf5caa45d23a4fb8610f0e13fa2640078f27d95",
+  "generationTool": "Built-in image generation, character subagent",
+  "generationId": "01a1bf43-1a44-7520-a970-22ccb44b5f81/exec-b02af323-205f-49c4-bb6a-d724cdf59f9c",
+  "reference": "Project original village-residents-v1 style; user-supplied moodboards were not distributed",
+  "promptSummary": "Six original empty-handed residents on a transparent 3 by 2 sheet: director, Bagas, Kinasih, Danu, Gito and Cempaka; project illustrated coastal character style.",
+  "promptRecord": "Summary supplied by the generating agent; not a verbatim prompt transcript.",
+  "software": "tools/npc-rig/village_expansion.py, Python and Pillow 11.3.0",
+  "processing": "Per-cell alpha threshold230, nearest resize into96x128cells,64color palette without dithering. Character identity and empty hands retained.",
+  "limitations": "One original three-quarter front view each. No four-view or eight-view gait, limb rig, physical foot contact, tools or runtime acceptance is claimed. Alpha-bottom pivot describes image geometry, not a physical sole.",
+  "license": "Original Jalasmara artwork under project LICENSE; no upstream asset or Sprite AI service used."
+}

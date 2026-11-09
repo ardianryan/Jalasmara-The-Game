@@ -51,7 +51,7 @@ func _run() -> void:
 	assert(status.elevationDegrees==35 and status.azimuthDegrees==-45)
 	assert(status.viewport[0]*status.viewport[1]<=129600)
 	assert(absf(float(status.viewport[0])/status.viewport[1]-renderer.get_viewport().get_visible_rect().size.aspect())<.015)
-	assert(not status.bitmapGround and status.houses==8 and status.glbModels>0)
+	assert(not status.bitmapGround and status.houses==10 and status.glbModels>0)
 	assert(status.meshes<60,"Static material batches must not become hundreds of draw calls")
 	assert(status.stairTreads>=10 and status.actors.player==1)
 	assert(float(status.maxFootError)<.01,"Actual atlas alpha-bottom must stay at the ground pivot")

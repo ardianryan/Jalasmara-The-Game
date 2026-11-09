@@ -199,7 +199,19 @@ func run() -> void:
 	var gardener:Dictionary=state.world.surface_hub.districtActivities["Bu Darmi"].duplicate(true)
 	gardener.name="Bu Darmi"
 	profiles.append(gardener)
-	assert(profiles.size()==7)
+	var new_ids:Array[String]=["npc_direktur_cakrawala","npc_kid_bagas","npc_kid_kinasih","npc_kid_danu","npc_kid_gito","npc_kid_cempaka"]
+	var has_expansion:bool=profiles.any(func(profile:Dictionary)->bool:return str(profile.get("visual",{}).get("kind","")) in ["child","director"])
+	var ids:Dictionary={}
+	var names:Dictionary={}
+	for profile in profiles:
+		assert(not names.has(str(profile.name)),"One actor per resident, including Bu Darmi")
+		names[str(profile.name)]=true
+		if profile.has("id"):
+			assert(not ids.has(str(profile.id)),"Canonical resident IDs remain unique")
+			ids[str(profile.id)]=true
+	assert(profiles.size()==(13 if has_expansion else 7),"Exercise every declared resident in the active world package")
+	if has_expansion:
+		for id in new_ids: assert(ids.has(id),"Expanded routine must include all five children and the distinct director")
 	for reduced in [false,true]:
 		clock.reduced_motion=reduced
 		for profile in profiles:
@@ -224,6 +236,6 @@ func run() -> void:
 	_blocked_recovery()
 	_reduced_rigs()
 	assert(JSON.stringify({"world":state.world,"player":state.player,"dive":state.dive,"adventure":state.adventure})==before,"Local routines cannot award items, alter progression or rewrite routes")
-	print("VILLAGE06 PASS:7 real profiles normal/reduced; work-talk-resume-home-rain-return; actual collision-checked steps=",step_count,"; modal pause; bounded blocked recovery;3 reduced-motion rigs; no world/player mutation")
+	print("VILLAGE06 PASS:",profiles.size()," real profiles normal/reduced; work-talk-resume-home-rain-return; actual collision-checked steps=",step_count,"; modal pause; bounded blocked recovery;3 reduced-motion rigs; no world/player mutation")
 	collision.free()
 	quit()
