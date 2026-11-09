@@ -1,6 +1,8 @@
 # Status pengembangan
 
-**Pembaruan lokal 10 November, 02.04 WIB:** [alur akuisisi induk sampai panen](reviews/overnight-live-parent-cycle-actual.md) telah lulus8/8 browser aktual pada PCK1315. Perbaikan draft JSON admin35 pemeriksaan dan loading landscape pendek16 pemeriksaan sudah digabung lokal, belum dirilis. Predicate ground canonical baru lulus324+12 kasus/991 pemeriksaan; runner62 masih menunggu suite lengkap/ekspor. CI3046470595/sourcef9e9d69 lulus empat job, tetapi mendahului tiga paket source tersebut. Animasi modular Nala tetap OFF. Rilis publik tetap798/image d044/PCK1315; hasil fisik Windows/S23 belum tersedia, pengguna siap membantu nanti. [Handoff](agent-handoff.md) memegang antrean aktif dan pemilik slot.
+**Checkpoint 10 November, 03.06 WIB:** [ekspor ketiga](reviews/overnight-export3-integration.md) sudah aktif dan sehat: source Docker d63a10b, image2036254, PCK73d45630/64.494.656 byte. Full lokal63 dan CI63world/120API/CodeQL lulus; job CI build aplikasi masih mengantre tanpa runner. Predicate/AABB/cache consumer lantai, admin draft JSON dan loading landscape pendek masuk image ini. Browser lokal hutan joystick–jembatan–reload 3/3 lulus; smoke publik enam pemeriksaan sedang berjalan, belum selesai. Backup baru dipulihkan42dokumen/0gagal, data/konfigurasi tetap. Nala lower-body tetapOFF karena opaque sole ramp belum lulus; perangkat fisik Windows/S23 menunggu bantuan pengguna. [Handoff](agent-handoff.md) memegang antrean aktif.
+
+Bagian berikut menyimpan riwayat rilis sebelumnya; pin aktif di atas dan laporan ekspor ketiga mengatasi pin historis.
 
 ## Kandidat overnight aktif, 10 November 2026
 
