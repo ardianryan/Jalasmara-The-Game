@@ -38,3 +38,7 @@ Urutan: actual nearest keramba → feed (commit upstream tetapi respons503 disun
 Full trace hanya mencatat action/itemId/revision/version/receipt UUID, tidak cookie/token/password. Cleanup finally memeriksa UUID/email/name/role dan auth-key userId sebelum menghapus keys milik fixture, lalu membuktikan pemain/receipt/keys terhapus. Expected503 hanya boleh action feed dengan code TEST_RESPONSE_LOST; error lain tetap menggagalkan hasil. Semua browser/GPU harus ditutup sebelum RELEASE.
 
 CPU `node --check` dan prettier PASS. Belum dijalankan di browser atau mendapat slot/PCK final pada saat commit ini. Panen jahe empat hari, pertumbuhan anakan dua fed settlements, penangkapan parent dan bonus penyajian tidak termasuk smoke pendek; regresi API dan skenario panjang di atas mencatat bukti serta batasnya terpisah.
+
+## Celah interaksi yang ditemukan sebelum browser
+
+Fixture jahe/ikan tanpa kangkung menemukan guard Main yang hanya membuka penitipan Wira ketika produce.kangkung positif. Root memperbaiki guard agar membaca seluruh itemId resmi pada definisi servings. Tanpa hasil resmi, percakapan/pelayanan biasa tetap tersedia. Regresi memanggil Main._interact sebenarnya melalui capture khusus: jahe saja, ikan saja dan kangkung saja menuju panel Wira; kosong, nol dan item asing menuju percakapan. Focused homestead-options lulus (`.runtime/overnight-wira-produce-guard.log`). Ini belum bukti transaksi browser; ekspor1d3 sebelumnya masih mempunyai guard lama, jadi smoke kebun harus menunggu ekspor berikutnya.

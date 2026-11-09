@@ -799,7 +799,7 @@ func _interact() -> void:
 				homestead_ui.open_for("market")
 			else: _talk([{"name":str(obj.name),"text":str(obj.text)}])
 		"npc":
-			if str(obj.name)=="Mbah Wira" and int(GameState.homestead.get("produce",{}).get("kangkung",0))>0:
+			if str(obj.name)=="Mbah Wira" and _has_kedai_produce():
 				homestead_ui.open_for("wira")
 			else: _npc_interact(str(obj.name))
 		"surface_landmark":
@@ -817,6 +817,12 @@ func _interact() -> void:
 		"biota":
 			_start_net()
 			net_released = true
+func _has_kedai_produce() -> bool:
+	var produce:Dictionary=GameState.homestead.get("produce",{})
+	var servings:Dictionary=GameState.homestead_definitions.get("servings",{"kangkung":{"itemId":"kangkung"}})
+	for serving in servings.values():
+		if int(produce.get(str(serving.get("itemId","")),0))>0: return true
+	return false
 func service_resident(service_id: String) -> Dictionary:
 	if service_id!="balai" or not GameState.dive.is_empty() or not is_instance_valid(nala): return {}
 	var point: Dictionary=GameState.world.get("homestead",{}).get("permitBoard",{})
