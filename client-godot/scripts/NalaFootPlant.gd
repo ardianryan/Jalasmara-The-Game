@@ -334,7 +334,7 @@ func _terrain_duration(from:Vector3,to:Vector3,minimum:float,span:float) -> Dict
 		bound=(peak+curvature/2048.0)/duration
 		if bound<=4.9: break
 		duration+=.25
-	return {"distance":duration,"curveSpeedBound":bound,"curveOnly":true,"valid":bound<=4.9}
+	return {"distance":duration,"curveSpeedBound":bound,"curveOnly":true,"valid":bound<=4.9,"fromWorld":from,"toWorld":to,"fixedPathWorldXY":span}
 
 func _begin(side:String,at:Vector2,hips:Dictionary,right:Vector3) -> void:
 	_swing=side
@@ -429,6 +429,13 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 			_feet[_swing].fromWorld=_feet[_swing].sole
 			_distance=0.0
 			_landing_distance=_turn_distance
+			var entry:Dictionary=_feet[_swing]
+			if _physical_contract and (bool(entry.get("fixedTreadTarget",false)) or bool(entry.get("fixedRampTarget",false))):
+				var path:=_path_metrics(entry.from,entry.to)
+				var budget:=_terrain_duration(entry.fromWorld,entry.toWorld,_turn_distance,float(path.total))
+				_landing_distance=float(budget.distance)
+				if bool(entry.get("fixedTreadTarget",false)): entry.treadPlan.merge(budget,true)
+				else: entry.rampCurvePlan=budget
 		elif not resuming and _physical_contract and _swing!="":
 			var old_world:=_world_motion(at,_heading)
 			var requested_world:=_world_motion(at,next_heading)

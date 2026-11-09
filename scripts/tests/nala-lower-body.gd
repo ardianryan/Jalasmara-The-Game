@@ -128,6 +128,10 @@ func _measure(label:String) -> void:
 	if not _check(equipment.global_position.distance_to(full_body_anchor)<.003,"Separate equipment must follow actual lowered torso "+label+" actualGap="+str(equipment.global_position.distance_to(full_body_anchor))): return
 	for side in ["left","right"]:
 		var entry:Dictionary=pose.contacts.feet[side]
+		if str(pose.contacts.swingSide)==side and not entry.has("settlingTarget"):
+			var plan:Dictionary=entry.get("treadPlan",entry.get("rampCurvePlan",{}))
+			if not plan.is_empty():
+				if not _check(absf(float(plan.distance)-float(pose.contacts.landingDistance))<.00001 and Vector3(plan.fromWorld).distance_to(entry.fromWorld)<.003 and Vector3(plan.toWorld).distance_to(entry.toWorld)<.003,"Terrain curve budget is stale after reanchor/retarget "+label+" side="+side): return
 		var foot:Sprite3D=rig.get("_parts")[side+"_foot"]
 		entry["measuredFootBasis"]=[foot.global_basis.x,foot.global_basis.y,foot.global_basis.z]
 		if not _check(absf(foot.global_basis.x.length()-1)<.003 and absf(foot.global_basis.y.length()-1.0/vertical)<.003 and absf(foot.global_basis.x.dot(foot.global_basis.y))<.003,"Original foot pixel dimensions sheared or stretched "+label+" side="+side): return
