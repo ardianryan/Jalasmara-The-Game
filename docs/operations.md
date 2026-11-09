@@ -34,6 +34,8 @@ Manifest membedakan:
 - `context`: ukuran dan SHA-256 archive; `gameAssets`: ukuran/hash setiap aset; `toolSha256`: hash packager yang dijalankan.
 - `requiredReusedAssets`: aset yang sengaja tidak ada dalam tar. Dengan export saat ini, `--reuse-wasm` menghilangkan `index.wasm` dan `index.wasm.gz`; keduanya tetap tercantum beserta hash/ukurannya. Hilangkan opsi ini bila belum tersedia salinan yang cocok.
 
+Untuk rilis **host/API saja** dengan seluruh export Godot tetap byte-identik, gunakan `--reuse-game-assets` sebagai pengganti `--reuse-wasm`. Kedua opsi eksklusif. Packager tetap memvalidasi semua aset lokal/PCK/part/gzip dahulu; archive tidak membawa payload game, tetapi `requiredReusedAssets` wajib mencantumkan seluruh aset beserta byte/hash. Ambil salinan hanya dari image/build yang identitasnya dipin, lalu cocokkan **setiap** aset dengan manifest baru sebelum Docker build. Jangan menganggap PCK sama berarti loader/WASM/gzip juga sama. Jika satu aset berbeda atau tidak tersedia, hentikan dan buat paket yang membawanya; jangan menghapus item dari manifest agar lolos.
+
 Simpan hash manifest/context dan kedua commit dalam catatan rilis, lalu transfer kedua output ke direktori sementara baru di VPS. Cocokkan byte/hash context dengan manifest **dan catatan lokal yang sudah dipin** sebelum ekstraksi. Gunakan archive dari packager yang telah diverifikasi, bukan archive lain. Ekstrak ke direktori context kosong; jangan menimpa `/opt/jalasmara`, compose atau `.env`.
 
 Tetapkan `TASK_BUNDLE_DIR` ke path absolut direktori transfer dan `TASK_CONTEXT_DIR` ke path absolut direktori context baru yang belum ada. Verifikasi context sebelum ekstraksi; tetap cocokkan hash manifest dengan catatan lokal:

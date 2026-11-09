@@ -62,6 +62,39 @@ class ReleasePackageTests(unittest.TestCase):
                          {"index.wasm", "index.wasm.gz"})
         self.assertEqual(result["context"]["sha256"], API["sha256"](self.output / "context.tar"))
 
+    def test_all_assets_reuse_omits_payloads_but_requires_every_verified_file(self):
+        expected = API["asset_records"](self.game)
+        result = API["package"](self.root, self.output, reuse_game_assets=True)
+        with tarfile.open(self.output / "context.tar") as context:
+            files = [member.name for member in context.getmembers() if member.isfile()]
+        self.assertFalse(any(name.startswith("apps/web/public/game/") for name in files))
+        self.assertIn("Dockerfile", files)
+        self.assertEqual(result["gameAssets"], expected)
+        self.assertEqual(result["requiredReusedAssets"], expected)
+        self.assertEqual(result["context"]["sha256"], API["sha256"](self.output / "context.tar"))
+
+    def test_full_reuse_still_rejects_changed_pck_and_invalid_gzip(self):
+        (self.game / "index.pck").write_bytes(b"different")
+        with self.assertRaisesRegex(ValueError, "does not match its manifest"):
+            API["package"](self.root, self.output, reuse_game_assets=True)
+        self.assertFalse(self.output.exists())
+        (self.game / "index.pck").write_bytes(b"pck")
+        (self.game / "index.wasm.gz").write_bytes(gzip.compress(b"bad!"))
+        with self.assertRaisesRegex(ValueError, "does not match its original"):
+            API["package"](self.root, self.output, reuse_game_assets=True)
+        self.assertFalse(self.output.exists())
+
+    def test_reuse_modes_are_exclusive_and_no_reuse_packages_every_asset(self):
+        with self.assertRaisesRegex(ValueError, "Choose either"):
+            API["package"](self.root, self.output, True, reuse_game_assets=True)
+        self.assertFalse(self.output.exists())
+        result = API["package"](self.root, self.output)
+        self.assertEqual(result["requiredReusedAssets"], [])
+        with tarfile.open(self.output / "context.tar") as context:
+            names = set(context.getnames())
+        for asset in result["gameAssets"]:
+            self.assertIn("apps/web/public/game/" + asset["name"], names)
+
     def test_stale_part_manifest_rejected_before_output(self):
         self.manifest["hashes"] = ["0" * 64]
         self.write_manifest()

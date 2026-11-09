@@ -15,3 +15,8 @@ Batas review:
 - `declaredExportSource` memang hanya commit penuh yang ada dan dideklarasikan saat export; tidak mengklaim membuktikan hubungan biner PCK dengan source. `source` adalah HEAD untuk input Docker, keduanya boleh berbeda secara eksplisit.
 - Aset di-hash sebelum `tar.add`, tidak di-hash ulang dari tar. Export bersamaan dapat mengubah bytes di antara tahap itu; tidak ada concurrent export yang diamati. Validasi seluruh `gameAssets` pada context hasil ekstraksi tetap diperlukan dan menurut root sudah dijalankan di server. Ini bukan hasil verifikasi VPS/image independen dari lane peer.
 - Tidak memverifikasi image `203625…`, hash context `1fcce…`, konfigurasi deploy atau aktivasi publik. Tidak mengubah guard operasi maupun menambah approval flow.
+
+
+## Perluasan host-only sesudah ekspor3
+
+Root menambah opsi eksplisit `--reuse-game-assets` untuk rilis host/API dengan export tidak berubah. Ini bukan hasil peer5tes di atas. Root8tes CPU PASS: mode penuh menghilangkan seluruh generated payload dari tar dan tetap mewajibkan record byte/SHA setiap aset; perubahan PCK dan gzip tetap ditolak, mode reuse eksklusif, dan mode biasa tetap membawa semua aset. Penggunaan aktual/ukuran context berikutnya harus dicatat terpisah; belum klaim transfer atau image baru dari opsi ini.

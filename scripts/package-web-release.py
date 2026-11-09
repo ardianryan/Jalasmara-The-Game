@@ -88,7 +88,9 @@ def safe_member(member):
                         or part.startswith(".env") for part in path.parts))
 
 
-def package(root, output, reuse_wasm=False, export_source=None):
+def package(root, output, reuse_wasm=False, export_source=None, reuse_game_assets=False):
+    if reuse_wasm and reuse_game_assets:
+        raise ValueError("Choose either WASM reuse or all game asset reuse")
     if output.exists():
         raise ValueError("Output already exists; preserve previous release evidence")
     subprocess.run(["git", "diff", "--exit-code", "HEAD", "--", *SCOPES],
@@ -102,6 +104,8 @@ def package(root, output, reuse_wasm=False, export_source=None):
                        cwd=root, check=True, capture_output=True)
     game = root / "apps/web/public/game"
     assets = asset_records(game)
+    reused_names = ({asset["name"] for asset in assets} if reuse_game_assets
+                    else REUSABLE if reuse_wasm else set())
     archive = subprocess.check_output(
         ["git", "archive", "--format=tar", "HEAD", "--", *SCOPES], cwd=root)
     with tarfile.open(fileobj=io.BytesIO(archive)) as tracked:
@@ -120,7 +124,7 @@ def package(root, output, reuse_wasm=False, export_source=None):
                     continue
                 bundle.addfile(member, tracked.extractfile(member) if member.isfile() else None)
             for asset in assets:
-                if reuse_wasm and asset["name"] in REUSABLE:
+                if asset["name"] in reused_names:
                     continue
                 bundle.add(game / asset["name"],
                            arcname="apps/web/public/game/" + asset["name"], recursive=False)
@@ -130,7 +134,7 @@ def package(root, output, reuse_wasm=False, export_source=None):
                             "sha256": sha256(context)},
                 "gameAssets": assets,
                 "requiredReusedAssets": [asset for asset in assets
-                                         if reuse_wasm and asset["name"] in REUSABLE],
+                                         if asset["name"] in reused_names],
                 "reuseRequirement": "Verify each reused file's byte count and SHA-256 before copying it into the extracted build context. Verify all gameAssets before building.",
                 "toolSha256": sha256(Path(__file__))}
     (output / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
@@ -140,12 +144,16 @@ def package(root, output, reuse_wasm=False, export_source=None):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", required=True, type=Path)
-    parser.add_argument("--reuse-wasm", action="store_true")
+    reuse = parser.add_mutually_exclusive_group()
+    reuse.add_argument("--reuse-wasm", action="store_true")
+    reuse.add_argument("--reuse-game-assets", action="store_true",
+                       help="Omit all verified unchanged game assets; consumer must verify every reused byte/hash")
     parser.add_argument("--export-source", required=True,
                         help="Full source commit declared when the Godot export began; separate from Docker source")
     args = parser.parse_args()
     root = Path(__file__).resolve().parent.parent
-    manifest = package(root, args.output.resolve(), args.reuse_wasm, args.export_source)
+    manifest = package(root, args.output.resolve(), args.reuse_wasm, args.export_source,
+                       args.reuse_game_assets)
     print(json.dumps({"source": manifest["source"], "context": manifest["context"],
                       "requiredReusedAssets": manifest["requiredReusedAssets"]}, indent=2))
 
