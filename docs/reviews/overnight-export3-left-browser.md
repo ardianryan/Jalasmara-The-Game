@@ -47,7 +47,7 @@ Actual PNG review: badge frames are closed and text/controls remain separate at6
 
 The next acceptance should retain this prefix and use a separately declared, physically validated continuation fixture at the already reached forest point, or an explicitly granted longer full-flow budget. It must continue with actual input and preserve the bridge/touch/save assertions. No harness threshold, map geometry, product control or proxy was changed to force a pass.
 
-## Prepared narrower forest component gate — not run yet
+## Prepared narrower forest component gate
 
 The integrator subsequently approved a fresh **forest-only component fixture**, rather than another long hub prefix or a runtime teleport. New `PLAN06_ROUTE_MODE=left-forest` derives a clear authored pre-upper-bridge route vertex from the shared/current HTTP world. Current map yields1200/730: the nearer1260/660 vertex does not have the required55-unit joystick probe clearance. Sixteen radial probes and their shared-authority segments, the approach route and the complete upper-bridge segment must remain walkable; malformed/missing bridge metadata or a blocked approach/crossing rejects setup. The initial Redis surface is declared before login; there is no in-game position override.
 
@@ -62,3 +62,26 @@ PLAN06_EXPECT_PCK=73d45630ab69033ac36a64740ecc73ecdb7363c9f99805222b6a9237dcb2d1
 PLAN06_EXPECT_PCK_BYTES=64494656 \
 node --import tsx scripts/plan06-layout-browser.mjs
 ```
+
+## Actual forest component result
+
+After the next exclusive grant, the command above ran from integration `2b677e56f27a439590053caebdeba42474d77a55` against the **same73d456 PCK**. Own UUID `c2ab0b07-8681-4f15-9e8d-f255f75f0221` began at the declared source-derived forest1200/730, not the last point from the earlier fixture. This is a separate component test; no uninterrupted hub-to-upper-bridge route is claimed.
+
+**3/3 checks PASS, exit0, outcome completed,58,231ms**,73 matrix pulses,0 legacy pulses,32 surface-position POST responses all HTTP200,0 browser/API errors. Cleanup verified `ownTemporaryPlayerRemoved=true`, then the browser slot was explicitly released. All three completed names are forest-scoped.
+
+- At844×390, actual CDP touch input moved Nala25.706665/14.744324 logical units, projecting to36.354206 horizontal pixels and−0.000292 vertical pixels under actual−45° camera. The joystick became active while held and returned neutral after touchEnd.
+- Actual keyboard input followed the validated approach and crossed the upper bridge by more than250 logical units. Emitted bridge orientation/rail-post and camera-contract assertions passed. The server acknowledged1603.94116210938/637.787353515625, forest layout6.
+- The real page reloaded and engine reattached. Nala resumed at the exact acknowledged coordinates. Authoritative area forest, story day2,200coins, empty inventory and36-minute calendar configuration all remained correct.
+
+Integration artifacts: `artifacts/browser/plan06-layout-c2ab0b07-8681-4f15-9e8d-f255f75f0221/`; log `.runtime/overnight-export3-left-forest-browser.log`. Touch release was captured at2026-11-09T19:46:06.067Z; bridge crossing19:46:46.625Z; actual reload19:46:57.373Z.
+
+| Artifact | SHA256 |
+| --- | --- |
+| `results.json` | `305003e5638e5c11f0165ac72a7b320977de03d73c0de50cc107777d435d98c0` |
+| `left-forest-touch-released.png` | `ab4f102e4e1b001db4c6849100d282b038197f80e7da28187964ec50a94b11dc` |
+| `left-bridge-upper-crossed.png` | `755fd1ca43313a1d41f9430bb4c6bb731fea2833f64f90a4e5cec74d801016ff` |
+| `left-forest-position-resumes-after-reload.png` | `90521ae536b65dc0916fc07eb915bb40a48d046372627c8c15bfebe713410da2` |
+
+PNG review shows the bridge deck/rails and Nala at the far exit, with readable badge frames and separated touch controls. These night/rain stills do not prove walking naturalness, daylight color, or physical-device FPS. The first after-reload screenshot says **“Jam aktif di sesi lain”**. Calendar writer reacquisition was not asserted: the existing heartbeat server retains another per-page owner for up to20seconds (`apps/api/src/homestead.ts`), and this capture was about11seconds after the bridge image. This is consistent with a temporary old-page lease, but no actual later reacquisition was tested. Calendar configuration preservation must not be described as resumed clock ownership.
+
+The original five-minute full-flow failure above remains valid and unchanged. The newer result closes the specifically missing forest joystick/bridge/save/reload component on this package; it does not turn the earlier failed run into PASS, claim the untraversed forest connection between fixtures, or authorize a public staging acceptance claim.
