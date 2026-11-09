@@ -13,7 +13,7 @@ APP_TEST_ORIGIN=http://localhost:3111 \
 PLAN06_LOADER_FAULT=pck \
 PLAN06_EXPECT_PCK=<new-sha256> \
 PLAN06_EXPECT_PCK_BYTES=<new-byte-count> \
-node --experimental-strip-types scripts/loading-body-fault-browser.mjs
+node --import tsx scripts/loading-body-fault-browser.mjs
 ```
 
 Run WASM mode separately afterward if granted. These are explicitly injected local network body failures; they are not a production server failure, a public HTTP2 fix, a real-device performance result or an excuse to relax image/byte/cleanup assertions.
