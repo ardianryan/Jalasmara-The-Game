@@ -1,6 +1,6 @@
 # Referensi Noxe dan PixelDoll untuk Jalasmara
 
-Diperiksa pada 9 November 2026 atas permintaan pengguna. Status: penelitian sumber dan pratinjau bawaan, belum integrasi runtime atau produksi aset baru. Godot tetap menjadi runtime; prioritas penyelesaian dunia pada [Rencana 06](../plans/06-finishing-dunia-npc-dan-perluasan-desa.md) tetap berlaku.
+Diperiksa pada 9 November 2026 atas permintaan pengguna. Status awal adalah penelitian sumber/pratinjau bawaan; kini port terbatas orbit/snap Noxe masuk kandidat06-B melalui `LandCameraPose.gd`, dengan notice MIT dan tes native. PixelDoll tetap referensi, belum menjadi generator/adapter aktif. Godot tetap runtime; prioritas pada [Rencana 06](../plans/06-finishing-dunia-npc-dan-perluasan-desa.md) dan [handoff terbaru](../agent-handoff.md) berlaku. Pembanding kiri bukan penerapan kamera gameplay global.
 
 | Proyek | Revisi yang diperiksa | Keputusan untuk Jalasmara |
 | --- | --- | --- |

@@ -2,7 +2,7 @@
 
 ## Pembaruan aktif 9 November: kandidat 06-B
 
-Paket 06-A/B1 yang terbukti di staging tetap source `9ba21c6` dan PCK `a9378a52`. Kandidat berikutnya pada `work/06b-integration` mengumpulkan serambi/tempat berteduh, tumpuan Griya, pilot kontak/rear/grip Ujang, helper kamera Noxe berlisensi dan perbaikan website. Kandidat ini belum dinyatakan dirilis. Bukti website production mencatat32 pemeriksaan tanpa error JavaScript; API pada iterasi awal menemukan dua regresi rute, lalu perbaikan subagent lulus81 tes. Alignment rumah/dek dan masalah kaki saat berbelok sedang diselesaikan sebelum tes gabungan akhir.
+Paket 06-A/B1 yang terbukti di staging tetap source `9ba21c6` dan PCK `a9378a52`. Kandidat pada `work/06b-integration` kini mempunyai Griya sejajar dek, lima serambi, sepuluh post, tumpuan/coverage hujan, kontak/grip Ujang serta langkah transisi belok, helper kamera Noxe berlisensi dan perbaikan website. Lokal82API/40dunia/14harness lulus; Ujang1.242sampel termasuk168belok,26grip dan176PNG berurutan diperiksa. Website production32checks tanpa error. PCK kandidat `7f2ac59f` sudah diekspor,64.289.088B;656payload MD5 sah dan teks MIT Noxe di dalam paket cocok dengan source. Browser actual game sedang diuji; kandidat belum dinyatakan dirilis.
 
 Arahan terbaru: kamera dari kiri menghadap serong kanan; rumah dermaga sejajar sumbu dek, bukan footprint skew yang ditambah rotasi kamera. Kamera kiri baru pembanding native, belum default gameplay global. [Handoff aktif](agent-handoff.md) menyimpan branch, hasil terbaru, tool aktual, batas dan langkah kerja; [PRD](PRD.md) serta [AGENTS.md](../AGENTS.md) menyimpan kebutuhan dan workflow. Bagian di bawah merupakan status paket terdahulu dan tidak menggantikan laporan kandidat.
 
