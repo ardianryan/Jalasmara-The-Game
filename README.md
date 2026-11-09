@@ -11,6 +11,8 @@ Dibangun dengan **Godot 4.7.2** untuk permainan, **React + Vite** untuk akun dan
 - Mirror sumber dan laporan: [GitHub](https://github.com/ardianryan/Jalasmara-The-Game)
 - [Laporan CI GitLab yang dikirim ke GitHub](https://github.com/ardianryan/Jalasmara-The-Game/tree/ci-reports)
 
+[Galeri visual pengembangan](docs/visual/README.md) menampilkan screenshot dunia, HUD/loading dan perbandingan animasi, lengkap dengan commit, asal bukti dan batas pengujian. Gambar kandidat yang belum dirilis diberi label tersendiri.
+
 Lihat [status pengembangan dan bukti pengujian](docs/development-status.md). Versi ini masih prototipe; pemolesan visual, uji bermain manusia, dan pengujian HP fisik belum selesai.
 
 Untuk melanjutkan pengembangan dengan agent AI, mulai dari [AGENTS.md](AGENTS.md), [handoff aktif dan ringkasan progres](docs/agent-handoff.md), serta [PRD](docs/PRD.md). Handoff membedakan kandidat lokal dari rilis staging, tool yang benar-benar dipakai, kegagalan tes yang masih terbuka, dan urutan kerja berikutnya.

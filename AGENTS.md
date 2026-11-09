@@ -53,3 +53,7 @@ Perbarui laporan `docs/reviews/` dan [handoff aktif](docs/agent-handoff.md), wal
 - Keputusan pengguna terbaru serta koreksi yang membatalkan asumsi lama.
 
 Sinkronkan PRD/rencana/status bila cakupan atau penerimaan berubah. Simpan ringkasan singkat di log handoff setiap kali paket ditutup; jangan mengganti laporan lama seolah tes baru sudah dijalankan. Jawaban chat bukan satu-satunya tempat menyimpan progres.
+
+## Galeri bukti di GitHub
+
+Pengguna meminta artefak visual dapat dilihat sebagai dokumentasi pengembangan. Simpan pilihan screenshot/contact sheet yang berguna di `docs/visual/`, tautkan dari README dan laporan. Cantumkan source/PCK, asal gambar, hash, hasil pengujian serta status kandidat/rilis; pertahankan lisensi aset terpisah dari MIT kode. Gunakan bukti original proyek tanpa data akun/kredensial/moodboard. Kurasi ukuran agar repository tetap ringan; rekaman lengkap, cache, ekspor game dan dump pengujian tetap mengikuti aturan artefak yang sudah ada. WorldKit dapat merujuk contoh galeri tanpa mengubah screenshot game menjadi aset kit berlisensi MIT.
