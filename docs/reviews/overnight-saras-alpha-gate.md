@@ -43,3 +43,18 @@ Two short source-checked viewpoints `(1530,715)` and `(1540,690)` have a body-cl
 ```sh
 APP_TEST_ORIGIN=http://localhost:3111 PLAN06_EXPECT_PCK=1315f34672b0fc5694a5f73684ca68bfbc6b5be1f6f4560b9628cc14ac2ef5e0 PLAN06_EXPECT_PCK_BYTES=64491320 PLAN06_ROUTE_MODE=saras PLAN06_SARAS_ATTENTION_WORK=1 node --import tsx scripts/plan06-layout-browser.mjs
 ```
+
+## Actual short night work-site result: unoccluded current-browser review passes
+
+The approved attention variant completed on the same pinned1315/64,491,320byte localhost3111 package. UUID `25134fd8-9347-4235-a75a-253d8cf1921a` passed three behavior checks and verified complete cleanup. Actual route time after attach was10,513ms, with four real camera-matrix keyboard pulses, zero legacy pulses and three surface-position acknowledgements. There were zero API/browser errors. The exclusive browser slot was explicitly released before root's API restart/public work.
+
+Saras stayed at her actual authored initial work spawn through ordinary player-attention behavior. The recorded state remained `walking_rest`, not moving, not at station, with scheduled destination `(1020,310)` unchanged. Actual clear night persisted (`night=true`, `rain=0`); screenshots show20:01 and20:02. Nala started at `(1530,715)`, physically moved to `(1541.0176,693.7469)`, and both E interactions identified Saras in the real shared dialogue presenter. Coins200, story day2, inventory and missions remained unchanged.
+
+Both original844×390 pre-dialog PNGs were inspected. Saras's head, torso, arms, legs, outer contour and visible gaps between limbs are unobscured over grass, with Nala distinctly separated. No gray rectangular backplate like the historical capture is visible in either image. This closes the missing **current unoccluded Main/browser night-site visual observation** in combination with the independently verified packed alpha/source path and earlier native transparent-sample diagnostic. It does not establish the historical cause, prove every NPC/lighting/location combination, or turn the palm-obscured rest screenshots into complete silhouette evidence. No alpha mode, source artwork, neutral color, renderer, weather, NPC state or production UI was modified to obtain this result.
+
+Local evidence under integration `artifacts/browser/plan06-layout-25134fd8-9347-4235-a75a-253d8cf1921a/`: `results.json`, both original `saras-night-work-attention-view-*-before-conversation-needs-image-review.png` images, two actual-dialogue images and initial fixture image. Log `.runtime/overnight-saras-attention-browser.log`.
+
+- View1 original PNG SHA256: `ae4ae583380ed4d9bb3fb243dd3086e7d2fdba963891e568da0da236a3c2d7a7`.
+- View2 original PNG SHA256: `472b00c9c3380d1af2e95a820b8e0c835681890e43f585337799193a97358b49`.
+
+The short local acceptance does not prove physical Samsung S23/Windows performance or public delivery. Root owns independent image review, integration/release status and any curated gallery copy; the original test artifacts remain unchanged.
