@@ -1,6 +1,6 @@
 # Handoff aktif agent
 
-**Checkpoint aktif, 10 November 02.08 WIB.** Rilis publik tetap source798a47b/image d044/PCK1315 di bawah. Source tambahan pada branch `work/overnight-integration` belum diekspor atau dirilis. Checkpoint ini mengatasi antrean historis berikutnya.
+**Checkpoint aktif, 10 November 02.04 WIB.** Rilis publik tetap source798a47b/image d044/PCK1315 di bawah. Source tambahan pada branch `work/overnight-integration` belum diekspor atau dirilis. Checkpoint ini mengatasi antrean historis berikutnya.
 
 - [Alur induk keramba aktual](reviews/overnight-live-parent-cycle-actual.md) selesai **8/8**: dua tangkapan Bintang3 asli, ekstraksi, stok dua induk, pakan dan tidur dua hari, panen satu anak, reload sama; tidak menyuntik induk/hasil panen. Nol error, browser dan fixture dibersihkan.
 - [Admin](reviews/overnight-admin-array-drafts.md) lulus **35 pemeriksaan React** pada 1440/667/390/320; draft JSON invalid dipertahankan dan memblokir simpan, draft lain tidak hilang saat impor. API memakai fixture intersep, bukan transaksi database aktual. [Loading landscape pendek](reviews/overnight-loading-short-landscape.md) lulus **16 pemeriksaan host**; Menu tidak bertabrakan dan aksi dapat digulir/disentuh pada tinggi280/320. Root meninjau gambar aktual. Keduanya masih lokal, bukan isi image798.
