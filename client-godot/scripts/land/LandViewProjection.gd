@@ -67,6 +67,10 @@ func input_motion(screen_input: Vector2,height_gradient := Vector2.ZERO) -> Vect
 func pixels_to_logical_delta(pixel_delta: Vector2,height_gradient := Vector2.ZERO) -> Vector2:
 	return logical_vector_from_view(pixel_delta*view_height/float(pixels.y),height_gradient)
 
+func motion_contract(height_gradient := Vector2.ZERO) -> Dictionary:
+	var columns:=_columns(height_gradient)
+	return {"schemaVersion":1,"columns":[[columns[0].x,columns[0].y],[columns[1].x,columns[1].y]],"heightGradient":[height_gradient.x,height_gradient.y],"determinant":_determinant(columns),"pixelsPerViewUnit":float(pixels.y)/view_height}
+
 func project_world(point: Vector3) -> Vector2:
 	return CameraPose.project(point,camera_pose,view_height,pixels)
 
