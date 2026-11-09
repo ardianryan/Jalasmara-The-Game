@@ -95,7 +95,7 @@ func _on_mesh(sole:Vector3) -> bool:
 
 func _measure(label:String) -> void:
 	var rig:Node3D=renderer.actors_3d.get("_nala_lower")
-	var pose:Dictionary=renderer.actors_3d.counts.nalaLowerBody
+	var pose:Dictionary=renderer.actors_3d.counts.get("nalaLowerBody",{})
 	trace.append({"case":label,"position":[player.position.x,player.position.y],"pose":pose.duplicate(true)})
 	if trace.size()>16: trace.pop_front()
 	if not _check(bool(pose.get("enabled",false)),"Nala lower-body pilot rejected "+label+" requestedDrop="+str(pose.get("requestedDropPixels",-1))): return

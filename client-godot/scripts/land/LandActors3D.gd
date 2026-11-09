@@ -159,7 +159,7 @@ func update_actors(delta: float) -> void:
 			var nala := _sprite("Nala",_frame(visual.texture,rect),actor.position,cell*visual.scale.abs(),-visual.position.y,visual.flip_h,pivot.y if pivot!=Vector2.ZERO else -1.0,lift)
 			var gear: Dictionary=visual.get_equipment_state() if visual.has_method("get_equipment_state") else {}
 			var lower_pose:Dictionary={}
-			if bool(actor.get_meta("nala_lower_body_pilot",false)) and not bool(actor.get("in_water")):
+			if bool(actor.get_meta("nala_lower_body_pilot",false)) and not ("in_water" in actor and bool(actor.get("in_water"))):
 				if not is_instance_valid(_nala_lower):
 					_nala_lower=preload("res://scripts/NalaLowerBody3D.gd").new()
 					add_child(_nala_lower)
