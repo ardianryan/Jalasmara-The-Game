@@ -19,6 +19,8 @@ var _floors: Array[PackedVector2Array] = []
 var _obstacles: Array[PackedVector2Array] = []
 var _discontinuities := 0
 var _support_extents:Dictionary={}
+var _landing_geometry:Dictionary={}
+var _landing_cache:Dictionary={}
 var _right:=Vector3.RIGHT
 var _stairs:Array=[]
 var _connectors:Array=[]
@@ -35,6 +37,7 @@ var _physical_contract:=false
 var _transition_next:=true
 var _body_facing_transitions:=0
 const Traversal=preload("res://scripts/SurfaceTraversal.gd")
+const FootPlane=preload("res://scripts/NalaFootPlane.gd")
 
 func configure(owner_renderer: Node,contract:Dictionary={}) -> void:
 	renderer=owner_renderer
@@ -76,6 +79,13 @@ func _legal(point:Vector2) -> bool:
 func _supported(point:Vector2,side:String,required_height:float=NAN) -> bool:
 	var center:=_ground(point)
 	if not is_nan(required_height) and absf(center.z-required_height)>.01: return false
+	if _physical_contract and _landing_geometry.has(side):
+		var geometry:Dictionary=_landing_geometry[side]
+		var key:Array=[geometry.id,geometry.right,geometry.vertical,point]
+		if not _landing_cache.has(key):
+			if _landing_cache.size()>512: _landing_cache.clear()
+			_landing_cache[key]=_legal(point) and FootPlane.valid_contact(renderer,point,geometry,Callable(self,"_legal"))
+		return bool(_landing_cache[key])
 	var extents:Vector2=_support_extents.get(side,Vector2(-5,5))
 	for extent in [extents.x,0.0,extents.y]:
 		var offset:=_logical_offset(point,_right*float(extent))
@@ -89,25 +99,27 @@ func _supported(point:Vector2,side:String,required_height:float=NAN) -> bool:
 func _safe(point:Vector2,origin:Vector2,side:String,required_height:float=NAN) -> Vector2:
 	var near_connector:=false
 	var tangent:=Vector2.ZERO
-	for profile in _stairs:
+	var height:=required_height
+	for profile in (_connectors if _physical_contract else _stairs):
 		if not Traversal.connector_ground(profile,point).is_empty() or not Traversal.connector_ground(profile,origin).is_empty():
-			if str(profile.get("type",""))=="stairs":
+			if str(profile.get("type",""))=="stairs" or _physical_contract:
 				near_connector=true
+				if str(profile.type)=="ramp": height=NAN
 				tangent=(Vector2(profile.end)-Vector2(profile.start)).normalized()
 				break
 	# Preserve the established flat path exactly; only a real stair requires tread-fit search.
 	if near_connector:
-		if _supported(point,side,required_height): return point
+		if _supported(point,side,height): return point
 		for step in range(1,41):
 			for sign in [1.0,-1.0]:
 				var candidate:Vector2=point+tangent*float(step)*.5*float(sign)
-				if _supported(candidate,side,required_height): return candidate
+				if _supported(candidate,side,height): return candidate
 	for step in range(13):
 		var candidate:=point.lerp(origin,float(step)/12.0)
 		var valid:=true
 		for offset in [Vector2.ZERO,Vector2(-3,-2),Vector2(3,-2),Vector2(3,2),Vector2(-3,2)]:
 			if not _legal(candidate+offset): valid=false; break
-		if valid and (not near_connector or _supported(candidate,side,required_height)): return candidate
+		if valid and (not near_connector or _supported(candidate,side,height)) and (not _physical_contract or not _landing_geometry.has(side) or _supported(candidate,side,height)): return candidate
 	return origin
 
 func _ground(at: Vector2) -> Vector3:
@@ -232,6 +244,19 @@ func _ramp_body_rate(from:Vector2,to:Vector2) -> float:
 		rate=maxf(rate,absf(last.z-first.z)/maxf(.001,span))
 	return rate
 
+func _ramp_landing(from:Vector2,to:Vector2) -> bool:
+	for profile in _connectors:
+		if str(profile.type)!="ramp": continue
+		if not Traversal.connector_ground(profile,from).is_empty() or not Traversal.connector_ground(profile,to).is_empty(): return true
+		var start:Vector2=profile.start
+		var end:Vector2=profile.end
+		var tangent:=(end-start).normalized()
+		var side:=Vector2(-tangent.y,tangent.x)*float(profile.width)
+		var corners:Array[Vector2]=[start-side,start+side,end+side,end-side]
+		for index in range(4):
+			if Geometry2D.segment_intersects_segment(from,to,corners[index],corners[(index+1)%4])!=null: return true
+	return false
+
 func _transfer_body(at:Vector2,distance:float,side:String) -> void:
 	if not _support_transfer_active(at):
 		var ordinary:=_ground(at).z
@@ -330,7 +355,9 @@ func _begin(side:String,at:Vector2,hips:Dictionary,right:Vector3) -> void:
 	entry.toWorld=_ground(entry.to)
 	entry.landingHeight=Vector3(entry.toWorld).z
 	entry.fixedTreadTarget=false
+	entry.fixedRampTarget=false
 	entry.erase("treadPlan")
+	entry.erase("rampCurvePlan")
 	var tread:=_next_tread(side,at,entry.to)
 	if not tread.is_empty():
 		entry.treadPlan=tread.duplicate(true)
@@ -344,6 +371,14 @@ func _begin(side:String,at:Vector2,hips:Dictionary,right:Vector3) -> void:
 			budget["fixedPathWorldXY"]=float(path.total)
 			_landing_distance=float(budget.distance)
 			entry.treadPlan.merge(budget,true)
+	elif _physical_contract and _ramp_landing(entry.from,entry.to):
+		var path:=_path_metrics(entry.from,entry.to)
+		var budget:=_terrain_duration(entry.fromWorld,entry.toWorld,_landing_distance,float(path.total))
+		_landing_distance=float(budget.distance)
+		entry.fixedRampTarget=true
+		entry["rampCurvePlan"]=budget
+	entry["landingGeometryValid"]=not _physical_contract or not _landing_geometry.has(side) or _supported(entry.to,side)
+	entry.erase("settlingTarget")
 	entry.grounded=false
 
 func _reset(at:Vector2,hips:Dictionary,right:Vector3) -> void:
@@ -361,8 +396,9 @@ func _reset(at:Vector2,hips:Dictionary,right:Vector3) -> void:
 	_stair_transfer=_support_transfer_active(at)
 	_ready=true
 
-func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,delta:float,support_extents:Dictionary={}) -> Dictionary:
+func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,delta:float,support_extents:Dictionary={},landing_geometry:Dictionary={},settlement_ready:bool=true) -> Dictionary:
 	_support_extents=support_extents
+	_landing_geometry=landing_geometry
 	_right=right
 	if not _ready: _reset(at,hips,right)
 	if paused: return snapshot()
@@ -378,14 +414,22 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 	if accepted_moving and physical>.00001:
 		_accepted_distance+=physical
 		var next_heading:=logical_delta.normalized()
-		if _physical_contract and _swing=="" and _heading.dot(next_heading)<_turn_cosine: _transition_next=true
-		if _swing!="" and _heading.dot(next_heading)<_turn_cosine:
+		var resuming:=_physical_contract and _swing!="" and _feet[_swing].has("settlingTarget")
+		if resuming:
+			var entry:Dictionary=_feet[_swing]
+			var actual:=FootPlane.ground_below(renderer,entry.logical,entry.sole)
+			if bool(actual.valid): entry.logical=actual.logical
+			_heading=next_heading
+			_transition_next=true
+			_begin(_swing,_last_at,hips,right)
+		elif _physical_contract and _swing=="" and _heading.dot(next_heading)<_turn_cosine: _transition_next=true
+		if not resuming and _swing!="" and _heading.dot(next_heading)<_turn_cosine:
 			# Re-anchor the airborne path at its actual pose before changing heading.
 			_feet[_swing].from=_feet[_swing].logical
 			_feet[_swing].fromWorld=_feet[_swing].sole
 			_distance=0.0
 			_landing_distance=_turn_distance
-		elif _physical_contract and _swing!="":
+		elif not resuming and _physical_contract and _swing!="":
 			var old_world:=_world_motion(at,_heading)
 			var requested_world:=_world_motion(at,next_heading)
 			var prior:=Vector2(old_world.x,old_world.y).normalized()
@@ -409,9 +453,10 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 			var entry:Dictionary=_feet[_swing]
 			entry.lateralOffset=move_toward(float(entry.lateralOffset),float(hips[_swing]),chunk)
 			# Retarget only the free foot; an already planted sole never follows the torso.
-			var target:Vector2=entry.to if bool(entry.get("fixedTreadTarget",false)) else _safe(_forward_point(_base(sample,float(entry.lateralOffset),right),_landing_distance-_distance+_landing_lead),sample,_swing,float(entry.landingHeight))
+			var target:Vector2=entry.to if bool(entry.get("fixedTreadTarget",false)) or bool(entry.get("fixedRampTarget",false)) else _safe(_forward_point(_base(sample,float(entry.lateralOffset),right),_landing_distance-_distance+_landing_lead),sample,_swing,float(entry.landingHeight))
 			entry.to=target
 			entry.toWorld=_ground(target)
+			entry["landingGeometryValid"]=not _physical_contract or not _landing_geometry.has(_swing) or _supported(target,_swing)
 			_transfer_body(sample,chunk,_swing)
 			body_advanced=true
 			var u:=clampf(_distance/_landing_distance,0,1)
@@ -445,12 +490,17 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 				_swing=""
 	elif _swing!="":
 		var entry:Dictionary=_feet[_swing]
-		var ground:=_ground(entry.logical)
+		if _physical_contract and not entry.has("settlingTarget"):
+			entry["settlingTarget"]=_safe(entry.logical,at,_swing)
+			entry.to=entry.settlingTarget
+			entry["landingGeometryValid"]=not _landing_geometry.has(_swing) or _supported(entry.to,_swing)
+		var ground:=_ground(entry.get("settlingTarget",entry.logical))
 		entry.toWorld=ground
 		_transfer_body(at,maxf(0,delta)*24.0,_swing)
 		body_advanced=true
 		entry.sole=Vector3(entry.sole).move_toward(ground,maxf(0,delta)*24.0)
-		if Vector3(entry.sole).distance_to(ground)<.001:
+		if Vector3(entry.sole).distance_to(ground)<.001 and settlement_ready:
+			entry.logical=entry.get("settlingTarget",entry.logical)
 			entry.sole=ground
 			entry.plant=ground
 			entry.grounded=true
@@ -469,4 +519,4 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 	return snapshot()
 
 func snapshot() -> Dictionary:
-	return {"bodyHeight":_body_height,"bodyTransferRate":maxf(_body_rate,_continuous_ground_rate),"continuousGroundRate":_continuous_ground_rate,"feet":_feet.duplicate(true),"swingSide":_swing,"swingDistance":_distance,"acceptedDistance":_accepted_distance,"stepDistance":_steady_distance,"landingLead":_landing_lead,"physicalContract":_physical_contract,"bodyFacingTransitions":_body_facing_transitions,"shortHandoverPending":_transition_next,"landingDistance":_landing_distance,"contacts":_contact_count,"discontinuityResets":_discontinuities,"actorRootMotion":false,"legacyFoleyChanged":false}
+	return {"actorLogical":_last_at,"bodyHeight":_body_height,"bodyTransferRate":maxf(_body_rate,_continuous_ground_rate),"continuousGroundRate":_continuous_ground_rate,"feet":_feet.duplicate(true),"swingSide":_swing,"swingDistance":_distance,"acceptedDistance":_accepted_distance,"stepDistance":_steady_distance,"landingLead":_landing_lead,"physicalContract":_physical_contract,"bodyFacingTransitions":_body_facing_transitions,"shortHandoverPending":_transition_next,"landingDistance":_landing_distance,"contacts":_contact_count,"discontinuityResets":_discontinuities,"actorRootMotion":false,"legacyFoleyChanged":false}

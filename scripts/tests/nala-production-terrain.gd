@@ -122,7 +122,7 @@ func run() -> void:
 		if not InputMap.has_action(action): InputMap.add_action(action)
 		Input.action_release(action)
 	var hashes:Dictionary={}
-	for path in ["res://scripts/Player.gd","res://scripts/NalaPhysicalMotion.gd","res://scripts/NalaFootPlant.gd","res://scripts/NalaLowerBody3D.gd","res://scripts/CharacterVisual.gd","res://scripts/land/LandWorld3D.gd","res://scripts/land/LandGeometry.gd","res://../scripts/tests/nala-production-gait.gd","res://../scripts/tests/nala-production-terrain.gd","res://../scripts/tests/nala-lower-body.gd"]: hashes[path]=FileAccess.get_sha256(path)
+	for path in ["res://scripts/Player.gd","res://scripts/NalaPhysicalMotion.gd","res://scripts/NalaFootPlant.gd","res://scripts/NalaFootPlane.gd","res://scripts/SurfaceTraversal.gd","res://scripts/WorldFoley.gd","res://scripts/land/LandSurfaceQueryCache.gd","res://scripts/NalaLowerBody3D.gd","res://scripts/CharacterVisual.gd","res://scripts/land/LandWorld3D.gd","res://scripts/land/LandGeometry.gd","res://../scripts/tests/nala-production-gait.gd","res://../scripts/tests/nala-production-terrain.gd","res://../scripts/tests/nala-lower-body.gd"]: hashes[path]=FileAccess.get_sha256(path)
 	var filter:=OS.get_environment("NALA_TERRAIN_PROFILE")
 	var first:=maxi(0,int(OS.get_environment("NALA_TERRAIN_FIRST")))
 	var limit:=maxi(1,int(OS.get_environment("NALA_TERRAIN_CASES"))) if OS.has_environment("NALA_TERRAIN_CASES") else 16

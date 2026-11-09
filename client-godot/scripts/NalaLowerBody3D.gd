@@ -16,6 +16,7 @@ var _foot_views:Dictionary={}
 var _pivot_offsets:Dictionary={}
 var _foot_planes:Dictionary={}
 var _support_extents:Dictionary={}
+var _opaque_vertices:Dictionary={}
 var _last_distance:=0.0
 const DIRECTIONS:=["east","south_east","south","south_west","west","north_west","north","north_east"]
 const FootPlane=preload("res://scripts/NalaFootPlane.gd")
@@ -127,6 +128,14 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 		_data=JSON.parse_string(FileAccess.get_file_as_string("res://resources/art/player-lower-body/male-nusantara-"+outfit+"-v1.json"))
 		_atlas=load(str(_data.source))
 		_support_extents.clear()
+		_opaque_vertices.clear()
+		if bool(actor.get_meta("nala_physical_walk_pilot",false)):
+			var source_image:Image=_atlas.get_image()
+			if source_image.is_compressed(): source_image.decompress()
+			for source_direction in _data.views:
+				var source_view:Dictionary=_data.views[source_direction]
+				for side in ["left","right"]:
+					_opaque_vertices[str(source_direction)+"/"+side]=FootPlane.opaque_vertices(source_image,int(source_view.sourceColumn),source_view.legs[side].parts.foot)
 		for side in ["left","right"]:
 			var extent:=Vector2.ZERO
 			for source_view in _data.views.values():
@@ -172,12 +181,39 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 		sole_offsets[side]=float(view.legs[side].parts.foot[0])+float(view.legs[side].solePixel[0])-64.0
 	var frozen:=bool(state.poseFrozen)
 	var moved:=bool(state.poseWalking) and float(state.speed)>.1
-	var pose:Dictionary=_planner.update(actor.position,moved,frozen,sole_offsets,right,delta,_support_extents)
+	var physical_plane:=bool(actor.get_meta("nala_physical_walk_pilot",false))
+	var geometry:Dictionary={}
+	if physical_plane:
+		for side in ["left","right"]:
+			var foot_direction:=str(_foot_views[side])
+			geometry[side]={"id":outfit+"/"+foot_direction+"/"+side,"leg":_data.views[foot_direction].legs[side],"vertices":_opaque_vertices[foot_direction+"/"+side],"right":right,"vertical":vertical}
+	var planner_delta:=delta
+	var settlement_budget:=0.0
+	var settlement_ready:=true
+	var settling:=false
+	if physical_plane and not frozen and not stored.feet.is_empty() and str(stored.swingSide)!="":
+		var motion:Vector3=renderer.ground_point(actor.position)-renderer.ground_point(Vector2(stored.actorLogical))
+		motion.z=0
+		if motion.length()<=.00001:
+			settling=true
+			var side:=str(stored.swingSide)
+			var entry:Dictionary=stored.feet[side]
+			var target:Vector3=entry.toWorld if entry.has("settlingTarget") else renderer.ground_point(entry.logical)
+			var raw_distance:float=Vector3(entry.sole).distance_to(target)
+			var pivot_distance:float=Vector3(_pivot_offsets.get(side,Vector3.ZERO)).length()
+			var total:=raw_distance+pivot_distance
+			if total>.000001:
+				planner_delta=delta*raw_distance/total
+				settlement_budget=maxf(0,delta)*24.0*pivot_distance/total
+			var target_plane:Quaternion=FootPlane.contact_rotation(renderer,entry.get("settlingTarget",entry.logical),right)
+			settlement_ready=pivot_distance<=settlement_budget+.001 and _plane(side).angle_to(target_plane)<=.001
+	var pose:Dictionary=_planner.update(actor.position,moved,frozen,sole_offsets,right,planner_delta,_support_extents,geometry,settlement_ready)
+	pose["visualSettlement"]={"active":settling,"rawSeconds":planner_delta,"pivotDistanceBudget":settlement_budget,"contactReady":settlement_ready}
 	for entry in pose.feet.values():
-		if entry.has("treadPlan") and not bool(entry.treadPlan.valid):
+		if (entry.has("treadPlan") and not bool(entry.treadPlan.valid)) or (entry.has("rampCurvePlan") and not bool(entry.rampCurvePlan.valid)) or not bool(entry.get("landingGeometryValid",true)):
 			visible=false
 			proxy.visible=true
-			_last={"enabled":false,"rejected":true,"reason":"no supported next-tread landing or curve budget","contacts":pose,"reachValid":false,"rootMotion":false}
+			_last={"enabled":false,"rejected":true,"reason":"no supported opaque landing or terrain-curve budget","contacts":pose,"reachValid":false,"rootMotion":false}
 			return _last.duplicate(true)
 	if frozen and not _last.is_empty():
 		proxy.visible=false
@@ -187,10 +223,10 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 	_last_distance=accepted_distance
 	for side in ["left","right"]:
 		var entry:Dictionary=pose.feet[side]
-		var physical_plane:=bool(actor.get_meta("nala_physical_walk_pilot",false))
 		if not _foot_planes.has(side):
 			_foot_planes[side]=FootPlane.contact_rotation(renderer,entry.logical,right) if physical_plane and bool(entry.grounded) else Quaternion.IDENTITY
 		var correction:Vector3=_pivot_offsets.get(side,Vector3.ZERO)
+		if settling: correction=correction.move_toward(Vector3.ZERO,settlement_budget)
 		if bool(entry.grounded): correction=Vector3.ZERO
 		else:
 			var remaining:=maxf(0,float(pose.landingDistance)-float(pose.swingDistance))

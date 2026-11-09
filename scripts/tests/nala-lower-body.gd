@@ -23,6 +23,7 @@ var trace:Array=[]
 var output:=""
 var capture_log:FileAccess
 var forward_checks:=0
+var source_foot_vertices:Dictionary={}
 
 func _sampled_world_arc(from:Vector2,to:Vector2) -> float:
 	var previous_point:Vector3=renderer.ground_point(from)
@@ -169,6 +170,25 @@ func _measure(label:String) -> void:
 				if not _check(exact_endpoint,"Actual heel/toe source pixel misses tread "+label+" side="+side+" pixel="+str(pixel)+" highest="+str(_last_floor_height)): return
 			else:
 				if not _check(is_finite(_last_floor_height) and endpoint.z>=_last_floor_height-.3,"Airborne opaque heel/toe enters actual terrain "+label+" side="+side+" pixel="+str(pixel)+" highest="+str(_last_floor_height)): return
+		var texture_id:=foot.texture.get_instance_id()
+		if not source_foot_vertices.has(texture_id):
+			var image:Image=foot.texture.get_image()
+			if image.is_compressed(): image.decompress()
+			var points:Dictionary={}
+			for y in range(image.get_height()):
+				for x in range(image.get_width()):
+					if image.get_pixel(x,y).a<.5: continue
+					for point in [Vector2(x,y),Vector2(x+1,y),Vector2(x+1,y+1),Vector2(x,y+1)]: points[point]=true
+			source_foot_vertices[texture_id]=points.keys()
+		entry["opaqueMaskVertexCount"]=source_foot_vertices[texture_id].size()
+		for pixel in source_foot_vertices[texture_id]:
+			var point:Vector3=foot.to_global(Vector3(float(pixel.x)-foot.texture.get_width()*.5,foot.texture.get_height()*.5-float(pixel.y),0))
+			var contact:=_on_mesh(point)
+			var valid:bool=is_finite(_last_floor_height) and point.z>=_last_floor_height-.3
+			if entry.grounded and absf(float(pixel.y)-float(sole[1]))<.0001: valid=contact
+			if not valid:
+				entry["failedOpaqueMaskVertex"]={"pixel":[pixel.x,pixel.y],"world":[point.x,point.y,point.z],"actualTriangleHeight":_last_floor_height,"actualTriangleNormal":[_last_floor_normal.x,_last_floor_normal.y,_last_floor_normal.z]}
+				if not _check(false,"Original opaque foot-mask vertex enters/misses actual surface "+label+" side="+side+" pixel="+str(pixel)): return
 		if entry.grounded:
 			if previous.has(side) and previous[side].grounded and Vector3(previous[side].plant).distance_to(entry.plant)<.001:
 				var drift:=actual.distance_to(previous[side].actual)

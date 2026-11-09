@@ -4,6 +4,7 @@ import argparse
 import json
 import math
 from pathlib import Path
+from PIL import Image
 
 
 def dot(a, b):
@@ -88,10 +89,50 @@ def main():
         plane_z = a[2] - (normal[0] * (point[0] - a[0]) + normal[1] * (point[1] - a[1])) / normal[2]
         original_edges.append({"pixel": p, "globalVertex": point, "inclineHeight": plane_z,
                                "penetration": plane_z - point[2]})
+    source = root / "client-godot" / daily["source"].removeprefix("res://")
+    image = Image.open(source).convert("RGBA")
+    rect = leg["parts"]["foot"]
+    vertices = set()
+    column = daily["views"][entry["footDirection"]]["sourceColumn"]
+    for y in range(rect[3]):
+        for x in range(rect[2]):
+            if image.getpixel((column * 128 + rect[0] + x, rect[1] + y))[3] < 128:
+                continue
+            vertices.update([(x, y), (x + 1, y), (x + 1, y + 1), (x, y + 1)])
+    feasibility = []
+    for logical_y, expected in [(1189.9, False), (1180, True), (1194, True)]:
+        height = min(48, max(0, (1190 - logical_y) * 48 / 65))
+        center = world((1116.464, logical_y), height)
+        gaps = []
+        for pixel in vertices:
+            offset = add(tuple(v * (pixel[0] - leg["solePixel"][0]) for v in right), up,
+                         leg["solePixel"][1] - pixel[1])
+            point = add(center, rotate(offset) if 1125 <= logical_y <= 1190 else offset)
+            actual = min(48, max(0, (point[1] - a[1]) * (b[2] - a[2]) / (b[1] - a[1])))
+            gap = point[2] - actual
+            gaps.append((pixel, gap))
+        valid = all(gap >= -.02 and (pixel[1] != leg["solePixel"][1] or abs(gap) <= .02)
+                    for pixel, gap in gaps)
+        assert valid == expected
+        feasibility.append({"logicalCenter": [1116.464, logical_y], "originalOpaqueVertexCount": len(vertices),
+                            "validRigidContact": valid, "minimumGap": min(g for _, g in gaps)})
+    raw, pivot, budget = 2.0, 2.6109640439537136, .4
+    settlement_ticks = 0
+    while raw + pivot > 1e-9:
+        total = raw + pivot
+        raw_step = min(raw, budget * raw / total)
+        pivot_step = min(pivot, budget * pivot / total)
+        assert raw_step + pivot_step <= budget + 1e-12
+        raw -= raw_step
+        pivot -= pivot_step
+        settlement_ticks += 1
     result = {"scope": "CPU original-pixel rigid geometry only; not a gait or runtime acceptance",
               "normalFromAuthoredTreadPlane": normal, "supportAxis": support,
               "rotationDegrees": math.degrees(angle), "rotationAxis": axis,
               "originalFailure": rejected["message"], "originalGlobalOpaqueEdges": original_edges,
+              "wholeOpaqueContactCounterexamples": feasibility,
+              "fixedOrientationSettlementClock": {"ticks": settlement_ticks, "budgetPerTick": budget,
+                                                   "rawAndPivotRemaining": [raw, pivot]},
               "originalFootChecks": rows,
               "notProven": ["airborne support clearance", "ankle continuity across moving rig",
                             "same-source flat/stair/ramp matrix", "native appearance or natural gait"]}
