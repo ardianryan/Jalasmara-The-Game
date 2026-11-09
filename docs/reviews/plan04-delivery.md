@@ -2,6 +2,8 @@
 
 Tanggal: 9 November 2026. Pemeriksaan dilakukan oleh agen integrasi pada implementasi Godot dan shell React. Bukti lokal berada di `artifacts/` dan `.runtime/`, yang tidak dimasukkan ke paket game. Status CI dan rilis mengikuti revisi sumber serta artefak rilis, bukan jumlah tes pada dokumen ini saja.
 
+Catatan penerimaan visual: pengguna menolak tampilan HUD dasar setelah pemeriksaan fungsional di bawah. Artwork Bahari kemudian dibuat dan dipasang; pengguna juga meminta ukurannya dipadatkan agar tidak menutupi gameplay malam. Laporan dasar ini mempertahankan bukti fungsional historis, bukan persetujuan visual terhadap putaran artwork dan loading yang sedang diintegrasikan. Tinjauan susulan harus memakai capture dan revisi terbaru.
+
 Perubahan mencakup viewport/fullscreen, joystick analog, HUD dan dialog kayu–kuningan, SmaraPedia/tas/atlas, pilihan kualitas, serta animasi darat empat identitas dan tiga pakaian. Laju jalan menjadi 100 piksel/detik dengan stride 64; berenang tetap 160. Alasan perubahan laju ialah rekaman pada 175 memperlihatkan langkah terlalu cepat, sedangkan memperpanjang stride tanpa mengubah gambar membuat kaki meluncur.
 
 ## Bukti fungsional

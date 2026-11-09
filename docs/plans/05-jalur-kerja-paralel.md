@@ -9,9 +9,14 @@ Pengguna meminta pekerjaan dipisahkan ke subagent pada 9 November 2026. Pemisaha
 | HUD dan artwork | `main`, workspace Jalasmara | Artwork asli, badge, ikon berwarna, panel sembilan potong, dialog, buku, inventori, minimap dan joystick | Tidak mengubah map, kalender, ekonomi atau API |
 | Desa dan hutan | `work/map-desa-hutan`, workspace saudara `Jalasmara-map` | Memeriksa lalu memperbaiki jalan, sambungan jembatan, atap, elevasi dan keterbacaan ruang 3D | Tidak mengubah HUD, karakter, shader air atau kontrak save/portal |
 | Laut | `work/laut-dinamis`, workspace saudara `Jalasmara-laut` | Memeriksa batu yang menapak, celah berenang, arus, buih, cahaya dan kedalaman | Tidak mengubah HUD, daratan, hadiah, tangkapan atau konsumsi oksigen |
+| UI website dan loading | `work/website-loading`, workspace saudara `Jalasmara-web` | Progres unduhan nyata, status persiapan, error/retry, ilustrasi loading dan parallax ringan | Tidak mengubah HUD engine, map, API, akun atau progres pemain |
 | Integrasi | Root pada workspace utama | Menentukan kepemilikan file bersama, meninjau commit, menggabungkan, menguji build dan staging | Subagent tidak menggabungkan atau melakukan deployment sendiri |
 
-Artwork HUD dan integrasi modal sedang ditangani dua subagent. Subagent daratan berjalan pada worktree terpisah. Jalur laut memakai slot subagent setelah pembuatan artwork selesai. Batas empat agent aktif termasuk root membuat sebagian pekerjaan harus mengantre; pemisahan branch tetap tersedia selama menunggu.
+Empat spesialis menangani HUD, daratan, laut, dan website. Batas empat agent aktif termasuk root membuat sebagian pekerjaan harus bergantian. Jalur website dimulai setelah subagent HUD menyerahkan putaran pertama; putaran pemadatan HUD berikutnya memakai slot subagent daratan yang sudah selesai. Pemisahan branch tetap tersedia selama menunggu.
+
+Permintaan susulan: HUD tidak boleh menutupi permainan, terutama malam. Detail misi dilipat secara bawaan, dekorasi dipadatkan tanpa mengecilkan area sentuh di bawah 48 piksel fisik, dan area tengah untuk karakter/pelanggan harus tetap terbuka. Periksa adegan malam selain penyelaman dan menu.
+
+Loading menampilkan persentase hanya jika total unduhan diketahui. Setelah unduhan selesai, tampilkan tahap menyiapkan dunia sampai sinyal siap yang sebenarnya diterima. Ilustrasi asli mempunyai lapisan foreground transparan terpisah; parallax dimatikan untuk preferensi kurangi gerakan. Tidak ada persentase atau estimasi waktu buatan.
 
 ## Aturan penggabungan
 
