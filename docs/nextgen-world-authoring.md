@@ -10,6 +10,9 @@ Prioritas pengguna, 9 November 2026: selesaikan perubahan desa, hutan, laut, pak
 | [Pixprite](https://github.com/vicimpa/pixprite) | Ditinjau sebagai alat penyunting sprite/animasi offline. Round-trip ke Godot belum diuji. |
 | [OpenWorld](https://github.com/SihanXU/openworld) | Ditinjau untuk peta berbasis data, portal, dan adapter offline. Format aktif bukan impor Tiled JSON langsung. |
 | [Mono-pix](https://github.com/handsupmin/mono-pix) | Referensi baru pengguna; fungsi, lisensi, kompatibilitas, dan biaya adopsi belum diaudit. Belum dipasang. |
+| [SpriteFusion Pixel Snapper](https://github.com/Hugo-Dz/spritefusion-pixel-snapper) | Referensi alat aset dari pengguna, dicatat untuk ditinjau setelah rilis berjalan. Fungsi, lisensi, dan hasil round-trip belum diverifikasi; belum dipasang. |
+| [Aseprite MCP](https://github.com/diivi/aseprite-mcp) | Referensi integrasi alat aset dari pengguna. Kebutuhan instalasi Aseprite, lisensi, kemampuan tool, dan kompatibilitas sesi belum diperiksa; belum dipasang. |
+| [Image-to-Pixel](https://github.com/Tezumie/Image-to-Pixel) | Referensi alat pengolahan gambar dari pengguna. Fungsi, lisensi, kualitas keluaran, dan kecocokan dengan grid piksel Jalasmara belum diaudit; belum dipasang. |
 | [Sprite AI](https://www.sprite-ai.art/mcp) | Konfigurasi MCP lokal terdaftar; autentikasi sesi belum terverifikasi. Tidak ada key atau aset dari layanan ini dalam repository. |
 
 Temuan sumber dan lisensi tiga proyek pertama: [riset authoring](world/murder-authoring-reference.md). Warna target: [arah comfy](art-direction-comfy.md).
