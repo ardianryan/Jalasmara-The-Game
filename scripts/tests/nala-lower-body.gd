@@ -8,6 +8,8 @@ var triangles:Array=[]
 var triangle_grid:Dictionary={}
 const TRIANGLE_GRID:=64.0
 var _last_floor_height:=-INF
+var _last_floor_normal:=Vector3.ZERO
+var _last_floor_triangle:Array=[]
 var checks:=0
 var rejected:=0
 var drift_max:=0.0
@@ -89,9 +91,16 @@ func _index_meshes() -> void:
 
 func _on_mesh(sole:Vector3) -> bool:
 	var highest:=-INF
+	_last_floor_normal=Vector3.ZERO
+	_last_floor_triangle=[]
 	for triangle in triangle_grid.get(Vector2i(floori(sole.x/TRIANGLE_GRID),floori(sole.y/TRIANGLE_GRID)),[]):
 		var hit=Geometry3D.ray_intersects_triangle(sole+Vector3(0,0,256),Vector3(0,0,-1),triangle[0],triangle[1],triangle[2])
-		if hit!=null: highest=maxf(highest,float(hit.z))
+		if hit!=null and float(hit.z)>highest:
+			highest=float(hit.z)
+			_last_floor_normal=(Vector3(triangle[1])-Vector3(triangle[0])).cross(Vector3(triangle[2])-Vector3(triangle[0])).normalized()
+			if _last_floor_normal.z<0: _last_floor_normal=-_last_floor_normal
+			_last_floor_triangle=[]
+			for point in triangle: _last_floor_triangle.append([point.x,point.y,point.z])
 	_last_floor_height=highest
 	return absf(highest-sole.z)<.3
 
@@ -155,7 +164,7 @@ func _measure(label:String) -> void:
 			var endpoint:=foot.to_global(Vector3(float(pixel[0])-foot.texture.get_width()*.5,foot.texture.get_height()*.5-float(pixel[1]),0))
 			endpoints.append(endpoint)
 			var exact_endpoint:=_on_mesh(endpoint)
-			entry.measuredOpaqueVertices.append({"sourcePixel":pixel,"world":[endpoint.x,endpoint.y,endpoint.z],"actualTriangleHeight":_last_floor_height})
+			entry.measuredOpaqueVertices.append({"sourcePixel":pixel,"world":[endpoint.x,endpoint.y,endpoint.z],"actualTriangleHeight":_last_floor_height,"actualTriangleNormal":[_last_floor_normal.x,_last_floor_normal.y,_last_floor_normal.z],"actualTriangleVertices":_last_floor_triangle.duplicate(true)})
 			if entry.grounded:
 				if not _check(exact_endpoint,"Actual heel/toe source pixel misses tread "+label+" side="+side+" pixel="+str(pixel)+" highest="+str(_last_floor_height)): return
 			else:
