@@ -2,7 +2,7 @@ extends RefCounted
 
 # This pilot owns visual soles only. Actor coordinates and legacy step audio are untouched.
 const STEP_DISTANCE := 18.0
-const TOE_CLEARANCE := 2.0
+const TOE_CLEARANCE := 3.0
 const LANDING_LEAD := 6.0
 var renderer: Node
 var _feet: Dictionary = {}
@@ -13,6 +13,7 @@ var _distance := 0.0
 var _landing_distance := STEP_DISTANCE
 var _heading := Vector2.RIGHT
 var _contact_count := 0
+var _accepted_distance := 0.0
 var _next_side := "right"
 var _floors: Array[PackedVector2Array] = []
 var _obstacles: Array[PackedVector2Array] = []
@@ -104,6 +105,7 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 		_reset(at,hips,right)
 		return snapshot()
 	if moving and physical>.00001:
+		_accepted_distance+=physical
 		var next_heading:=logical_delta.normalized()
 		if _swing!="" and _heading.dot(next_heading)<.5:
 			# Re-anchor the airborne path at its actual pose before changing heading.
@@ -159,4 +161,4 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 	return snapshot()
 
 func snapshot() -> Dictionary:
-	return {"feet":_feet.duplicate(true),"swingSide":_swing,"swingDistance":_distance,"stepDistance":STEP_DISTANCE,"landingDistance":_landing_distance,"contacts":_contact_count,"discontinuityResets":_discontinuities,"actorRootMotion":false,"legacyFoleyChanged":false}
+	return {"feet":_feet.duplicate(true),"swingSide":_swing,"swingDistance":_distance,"acceptedDistance":_accepted_distance,"stepDistance":STEP_DISTANCE,"landingDistance":_landing_distance,"contacts":_contact_count,"discontinuityResets":_discontinuities,"actorRootMotion":false,"legacyFoleyChanged":false}

@@ -13,6 +13,8 @@ var _last:Dictionary={}
 var _direction:=""
 var _facing_frame:=-1
 var _foot_views:Dictionary={}
+var _pivot_offsets:Dictionary={}
+var _last_distance:=0.0
 const DIRECTIONS:=["east","south_east","south","south_west","west","north_west","north","north_east"]
 
 func configure(owner_renderer:Node,person:Node2D) -> void:
@@ -66,6 +68,13 @@ func _knee(a:Vector3,b:Vector3,first:float,second:float,hint:Vector3) -> Vector3
 	var bend:=hint-along*along.dot(hint)
 	if bend.length()<.001: bend=Vector3.RIGHT-along*along.x
 	return a+along*offset+bend.normalized()*sqrt(maxf(0,first*first-offset*offset))
+
+func _ankle_offset(side:String,direction:String,right:Vector3,vertical:float) -> Vector3:
+	var leg:Dictionary=_data.views[direction].legs[side]
+	var sole:=_vec(leg.solePixel)
+	var rect:Array=leg.parts.foot
+	var ankle:=_vec(leg.ankle)-Vector2(float(rect[0]),float(rect[1]))
+	return right*(ankle.x-sole.x)+Vector3(0,0,(sole.y-ankle.y)/vertical)
 
 func _anatomy(view:Dictionary,feet:Dictionary,at:Vector2,right:Vector3,vertical:float) -> Dictionary:
 	var root_hip:Vector3=renderer.ground_point(at)+Vector3(0,0,28.0/vertical)
@@ -138,9 +147,32 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 	if frozen and not _last.is_empty():
 		proxy.visible=false
 		return _last.duplicate(true)
+	var accepted_distance:float=pose.acceptedDistance
+	var moved_distance:=maxf(0,accepted_distance-_last_distance)
+	_last_distance=accepted_distance
 	for side in ["left","right"]:
-		if not bool(pose.feet[side].grounded): _foot_views[side]=direction
-		pose.feet[side]["footDirection"]=str(_foot_views[side])
+		var entry:Dictionary=pose.feet[side]
+		var correction:Vector3=_pivot_offsets.get(side,Vector3.ZERO)
+		if bool(entry.grounded): correction=Vector3.ZERO
+		else:
+			var remaining:=maxf(0,float(pose.landingDistance)-float(pose.swingDistance))
+			if moved_distance>0: correction*=remaining/maxf(.001,remaining+moved_distance)
+			var previous_direction:String=_foot_views[side]
+			var index:=DIRECTIONS.find(previous_direction)
+			var forward:=posmod(DIRECTIONS.find(direction)-index,8)
+			var candidate:String=DIRECTIONS[posmod(index+(1 if forward<=4 else -1),8)] if direction!=previous_direction else previous_direction
+			if candidate!=previous_direction and float(pose.swingDistance)<float(pose.landingDistance)*.85:
+				var rotated:=correction+_ankle_offset(side,previous_direction,right,vertical)-_ankle_offset(side,candidate,right,vertical)
+				var floor:Vector3=renderer.ground_point(entry.logical)
+				if Vector3(entry.sole).z+rotated.z>=floor.z+.02:
+					var pivot:Vector3=Vector3(entry.sole)+correction+_ankle_offset(side,previous_direction,right,vertical)
+					entry["rotationAnchorWorld"]=[pivot.x,pivot.y,pivot.z]
+					correction=rotated
+					_foot_views[side]=candidate
+		_pivot_offsets[side]=correction
+		entry.sole=Vector3(entry.sole)+correction
+		entry["pivotCorrectionWorld"]=[correction.x,correction.y,correction.z]
+		entry["footDirection"]=str(_foot_views[side])
 	var ground:Vector3=renderer.ground_point(actor.position)
 	var root_hip:=ground+Vector3(0,0,28.0/vertical)
 	var anatomy:=_anatomy(view,pose.feet,actor.position,right,vertical)

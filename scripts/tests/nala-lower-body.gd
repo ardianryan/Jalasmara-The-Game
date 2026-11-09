@@ -75,6 +75,13 @@ func _measure(label:String) -> void:
 		var sole:Array=direction.legs[side].solePixel
 		var actual:=foot.to_global(Vector3(float(sole[0])-foot.texture.get_width()*.5,foot.texture.get_height()*.5-float(sole[1]),0))
 		if not _check(actual.distance_to(entry.sole)<.002,"Actual foot pixel must meet world sole "+label): return
+		if entry.has("rotationAnchorWorld"):
+			var leg:Dictionary=direction.legs[side]
+			var rect:Array=leg.parts.foot
+			var ankle_pixel:=Vector2(float(leg.ankle[0])-float(rect[0]),float(leg.ankle[1])-float(rect[1]))
+			var actual_ankle:=foot.to_global(Vector3(ankle_pixel.x-foot.texture.get_width()*.5,foot.texture.get_height()*.5-ankle_pixel.y,0))
+			var pivot:Array=entry.rotationAnchorWorld
+			if not _check(actual_ankle.distance_to(Vector3(float(pivot[0]),float(pivot[1]),float(pivot[2])))<.003,"Airborne shoe view changed actual ankle pivot "+label): return
 		for name in ["thigh","shin"]:
 			var bone:Sprite3D=rig.get("_parts")[side+"_"+name]
 			var first:=bone.to_global(Vector3(0,-bone.texture.get_height()*.5,0))

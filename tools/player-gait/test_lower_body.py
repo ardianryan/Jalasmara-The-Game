@@ -24,6 +24,7 @@ for outfit in ['daily','explorer']:
                 assert crop.getbbox(),(outfit,direction,side,name)
                 if name=='foot':
                     alpha=crop.getchannel('A');bottom=crop.getbbox()[3]
+                    ankle=leg['ankle'];assert alpha.getpixel((ankle[0]-x,ankle[1]-y))>=128
                     samples=[x for x in range(w) if alpha.getpixel((x,bottom-1))>=128]
                     assert samples and abs(leg['solePixel'][0]-sum(x+.5 for x in samples)/len(samples))<1e-8
                     assert leg['solePixel'][1]==bottom
