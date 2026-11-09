@@ -185,6 +185,7 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 	var frozen:=bool(state.poseFrozen)
 	var moved:=bool(state.poseWalking) and float(state.speed)>.1
 	var physical_plane:=bool(actor.get_meta("nala_physical_walk_pilot",false))
+	if physical_plane and direction!=desired: _planner.request_body_facing_handover()
 	var geometry:Dictionary={}
 	if physical_plane:
 		for side in ["left","right"]:

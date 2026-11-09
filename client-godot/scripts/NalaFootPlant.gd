@@ -62,6 +62,9 @@ func note_body_facing_transition() -> void:
 		_transition_next=true
 		_body_facing_transitions+=1
 
+func request_body_facing_handover() -> void:
+	if _physical_contract: _transition_next=true
+
 func _polygon(points:Array) -> PackedVector2Array:
 	var result:=PackedVector2Array()
 	for point in points: result.append(Vector2(float(point[0]),float(point[1])))
