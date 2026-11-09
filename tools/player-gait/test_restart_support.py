@@ -3,6 +3,7 @@ import argparse
 import hashlib
 import json
 import math
+import re
 from pathlib import Path
 
 from PIL import Image, ImageDraw
@@ -12,43 +13,45 @@ ART = ROOT / "client-godot/resources/art/player-gait"
 META = json.loads(Path(__file__).with_name("restart-support-east.json").read_text())
 
 
-def support_trace(points, initial, samples, frame):
+def support_trace(points, initial, samples, frame, angle=0.0):
     positions = [(0.0, 0.0)]
     for distance in samples:
         point = points[str(frame)]
-        positions.append((distance + point[0] - initial[0], point[1] - initial[1]))
+        positions.append((distance * math.cos(angle) + point[0] - initial[0], distance * math.sin(angle) + point[1] - initial[1]))
     steps = [math.dist(a, b) for a, b in zip(positions, positions[1:])]
     return {"maxStep": max(steps), "totalDrift": sum(steps)}
 
 
-def camera_scale(azimuth=-45.0, elevation=55.0):
+def camera_scale(azimuth=-45.0, elevation=35.0, angle=0.0):
     # LandCameraPose / LandViewProjection flat-plane inverse for screen-right input.
     az, el = math.radians(azimuth), math.radians(elevation)
     c = math.cos(math.radians(55.0))
     col_x = (math.cos(az), math.sin(az) * math.sin(el))
     col_y = (-math.sin(az) / c, math.cos(az) * math.sin(el) / c)
     determinant = col_x[0] * col_y[1] - col_x[1] * col_y[0]
-    logical = (col_y[1] / determinant, -col_x[1] / determinant)
+    direction = (math.cos(angle), math.sin(angle))
+    logical = ((direction[0] * col_y[1] - direction[1] * col_y[0]) / determinant,
+               (col_x[0] * direction[1] - col_x[1] * direction[0]) / determinant)
     length = math.hypot(*logical)
-    return (col_x[0] * logical[0] + col_y[0] * logical[1]) / length
+    return math.hypot(col_x[0] * logical[0] + col_y[0] * logical[1], col_x[1] * logical[0] + col_y[1] * logical[1]) / length
 
 
-def paths():
-    scale = camera_scale()
+def paths(start=24.0, scale=None):
+    scale = camera_scale() if scale is None else scale
     for hz in (30, 60, 120):
-        speed, travel, samples = 0.0, 24.0, []
+        speed, travel, samples = 0.0, start, []
         while True:
             speed = min(175.0, speed + 850.0 / hz)
             travel += speed / hz
             if travel >= 32:
                 break
-            samples.append((travel - 24.0) * scale)
+            samples.append((travel - start) * scale)
         yield f"acceleration850/{hz}Hz", samples
-    yield "component100/50Hz", [2 * scale, 4 * scale, 6 * scale]
+    yield "component100/50Hz", [step * scale for step in (2, 4, 6) if start + step < 32]
     for first in (.125, .5, 1.0, 2.0, 3.0, 4.0):
         for later in (.125, .75, 2.0, 5.0):
             samples, distance = [], first
-            while distance < 8 * scale:
+            while distance < (32 - start) * scale:
                 samples.append(distance)
                 distance += later
             yield f"view-step-{first}/{later}", samples
@@ -58,7 +61,11 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
-    evidence = {"schemaVersion": 1, "kind": "CPU source-mark model; not runtime", "checks": []}
+    renderer = (ROOT / "client-godot/scripts/land/LandWorld3D.gd").read_text()
+    azimuth = float(re.search(r"var camera_azimuth := (-?[\d.]+)", renderer)[1])
+    elevation = float(re.search(r"var camera_elevation := ([\d.]+)", renderer)[1])
+    assert (azimuth, elevation) == (-45.0, 35.0), "Review the source-mark projection when the gameplay camera changes"
+    evidence = {"schemaVersion": 2, "kind": "CPU source-mark model; not runtime", "camera": {"azimuth": azimuth, "elevation": elevation, "embeddingTilt": 55}, "checks": [], "unchangedContactCrossings": 0}
     sheet = Image.new("RGB", (900, 460), "#263b40")
     draw = ImageDraw.Draw(sheet)
     for row, (outfit, spec) in enumerate(META["outfits"].items()):
@@ -83,18 +90,27 @@ def main():
                 draw.text((x + 5, y + 200 + (12 if name == "toe" else 0)), f"{name} {point}", fill=color)
         for name in ("heel", "toe"):
             points = {pose: marks[name] for pose, marks in spec["poses"].items()}
-            for label, samples in paths():
-                assert samples and samples[0] <= 4.0
-                baseline = support_trace(points, points["idle"], samples, 3)
-                candidate = support_trace(points, points["idle"], samples, 2)
-                assert candidate["maxStep"] <= baseline["maxStep"] + 1e-8, (outfit, name, label)
-                assert candidate["totalDrift"] <= baseline["totalDrift"] + 1e-8, (outfit, name, label)
-                evidence["checks"].append({"outfit": outfit, "mark": name, "path": label, "baseline": baseline, "candidate": candidate})
+            for start in (24, 24.125, 24.5, 25, 26, 27, 28, 29, 30, 31, 31.5, 31.875):
+                for angle in (-math.asin(.01), 0.0, math.asin(.01)):
+                    scale = camera_scale(azimuth, elevation, angle)
+                    for label, samples in paths(start, scale):
+                        if not samples:
+                            # The first update already reaches contact32: runtime uses raw pose.
+                            evidence["unchangedContactCrossings"] += 1
+                            continue
+                        assert samples[0] <= 4.0
+                        assert samples[-1] < (32 - start) * scale
+                        baseline = support_trace(points, points["idle"], samples, 3, angle)
+                        candidate = support_trace(points, points["idle"], samples, 2, angle)
+                        case = (outfit, name, start, angle, label)
+                        assert candidate["maxStep"] <= baseline["maxStep"] + 1e-8, case
+                        assert candidate["totalDrift"] <= baseline["totalDrift"] + 1e-8, case
+                        evidence["checks"].append({"outfit": outfit, "mark": name, "startDistance": start, "viewAngle": angle, "path": label, "baseline": baseline, "candidate": candidate})
     if args.output:
         args.output.mkdir(parents=True, exist_ok=True)
         sheet.save(args.output / "annotated-support-east.png")
         (args.output / "support-model.json").write_text(json.dumps(evidence, indent=2) + "\n")
-    print(f"RESTART SUPPORT MODEL PASS: {len(evidence['checks'])} toe/heel traces; first view step <=4, until raw32 handover. No zero-slide/physical L-R assertion.")
+    print(f"RESTART SUPPORT MODEL PASS: {len(evidence['checks'])} toe/heel traces; camera{azimuth}/{elevation},12 stopped phases in raw3,3 near-east headings, first view step <=4, before raw32 handover; {evidence['unchangedContactCrossings']} unchanged crossings. No zero-slide/physical L-R assertion.")
 
 
 if __name__ == "__main__":

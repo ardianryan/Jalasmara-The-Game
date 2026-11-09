@@ -65,6 +65,18 @@ def main():
         restart = [item for item in daily if item['index'] > last_stop['index']
                    and item['tag'] == 'walk-to-7'][:4]
         outputs.append(render([last_stop] + restart, args.folder, args.folder / 'restart-pop-contact-sheet.png'))
+    pilot = []
+    for outfit in ['daily', 'explorer']:
+        for reduced in [False, True]:
+            subset = [item for item in records if item['outfit'] == outfit and item['reduced'] == reduced]
+            for tag in ['restart-low-0.017', 'restart-low-0.033']:
+                run = [item for item in subset if item['tag'] == tag]
+                if not run:
+                    continue
+                neutral = [item for item in subset if item['tag'] == 'restart-settled' and item['index'] < run[0]['index']][-1]
+                pilot.extend([neutral] + run[:5] + ([run[-1]] if len(run) > 5 else []))
+    if pilot:
+        outputs.append(render(pilot, args.folder, args.folder / 'restart-pilot-contact-sheet.png'))
     manifest = {'runtimeFrames': len(records), 'resultsSha256': hashlib.sha256(path.read_bytes()).hexdigest(),
                 'method': 'Crop actual native rendered pixels, add review captions; no generated/repainted pose',
                 'outputs': outputs}
