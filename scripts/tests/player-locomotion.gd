@@ -187,6 +187,17 @@ func _restart_checks() -> void:
 	var blocked:=await _step(interrupted,Vector2.ZERO,.4,"restart-collision-stop")
 	assert(low.frame==2 and not blocked.poseWalking and blocked.distance==low.distance and interrupted.consume_foot_contacts().is_empty(),"Collision/zero accepted travel must stop the low restart with no artificial contact")
 	interrupted.free()
+	var grouped:Sprite2D=load("res://scripts/CharacterVisual.gd").new()
+	root.add_child(grouped)
+	grouped.set_appearance("male_nusantara")
+	grouped.set_locomotion(Vector2(100,0),.24)
+	grouped.animate(true,false,1,0)
+	await _step(grouped,Vector2.ZERO,.4,"restart-multiple-physics-idle")
+	for tick in range(3):
+		grouped.set_locomotion(Vector2(100,0),.02)
+		grouped.animate(true,false,1,0)
+	assert(grouped.locomotion_state().frame==3 and is_equal_approx(grouped.locomotion_state().distance,30),"Three accepted2unit physics samples before one draw must fallback when the first displayed step exceeds the4view-unit bound")
+	grouped.free()
 	print("NALA RESTART PILOT PASS: ",checked," pre-contact component samples; normal/reduced daily/explorer,850 acceleration at30/60Hz, true32 handover and four explicit fallbacks. Physical L/R is unassigned")
 
 func _controller_restart_check() -> void:

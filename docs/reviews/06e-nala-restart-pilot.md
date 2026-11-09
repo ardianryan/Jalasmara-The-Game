@@ -10,6 +10,8 @@ Native integrator 592 frame pada `Jalasmara/artifacts/godot/nala-gait-transition
 
 Halfcycle7, arah lain, identity lain, partial landing dan first-step besar tetap fallback lama. Ini sengaja tidak menjanjikan startup semua arah dari metadata yang belum ada. Tidak ada timer yang menghasilkan langkah, root inertia, bitmap warp, atau raster baru.
 
+Review CPU sesudah calon pertama menemukan cap4 per physics saja belum cukup: tiga sample2unit dapat mendahului satu draw. Followup mengakumulasi view-distance pada **render pertama** transisi; jika melampaui4 sebelum draw, kembali ke fallback baseline. Tes default menambahkan kasus3×2 pada frame render sama. `_resume_first_render` dan `_resume_first_view_travel` hanya menjaga batas ini, bukan clock atau displacement baru. Belum dijalankan pada Godot.
+
 ## Anotasi dan model
 
 [`restart-support-east.json`](../../tools/player-gait/restart-support-east.json) menyimpan SHA256 empat atlas existing, heel/toe pada pixel opaque asli, serta batas anotasinya. Mark berada pada **visible lower supporting shin** dari pandangan east. Artwork seluruh badan tidak memberi identitas kiri/kanan independen yang dapat dipastikan dari piksel ini; `physicalSide` ditandai `unassigned`, bukan diberi label anatomis palsu. Footprint0/4 dan pose1/5 juga sangat mirip secara silhouette sehingga nama fase generator bukan bukti pergantian kaki.
