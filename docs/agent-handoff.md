@@ -1,5 +1,7 @@
 # Handoff aktif agent
 
+**Pekerjaan aktif malam ini:** pengguna meminta seluruh [delapan jalur](reviews/overnight-eight-workstreams.md), dengan maksimum tiga subagent+integrator pada branch/worktreeovernight terpisah. Paket ini berjalan, belum dinyatakan selesai atau dirilis. Root memiliki delivery/integrasi/FishGen; character gerak/rig; shelter desa/APIfiturlanjutan; website HUD/perf/air. Slot GPU wajib serial. Baca checkpoint rilis di bawah sebagai baseline yang dipertahankan.
+
 **Arahan terbaru pengguna:** selesaikan [finishing06-B2](plans/06b2-keselarasan-rumah-dan-gapura.md): rumah/gapura sejajar, batu/tepi pulau organik, pijakan tangga, desa–hutan terlihat menyambung sebelum loading, serta warna cerah seperti artwork login/loading dengan ambient sejuk/cahaya hangat dan tekstur bersih. [Laporan aktif](reviews/06b2-world-finishing-progress.md) menyimpan semua iterasi termasuk hasil gagal.
 
 **Keputusan terbaru:** pengguna membatalkan GitLab CE dan meminta pekerjaan inti diteruskan. Jangan melanjutkan login, runner, token atau push ke `git.ppti.me`. Remote lokal `gitlabce` dihapus; GitHub dan GitLab.com tetap. CI kembali ke GitLab.com dengan perbaikan dependensi Pillow serta riwayat lengkap mirror. Key SSH khusus yang sudah dibuat tidak dipakai dan tidak disalin ke repository/server.
