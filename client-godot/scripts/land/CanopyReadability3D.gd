@@ -10,7 +10,7 @@ uniform vec2 reveal_center = vec2(0.0);
 uniform float reveal = 0.0;
 void vertex() {
 	// Match the original Sprite3D's full camera-facing billboard, including shadows.
-	MODELVIEW_MATRIX = VIEW_MATRIX * mat4(INV_VIEW_MATRIX[0], INV_VIEW_MATRIX[1], INV_VIEW_MATRIX[2], MODEL_MATRIX[3]);
+	MODELVIEW_MATRIX = VIEW_MATRIX * mat4(MAIN_CAM_INV_VIEW_MATRIX[0], MAIN_CAM_INV_VIEW_MATRIX[1], MAIN_CAM_INV_VIEW_MATRIX[2], MODEL_MATRIX[3]);
 	MODELVIEW_NORMAL_MATRIX = mat3(MODELVIEW_MATRIX);
 }
 float ordered_pixel(vec2 point) {
@@ -21,11 +21,13 @@ float ordered_pixel(vec2 point) {
 void fragment() {
 	vec4 leaf = texture(canopy_atlas,UV);
 	if(leaf.a<0.2) discard;
-	vec2 local_uv = (UV-atlas_region.xy)/atlas_region.zw;
-	vec2 point = (local_uv-vec2(0.5))*crown_size;
-	float body = 1.0-smoothstep(0.72,1.28,length((point-reveal_center)/vec2(36.0,53.0)));
-	float retained = 1.0-reveal*body*0.98;
-	if(ordered_pixel(point/2.7)>retained) discard;
+	if(reveal>0.001) {
+		vec2 local_uv = (UV-atlas_region.xy)/atlas_region.zw;
+		vec2 point = (local_uv-vec2(0.5))*crown_size;
+		float body = 1.0-smoothstep(0.72,1.28,length((point-reveal_center)/vec2(36.0,53.0)));
+		float retained = 1.0-reveal*body*0.98;
+		if(ordered_pixel(point/2.7)>retained) discard;
+	}
 	ALBEDO=leaf.rgb;
 	ROUGHNESS=1.0;
 }
