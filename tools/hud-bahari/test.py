@@ -21,5 +21,9 @@ manifest=json.loads((SOURCE/'source.json').read_text())
 for record in manifest['sources']:assert hashlib.sha256((SOURCE/record['path']).read_bytes()).hexdigest()==record['sha256']
 with tempfile.TemporaryDirectory(prefix='jalasmara-hud-') as temp:
  subprocess.run(['python3',str(ROOT/'tools/hud-bahari/prepare.py'),'--out',temp],check=True)
- for record in meta['assets']:assert hashlib.sha256((Path(temp)/(record['name']+'.png')).read_bytes()).hexdigest()==record['sha256']
+ for record in meta['assets']:
+  rebuilt=Image.open(Path(temp)/(record['name']+'.png')).convert('RGBA')
+  reference=Image.open(ART/(record['name']+'.png')).convert('RGBA')
+  # PNG encoders can differ across Pillow/zlib versions; the actual RGBA pixels cannot.
+  assert rebuilt.size==reference.size and rebuilt.tobytes()==reference.tobytes(),record['name']
 print('HUD BAHARI PASS:48 raster sprites, real alpha holes, fullcolor32/48px glyphs,4 unique states,4 aliases, source hashes, deterministic clean-source rebuild')

@@ -54,5 +54,5 @@ for i,name in enumerate(ICONS):
  x=(i%4)*192;y=(i//4)*110
  for offset,size in [(12,32),(66,48)]:preview.paste(Image.open(a.out/f'icon-{name}{"-32" if size==32 else ""}.png'),(x+offset,y+12),Image.open(a.out/f'icon-{name}{"-32" if size==32 else ""}.png'))
  draw.text((x+8,y+72),name,fill='#ead7b3')
-preview.save(source/'icons-actual-size-preview.png')
+preview.save((source/'icons-actual-size-preview.png') if a.out.resolve()==(ROOT/'client-godot/resources/art/hud-bahari-v1').resolve() else a.out/'icons-actual-size-preview.png')
 print(f'Prepared{len(records)} primary PNGs and4 aliases; see atlas.json; review32/48px preview before use')
