@@ -36,6 +36,7 @@ verify:
     - node ci/init-mongo.mjs
     - npm run typecheck
     - node --test scripts/game-loading-bridge.test.mjs
+    - node --test scripts/performance/*.test.mjs
     - npm run check:worldkit
     - npm ci --prefix tools/image-to-pixel --ignore-scripts
     - node --test tools/image-to-pixel/convert.test.mjs

@@ -50,6 +50,7 @@ const scripts = [
   "scripts/tests/component-land.gd",
   "scripts/tests/land-water-3d.gd",
   "scripts/tests/land-renderer.gd",
+  "scripts/tests/forest-readability.gd",
   "scripts/tests/map-grounding.gd",
   "scripts/tests/surface-traversal.gd",
   "scripts/tests/land-path.gd",
@@ -60,6 +61,7 @@ const scripts = [
   "scripts/tests/kedai-focus.gd",
   "scripts/tests/kedai-result-layout.gd",
   "scripts/tests/village-activities.gd",
+  "scripts/tests/village-routine06.gd",
   "scripts/tests/npc-body-animation.gd",
 ];
 const results = [];
