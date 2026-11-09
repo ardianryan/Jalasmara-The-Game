@@ -81,6 +81,8 @@ const scripts = [
   "scripts/tests/village-activities.gd",
   "scripts/tests/village-tool-contact.gd",
   "scripts/tests/village-routine06.gd",
+  "scripts/tests/resident-art-rig.gd",
+  "scripts/tests/resident-art-integration.gd",
   "scripts/tests/npc-body-animation.gd",
   "scripts/tests/ujang-foot-contact.gd",
 ];

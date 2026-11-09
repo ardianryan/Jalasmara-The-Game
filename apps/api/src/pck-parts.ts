@@ -44,7 +44,7 @@ export async function registerPckParts(app: FastifyInstance, root: string) {
   app.get<{ Params: { sha: string; index: string } }>(
     "/game/pck/:sha/:index",
     {
-      config: { rateLimit: { max: 1200, timeWindow: "1 minute" } },
+      config: { rateLimit: { max: 6000, timeWindow: "1 minute" } },
     },
     async (request, reply) => {
       const { sha, index } = request.params;

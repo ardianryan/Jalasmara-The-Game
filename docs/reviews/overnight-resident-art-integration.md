@@ -7,3 +7,10 @@ Fixture membuat enam HubActor canonical dari WORLD, menggunakan appearance/custo
 Audit CPU menemukan dua hal untuk penulis LandActors (root): old atlas 3×2 tidak cukup untuk appearance6..11 meskipun billboard nanti disembunyikan; dan rig cache semula hanya membersihkan actor freed/queued, sehingga actor yang dilepas tetapi masih hidup dapat meninggalkan badan 3D. VillageActivity juga memberi buku/can kedua pada tangan yang sudah membawa properti rig. Temuan dikirim root, bukan ditutupi oleh fixture. Guard tetap ketat dan tanpa production edits di lane ini.
 
 Reproduksi di worktree gabungan yang sudah berisi wire root: `Godot --headless --path client-godot --script ../scripts/tests/resident-art-integration.gd`. Bukti helper terisolasi 576 pose dan native pair tidak menggantikan regresi integrasi ini.
+
+
+## Penerimaan integrator lokal
+
+Root menggabungkan helper pada3ac21bb dan fixturecd34bd3, lalu memilih enamrig melaluiID kanonik diLandActors3D. Fallback memakai atlasoriginal96×128 sebelum lookupatlaslama, tetap tersembunyi saat rigaktif. Genericactivity tidak lagi membuat buku/alat kedua pada tangan yang sudah memiliki properti. Rigaktoryang masihhidup tetapi dilepas dari source juga dibersihkan, kemudian dapat dibuat ulang saat ditempelkan.
+
+Root focused actualintegration lulus bersama HUDoksigen, dialog, kuis, layananmalam dan1.242kontakUjang. Headless helper576pose danHUDfootprint yang tadinya hang juga lulus setelah captureguard. Log `.runtime/overnight-final-focused.json`, `overnight-final-focused-resident-art-integration.log`, `overnight-resident-art-root.log`, dan `overnight-hud-footprint-root-fixed.log`. Root membuka pairDanu/Nala final: proporsi masuk akal dan pixeloriginal tetap terlihat; sourceart tetap satuarah, bukan empat/delapanarah lengkap. Runner bertambah menjadi59kasus. Full59/ekspor/browser/publik/perangkat masih menunggu.

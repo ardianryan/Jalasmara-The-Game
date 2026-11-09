@@ -144,7 +144,7 @@ func update_actors(delta: float) -> void:
 	var body_clips: Dictionary={}
 	for id in _body_rigs.keys():
 		var old_rig: Node3D=_body_rigs[id]
-		if not is_instance_valid(old_rig.actor) or old_rig.actor.is_queued_for_deletion():
+		if not is_instance_valid(old_rig.actor) or old_rig.actor.is_queued_for_deletion() or not source.is_ancestor_of(old_rig.actor):
 			old_rig.queue_free()
 			_body_rigs.erase(id)
 	if "swim_sprite" in actor:
@@ -184,6 +184,8 @@ func update_actors(delta: float) -> void:
 		var frame: Texture2D
 		if bool(npc.crate):
 			frame=preload("res://scripts/ItemIcons.gd").texture("cache")
+		elif "resident_id" in npc and preload("res://scripts/VillagePortraits.gd").for_resident(str(npc.resident_id))!=null:
+			frame=preload("res://scripts/VillagePortraits.gd").for_resident(str(npc.resident_id))
 		else:
 			sheet=preload("res://resources/art/npc-atlas.png")
 			var grid:=Vector2i(2,2)
@@ -210,7 +212,8 @@ func update_actors(delta: float) -> void:
 			rig.update_pose(npc_sprite.modulate)
 			npc_sprite.visible=false
 			body_clips[key]=rig.pose_snapshot()
-		_activities.update_actor(npc,npc_sprite)
+		if rig==null or rig.get_script()!=preload("res://scripts/ResidentArtRig3D.gd"):
+			_activities.update_actor(npc,npc_sprite)
 		if npc.has_method("activity_state") and str(npc.activity_kind)!="idle": resident_states[key]=npc.activity_state()
 		counts.npcs=int(counts.npcs)+1
 
@@ -250,8 +253,12 @@ func _body_rig(actor: Node2D) -> Node3D:
 	if not actor.has_method("body_animation_state"): return null
 	var id:=actor.get_instance_id()
 	if _body_rigs.has(id): return _body_rigs[id]
-	if not preload("res://scripts/NpcBodyRig3D.gd").IDS.has(str(actor.actor_name)): return null
-	var rig:=preload("res://scripts/NpcBodyRig3D.gd").new()
+	var rig:Node3D
+	if "resident_id" in actor and preload("res://scripts/VillagePortraits.gd").for_resident(str(actor.resident_id))!=null:
+		rig=preload("res://scripts/ResidentArtRig3D.gd").new()
+	elif preload("res://scripts/NpcBodyRig3D.gd").IDS.has(str(actor.actor_name)):
+		rig=preload("res://scripts/NpcBodyRig3D.gd").new()
+	else: return null
 	add_child(rig)
 	if not rig.configure(renderer,actor):
 		rig.queue_free()
