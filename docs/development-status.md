@@ -1,10 +1,16 @@
 # Status pengembangan
 
-Kandidat overnight sudah lulus full **59 pemeriksaan dunia**, **120 tes API**, **39 tes loader** dan **19 tes performa CPU** pada checkpoint masing-masing. Ekspor1b67a9b/PCK1d3c94a5 berukuran64.488.008byte berjalan di preview lokal3111. HUD desktop ringkas dan bacaan18px, enam warga original berukuran anak/dewasa,13rutinitas, rumah lurah/RV, jahe/keramba dan FishGen sudah terintegrasi lokal. Recorder browser lulus4checks dengan unduhanJSON privat; hasilnya SwiftShader, bukan perangkatfisik.
+## Kandidat overnight, 10 November 2026
 
-Alur malam667 berhasil menggulir melalui sentuhan, lalu menemukan409 ketika membuka kembali shiftaktif. Fixresume terarah dan guardpenitipan jahe/ikan-only sudah dibuat; menunggu ekspor/browser berikutnya. Gerak Nala bawah modular masih kandidat offdefault: hasil datar1440terdahulu tidak mencakup guardankle/airborne baru, yang menemukan celah tambahan. Pemeriksaan kontak anak pada rute/tangga nyata sedang disiapkan. [Delapan jalur aktif](reviews/overnight-eight-workstreams.md) menyimpan hasil, penolakan dan batas. Staging tetap d60/5f5; belum rilis overnight. Pengguna mengonfirmasi Windows/S23 tersedia untuk pengujian nanti.
+Build lokal memakai source `593dc7912b4b691363633f198a898196cd18fc5b`, PCK `1315f34672b0fc5694a5f73684ca68bfbc6b5be1f6f4560b9628cc14ac2ef5e0`, **64.491.320 byte**. Ekspor Godot, web dan API lulus. Preview3111 sudah dimulai ulang agar manifest dan route bagian PCK cocok.
 
-Checkpoint terbaru: finishing06-B2 sudah aktif di staging (image d60aab/PCK5f5baf,64.333.184byte), CI3045337293 lulus5job/API100/world50. [Galeri pengembangan](visual/README.md) sudah tersedia di GitHub. Default browser publik masih gagal startup120detik pada slowtransfer; health/hash publik benar, bukan penerimaan gameplay. Kandidat Nala restart lulus fullworld/native terpisah tetapi belum digabung/dirilis. GitLabCE dibatalkan; GitLab.com tetapCI. Detail dan pin/rollback pada [handoff aktif](agent-handoff.md).
+Suite dunia lengkap **61/61 lulus**, termasuk 11.826 pose perjalanan enam warga, 158 kontak ramp, 576 pose rig dan 1.242 kontak Ujang. Rute enam warga yang diuji tidak melewati tangga; tidak ada klaim cakupan tangga dari sampel tersebut. Uji kedai kini memakai tick fisika terjadwal, setelah satu kegagalan fixture manual yang tetap disimpan. Terakhir, **24 tes performa CPU** lulus; pengulangan typecheck/API berjalan terpisah. Angka CPU dan hasil SwiftShader bukan FPS Windows/S23.
+
+HUD ringkas, teks bacaan desktop18px,13rutinitas, rumah pribadi lurah, direktur dan RV terpisah, lima Laskar, jahe, keramba serta pilot Fish Gen sudah terintegrasi lokal. Browser kandidat baru sedang memeriksa transaksi malam, touch, reentry dan fault/retry unduhan; kebun/keramba menyusul. Pilot kaki modular Nala tetap nonaktif: guard kontak tangga dan cadence produksi belum diterima. Perangkat Windows/S23 tersedia untuk pengujian dengan bantuan pengguna setelah pin rilis siap; [panduan](performance/overnight-device-test.md) tersedia.
+
+**Staging belum berubah:** image d60aab/PCK5f5baf tetap aktif. Kandidat lokal belum menjadi rilis, hasil asset-only potongan HTTP/2 belum membuktikan startup game publik. [Handoff](agent-handoff.md) dan [delapan jalur](reviews/overnight-eight-workstreams.md) memegang antrean serta hasil aktual. Cache/output lama yang dilepas sudah dihapus sebanyak265.089.024allocatedbyte; data pemain dan build aktif tetap. Galeri kini memuat delapan gambar original dengan pin dan batas bukti.
+
+Bagian di bawah adalah riwayat paket sebelumnya. Status kandidat dan rilis aktif di atas mengatasi pernyataan lama mengenai fitur atau cabang yang belum digabung.
 
 ## Kandidat lokal06-B2: terrain dan warna
 
