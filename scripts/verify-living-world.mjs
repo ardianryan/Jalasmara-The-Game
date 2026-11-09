@@ -35,6 +35,7 @@ const scripts = [
   "scripts/tests/world-foley.gd",
   "scripts/tests/terrain-layers.gd",
   "scripts/tests/ocean-geology.gd",
+  "scripts/tests/ocean-platform06.gd",
   "scripts/tests/character-outfits.gd",
   "scripts/tests/hud-oxygen.gd",
   "scripts/tests/analog-dialogue.gd",
