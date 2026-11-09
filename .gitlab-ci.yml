@@ -37,6 +37,7 @@ verify:
     - npm run typecheck
     - node --test scripts/game-loading-bridge.test.mjs
     - node --test scripts/land-view-navigation.test.mjs
+    - node --test scripts/gameplay-api-failure.test.mjs
     - node --test scripts/performance/*.test.mjs
     - npm run check:worldkit
     - npm ci --prefix tools/image-to-pixel --ignore-scripts
