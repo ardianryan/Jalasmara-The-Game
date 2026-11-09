@@ -80,12 +80,7 @@ func _supported(point:Vector2,side:String,required_height:float=NAN) -> bool:
 	var center:=_ground(point)
 	if not is_nan(required_height) and absf(center.z-required_height)>.01: return false
 	if _physical_contract and _landing_geometry.has(side):
-		var geometry:Dictionary=_landing_geometry[side]
-		var key:Array=[geometry.id,geometry.right,geometry.vertical,point]
-		if not _landing_cache.has(key):
-			if _landing_cache.size()>512: _landing_cache.clear()
-			_landing_cache[key]=_legal(point) and FootPlane.valid_contact(renderer,point,geometry,Callable(self,"_legal"))
-		return bool(_landing_cache[key])
+		return landing_geometry_supported(point,_landing_geometry[side])
 	var extents:Vector2=_support_extents.get(side,Vector2(-5,5))
 	for extent in [extents.x,0.0,extents.y]:
 		var offset:=_logical_offset(point,_right*float(extent))
@@ -95,6 +90,13 @@ func _supported(point:Vector2,side:String,required_height:float=NAN) -> bool:
 		# The original opaque heel and toe share the sole's real horizontal tread.
 		if absf(actual.z-center.z)>.01 or Vector2(actual.x-center.x,actual.y-center.y).distance_to(Vector2(_right.x,_right.y)*float(extent))>.02: return false
 	return true
+
+func landing_geometry_supported(point:Vector2,geometry:Dictionary) -> bool:
+	var key:Array=[geometry.id,geometry.right,geometry.vertical,point]
+	if not _landing_cache.has(key):
+		if _landing_cache.size()>512: _landing_cache.clear()
+		_landing_cache[key]=_legal(point) and FootPlane.valid_contact(renderer,point,geometry,Callable(self,"_legal"))
+	return bool(_landing_cache[key])
 
 func _safe(point:Vector2,origin:Vector2,side:String,required_height:float=NAN) -> Vector2:
 	var near_connector:=false

@@ -240,7 +240,12 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 			var candidate:String=DIRECTIONS[posmod(index+(1 if forward<=4 else -1),8)] if direction!=previous_direction else previous_direction
 			if candidate!=previous_direction and float(pose.swingDistance)<float(pose.landingDistance)*.85:
 				var rotated:=correction+_ankle_offset(side,previous_direction,right,vertical,_plane(side))-_ankle_offset(side,candidate,right,vertical,_plane(side))
-				if _rotated_shoe_clear(side,candidate,entry.logical,Vector3(entry.sole)+rotated,right,vertical):
+				var landing_fits:=true
+				if physical_plane:
+					var next_geometry:Dictionary={"id":outfit+"/"+candidate+"/"+side,"leg":_data.views[candidate].legs[side],"vertices":_opaque_vertices[candidate+"/"+side],"right":right,"vertical":vertical}
+					landing_fits=_planner.landing_geometry_supported(entry.to,next_geometry)
+					entry["viewLandingFit"]={"candidate":candidate,"supported":landing_fits,"target":entry.to}
+				if landing_fits and _rotated_shoe_clear(side,candidate,entry.logical,Vector3(entry.sole)+rotated,right,vertical):
 					var pivot:Vector3=Vector3(entry.sole)+correction+_ankle_offset(side,previous_direction,right,vertical,_plane(side))
 					var after:=Vector3(entry.sole)+rotated+_ankle_offset(side,candidate,right,vertical,_plane(side))
 					entry["viewRotationPivot"]={"before":[pivot.x,pivot.y,pivot.z],"after":[after.x,after.y,after.z],"previousDirection":previous_direction,"nextDirection":candidate}
@@ -329,6 +334,11 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 		entry.sole=Vector3(entry.sole)+correction
 		entry["pivotCorrectionWorld"]=[correction.x,correction.y,correction.z]
 		entry["footDirection"]=str(_foot_views[side])
+		entry["desiredFootDirection"]=direction
+		var prior_foot:Dictionary=_last.get("contacts",{}).get("feet",{}).get(side,{})
+		var view_held:=str(_foot_views[side])!=direction
+		entry["heldFootViewSeconds"]=float(prior_foot.get("heldFootViewSeconds",0.0))+maxf(0,delta) if view_held else 0.0
+		entry["heldFootViewDistance"]=float(prior_foot.get("heldFootViewDistance",0.0))+moved_distance if view_held else 0.0
 	var ground:Vector3=renderer.ground_point(actor.position)
 	var support_body_offset:=float(pose.bodyHeight)-ground.z
 	var root_hip:=ground+Vector3(0,0,28.0/vertical+support_body_offset)

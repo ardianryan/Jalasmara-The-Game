@@ -134,6 +134,8 @@ func _measure(label:String) -> void:
 				if not _check(bool(plan.valid) and is_finite(float(plan.curveSpeedBound)) and float(plan.curveSpeedBound)<=4.9,"Invalid terrain curve budget accepted "+label): return
 				if not _check(str(plan.curveType)==("ramp_support_profile" if bool(entry.get("fixedRampTarget",false)) else "stair_clearance"),"Terrain bound does not match actual path type "+label): return
 				if not _check(absf(float(plan.distance)-float(pose.contacts.landingDistance))<.00001 and Vector3(plan.fromWorld).distance_to(entry.fromWorld)<.003 and Vector3(plan.toWorld).distance_to(entry.toWorld)<.003,"Terrain curve budget is stale after reanchor/retarget "+label+" side="+side): return
+		if entry.has("viewLandingFit") and entry.has("viewRotationPivot"):
+			if not _check(bool(entry.viewLandingFit.supported) and str(entry.viewLandingFit.candidate)==str(entry.viewRotationPivot.nextDirection),"Source-view switch invalidates frozen original-foot landing "+label+" side="+side): return
 		var foot:Sprite3D=rig.get("_parts")[side+"_foot"]
 		entry["measuredFootBasis"]=[foot.global_basis.x,foot.global_basis.y,foot.global_basis.z]
 		if not _check(absf(foot.global_basis.x.length()-1)<.003 and absf(foot.global_basis.y.length()-1.0/vertical)<.003 and absf(foot.global_basis.x.dot(foot.global_basis.y))<.003,"Original foot pixel dimensions sheared or stretched "+label+" side="+side): return
