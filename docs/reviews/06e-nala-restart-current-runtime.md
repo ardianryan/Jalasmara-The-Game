@@ -56,3 +56,18 @@ python3 tools/player-gait/review_runtime_sequence.py artifacts/godot/nala-gait-t
 ```
 
 Tool aktual:Git,Python3/Pillow,Godot lokal, pembacaan source/JSON/log, dan `view_image`. Atlas original proyek existing dipakai tanpa regenerasi; tidak ada API key, layanan berbayar, MCP, imagegen, raster moodboard, lisensi, atau dependensi baru. Header MIT port kamera existing tetap dipertahankan. Handoff/PRD dan source daratan integrator tidak disentuh.
+
+## Pemeriksaan dunia gabungan sesudah review integrator
+
+Integrator menerima perbaikan startup yang terbatas untuk kandidat followup, tetap terpisah dari image rilis5f5. Dengan grant engine kedua, `GODOT_BIN=/Users/ardianryan/Documents/Jalasmara/.runtime/godot/Godot.app/Contents/MacOS/Godot npm run check:world` dijalankan pada source kandidat `62a8538134c4c190aa756d4a08f029a65aea9819`.
+
+Hasil sendiri: **50/50 world checks PASS**, dilanjutkan verifikasi **10 spesies/722 frame**. Jumlah waktu50 check80,957 detik. Scan seluruh log tidak menemukan `SCRIPT ERROR`, `ERROR:`, parse error, atau load failure. Ada dua peringatan cleanup yang tetap dicatat:4ObjectDB instances saat `locomotion-collision-foley.gd` keluar dan2ObjectDB instances saat `balai-resident-interaction.gd` keluar. Keduanya bukan assertion failure; paket ini tidak mengklaim bersih dari leak warning atau menekan warning itu.
+
+Bukti pada worktree yang sama:
+
+- `.runtime/nala-restart-full-world.log`, SHA256 `7354d2922a3c449b05e35d5af599925fe1f6113e635d43d9d0f1237386af90cd`.
+- `.runtime/world-check/world-checks.json`, SHA256 `d0f50f3ce675dd8659a0d7650789d353d4d865c28b19d8d38846c58a249c1220`;50 status `passed` dan elapsed tiap script.
+- `.runtime/nala-restart-full-world-summary.json`, ringkasan hasil/error/warning dan hash sumber bukti.
+- `.runtime/world-map.json`,93.747 byte, SHA256 `6b044603aed383f94a799b53e9ac5f9d90df7ef5add592bdd27e5dfe890a757d`.
+
+`git diff a30b35c cc6b514 -- client-godot packages/shared scripts/tests` kosong: basis runtime daratan/controller dunia kandidat sama dengan main yang saat itu diterima integrator, selain perubahan pilot pada branch ini. Tidak ada ekspor, perubahan raster, browser, push main, atau perubahan image. Semua proses Godot selesai dan slot engine dilepas eksplisit. Suite penuh ini memperkuat regresi source; batas visual/anatomi/world3D/browser/perangkat yang dijelaskan di atas tetap berlaku.
