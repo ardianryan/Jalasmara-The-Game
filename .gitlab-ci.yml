@@ -31,7 +31,7 @@ verify:
     TEST_MONGO_URL: 'mongodb://mongo:27018/jalasmara_ci?replicaSet=rs0'
     TEST_REDIS_URL: 'redis://redis:6379/14'
   script:
-    - apt-get update -qq && apt-get install -y -qq python3
+    - apt-get update -qq && apt-get install -y -qq python3 python3-pil
     - npm ci
     - node ci/init-mongo.mjs
     - npm run typecheck
@@ -93,6 +93,8 @@ codeql:
     expire_in: 30 days
 report_to_github:
   stage: report
+  variables:
+    GIT_DEPTH: "0"
   interruptible: false
   resource_group: github-reports
   needs:
@@ -109,6 +111,7 @@ report_to_github:
       when: always
   script:
     - apt-get update -qq && apt-get install -y -qq git openssh-client curl python3
+    - if [ "$(git rev-parse --is-shallow-repository)" = "true" ]; then git fetch --unshallow origin; fi
     - bash ci/publish-reports.sh
   artifacts:
     when: always

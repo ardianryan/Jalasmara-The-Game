@@ -115,19 +115,31 @@ export function gatewayPostClearance(gate, index, at) {
   );
 }
 
+export function validateGatewayMetadata(gate, record) {
+  function coordinates(actual, expected, field) {
+    assert(Array.isArray(actual) && actual.length === expected.length, field);
+    for (const [index, value] of expected.entries()) {
+      if (Array.isArray(value)) coordinates(actual[index], value, field);
+      else
+        assert(
+          Number.isFinite(actual[index]) &&
+            Math.abs(actual[index] - value) < 1e-7,
+          `${field} must match the authoritative coordinates`,
+        );
+    }
+  }
+  // Godot JSON emits fewer significant digits than JavaScript for route-derived points.
+  for (const field of ["center", "postCenters", "postFootprints", "crossing"])
+    coordinates(record[field], gate[field], field);
+  assert.deepEqual(record.colliderIds, gate.colliderIds);
+}
+
 export function validateGatewayMeshes(gate, record) {
   assert(
     record?.meshes?.length >= 7,
     "Actual emitted gate meshes are required",
   );
-  for (const field of [
-    "center",
-    "postCenters",
-    "postFootprints",
-    "crossing",
-    "colliderIds",
-  ])
-    assert.deepEqual(record[field], gate[field]);
+  validateGatewayMetadata(gate, record);
   const elevation = gate.elevation * 48,
     tangent = Math.tan((55 * Math.PI) / 180),
     center = physical(point(gate.center));

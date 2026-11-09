@@ -27,6 +27,8 @@ Nala datang ke Kota Apung Bandar Hujung, menjelajah desa/hutan/gua daratan, meny
 
 ## Prioritas pengembangan
 
+Keputusan operasional terbaru: migrasi GitLab CE dibatalkan pengguna. GitLab.com tetap menjalankan CI, GitHub menjadi mirror; pekerjaan auth/runner CE dihentikan. Prioritas adalah rilis finishing yang sudah diterima lokal dan penutupan startup publik, lalu sisa gerak/rig sebelum perluasan desa.
+
 Arahan terbaru memajukan [paket rumah/gapura06-B2](plans/06b2-keselarasan-rumah-dan-gapura.md): rumah warga mengikuti sistem modular3D Griya; gapura dan jalan memakai orientasi/bukaan/collider yang konsisten. Kerjakan penerimaan lokalnya secara terisolasi, sambil mempertahankan blocker startup publik yang belum selesai.
 
 Koreksi berikutnya dalam paket yang sama: tepi pulau dan kenaikan terrain berupa batu alami yang menyambung; hutan sudah terlihat dari desa meski perpindahan tetap loading; kaki naik/turun mengikuti pijakan tangga sebenarnya. Warna mengikuti gambar login/loading yang cerah dengan ambience sejuk dan cahaya hangat. Tekstur bintik yang membuat rumah/karakter/terrain tampak burik bukan target finishing; perbaiki sumber noise dan palet, bukan sekadar memperbesar saturasi layar.

@@ -1,6 +1,6 @@
 # Rumah, terrain, sambungan area dan warna
 
-9 November 2026. Integrasi berada pada worktree `Jalasmara-06-buildings-gates`, branch `work/06b-buildings-gates`. Ini kandidat lokal, belum ekspor atau rilis baru. Staging tetap sourcef4fac83/PCK43df70. Permintaan pengguna terbaru mencakup rumah/gapura, tebing dan pulau yang terlalu kotak, pijakan tangga, hutan yang harus tampak dari desa, serta warna cerah seperti artwork login/loading.
+9 November 2026. Integrasi berada pada worktree `Jalasmara-06-buildings-gates`, branch `work/06b-buildings-gates`. Ekspor dan penerimaan browser lokal sudah selesai; belum rilis staging baru. Staging tetap sourcef4fac83/PCK43df70. Permintaan pengguna terbaru mencakup rumah/gapura, tebing dan pulau yang terlalu kotak, pijakan tangga, hutan yang harus tampak dari desa, serta warna cerah seperti artwork login/loading.
 
 ## Perubahan aktual
 
@@ -49,3 +49,9 @@ Hardening loader body-stream dan WASM/init rejection sudah digabung718ea09/138bc
 **Fullsuite berikutnya selesai:** fixbe114db mengembalikan inverse lateral pinggul ke bidang horizontal, sementara sole/body tetap memakai support tread. Ujang1.242kontak lulus, pelvis maksimum6,988868<8, drift0,000349; tidak mengubah panjang kaki atau batas tes. Root mengulang seluruh50/50pemeriksaan dunia, sepuluh spesies/722frame, tanpa SCRIPT ERROR/ERROR. Log `.runtime/06b2-world-accepted.log`, JSON `.runtime/world-check/world-checks.json`. Ekspor/build sedang tahap berikutnya; browser dan staging belum diklaim.
 
 **Ekspor kandidat selesai:** `npm run build` lulus termasuk dua tahap import, Web export, patch body/WASM/init, Vite dan API. PCK`5f5baf243a3bf941cf34fab6c143bb9cf2bc8d65997ded6ed4e048b929353f96`,64.333.184byte. Log `.runtime/06b2-build.log`. Native final tangga mengulang8kasus/99frame dengan hybrid tunggal dan immediatefollow saat awal tiap kasus; `.runtime/06b2-native-stair-final.log`, artifact `06b2-final-stair-sequence/`. Preview3101 sudah dibangun/restart dari worktree kandidat; server lama71487 milik root dihentikan setelah cwd/command diverifikasi. Server baru sesi54712 sehat. Slot engine diserahkan ke website untuk browser gateway/canopy/faultloader; root mengerjakan source/report/CI saja. Belum staging baru.
+
+## Penerimaan browser dan keputusan CI terbaru
+
+Gateway7/7 dan canopy4/4 lulus pada export5f5; reader-body fault PCK3/3 dan WASM3/3 juga lulus dengan retry nyata. Semua UUID uji dibersihkan, nol error API/409 atau kegagalan retry tak terduga. Root menerima laporan2c9a306/88b8f91 dan perbaikan presisi numerik harness; rincian serta artefak pada [gerbang](06b-gateway-physical-browser-qa.md) dan [loader](06p-loader-body-fault-browser.md). Semua browser/faultserver ditutup; slot GPU bebas. Tes ini tidak menutup transportHTTP2 publik atau FPS perangkat fisik.
+
+Pengguna membatalkan GitLabCE dan meminta kembali ke sisa pekerjaan inti. Tidak ada serverCE/runner/token yang dipasang; remote lokalCE sudah dihapus. CI GitLab.com dipulihkan sambil mempertahankan python3-pil dan mirror fullhistory. Tiga audit dependensi lokal (utama, img2threejs, image-to-pixel) nol kerentanan. Status CI dan rilis selanjutnya harus dicatat dengan source/image/paket aktual; staging belum diganti pada checkpoint ini.

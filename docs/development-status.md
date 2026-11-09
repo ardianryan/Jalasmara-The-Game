@@ -1,5 +1,7 @@
 # Status pengembangan
 
+Checkpoint terbaru: finishing06-B2 sudah diekspor (PCK5f5baf/64.333.184byte), 100API/50world serta gateway7/canopy4/body-fault6 browser lulus lokal. Belum staging baru; [handoff aktif](agent-handoff.md) memegang pin rilis. Pengguna membatalkan GitLab CE; lanjutkan GitLab.com CI dan pekerjaan inti. HTTP2 publik, natural gait lengkap dan FPS perangkat fisik tetap terbuka.
+
 ## Kandidat lokal06-B2: terrain dan warna
 
 [Paket finishing aktif](reviews/06b2-world-finishing-progress.md) menggabungkan tujuh rumah sejajar, gapura berbasis jalan, preview desa–hutan bertumpu, terrain batu berfaset dan support tread tangga sebenarnya. Pelataran rumput/jalan tanah, palet cerah dan noise material yang lebih halus menggantikan bidang kusam; normal vertex menghilangkan garis bayangan tanpa mematikan shadow. Typecheck100API/40harness/full50world dan build lulus lokal. Native rumah final28, natural18, seam6 serta cleanhybrid99frame tangga selesai; pose dua kaki masih atlas lama. PCK5f5baf24/64.333.184byte sedang penerimaan browser3101 oleh lane website. Belum ada rilis baru. Bagian rilis di bawah tetap pin yang benar-benar aktif.
