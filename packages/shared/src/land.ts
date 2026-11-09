@@ -1,4 +1,5 @@
 import { createLandGateway, type LandGateway } from "./gateways.ts";
+import { decorateVillageGround } from "./village-ground.ts";
 
 export type LandPoint = readonly [number, number];
 export type LandMaterial =
@@ -1203,6 +1204,8 @@ for (const [index, footprint] of forestGateway.postFootprints.entries()) {
     118, "gateway_post", forestGateway.elevation, footprint,
   ));
 }
+LAND_MAPS.hub = decorateVillageGround(LAND_MAPS.hub);
+
 export function landDistanceToSegment(
   point: LandPosition,
   a: LandPoint,

@@ -107,8 +107,14 @@ func _outline_on_screen(points: PackedVector2Array) -> PackedVector2Array:
 	return result
 
 func _draw_land_polygon(points: PackedVector2Array, color: Color) -> void:
-	if points.size() >= 3:
-		draw_colored_polygon(_outline_on_screen(points), color)
+	if points.size()<3: return
+	var screen_points:=_outline_on_screen(points)
+	var twice_area:=0.0
+	for index in range(1,screen_points.size()-1):
+		twice_area+=(screen_points[index]-screen_points[0]).cross(screen_points[index+1]-screen_points[0])
+	# Tiny clipped trail tips cannot cover a pixel and lose precision in canvas triangulation.
+	if absf(twice_area)<.5: return
+	draw_colored_polygon(screen_points,color)
 
 func _near_road(point: Vector2) -> bool:
 	for group in [[world.get("hub",{}).get("paths",[]),Vector2.ZERO],[world.get("forest",{}).get("walkablePaths",[]),_forest_offset()]]:

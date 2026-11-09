@@ -63,6 +63,7 @@ func run() -> void:
 				player.land_path.reset(first)
 				player.surface_traversal.configure(state.world.landMaps.hub)
 				player.traversal_state={}
+				renderer._update_view(0,true)
 				var id:="%s-%s-%s"%[connector_id,"down" if descending else "up","reduced" if reduced else "normal"]
 				var travelled:=0.0
 				var gait_distance:=0.0

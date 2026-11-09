@@ -1,5 +1,15 @@
 # Comfy world palette
 
+## 9 November: cheerful local candidate
+
+The user's newer target is the existing login/loading artwork: cheerful greens and teal, cool ambient light, warm sun and lamps. The 06-B2 candidate uses grass`#8CAF61`, earth`#B68F58`, sand`#E0C58C`, stone`#A8B5AA`, timber`#A57B50` and thatch`#C5A16D`. Material texture contrast is reduced before grading; changing global saturation alone is insufficient. These are chosen project colors, not sampled reference values. Native matched day/night comparisons are recorded in [the active finishing report](reviews/06b2-world-finishing-progress.md); this is not a released palette yet.
+
+Sharp pixel silhouettes are intentional. Dense speckle, diagonal shadow stripes and dirty material patterns are not the finishing target. Flat terrain vertex normals must agree with the upward fragment normal used by the material shader: otherwise shadow-pass offsets can produce stripes even when the final lighting normal looks correct. Native bias-only variants did not remove those stripes; matching vertex normals did, while retaining tree shadows and the existing pixel budget. Character/foliage source artwork remains a separate art task.
+
+The section below records the preceding released palette and its own earlier validation.
+
+## Preceding palette
+
 The latest user references suggest fresh tropical greens, ochre earth, teal water, cool shadow separation, and readable stepped rock. The swatches below are an interpretation for Jalasmara, not colors sampled from the reference images.
 
 | Surface | Previous base | Current base | Purpose |

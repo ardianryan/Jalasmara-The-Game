@@ -1,5 +1,9 @@
 # Status pengembangan
 
+## Kandidat lokal06-B2: terrain dan warna
+
+[Paket finishing aktif](reviews/06b2-world-finishing-progress.md) menggabungkan tujuh rumah sejajar, gapura berbasis jalan, preview desa–hutan bertumpu, terrain batu berfaset dan support tread tangga sebenarnya. Palet lebih cerah dan noise material dikurangi; perbaikan normal vertex menghilangkan garis bayangan pada tanah tanpa mematikan bayangan. Typecheck94API dan native28+28rumah selesai lokal; focused868tread/inverse lulus. Native cleanhybrid99frame naik/turun juga selesai, tetapi pose dua kaki masih memakai atlas jalan lama. Iterasi terrain lebar18frame serta gapura/seam6frame sudah selesai lokal; fullsuite/ekspor/browser kandidat masih tahap berikutnya. Belum ada rilis baru. Bagian rilis di bawah tetap pin yang benar-benar aktif.
+
 ## Pembaruan aktif 9 November: rilis 06-B
 
 Source runtime `f4fac83dffaa1b267ae76aedfc7580b030f3be9d` kini aktif di staging, image `43bd232ffcb651027b920b9967b0690f2631946e6ed2b582a7e9195416c462f9`, PCK `43df70a9c86d4feafd18daed16297a6c5b2cc02582daa1ee0b4d32605f56d19e`/64.307.804byte. Hash publik dan health sudah cocok; smoke publik pertama timeout pada unduhan57% setelah240detik; diagnostikHTTP1 berhasilready dan mencapaihutan, lalu assertionkanopi lama gagal. DefaultH2 dan fullsmoke tetap terbuka; fixture dibersihkan dan engine/browser dilepas. Kamera kiri/inverse input, Griya sejajar dek, shelter/rute, rig Ujang, HUD ringkas serta Nala stop/turn sudah digabung. Full46world/82API dan [lima job CI](reviews/06b-ci-artifacts-3044738570.md) lulus. Browser continuation lulus10checks termasuk semua warga tiba berteduh, lima dialog dan izin kebun sebenarnya; Darmi/Sari tetap bukti prefix592, bukan tujuh dialog baru43df. Lower/home-moveACK terdahulu tetap dibedakan pin pada [laporan QA](reviews/06-release-remaining-qa.md).

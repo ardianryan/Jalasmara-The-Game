@@ -43,7 +43,13 @@ test("layout10 removes house shear while retaining centres, real floors and exis
   assert.equal(map.layoutVersion, 10);
   assert.deepEqual(
     map.surfaces.filter((s) => s.walkable !== false),
-    oldMap.surfaces.filter((s) => s.walkable !== false),
+    oldMap.surfaces
+      .filter((s) => s.walkable !== false)
+      .map((surface) =>
+        ["lower_court", "upper_court"].includes(surface.id)
+          ? { ...surface, material: "grass" }
+          : surface,
+      ),
   );
   assert.deepEqual(
     map.obstacles.map((o) => [o.id, o.kind, o.variant]),
