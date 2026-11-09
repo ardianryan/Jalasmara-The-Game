@@ -742,7 +742,9 @@ func _interact() -> void:
 		"homestead":
 			homestead_ui.open_for(str(obj.id))
 		"resident":
-			if str(obj.name)=="Mbok Ratih" and nala.position.distance_to(Vector2(float(GameState.world.homestead.market.x),float(GameState.world.homestead.market.y)))<=100:
+			if str(obj.name)=="Ki Lurah Wirabhumi" and not service_resident("balai").is_empty():
+				homestead_ui.open_for("balai")
+			elif str(obj.name)=="Mbok Ratih" and nala.position.distance_to(Vector2(float(GameState.world.homestead.market.x),float(GameState.world.homestead.market.y)))<=100:
 				homestead_ui.open_for("market")
 			else: _talk([{"name":str(obj.name),"text":str(obj.text)}])
 		"npc":
@@ -764,6 +766,18 @@ func _interact() -> void:
 		"biota":
 			_start_net()
 			net_released = true
+func service_resident(service_id: String) -> Dictionary:
+	if service_id!="balai" or not GameState.dive.is_empty() or not is_instance_valid(nala): return {}
+	var point: Dictionary=GameState.world.get("homestead",{}).get("permitBoard",{})
+	if point.is_empty(): return {}
+	var board:=Vector2(float(point.x),float(point.y))
+	if nala.position.distance_to(board)>100: return {}
+	for actor in surface_actors:
+		if not is_instance_valid(actor) or actor.actor_name!="Ki Lurah Wirabhumi" or not actor.has_meta("conversation"): continue
+		if actor.position.distance_to(board)>80 or nala.position.distance_to(actor.position)>80: continue
+		var text: String=actor.get_meta("evening_conversation") if float(EnvironmentState.snapshot().daylight)<.45 else actor.get_meta("conversation")
+		return {"name":actor.actor_name,"text":text}
+	return {}
 func _surface_discover(obj: Dictionary) -> void:
 	network_busy = true
 	while syncing: await get_tree().process_frame
