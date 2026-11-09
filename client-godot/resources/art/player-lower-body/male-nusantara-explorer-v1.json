@@ -55,6 +55,16 @@
             7.583333333333333,
             6
           ],
+          "soleEdgePixels": [
+            [
+              1.5,
+              6
+            ],
+            [
+              13.5,
+              6
+            ]
+          ],
           "occludedReuse": true
         },
         "right": {
@@ -93,6 +103,16 @@
           "solePixel": [
             6.75,
             6
+          ],
+          "soleEdgePixels": [
+            [
+              0.5,
+              6
+            ],
+            [
+              12.5,
+              6
+            ]
           ],
           "occludedReuse": true
         }
@@ -139,6 +159,16 @@
             7.75,
             6
           ],
+          "soleEdgePixels": [
+            [
+              0.5,
+              6
+            ],
+            [
+              13.5,
+              6
+            ]
+          ],
           "occludedReuse": false
         },
         "right": {
@@ -177,6 +207,16 @@
           "solePixel": [
             6.5,
             6
+          ],
+          "soleEdgePixels": [
+            [
+              1.5,
+              6
+            ],
+            [
+              11.5,
+              6
+            ]
           ],
           "occludedReuse": false
         }
@@ -223,6 +263,16 @@
             7.0,
             6
           ],
+          "soleEdgePixels": [
+            [
+              2.5,
+              6
+            ],
+            [
+              11.5,
+              6
+            ]
+          ],
           "occludedReuse": false
         },
         "right": {
@@ -261,6 +311,16 @@
           "solePixel": [
             4.5,
             6
+          ],
+          "soleEdgePixels": [
+            [
+              0.5,
+              6
+            ],
+            [
+              8.5,
+              6
+            ]
           ],
           "occludedReuse": false
         }
@@ -307,6 +367,16 @@
             5.1,
             6
           ],
+          "soleEdgePixels": [
+            [
+              0.5,
+              6
+            ],
+            [
+              10.5,
+              6
+            ]
+          ],
           "occludedReuse": false
         },
         "right": {
@@ -345,6 +415,16 @@
           "solePixel": [
             12.0,
             6
+          ],
+          "soleEdgePixels": [
+            [
+              10.5,
+              6
+            ],
+            [
+              13.5,
+              6
+            ]
           ],
           "occludedReuse": false
         }
@@ -391,6 +471,16 @@
             7.0,
             6
           ],
+          "soleEdgePixels": [
+            [
+              0.5,
+              6
+            ],
+            [
+              13.5,
+              6
+            ]
+          ],
           "occludedReuse": true
         },
         "right": {
@@ -429,6 +519,16 @@
           "solePixel": [
             5.5,
             6
+          ],
+          "soleEdgePixels": [
+            [
+              0.5,
+              6
+            ],
+            [
+              10.5,
+              6
+            ]
           ],
           "occludedReuse": true
         }
@@ -475,6 +575,16 @@
             6.277777777777778,
             6
           ],
+          "soleEdgePixels": [
+            [
+              0.5,
+              6
+            ],
+            [
+              10.5,
+              6
+            ]
+          ],
           "occludedReuse": false
         },
         "right": {
@@ -513,6 +623,16 @@
           "solePixel": [
             7.5,
             6
+          ],
+          "soleEdgePixels": [
+            [
+              6.5,
+              6
+            ],
+            [
+              8.5,
+              6
+            ]
           ],
           "occludedReuse": false
         }
@@ -559,6 +679,16 @@
             5.5,
             6
           ],
+          "soleEdgePixels": [
+            [
+              1.5,
+              6
+            ],
+            [
+              9.5,
+              6
+            ]
+          ],
           "occludedReuse": false
         },
         "right": {
@@ -597,6 +727,16 @@
           "solePixel": [
             6.5,
             6
+          ],
+          "soleEdgePixels": [
+            [
+              2.5,
+              6
+            ],
+            [
+              10.5,
+              6
+            ]
           ],
           "occludedReuse": false
         }
@@ -643,6 +783,16 @@
             12.5,
             6
           ],
+          "soleEdgePixels": [
+            [
+              11.5,
+              6
+            ],
+            [
+              13.5,
+              6
+            ]
+          ],
           "occludedReuse": false
         },
         "right": {
@@ -681,6 +831,16 @@
           "solePixel": [
             5.0,
             6
+          ],
+          "soleEdgePixels": [
+            [
+              1.5,
+              6
+            ],
+            [
+              8.5,
+              6
+            ]
           ],
           "occludedReuse": false
         }

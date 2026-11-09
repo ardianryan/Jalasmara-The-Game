@@ -5,6 +5,8 @@ var player:CharacterBody2D
 var collision:Node2D
 var clock:Node
 var triangles:Array=[]
+var triangle_grid:Dictionary={}
+const TRIANGLE_GRID:=64.0
 var _last_floor_height:=-INF
 var checks:=0
 var rejected:=0
@@ -35,11 +37,19 @@ func _index_meshes() -> void:
 			for offset in range(0,indices.size() if not indices.is_empty() else vertices.size(),3):
 				var triangle:Array[Vector3]=[]
 				for corner in range(3): triangle.append(instance.to_global(vertices[indices[offset+corner] if not indices.is_empty() else offset+corner]))
-				if absf((triangle[1]-triangle[0]).cross(triangle[2]-triangle[0]).normalized().z)>.2: triangles.append(triangle)
+				if absf((triangle[1]-triangle[0]).cross(triangle[2]-triangle[0]).normalized().z)>.2:
+					triangles.append(triangle)
+					var low:=Vector2(minf(triangle[0].x,minf(triangle[1].x,triangle[2].x)),minf(triangle[0].y,minf(triangle[1].y,triangle[2].y)))
+					var high:=Vector2(maxf(triangle[0].x,maxf(triangle[1].x,triangle[2].x)),maxf(triangle[0].y,maxf(triangle[1].y,triangle[2].y)))
+					for x in range(floori(low.x/TRIANGLE_GRID),floori(high.x/TRIANGLE_GRID)+1):
+						for y in range(floori(low.y/TRIANGLE_GRID),floori(high.y/TRIANGLE_GRID)+1):
+							var key:=Vector2i(x,y)
+							if not triangle_grid.has(key): triangle_grid[key]=[]
+							triangle_grid[key].append(triangle)
 
 func _on_mesh(sole:Vector3) -> bool:
 	var highest:=-INF
-	for triangle in triangles:
+	for triangle in triangle_grid.get(Vector2i(floori(sole.x/TRIANGLE_GRID),floori(sole.y/TRIANGLE_GRID)),[]):
 		var hit=Geometry3D.ray_intersects_triangle(sole+Vector3(0,0,256),Vector3(0,0,-1),triangle[0],triangle[1],triangle[2])
 		if hit!=null: highest=maxf(highest,float(hit.z))
 	_last_floor_height=highest
@@ -75,6 +85,9 @@ func _measure(label:String) -> void:
 			if not _check(error<.003,"Actual Sprite3D bone length changed "+label): return
 		if entry.grounded:
 			if not _check(_on_mesh(actual),"Actual sole misses rendered triangle "+label+" side="+side+" sole="+str(actual)+" highest="+str(_last_floor_height)): return
+			for pixel in direction.legs[side].soleEdgePixels:
+				var endpoint:=foot.to_global(Vector3(float(pixel[0])-foot.texture.get_width()*.5,foot.texture.get_height()*.5-float(pixel[1]),0))
+				if not _check(_on_mesh(endpoint),"Actual heel/toe source pixel misses tread "+label+" side="+side+" pixel="+str(pixel)+" highest="+str(_last_floor_height)): return
 			if previous.has(side) and previous[side].grounded and Vector3(previous[side].plant).distance_to(entry.plant)<.001:
 				var drift:=actual.distance_to(previous[side].actual)
 				drift_max=maxf(drift_max,drift)

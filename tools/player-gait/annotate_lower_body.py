@@ -26,6 +26,7 @@ def generate(outfit):
             if not opaque: raise AssertionError((outfit,direction,side,'no original sole pixel'))
             legs[side]={'hip':[x,76],'knee':[x,88],'ankle':[x,99],
                         'parts':specs,'solePixel':[sum(px+.5 for px in opaque)/len(opaque),bottom],
+                        'soleEdgePixels':[[min(opaque)+.5,bottom],[max(opaque)+.5,bottom]],
                         'occludedReuse': direction in ['east','west']}
         views[direction]={'sourceColumn':index,'upperCutY':76,'legs':legs}
     result={'identity':'male_nusantara','outfit':outfit,'cell':[128,128],

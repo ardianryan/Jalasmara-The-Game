@@ -27,6 +27,7 @@ for outfit in ['daily','explorer']:
                     samples=[x for x in range(w) if alpha.getpixel((x,bottom-1))>=128]
                     assert samples and abs(leg['solePixel'][0]-sum(x+.5 for x in samples)/len(samples))<1e-8
                     assert leg['solePixel'][1]==bottom
+                    assert leg['soleEdgePixels']==[[min(samples)+.5,bottom],[max(samples)+.5,bottom]]
                 checks+=1
     assert 'no fill, mirror, recolor or generated pixels' in data['method']
 # The pilot remains off in normal runtime and cannot silently replace other identities.
