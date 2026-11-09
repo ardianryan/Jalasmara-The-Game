@@ -48,11 +48,11 @@ func configure(world: Dictionary, materials: Array[Material]) -> void:
 		if bottom_y-top_y<65: continue
 		var spread:=minf(230,upper.size.x*.22)
 		var column:=0 if upper.get_center().y<2080 else 1 if upper.get_center().y<3060 else 2
-		_build_root(index,anchor_x,top_y,bottom_y,spread,materials[column])
-		connections.append({"terrain":index,"anchoredTo":destination,"top":[anchor_x,top_y],"base":[anchor_x,bottom_y],"rearDepth":-240,"decorativeRear":true,"collision":false})
+		_build_root(index,anchor_x,top_y,bottom_y,spread,materials[column],index==13 and destination==4)
+		connections.append({"terrain":index,"anchoredTo":destination,"top":[anchor_x,top_y],"base":[anchor_x,bottom_y],"rearDepth":-210 if index==13 and destination==4 else -240,"decorativeRear":true,"collision":false,"profile":"flared_collar" if index==13 and destination==4 else "stratum"})
 
-func _build_root(seed: int, x: float, top: float, bottom: float, spread: float, material: Material) -> void:
-	var rows:=maxi(4,ceili((bottom-top)/105.0))
+func _build_root(seed: int, x: float, top: float, bottom: float, spread: float, material: Material, collar := false) -> void:
+	var rows:=maxi(7 if collar else 4,ceili((bottom-top)/105.0))
 	var tool:=SurfaceTool.new()
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
 	for row in range(rows):
@@ -63,11 +63,18 @@ func _build_root(seed: int, x: float, top: float, bottom: float, spread: float, 
 				var cross_section:=float(pair.y)/4.0
 				var bend:=sin(t*PI)*sin(seed*2.17+t*4.1)*spread*.22
 				var width:=spread*(.64+.48*t+sin(t*PI*3+seed)*.10)
+				if collar:
+					# The shoulder nests inside the existing ledge; the foot flares into terrain4.
+					width=spread*(.96+.40*pow(1.0-t,5.0)+.75*pow(t,3.0))
 				var at:=Vector2(x+bend+(cross_section-.5)*width*2,lerpf(top,bottom,t))
 				var depth:=-240.0+sin(cross_section*PI)*65+sin(pair.x*1.73+seed)*18
+				if collar: depth=-210.0+sin(cross_section*PI)*72.0+sin(pair.x*1.73+seed)*12.0
 				corners.append(_point(at,depth))
 			var shade:=Color(.42,.62,.63).lerp(Color(.58,.72,.68),float(face)/4.0)
-			if row%3==1: shade=shade.darkened(.10)
+			if collar:
+				shade=Color(.64,.72,.68).lerp(Color(.80,.81,.70),sin((float(face)+.5)/4.0*PI))
+				if row in [1,4]: shade=shade.darkened(.06)
+			elif row%3==1: shade=shade.darkened(.10)
 			_triangle(tool,corners[0],corners[1],corners[2],shade)
 			_triangle(tool,corners[0],corners[2],corners[3],shade)
 	var mesh:=MeshInstance3D.new()

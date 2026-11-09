@@ -131,18 +131,41 @@ func _build_reef(rect: Rect2, index: int) -> void:
 	add_child(instance)
 
 func _build_cave_backwall() -> void:
-	var rect := Rect2(410,600,760,610)
-	_uv_rect = rect
+	_uv_rect = Rect2(390,570,790,670)
+	var outline := PackedVector2Array([
+		Vector2(420,600),Vector2(505,578),Vector2(590,608),Vector2(700,590),
+		Vector2(770,632),Vector2(850,608),Vector2(936,635),Vector2(1020,612),
+		Vector2(1110,653),Vector2(1154,716),Vector2(1125,790),Vector2(1172,858),
+		Vector2(1128,945),Vector2(1148,1020),Vector2(1100,1088),Vector2(1090,1178),
+		Vector2(1008,1195),Vector2(925,1170),Vector2(840,1220),Vector2(750,1195),
+		Vector2(656,1228),Vector2(580,1185),Vector2(496,1214),Vector2(430,1168),
+		Vector2(444,1080),Vector2(410,1012),Vector2(437,940),Vector2(402,865),
+		Vector2(434,790),Vector2(403,716)])
 	var tool := SurfaceTool.new()
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var corners := [Vector2(410,600),Vector2(1160,650),Vector2(1090,1180),Vector2(430,1210)]
-	var center := _point(Vector2(770,900),-670)
-	for index in range(4):
-		_triangle(tool,_point(corners[index],-580),_point(corners[(index+1)%4],-620),center,1,Color(0.45,0.65,0.69))
+	var center := Vector2(785,910)
+	# Irregular rear ledges share world UVs with the rock face, not alpha cards.
+	for band in range(3):
+		var outer_weight: float=[1.0,.76,.42][band]
+		var inner_weight: float=[.76,.42,0.0][band]
+		for index in range(outline.size()):
+			var next:=(index+1)%outline.size()
+			var corners:Array[Vector3]=[]
+			for pair in [Vector2i(index,0),Vector2i(next,0),Vector2i(next,1),Vector2i(index,1)]:
+				var weight:=outer_weight if pair.y==0 else inner_weight
+				var at:=center.lerp(outline[pair.x],weight)
+				var depth:=lerpf(-710.0,-555.0,weight)+sin(pair.x*1.47+weight*2.0)*18.0*weight
+				corners.append(_point(at,depth))
+			var shade:=Color(.40,.56,.59).lerp(Color(.47,.61,.61),float(index%5)/4.0)
+			if band==1: shade=shade.darkened(.08)
+			_triangle(tool,corners[0],corners[1],corners[2],1,shade)
+			if inner_weight>0: _triangle(tool,corners[0],corners[2],corners[3],1,shade)
 	var wall := MeshInstance3D.new()
 	wall.name = "CaveRearRockWall"
 	wall.mesh = tool.commit()
 	wall.material_override = _materials[1]
+	wall.set_meta("rear_outline",outline)
+	wall.set_meta("relief_bands",3)
 	add_child(wall)
 
 func _build_model_rocks() -> void:
