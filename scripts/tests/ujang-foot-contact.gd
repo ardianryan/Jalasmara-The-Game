@@ -17,6 +17,8 @@ var _frame:=0
 var _recording:Dictionary={}
 var measured_grips:=0
 var max_grip_error:=0.0
+var turn_steps:=0
+var contact_failures:=0
 const OUTPUT:="res://../artifacts/godot/06b-body-contact"
 
 func _initialize() -> void:
@@ -51,7 +53,11 @@ func _measure() -> void:
 	var pose:Dictionary=rig.pose_snapshot()
 	assert(pose.has("contacts"),"Actual LandWorld Ujang must use the contact pilot")
 	var contact:Dictionary=pose.contacts
-	assert(contact.reachValid,"Fixed-length legs cannot be accepted by hiding unreachable contacts: "+str(contact.requestedPelvisDrop))
+	if not contact.reachValid:
+		contact_failures+=1
+		push_error("Fixed-length legs cannot be accepted by hiding unreachable contacts: "+str(contact.requestedPelvisDrop)+" at "+str(person.position))
+		return
+	assert(rig.global_basis.determinant()>0 and rig.scale.x>0,"Facing must not reflect the anatomical rig or its wooden right leg")
 	assert(float(contact.maxLengthError)<.02)
 	max_pelvis=maxf(max_pelvis,float(contact.pelvisDrop))
 	for side in ["left","right"]:
@@ -102,6 +108,34 @@ func _step(to:Vector2,delta:=.1,talking:=false) -> void:
 			root.get_texture().get_image().save_png(OUTPUT+"/scene-%04d.png"%_frame)
 			_recording[str(_frame)]={"actor":[person.position.x,person.position.y],"reduced":clock.reduced_motion,"pose":rig.pose_snapshot()}
 		_frame+=1
+
+func _turn_trace() -> void:
+	var original:Transform3D=renderer.camera_3d.global_transform
+	var start:Vector2=person.position
+	for azimuth in [0.0,-45.0]:
+		print("UJANG TURN CAMERA ",azimuth)
+		var center:Vector3=renderer.map_point(Vector2(900,1360),0)
+		var offset:=Vector3(0,-sin(deg_to_rad(55))*3300,cos(deg_to_rad(55))*3300).rotated(Vector3(0,0,1),deg_to_rad(azimuth))
+		renderer.camera_3d.position=center+offset
+		renderer.camera_3d.look_at(center,Vector3(0,0,1))
+		for reduced in [false,true]:
+			clock.reduced_motion=reduced
+			for target in [start+Vector2(32,0),start+Vector2(32,-20),start+Vector2(32,0),start]:
+				while person.position.distance_to(target)>.01:
+					await _step(target)
+					turn_steps+=1
+					assert(not rig.sprites.lower_leg_right.flip_h)
+					assert(not rig.sprites.foot_right.flip_h)
+		if azimuth==-45:
+			var animation=person.get("_body_animation")
+			for pair in [[Vector2(26,-26*cos(deg_to_rad(55))),"north"],[Vector2(-26,26*cos(deg_to_rad(55))),"south"]]:
+				person.moved_velocity=pair[0]
+				animation.update(.1,person.moved_velocity,false,false,false,false,false,"fishing")
+				renderer.actors_3d.update_actors(.1)
+				assert(rig.pose_snapshot().direction==pair[1],"Visual facing must follow the actual rotated camera, rather than logical map-cardinal direction")
+	person.moved_velocity=Vector2.ZERO
+	renderer.camera_3d.global_transform=original
+	_previous.clear()
 
 func _work_grip_checks() -> void:
 	var animation=person.get("_body_animation")
@@ -180,7 +214,7 @@ func run() -> void:
 	scene.add_child(player)
 	player.position=Vector2(1120,1230)
 	var camera:=Camera2D.new()
-	camera.position=Vector2(900,1360) if _capture and OS.get_environment("UJANG_ART_ONLY")=="1" else Vector2(1120,1250)
+	camera.position=Vector2(900,1360) if _capture and (OS.get_environment("UJANG_ART_ONLY")=="1" or OS.get_environment("UJANG_TURNS_ONLY")=="1") else Vector2(1120,1250)
 	camera.zoom=Vector2(1.5,1.5)
 	scene.add_child(camera)
 	camera.force_update_scroll()
@@ -221,6 +255,17 @@ func run() -> void:
 		return
 	person.get("_body_animation").begin_departure()
 	for tick in range(8): await _step(person.position)
+	if OS.get_environment("UJANG_TURNS_ONLY")=="1":
+		await _turn_trace()
+		if contact_failures>0:
+			push_error("UJANG TURN FAILED: "+str(contact_failures)+" unreachable contact samples; do not claim natural turn completion")
+			scene.free()
+			quit(1)
+			return
+		print("UJANG TURN PASS ",turn_steps," real 90/180-degree turn steps at actual camera azimuths 0/-45, normal/reduced; max stance drift=",max_drift,"; positive anatomical basis and actual-camera facing")
+		scene.free()
+		quit()
+		return
 	# Ujang's real commute, followed by a diagnostic traversal of real authored
 	# dock/terrace stairs. This does not alter his production schedule or anchors.
 	var points:Array[Vector2]=[Vector2(900,1360),Vector2(1120,1360),Vector2(1210,1250),Vector2(1120,1230),Vector2(1120,1190),Vector2(1120,1125),Vector2(1120,1190),Vector2(1120,1230),Vector2(1210,1250),Vector2(1120,1360),Vector2(900,1360)]
@@ -251,6 +296,11 @@ func run() -> void:
 	assert(rig.pose_snapshot().gripMeasurement.status=="inactive")
 	assert(JSON.stringify({"world":state.world,"player":state.player,"dive":state.dive})==before)
 	assert(measured_grips==26)
+	if contact_failures>0:
+		push_error("UJANG CONTACT FAILED: "+str(contact_failures)+" unreachable samples")
+		scene.free()
+		quit(1)
+		return
 	print("UJANG CONTACT PASS actual3/4renderer: ",checked," legal26unit/s steps, alpha-sole world drift=",max_drift," knee join=",max_join_error," bounded pelvis=",max_pelvis,"; fixed pixel lengths, rendered floor/tread triangles, reduced/stop/turn; ",measured_grips," authored west grip poses max error=",max_grip_error,"; no actor root motion/world mutation")
 	if _capture: FileAccess.open(OUTPUT+"/results.json",FileAccess.WRITE).store_string(JSON.stringify(_recording,"  "))
 	scene.free()

@@ -18,6 +18,7 @@ var _ratio:=1.0
 var _ready:=false
 var _hips:Dictionary={}
 var _resets:=0
+var _lateral:=Vector2.RIGHT
 
 func configure(renderer:Node,actor:Node2D,data:Dictionary) -> bool:
 	if not ("map" in renderer) or renderer.map.is_empty(): return false
@@ -74,17 +75,33 @@ func _height(point:Vector2) -> float:
 func _ground(point:Vector2) -> Vector3:
 	return _renderer.map_point(point,_height(point))
 
-func _base(side:String,at:Vector2,flip:float) -> Vector2:
-	return _safe(at+Vector2(float(_hips[side])*flip,0),at)
+func _update_lateral(at:Vector2) -> void:
+	var camera:Camera3D=_renderer.get("camera_3d")
+	if camera==null: return
+	var origin:Vector3=_renderer.map_point(at,0)
+	var x:Vector3=_renderer.map_point(at+Vector2.RIGHT,0)-origin
+	var y:Vector3=_renderer.map_point(at+Vector2.DOWN,0)-origin
+	var right:=camera.global_basis.x
+	var determinant:=x.x*y.y-y.x*x.y
+	if absf(determinant)<.00001: return
+	_lateral=Vector2((right.x*y.y-y.x*right.y)/determinant,(x.x*right.y-right.x*x.y)/determinant)
 
-func _begin_swing(entry:Dictionary,phase:float,at:Vector2,flip:float,side:String) -> void:
+func _base(side:String,at:Vector2) -> Vector2:
+	return _safe(at+_lateral*float(_hips[side]),at)
+
+func _up() -> Vector3:
+	var camera:Camera3D=_renderer.get("camera_3d")
+	return camera.global_basis.y if camera!=null else _renderer.camera_up()
+
+func _begin_swing(entry:Dictionary,phase:float,at:Vector2,side:String) -> void:
 	entry.swingFrom=entry.logical
 	var remaining:float=(1.0-phase)*STRIDE
-	entry.swingTo=_safe(_base(side,at,flip)+_direction*(remaining+STRIDE*.25)/_ratio,at)
+	entry.swingTo=_safe(_base(side,at)+_direction*(remaining+STRIDE*.25)/_ratio,at)
 	entry.startProgress=(phase-.5)*2.0
 	entry.grounded=false
 
-func update(at:Vector2,velocity:Vector2,time:float,flip:float) -> Dictionary:
+func update(at:Vector2,velocity:Vector2,time:float,_flip:float) -> Dictionary:
+	_update_lateral(at)
 	var body_ground:Vector3=_renderer.map_point(at,_renderer.ground_height(at))
 	var moved:=at.distance_to(_last_at) if _ready else 0.0
 	var physical:=body_ground.distance_to(_last_ground) if _ready else 0.0
@@ -96,7 +113,7 @@ func update(at:Vector2,velocity:Vector2,time:float,flip:float) -> Dictionary:
 		walking=false
 	if not _ready:
 		for side in ["left","right"]:
-			var point:=_base(side,at,flip)
+			var point:=_base(side,at)
 			_feet[side]={"logical":point,"sole":_ground(point),"plant":_ground(point),"phase":.25 if side=="left" else .75,"grounded":true,"swingFrom":point,"swingTo":point,"startProgress":0.0}
 		_phase_distance=0
 		_ready=true
@@ -105,7 +122,7 @@ func update(at:Vector2,velocity:Vector2,time:float,flip:float) -> Dictionary:
 		_ratio=clampf(physical/maxf(.001,moved),1.0,8.0)
 		if not _walking:
 			_phase_distance=0
-			_begin_swing(_feet.right,.75,at,flip,"right")
+			_begin_swing(_feet.right,.75,at,"right")
 		else: _phase_distance+=physical
 		for side in ["left","right"]:
 			var entry:Dictionary=_feet[side]
@@ -117,12 +134,12 @@ func update(at:Vector2,velocity:Vector2,time:float,flip:float) -> Dictionary:
 					entry.grounded=true
 				entry.sole=entry.plant
 			else:
-				if bool(entry.grounded): _begin_swing(entry,phase,at,flip,side)
+				if bool(entry.grounded): _begin_swing(entry,phase,at,side)
 				var u:=clampf(((phase-.5)*2.0-float(entry.startProgress))/maxf(.001,1.0-float(entry.startProgress)),0,1)
 				var smooth:=u*u*(3.0-2.0*u)
 				entry.logical=Vector2(entry.swingFrom).lerp(entry.swingTo,smooth)
 				entry.logical=_safe(entry.logical,at)
-				entry.sole=_ground(entry.logical)+_renderer.camera_up()*sin(u*PI)*LIFT
+				entry.sole=_ground(entry.logical)+_up()*sin(u*PI)*LIFT
 			entry.phase=phase
 	else:
 		for entry in _feet.values():
@@ -136,4 +153,4 @@ func update(at:Vector2,velocity:Vector2,time:float,flip:float) -> Dictionary:
 	_last_at=at
 	_last_ground=body_ground
 	_last_time=time
-	return {"feet":_feet.duplicate(true),"walking":walking,"phaseDistance":_phase_distance,"physicalRatio":_ratio,"stride":STRIDE,"essentialMotion":true,"discontinuityResets":_resets}
+	return {"feet":_feet.duplicate(true),"walking":walking,"phaseDistance":_phase_distance,"physicalRatio":_ratio,"stride":STRIDE,"essentialMotion":true,"discontinuityResets":_resets,"anatomicalSidesStable":true,"lateralLogical":[_lateral.x,_lateral.y]}

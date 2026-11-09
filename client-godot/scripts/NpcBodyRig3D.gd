@@ -16,6 +16,9 @@ var _contact_pose:Dictionary={}
 var _sole_pixels:Dictionary={}
 var _pelvis_drop:=0.0
 var _rod_pose:Dictionary={}
+var _visual_facing:="south"
+var _logical_facing:=""
+var _view_velocity:=Vector2.DOWN
 
 func configure(owner_renderer: Node,person: Node2D) -> bool:
 	renderer=owner_renderer
@@ -95,6 +98,23 @@ func _body_transform(point: Vector2,lean: float) -> Vector2:
 	var hip:=Vector2(0,-36)
 	return hip+(point-hip).rotated(lean)+Vector2(0,_pelvis_drop)
 
+func _camera_facing(camera:Camera3D,state:Dictionary) -> String:
+	var logical:=str(state.direction)
+	var velocity:Vector2=actor.moved_velocity
+	if velocity.length()>.1:
+		_view_velocity=velocity.normalized()
+	elif logical!=_logical_facing:
+		_view_velocity={"east":Vector2.RIGHT,"west":Vector2.LEFT,"north":Vector2.UP,"south":Vector2.DOWN}.get(logical,Vector2.DOWN)
+	_logical_facing=logical
+	var ground:float=renderer.ground_height(actor.position)
+	var delta:Vector3=renderer.map_point(actor.position+_view_velocity,ground)-renderer.map_point(actor.position,ground)
+	var screen:=Vector2(delta.dot(camera.global_basis.x),-delta.dot(camera.global_basis.y))
+	if screen.length()<.0001: return _visual_facing
+	var previous:Vector2={"east":Vector2.RIGHT,"west":Vector2.LEFT,"north":Vector2.UP,"south":Vector2.DOWN}[_visual_facing]
+	if screen.normalized().dot(previous)<cos(deg_to_rad(53)):
+		_visual_facing=("east" if screen.x>0 else "west") if absf(screen.x)>absf(screen.y) else ("south" if screen.y>0 else "north")
+	return _visual_facing
+
 func update_pose(tint: Color) -> void:
 	if not ready_rig or not is_instance_valid(actor): return
 	_tint=tint
@@ -104,8 +124,8 @@ func update_pose(tint: Color) -> void:
 	var foot: Vector3=renderer.map_point(actor.position,renderer.ground_height(actor.position))
 	if _foot_plant==null: foot-=renderer.camera_forward()*8
 	global_transform=Transform3D(camera.global_basis.orthonormalized(),foot)
-	var facing:=str(state.direction)
-	scale=Vector3(-1 if facing=="west" else 1,1,1)
+	var facing:=_camera_facing(camera,state) if _foot_plant!=null else str(state.direction)
+	scale=Vector3(-1 if facing=="west" and _foot_plant==null else 1,1,1)
 	if facing in ["east","west"] and _foot_plant==null: scale.x*=.93
 	var back:=facing=="north"
 	var clip:=str(state.clip)
@@ -119,7 +139,7 @@ func update_pose(tint: Color) -> void:
 	for sprite in sprites.values(): sprite.visible=false
 	_pelvis_drop=0.0
 	if _foot_plant!=null:
-		_contact_pose=_foot_plant.update(actor.position,actor.moved_velocity,float(actor.get("_elapsed")),-1.0 if facing=="west" else 1.0)
+		_contact_pose=_foot_plant.update(actor.position,actor.moved_velocity,float(actor.get("_elapsed")),1.0)
 		_contact_legs(_contact_pose)
 	else:
 		for index in range(2):
@@ -149,7 +169,7 @@ func update_pose(tint: Color) -> void:
 	if rod_hand:
 		# The tool frame belongs to the body pose, independently of either IK socket.
 		var mount:=Vector2(13,-54).lerp(Vector2(13,-53),work)
-		var angle:=-PI*.25
+		var angle:=-PI*.75
 		if str(state.workPhase)=="cast": angle-=sin(clampf((fposmod(t,9)-1)/.8,0,1)*PI)*.16
 		elif str(state.workPhase)=="pull": angle-=.12
 		mount=_body_transform(mount,lean)
@@ -214,6 +234,9 @@ func update_pose(tint: Color) -> void:
 		actor.set_meta("body_rod",{"base":to_global(Vector3(a.x,-a.y,float(_rod_pose.depth))),"tip":to_global(Vector3(b.x,-b.y,float(_rod_pose.depth))),"source":"independent body-local tool pose"})
 	_last_pose={"clip":clip,"direction":facing,"frame":state.frame,"phase":state.workPhase,"parts":sprites.size(),"handsLocal":_local_hands.duplicate(true),"toolFront":not back,"footPivot":[0,0],"rootMotion":false,"source":"original portrait cutout rig"}
 	if _foot_plant!=null:
+		_last_pose["logicalDirection"]=str(state.direction)
+		_last_pose["directionArt"]="Authored rear upper body" if back else "Unmirrored three-quarter fallback; independent side views pending"
+	if _foot_plant!=null:
 		_last_pose["contacts"]=_contact_pose.duplicate(true)
 		for side in ["left","right"]:
 			var entry:Dictionary=_last_pose.contacts.feet[side]
@@ -268,7 +291,7 @@ func _contact_legs(pose:Dictionary) -> void:
 		var length:=clampf(vector.length(),.01,first+second-.001)
 		var along:=vector.normalized()
 		var offset:=(first*first-second*second+length*length)/(2.0*length)
-		var facing:String=actor.body_animation_state().direction
+		var facing:String=_visual_facing
 		var hint:=Vector3.RIGHT if facing in ["east","west"] else Vector3(0,0,-1 if facing=="north" else 1)
 		var bend:=hint-along*along.dot(hint)
 		if bend.length()<.01: bend=Vector3.RIGHT
