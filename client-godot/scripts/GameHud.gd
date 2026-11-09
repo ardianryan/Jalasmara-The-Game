@@ -40,12 +40,15 @@ class DiveInstrument extends Control:
 	var phase := 0.0
 	var reduced_motion := false
 	var loss_feedback := 0.0
+	var tank_rect := Rect2(9,26,34,62)
+	var bar_rect := Rect2(49,87,96,16)
+	var loss_line := Rect2(49,78,89,0)
 	func _draw() -> void:
 		var art := preload("res://scripts/HudSkin.gd")
 		art.panel("dark").draw(get_canvas_item(),Rect2(Vector2.ZERO,size))
 		var tank := art.icon("oxygen")
-		if tank!=null: draw_texture_rect(tank,Rect2(9,26,34,62),false)
-		var bar := Rect2(49,87,96,16)
+		if tank!=null: draw_texture_rect(tank,tank_rect,false)
+		var bar := bar_rect
 		var frame := art.texture("bar-frame")
 		var fill := art.texture("bar-fill")
 		if fill!=null and ratio>0:
@@ -55,7 +58,7 @@ class DiveInstrument extends Control:
 		if ratio<=.15:
 			var alpha := .18 if reduced_motion else .18+.035*sin(phase*2)
 			draw_rect(Rect2(6,6,size.x-12,size.y-12),Color(.94,.63,.5,alpha),false,2)
-		if loss_feedback>0: draw_line(Vector2(49,78),Vector2(138,78),Color(1,.81,.67,minf(1,loss_feedback*2)),2)
+		if loss_feedback>0: draw_line(loss_line.position,loss_line.position+loss_line.size,Color(1,.81,.67,minf(1,loss_feedback*2)),2)
 
 var _sound_button: Button
 var _navigation: GeoMap
@@ -432,18 +435,25 @@ func _layout() -> void:
 	_action_plate.size=_action_label.size+Vector2(12,6)
 	_action_plate.visible=_action_label.visible
 	var instrument_scale:=1.25 if compact_dive else 1.4 if touch_enabled else 1.0
-	var instrument_y:=margin.y+identity_height+12
-	if portrait: instrument_y=_dpad.position.y-_instrument.size.y*instrument_scale-line-24
-	_instrument.position=Vector2(margin.x,instrument_y)
 	_instrument.scale=Vector2.ONE*instrument_scale
-	_oxygen_text.position.y=40
-	_oxygen_text.size.y=42
-	_oxygen_max.position.y=110
-	_oxygen_max.size.y=30
-	_depth.position.y=40
-	_depth.size.y=36
-	_bag.position.y=80
-	_bag.size.y=56
+	_instrument.size=Vector2(296,140)
+	_instrument.tank_rect=Rect2(9,26,34,62)
+	_instrument.bar_rect=Rect2(49,87,96,16)
+	_instrument.loss_line=Rect2(49,78,89,0)
+	_oxygen_caption.position=Vector2(49,8)
+	_oxygen_caption.size=Vector2(96,28)
+	_depth_caption.position=Vector2(164,8)
+	_depth_caption.size=Vector2(119,28)
+	_oxygen_text.position=Vector2(47,40)
+	_oxygen_text.size=Vector2(98,42)
+	_oxygen_text.add_theme_font_size_override("font_size",32)
+	_oxygen_max.position=Vector2(50,110)
+	_oxygen_max.size=Vector2(93,30)
+	_depth.position=Vector2(162,40)
+	_depth.size=Vector2(120,36)
+	_depth.add_theme_font_size_override("font_size",24)
+	_bag.position=Vector2(164,80)
+	_bag.size=Vector2(120,56)
 	_oxygen_loss.position=Vector2(49,70)
 	_oxygen_loss.size=Vector2(96,28)
 	for label in [_oxygen_caption,_depth_caption,_oxygen_max,_bag,_oxygen_loss]:
@@ -455,6 +465,12 @@ func _layout() -> void:
 	_bag.size.x=bag_width
 	_instrument.size.x=maxf(296,_bag.position.x+bag_width+12)
 	_depth_caption.text="Kedalaman"
+	var physical:=Vector2(get_window().size)
+	if physical.x<physical.y:
+		_layout_portrait_instrument(ratio,instrument_scale,viewport.x-margin.x-16-inset.z)
+	var instrument_y:=margin.y+identity_height+12
+	if portrait: instrument_y=_dpad.position.y-_instrument.size.y*instrument_scale-line-24
+	_instrument.position=Vector2(margin.x,instrument_y)
 	_warning.position=_instrument.position+Vector2(0,_instrument.size.y*instrument_scale+6)
 	_warning.size=Vector2(_instrument.size.x*instrument_scale,line)
 	_warning.add_theme_font_override("font",preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2"))
@@ -471,6 +487,44 @@ func _layout() -> void:
 	status_label.size=Vector2(400,100)
 	status_label.add_theme_font_override("font",preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2"))
 	status_label.add_theme_font_size_override("font_size",body)
+
+func _layout_portrait_instrument(ratio:float,instrument_scale:float,available_width:float) -> void:
+	var unit:=ratio/instrument_scale
+	var padding:=12*unit
+	var gap:=8*unit
+	var width:=minf(300*ratio,available_width)/instrument_scale
+	var font_size:=ceili(16*unit)
+	var number_size:=ceili(24*unit)
+	for label in [_oxygen_caption,_depth_caption,_oxygen_max,_bag,_oxygen_loss,_depth]:
+		label.add_theme_font_size_override("font_size",font_size)
+	_oxygen_text.add_theme_font_size_override("font_size",number_size)
+	var text_height:=ceilf(_bag.get_theme_font("font").get_height(font_size))
+	var number_height:=ceilf(_oxygen_text.get_theme_font("font").get_height(number_size))
+	var oxygen_x:=padding+40*unit
+	var oxygen_width:=ceilf(_oxygen_text.get_theme_font("font").get_string_size(_oxygen_text.text,HORIZONTAL_ALIGNMENT_LEFT,-1,number_size).x)+4*unit
+	_oxygen_caption.position=Vector2(oxygen_x,padding)
+	_oxygen_caption.size=Vector2(ceilf(_oxygen_caption.get_theme_font("font").get_string_size(_oxygen_caption.text,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size).x)+4*unit,text_height)
+	_oxygen_text.position=Vector2(oxygen_x,padding+text_height+2*unit)
+	_oxygen_text.size=Vector2(oxygen_width,number_height)
+	_oxygen_max.position=Vector2(oxygen_x+oxygen_width+gap,_oxygen_text.position.y)
+	_oxygen_max.size=Vector2(width-_oxygen_max.position.x-padding,number_height)
+	_oxygen_loss.size=Vector2(76*unit,text_height)
+	_oxygen_loss.position=Vector2(width-padding-_oxygen_loss.size.x,padding)
+	var bar_y:=_oxygen_text.position.y+number_height+4*unit
+	_instrument.tank_rect=Rect2(padding,padding,28*unit,52*unit)
+	_instrument.bar_rect=Rect2(padding,bar_y,width-padding*2,10*unit)
+	_instrument.loss_line=Rect2(padding,bar_y-4*unit,width-padding*2,0)
+	var stats_y:=bar_y+18*unit
+	var stats_gap:=_bag.get_theme_constant("line_spacing")
+	var column_width:=(width-padding*2-gap)/2
+	_depth_caption.position=Vector2(padding,stats_y)
+	_depth_caption.size=Vector2(column_width,text_height)
+	_depth.position=Vector2(padding,stats_y+text_height+stats_gap)
+	_depth.size=Vector2(column_width,text_height)
+	_bag.position=Vector2(padding+column_width+gap,stats_y)
+	_bag.size=Vector2(column_width,text_height*2+stats_gap)
+	_instrument.size=Vector2(width,stats_y+text_height*2+stats_gap+padding)
+	_instrument.queue_redraw()
 
 func update_state(state: Dictionary) -> void:
 	_state = state.duplicate()

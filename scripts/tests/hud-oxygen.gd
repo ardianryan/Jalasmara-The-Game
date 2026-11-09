@@ -1,5 +1,29 @@
 extends SceneTree
 func _initialize() -> void: call_deferred("run")
+
+func _portrait_stats(hud:CanvasLayer,view:Rect2,scale:float) -> void:
+	var instrument:Control=hud.get("_instrument")
+	var panel:=instrument.get_global_rect()
+	assert(view.encloses(panel),"Portrait stats must fit inside the actual expanded viewport")
+	assert(panel.size.x*scale<=301 and panel.size.y*scale<=170,"Readable portrait rows must remain compact")
+	var labels:Array=[]
+	for key in ["_oxygen_caption","_oxygen_text","_oxygen_max","_depth_caption","_depth","_bag","_oxygen_loss"]:
+		var label:Label=hud.get(key)
+		if not label.visible: continue
+		assert(label.get_theme_font_size("font_size")*label.get_global_transform().get_scale().x*scale>=16,"Every portrait stat needs16physical pixels")
+		assert(panel.grow(.01).encloses(label.get_global_rect()),"Stat text must stay inside its actual artwork frame: "+key)
+		for line in label.text.split("\n"):
+			assert(label.get_theme_font("font").get_string_size(line,HORIZONTAL_ALIGNMENT_LEFT,-1,label.get_theme_font_size("font_size")).x<=label.size.x,"Every stat line must fit without clipping or ellipsis: "+key)
+		for other in labels:
+			assert(not label.get_global_rect().intersects(other.get_global_rect()),"Portrait stat fields must not overlap")
+		labels.append(label)
+	var bar:Rect2=instrument.get_global_transform()*instrument.bar_rect
+	for label in labels:
+		assert(not bar.intersects(label.get_global_rect()),"The oxygen bar must not pass through a stat line")
+	for control in [hud.get("_dpad"),hud.get("_action"),hud.get("_net"),hud.get("_action_plate")]:
+		if control.visible:
+			assert(not panel.intersects(control.get_global_rect()),"Portrait stats must leave joystick/action areas clear")
+
 func run() -> void:
 	var artwork=load("res://scripts/HudSkin.gd")
 	assert(artwork.assets_ready(),"All actual HUD kit frames must be imported; a flat fallback is not visual delivery")
@@ -90,6 +114,26 @@ func run() -> void:
 					assert(bag.get_theme_font("font").get_string_size(text_line,HORIZONTAL_ALIGNMENT_LEFT,-1,bag.get_theme_font_size("font_size")).x<=bag.size.x,"Bag amount and kg must fit without ellipsis")
 				assert(hud.get("_warning_plate").visible)
 				assert(not hud.get("_warning_plate").get_global_rect().intersects(hud.get("_dpad").get_global_rect()),"Critical warning must not overlap the joystick")
+				if physical.x<physical.y: _portrait_stats(hud,view,scale)
+				else:
+					assert(hud.get("_instrument").size.y==140 and hud.get("_instrument").bar_rect==Rect2(49,87,96,16),"Landscape instrument artwork and default height stay unchanged")
+	# Actual browser fixture f695ff9d: portrait390x844, O2 100/100,
+	# depth2m, bag0/12kg, rainy night18:40 and the dock-return action.
+	root.size=Vector2i(390,844)
+	for frame in range(5): await process_frame
+	state.merge({"diving":true,"oxygen":100,"maxOxygen":100,"depth":2,"weight":0,"capacity":12,"area":"Dangkalan Segaran","action":"Naik: Tangga pulang ke Bandar Hujung","clock":"18:40","weather":"Hujan ringan","canInteract":true,"canNet":false},true)
+	hud.update_state(state)
+	_portrait_stats(hud,root.get_visible_rect(),root.get_final_transform().x.length())
+	state.oxygen=80
+	hud.update_state(state)
+	assert(hud.get("_oxygen_loss").visible)
+	_portrait_stats(hud,root.get_visible_rect(),root.get_final_transform().x.length())
+	if OS.get_environment("HUD_PORTRAIT_CAPTURE")=="1":
+		assert(DisplayServer.get_name()!="headless")
+		await process_frame
+		await RenderingServer.frame_post_draw
+		DirAccess.make_dir_recursive_absolute("res://../artifacts/godot/hud-portrait")
+		root.get_texture().get_image().save_png("res://../artifacts/godot/hud-portrait/ocean390-stats.png")
 	var retained_style:StyleBox=hud.get("_utilities")[0].get_theme_stylebox("normal")
 	hud.update_state(state)
 	assert(hud.get("_utilities")[0].get_theme_stylebox("normal")==retained_style,"State polling must not allocate utility-frame resources every layout")
@@ -105,5 +149,5 @@ func run() -> void:
 			assert(not element.visible,"Night/day serving and dialogue must hide decorative gameplay chrome")
 		hud.set_modal(false)
 	hud.free()
-	print("HUD OXYGEN PASS: inclusive35/15 thresholds, labels, authoritative loss delta, no feedback replay, capacity guard, reduced motion, expiry, modal and surface states;667/844landscape+390portrait48px targets/16px text, contrast backing, Menu clearance, joystick clearance")
+	print("HUD OXYGEN PASS: inclusive35/15 thresholds, labels, authoritative loss delta, no feedback replay, capacity guard, reduced motion, expiry, modal and surface states;667/844landscape+390portrait48px targets/16px text; actual ocean390fixture and loss fields fit/disjoint/frame-contained, compact rows, joystick/action clearance; landscape artwork retained")
 	quit()
