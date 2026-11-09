@@ -31,7 +31,8 @@ assert(["localhost", "127.0.0.1"].includes(new URL(origin).hostname));
 assert(/^mongodb:\/\/(127\.0\.0\.1|localhost)(:|\/)/.test(mongoUrl));
 assert(["localhost", "127.0.0.1"].includes(new URL(redisUrl).hostname));
 const routeMode = process.env.PLAN06_ROUTE_MODE ?? "full";
-assert(["full", "continuation", "ocean"].includes(routeMode));
+assert(["full", "continuation", "ocean", "dialogue"].includes(routeMode));
+const fixtureStoryDay = routeMode === "dialogue" ? 1 : 2;
 const expectedPck = process.env.PLAN06_EXPECT_PCK;
 const expectedPckBytes = Number(process.env.PLAN06_EXPECT_PCK_BYTES);
 assert(
@@ -122,6 +123,7 @@ async function shot(name) {
     area: value.area ?? value.land?.area,
     land: value.land,
     renderer: value.renderer,
+    dialogue: value.dialogue,
     weather: value.weather,
     hud: value.hud,
   });
@@ -420,6 +422,57 @@ async function verifyShelters() {
   }
 }
 
+async function verifyCompactDialogue() {
+  const wira = world.surface_hub.districts.find(
+    (entry) => entry.npc === "Mbah Wira",
+  );
+  assert(wira);
+  await routeTo(wira, "hub");
+  await waitState((value) => value.nearby === wira.id);
+  await responsive(667, 375, "compact-dialogue-before-conversation-667x375");
+  await page.keyboard.press("e");
+  let current = await waitState(
+    (value) => value.modal && value.dialogue?.speaker === "Mbah Wira",
+  );
+  for (const [speaker, tag, cap, minimum, maximum] of [
+    ["Mbah Wira", "paragraph", 0.42, 100, 190],
+    ["Nala", "short", 0.34, 20, 80],
+  ]) {
+    current = await waitState((value) => value.dialogue?.speaker === speaker);
+    const before = current.dialogue;
+    assert(before.total >= minimum && before.total <= maximum);
+    assert(before.compact && before.portrait);
+    assert(current.weather.clockPaused);
+    const logical = current.hud.logicalSize;
+    assert(before.size[1] / logical[1] <= cap + 0.003);
+    assert(before.position[0] >= 0 && before.position[1] >= 0);
+    assert(before.position[0] + before.size[0] <= logical[0] + 1);
+    assert(before.position[1] + before.size[1] <= logical[1] + 1);
+    if (before.visibleCharacters >= 0) {
+      await page.keyboard.press("Enter");
+      current = await waitState(
+        (value) =>
+          value.dialogue?.speaker === speaker &&
+          value.dialogue.visibleCharacters === -1,
+      );
+      assert.deepEqual(current.dialogue.size, before.size);
+    }
+    await shot(`actual-dialogue-${tag}-667x375`);
+    checks.push(
+      `actual-${tag}-dialogue-667x375-leaves-world-visible-and-reveals-without-resize`,
+    );
+    await page.keyboard.press("Enter");
+  }
+  await waitState((value) => !value.modal && !value.weather.clockPaused);
+  const state = await apiState();
+  assert.equal(state.player.progress.day, 1);
+  assert.equal(state.player.coins, 200);
+  assert.equal(state.player.inventory.length, 0);
+  checks.push(
+    "actual-dialogue-resumes-world-without-advancing-story-or-rewards",
+  );
+}
+
 async function verifyOcean() {
   await routeTo(world.hub.divePoint, "hub");
   await waitState((value) => value.nearby === "ladder");
@@ -544,7 +597,12 @@ try {
       coins: 200,
       inventory: [],
       abilities: freshAbilities(),
-      progress: { ...freshProgress(), day: 2, stage: "dive", tutorial: true },
+      progress: {
+        ...freshProgress(),
+        day: fixtureStoryDay,
+        stage: "dive",
+        tutorial: true,
+      },
       adventure: { discoveries: [], puzzles: [], keyItems: [] },
       calendar: {
         ...freshCalendar(),
@@ -552,7 +610,7 @@ try {
         lastSettledDay: 2,
         minuteOfDay: 1110,
       },
-      homestead: freshHomestead(2),
+      homestead: freshHomestead(fixtureStoryDay),
       version: 0,
       authVersion: 0,
       passwordHash: await argon2.hash(password, { type: argon2.argon2id }),
@@ -562,7 +620,7 @@ try {
   const fixtureCache = new Redis(redisUrl);
   try {
     let initialSurface;
-    if (routeMode === "ocean") {
+    if (["ocean", "dialogue"].includes(routeMode)) {
       initialOcean = {
         area: "hub",
         ...WORLD.surfaceSpawn,
@@ -856,7 +914,7 @@ try {
       "separate-fixture-starts-at-previously-crossed-real-forest-bridge",
     );
   }
-  if (routeMode !== "ocean") {
+  if (!["ocean", "dialogue"].includes(routeMode)) {
     await routeTo({ x: 200, y: 1320 }, "forest");
     await waitState((value) => value.nearby === "return");
     const returning = page.waitForResponse(
@@ -897,7 +955,8 @@ try {
     await shot("ocean-fixture-start-at-actual-hub-spawn");
     checks.push("separate-ocean-fixture-starts-on-real-hub-floor");
   }
-  await verifyOcean();
+  if (routeMode === "dialogue") await verifyCompactDialogue();
+  else await verifyOcean();
   assert.deepEqual(errors, []);
   assert.deepEqual(failures, []);
   lastSnapshot = await snapshot();
