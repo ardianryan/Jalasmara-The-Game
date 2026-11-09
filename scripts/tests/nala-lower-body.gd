@@ -85,13 +85,17 @@ func _measure(label:String) -> void:
 		var sole:Array=direction.legs[side].solePixel
 		var actual:=foot.to_global(Vector3(float(sole[0])-foot.texture.get_width()*.5,foot.texture.get_height()*.5-float(sole[1]),0))
 		if not _check(actual.distance_to(entry.sole)<.002,"Actual foot pixel must meet world sole "+label): return
+		var source_leg:Dictionary=direction.legs[side]
+		var source_rect:Array=source_leg.parts.foot
+		var ankle_pixel:=Vector2(float(source_leg.ankle[0])-float(source_rect[0]),float(source_leg.ankle[1])-float(source_rect[1]))
+		var actual_ankle:=foot.to_global(Vector3(ankle_pixel.x-foot.texture.get_width()*.5,foot.texture.get_height()*.5-ankle_pixel.y,0))
 		if entry.has("rotationAnchorWorld"):
-			var leg:Dictionary=direction.legs[side]
-			var rect:Array=leg.parts.foot
-			var ankle_pixel:=Vector2(float(leg.ankle[0])-float(rect[0]),float(leg.ankle[1])-float(rect[1]))
-			var actual_ankle:=foot.to_global(Vector3(ankle_pixel.x-foot.texture.get_width()*.5,foot.texture.get_height()*.5-ankle_pixel.y,0))
 			var pivot:Array=entry.rotationAnchorWorld
 			if not _check(actual_ankle.distance_to(Vector3(float(pivot[0]),float(pivot[1]),float(pivot[2])))<.003,"Airborne shoe view changed actual ankle pivot "+label): return
+		if previous.has(side):
+			var accepted:=maxf(0,float(pose.contacts.acceptedDistance)-float(previous[side].distance))
+			var allowance:=accepted*5.0 if accepted>.00001 else last_delta*24.0
+			if not _check(actual_ankle.distance_to(previous[side].ankle)<=allowance+.003,"Actual ankle jumps across terrain "+label+" side="+side): return
 		for name in ["thigh","shin"]:
 			var bone:Sprite3D=rig.get("_parts")[side+"_"+name]
 			var first:=bone.to_global(Vector3(0,-bone.texture.get_height()*.5,0))
@@ -101,19 +105,27 @@ func _measure(label:String) -> void:
 			length_max=maxf(length_max,error)
 			if not _check(error<.003,"Actual Sprite3D bone length changed "+label): return
 		var endpoints:Array[Vector3]=[]
+		var exact_centroid:=_on_mesh(actual)
 		if entry.grounded:
-			if not _check(_on_mesh(actual),"Actual sole misses rendered triangle "+label+" side="+side+" sole="+str(actual)+" highest="+str(_last_floor_height)): return
-			for pixel in direction.legs[side].soleEdgePixels:
-				var endpoint:=foot.to_global(Vector3(float(pixel[0])-foot.texture.get_width()*.5,foot.texture.get_height()*.5-float(pixel[1]),0))
-				endpoints.append(endpoint)
-				if not _check(_on_mesh(endpoint),"Actual heel/toe source pixel misses tread "+label+" side="+side+" pixel="+str(pixel)+" highest="+str(_last_floor_height)): return
+			if not _check(exact_centroid,"Actual sole misses rendered triangle "+label+" side="+side+" sole="+str(actual)+" highest="+str(_last_floor_height)): return
+		else:
+			if not _check(is_finite(_last_floor_height) and actual.z>=_last_floor_height-.3,"Airborne sole enters actual terrain "+label+" side="+side): return
+		for pixel in direction.legs[side].soleEdgePixels:
+			var endpoint:=foot.to_global(Vector3(float(pixel[0])-foot.texture.get_width()*.5,foot.texture.get_height()*.5-float(pixel[1]),0))
+			endpoints.append(endpoint)
+			var exact_endpoint:=_on_mesh(endpoint)
+			if entry.grounded:
+				if not _check(exact_endpoint,"Actual heel/toe source pixel misses tread "+label+" side="+side+" pixel="+str(pixel)+" highest="+str(_last_floor_height)): return
+			else:
+				if not _check(is_finite(_last_floor_height) and endpoint.z>=_last_floor_height-.3,"Airborne opaque heel/toe enters actual terrain "+label+" side="+side+" pixel="+str(pixel)+" highest="+str(_last_floor_height)): return
+		if entry.grounded:
 			if previous.has(side) and previous[side].grounded and Vector3(previous[side].plant).distance_to(entry.plant)<.001:
 				var drift:=actual.distance_to(previous[side].actual)
 				drift_max=maxf(drift_max,drift)
 				if not _check(drift<.002,"Planted source-pixel sole slides "+label): return
 				for index in range(2):
 					if not _check(endpoints[index].distance_to(previous[side].endpoints[index])<.002,"Planted heel/toe pixel rotates or slides "+label): return
-		previous[side]={"grounded":entry.grounded,"plant":entry.plant,"actual":actual,"endpoints":endpoints if entry.grounded else []}
+		previous[side]={"grounded":entry.grounded,"plant":entry.plant,"actual":actual,"endpoints":endpoints if entry.grounded else [],"ankle":actual_ankle,"distance":pose.contacts.acceptedDistance}
 	checks+=1
 
 func _tick(target:Vector2,delta:float,label:String) -> void:
