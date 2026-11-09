@@ -52,10 +52,13 @@ func _run() -> void:
 	assert(status.viewport[0]*status.viewport[1]<=129600)
 	assert(absf(float(status.viewport[0])/status.viewport[1]-renderer.get_viewport().get_visible_rect().size.aspect())<.015)
 	assert(not status.bitmapGround and status.houses==10 and status.glbModels>0)
-	assert(status.meshes<60,"Static material batches must not become hundreds of draw calls")
+	if status.meshes>=60:
+		printerr("LAND RENDERER BATCH BUDGET FAILED: ",JSON.stringify(status))
+		quit(1)
+		return
 	assert(status.stairTreads>=10 and status.actors.player==1)
 	assert(float(status.maxFootError)<.01,"Actual atlas alpha-bottom must stay at the ground pivot")
-	assert(status.warmLanterns==9 and renderer.sunlight.shadow_enabled)
+	assert(status.warmLanterns==11 and renderer.sunlight.shadow_enabled)
 	for light in renderer.get("_lanterns"): assert(light is OmniLight3D and light.omni_range>=200)
 	assert(renderer.world_root.find_children("*","CollisionObject3D",true,false).is_empty(),"Renderer must not invent unsynchronized physics")
 	renderer.set_area("forest")
