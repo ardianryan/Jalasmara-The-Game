@@ -1,0 +1,385 @@
+{
+  "schemaVersion": 1,
+  "identity": "male_nusantara",
+  "view": "north_west",
+  "walkRow": 5,
+  "idleColumn": 5,
+  "canonicalDirections": [
+    "east",
+    "south_east",
+    "south",
+    "south_west",
+    "west",
+    "north_west",
+    "north",
+    "north_east"
+  ],
+  "status": "READ-ONLY original source audit; orientation mismatch blocks explorer NW upper authoring/contact mapping",
+  "anatomicalSide": "unknown",
+  "wrist": null,
+  "grip": null,
+  "findings": {
+    "daily": "NW walk/idle show rear-left orientation; anatomical upper side remains unverified from these pixels alone",
+    "explorer": "NW WALK shows rear-right head/ear/shoulder while NW IDLE shows rear-left; row7 walk also rear-right. Do not swap/mirror automatically."
+  },
+  "sources": {
+    "daily": {
+      "walk": {
+        "path": "client-godot/resources/art/player-gait/male-nusantara-daily-walk-8way-v1.png",
+        "sha256": "342724d1724490279cd0f65c0340c5b35cdf366ecc36a99af716c51f751b8fc3"
+      },
+      "idle": {
+        "path": "client-godot/resources/art/player-gait/male-nusantara-daily-idle-8way-v1.png",
+        "sha256": "6b5e6f8b3bf19acbd5dbfe1a84429894d2f4de4fd985dc16c024a6bf1f44c054"
+      }
+    },
+    "explorer": {
+      "walk": {
+        "path": "client-godot/resources/art/player-gait/male-nusantara-explorer-walk-8way-v1.png",
+        "sha256": "a429c378400bd5ac60a45124ac48672b4cb1360beb379cc83297b52ea48ae3b9"
+      },
+      "idle": {
+        "path": "client-godot/resources/art/player-gait/male-nusantara-explorer-idle-8way-v1.png",
+        "sha256": "68fad4626665bb75f41c61c8e950091f3f927428ca0e81090fffa6834c411f3f"
+      }
+    }
+  },
+  "boundaryPatches": {
+    "daily": [
+      {
+        "frame": 0,
+        "regions": {
+          "visibleSleeve": [
+            57,
+            46,
+            67,
+            56
+          ],
+          "visibleArmHand": [
+            59,
+            54,
+            73,
+            74
+          ],
+          "secondaryHandRegion": [
+            50,
+            60,
+            59,
+            68
+          ]
+        },
+        "status": "Authored inspection rectangles, not anatomical part masks; included garment/outline stays unclassified",
+        "anatomicalSide": "unknown",
+        "wrist": null,
+        "grip": null
+      },
+      {
+        "frame": 4,
+        "regions": {
+          "visibleSleeve": [
+            54,
+            46,
+            65,
+            55
+          ],
+          "visibleArmHand": [
+            45,
+            53,
+            65,
+            68
+          ],
+          "secondaryHandRegion": [
+            75,
+            63,
+            84,
+            72
+          ]
+        },
+        "status": "Authored inspection rectangles, not anatomical part masks; included garment/outline stays unclassified",
+        "anatomicalSide": "unknown",
+        "wrist": null,
+        "grip": null
+      }
+    ],
+    "explorer": [
+      {
+        "frame": 0,
+        "regions": {
+          "visibleSleeve": [
+            51,
+            46,
+            61,
+            55
+          ],
+          "visibleArmHand": [
+            49,
+            53,
+            61,
+            72
+          ],
+          "secondaryHandRegion": [
+            73,
+            59,
+            80,
+            69
+          ]
+        },
+        "status": "Authored inspection rectangles, not anatomical part masks; included garment/outline stays unclassified",
+        "anatomicalSide": "unknown",
+        "wrist": null,
+        "grip": null
+      },
+      {
+        "frame": 4,
+        "regions": {
+          "visibleSleeve": [
+            51,
+            46,
+            61,
+            55
+          ],
+          "visibleArmHand": [
+            48,
+            54,
+            60,
+            72
+          ],
+          "secondaryHandRegion": [
+            74,
+            58,
+            82,
+            68
+          ]
+        },
+        "status": "Authored inspection rectangles, not anatomical part masks; included garment/outline stays unclassified",
+        "anatomicalSide": "unknown",
+        "wrist": null,
+        "grip": null
+      }
+    ]
+  },
+  "lowerAnnotationEvidence": {
+    "daily": {
+      "path": "client-godot/resources/art/player-lower-body/male-nusantara-daily-v1.json",
+      "sha256": "f46253f21b32fc5e4ff027c4dce5e36c9be317ade6feffb1a7174fd1774b8d48",
+      "source": "res://resources/art/player-gait/male-nusantara-daily-idle-8way-v1.png",
+      "sourceSha256": "6b5e6f8b3bf19acbd5dbfe1a84429894d2f4de4fd985dc16c024a6bf1f44c054",
+      "northWestData": {
+        "sourceColumn": 5,
+        "upperCutY": 76,
+        "legs": {
+          "left": {
+            "hip": [
+              59,
+              76
+            ],
+            "knee": [
+              59,
+              88
+            ],
+            "ankle": [
+              59,
+              99
+            ],
+            "parts": {
+              "thigh": [
+                55,
+                76,
+                8,
+                12
+              ],
+              "shin": [
+                55,
+                88,
+                8,
+                11
+              ],
+              "foot": [
+                47,
+                98,
+                17,
+                6
+              ]
+            },
+            "solePixel": [
+              12.0,
+              6
+            ],
+            "soleEdgePixels": [
+              [
+                8.5,
+                6
+              ],
+              [
+                15.5,
+                6
+              ]
+            ],
+            "occludedReuse": false
+          },
+          "right": {
+            "hip": [
+              70,
+              76
+            ],
+            "knee": [
+              70,
+              88
+            ],
+            "ankle": [
+              70,
+              99
+            ],
+            "parts": {
+              "thigh": [
+                66,
+                76,
+                8,
+                12
+              ],
+              "shin": [
+                66,
+                88,
+                8,
+                11
+              ],
+              "foot": [
+                64,
+                98,
+                11,
+                6
+              ]
+            },
+            "solePixel": [
+              5.5,
+              4
+            ],
+            "soleEdgePixels": [
+              [
+                0.5,
+                4
+              ],
+              [
+                10.5,
+                4
+              ]
+            ],
+            "occludedReuse": false
+          }
+        }
+      },
+      "scope": "Existing authored IDLE lower annotations read as DATA; not upper-side/contact acceptance or permission to change Lower"
+    },
+    "explorer": {
+      "path": "client-godot/resources/art/player-lower-body/male-nusantara-explorer-v1.json",
+      "sha256": "2da32a0cfec23794965cd5592bc7fc1d2db550f46d5c3d02452461c44a2d7169",
+      "source": "res://resources/art/player-gait/male-nusantara-explorer-idle-8way-v1.png",
+      "sourceSha256": "68fad4626665bb75f41c61c8e950091f3f927428ca0e81090fffa6834c411f3f",
+      "northWestData": {
+        "sourceColumn": 5,
+        "upperCutY": 76,
+        "legs": {
+          "left": {
+            "hip": [
+              59,
+              76
+            ],
+            "knee": [
+              59,
+              88
+            ],
+            "ankle": [
+              59,
+              99
+            ],
+            "parts": {
+              "thigh": [
+                55,
+                76,
+                8,
+                12
+              ],
+              "shin": [
+                55,
+                88,
+                8,
+                11
+              ],
+              "foot": [
+                47,
+                98,
+                17,
+                6
+              ]
+            },
+            "solePixel": [
+              10.954545454545455,
+              6
+            ],
+            "soleEdgePixels": [
+              [
+                4.5,
+                6
+              ],
+              [
+                16.5,
+                6
+              ]
+            ],
+            "occludedReuse": false
+          },
+          "right": {
+            "hip": [
+              70,
+              76
+            ],
+            "knee": [
+              70,
+              88
+            ],
+            "ankle": [
+              70,
+              99
+            ],
+            "parts": {
+              "thigh": [
+                66,
+                76,
+                8,
+                12
+              ],
+              "shin": [
+                66,
+                88,
+                8,
+                11
+              ],
+              "foot": [
+                64,
+                98,
+                11,
+                6
+              ]
+            },
+            "solePixel": [
+              7.5,
+              6
+            ],
+            "soleEdgePixels": [
+              [
+                6.5,
+                6
+              ],
+              [
+                8.5,
+                6
+              ]
+            ],
+            "occludedReuse": false
+          }
+        }
+      },
+      "scope": "Existing authored IDLE lower annotations read as DATA; not upper-side/contact acceptance or permission to change Lower"
+    }
+  }
+}
