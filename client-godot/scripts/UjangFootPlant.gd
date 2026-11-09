@@ -96,11 +96,13 @@ func _up() -> Vector3:
 	var camera:Camera3D=_renderer.get("camera_3d")
 	return camera.global_basis.y if camera!=null else _renderer.camera_up()
 
-func _begin_swing(entry:Dictionary,phase:float,at:Vector2,side:String) -> void:
+func _begin_swing(entry:Dictionary,phase:float,at:Vector2,side:String,from_stance_boundary:=false) -> void:
 	entry.swingFrom=entry.logical
 	var remaining:float=(1.0-phase)*STRIDE
 	entry.swingTo=_safe(_base(side,at)+_direction*(remaining+STRIDE*.25)/_ratio,at)
-	entry.startProgress=(phase-.5)*2.0
+	# A regular stance crossing already consumed part of this swing during the
+	# accepted movement. Startup and turn handover instead start at this pose.
+	entry.startProgress=0.0 if from_stance_boundary else (phase-.5)*2.0
 	entry.grounded=false
 
 func _begin_turn(at:Vector2) -> void:
@@ -174,7 +176,7 @@ func update(at:Vector2,velocity:Vector2,time:float,_flip:float) -> Dictionary:
 						entry.grounded=true
 					entry.sole=entry.plant
 				else:
-					if bool(entry.grounded): _begin_swing(entry,phase,at,side)
+					if bool(entry.grounded): _begin_swing(entry,phase,at,side,true)
 					var u:=clampf(((phase-.5)*2.0-float(entry.startProgress))/maxf(.001,1.0-float(entry.startProgress)),0,1)
 					var smooth:=u*u*(3.0-2.0*u)
 					entry.logical=Vector2(entry.swingFrom).lerp(entry.swingTo,smooth)
