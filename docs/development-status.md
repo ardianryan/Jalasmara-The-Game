@@ -1,5 +1,11 @@
 # Status pengembangan
 
+## Pembaruan aktif 9 November: kandidat 06-B
+
+Paket 06-A/B1 yang terbukti di staging tetap source `9ba21c6` dan PCK `a9378a52`. Kandidat berikutnya pada `work/06b-integration` mengumpulkan serambi/tempat berteduh, tumpuan Griya, pilot kontak/rear/grip Ujang, helper kamera Noxe berlisensi dan perbaikan website. Kandidat ini belum dinyatakan dirilis. Bukti website production mencatat32 pemeriksaan tanpa error JavaScript; API pada iterasi awal menemukan dua regresi rute, lalu perbaikan subagent lulus81 tes. Alignment rumah/dek dan masalah kaki saat berbelok sedang diselesaikan sebelum tes gabungan akhir.
+
+Arahan terbaru: kamera dari kiri menghadap serong kanan; rumah dermaga sejajar sumbu dek, bukan footprint skew yang ditambah rotasi kamera. Kamera kiri baru pembanding native, belum default gameplay global. [Handoff aktif](agent-handoff.md) menyimpan branch, hasil terbaru, tool aktual, batas dan langkah kerja; [PRD](PRD.md) serta [AGENTS.md](../AGENTS.md) menyimpan kebutuhan dan workflow. Bagian di bawah merupakan status paket terdahulu dan tidak menggantikan laporan kandidat.
+
 Versi ini adalah prototipe petualangan Godot Fase 1 yang dapat dimainkan melalui browser. Kualitas animasi, peta, dialog, dan kedai masih perlu pemolesan berdasarkan moodboard yang dikerjakan terpisah. Durasi 30–45 menit adalah sasaran desain dan belum divalidasi dengan sesi bermain manusia dari awal sampai tamat.
 
 ## Yang sudah berjalan

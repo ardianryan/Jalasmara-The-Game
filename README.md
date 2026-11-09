@@ -13,6 +13,8 @@ Dibangun dengan **Godot 4.7.2** untuk permainan, **React + Vite** untuk akun dan
 
 Lihat [status pengembangan dan bukti pengujian](docs/development-status.md). Versi ini masih prototipe; pemolesan visual, uji bermain manusia, dan pengujian HP fisik belum selesai.
 
+Untuk melanjutkan pengembangan dengan agent AI, mulai dari [AGENTS.md](AGENTS.md), [handoff aktif dan ringkasan progres](docs/agent-handoff.md), serta [PRD](docs/PRD.md). Handoff membedakan kandidat lokal dari rilis staging, tool yang benar-benar dipakai, kegagalan tes yang masih terbuka, dan urutan kerja berikutnya.
+
 Nala dapat memasuki Griya Sasmita, menyimpan fragmen, merawat dua petak kangkung, membeli bibit, dan membawa panen ke kedai. Kalender akun memakai satu hari selama 36 menit aktif; tidur menyelesaikan pagi berikutnya tanpa melewati syarat cerita. Tiga warga memakai animasi tubuh berlapis dengan alat terpisah. Rincian serta batas implementasi ada di [Rencana 03](docs/plans/03-desa-hidup-dan-siklus-harian.md).
 
 ## Menjalankan lokal

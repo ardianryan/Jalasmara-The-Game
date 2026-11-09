@@ -1,5 +1,7 @@
 # Rencana 06: finishing dunia, aktivitas NPC, dan perluasan desa
 
+Pembaruan kandidat 9 November: lihat [handoff aktif](../agent-handoff.md) untuk hasil gabungan dan kegagalan yang sedang diperbaiki. Pengguna menetapkan kamera kiri menghadap serong kanan serta rumah dermaga sejajar sumbu dek; footprint skew lama bukan bukti orientasi yang benar. Port Noxe kini terbatas pada helper kamera berlisensi dalam kandidat; PixelDoll masih referensi. Kandidat shelter/rig/website belum otomatis menjadi rilis staging. [PRD](../PRD.md) dan [petunjuk agent](../../AGENTS.md) menyimpan kebutuhan/pelaporan lintas sesi.
+
 Tanggal: 9 November 2026. Status: **06-A dan perbaikan dasar 06-B1 sudah dirilis ke staging pada source `9ba21c6`, dengan CI akhir dan smoke HTTPS lulus**. Profiling 06-P sudah mencakup baseline, kandidat, dan kontrol berpasangan; Windows/S23 fisik serta sesi panjang masih terbuka. Pilot mekanik kaki Ujang 06-B2 ada pada cabang terpisah, belum diterima sebagai animasi lengkap atau dimasukkan ke paket publik. Pengguna meminta subagent mulai bekerja sambil audit Noxe/PixelDoll berlangsung. Dokumen ini terpisah dari Rencana 03, Rencana 04, dan pembagian jalur pada Rencana 05. Bukti gabungan tersedia pada [laporan pengiriman awal](../reviews/06a-delivery.md).
 
 Baseline: `efdacba0e402f5acc3df174e2c27582381628f53`, sudah terpasang di staging. Pipeline GitLab `3043497430` lulus; pemeriksaan staging mencakup 16 alur tanpa error browser. Keberhasilan baseline bukan bukti bahwa pekerjaan dalam rencana ini sudah selesai.
@@ -222,7 +224,7 @@ Paket D dicatat agar sisa permintaan tidak hilang. Implementasinya tidak menjadi
 
 ## 11. Daftar penerimaan
 
-Tambahan referensi pengguna, 9 November 2026: [audit Noxe dan PixelDoll](../world/noxe-pixeldoll-reference.md). Noxe menjadi kandidat adaptasi mesh ruang/bangunan tiga perempat pada paket C, dengan interior playable tetap paket D. PixelDoll menjadi kandidat authoring layer pakaian/alat pada paket B melalui adapter billboard Godot; delapan arah Nala harus mandiri dan fase langkah tetap mengikuti perpindahan nyata. Keduanya belum diintegrasikan. Pilot kecil dan bukti visual/performa mendahului batch; urutan A–B–C serta jalur perangkat tidak berubah.
+Tambahan referensi pengguna, 9 November 2026: [audit Noxe dan PixelDoll](../world/noxe-pixeldoll-reference.md). Metode bangunan Noxe dimajukan ke pilot B1a dan helper orbit/snap diport secara terbatas ke Godot dengan MIT; ini belum mengganti kamera gameplay global. Interior playable tetap paket D. PixelDoll masih kandidat authoring layer pakaian/alat pada paket B melalui adapter billboard Godot; delapan arah Nala harus mandiri dan fase langkah tetap mengikuti perpindahan nyata. Pilot kecil dan bukti visual/performa mendahului batch; urutan A–B–C serta jalur perangkat tidak berubah.
 
 - [x] Bukti baseline terbaru dan temuan aktif sudah dicocokkan.
 - [x] Kepala/badan Nala terbaca pada pintu masuk dan jalur bertajuk tanpa menghilangkan kedalaman foreground.
