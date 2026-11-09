@@ -190,6 +190,7 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 			var sample:=origin.lerp(at,consumed/physical)
 			_distance+=chunk
 			var entry:Dictionary=_feet[_swing]
+			entry.lateralOffset=move_toward(float(entry.lateralOffset),float(hips[_swing]),chunk)
 			# Retarget only the free foot; an already planted sole never follows the torso.
 			var target:=_safe(_base(sample,float(entry.lateralOffset),right)+_heading*(_landing_distance-_distance+LANDING_LEAD)/maxf(.001,_world_motion(sample,_heading).length()),sample,_swing)
 			entry.to=target
