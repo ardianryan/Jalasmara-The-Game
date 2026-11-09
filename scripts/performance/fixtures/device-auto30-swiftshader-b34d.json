@@ -1,0 +1,596 @@
+{
+  "schemaVersion": 1,
+  "kind": "jalasmara-device-performance",
+  "session": {
+    "startedAt": "2026-11-09T21:34:21.558Z",
+    "durationMs": 30000,
+    "elapsedMs": 30104.5,
+    "reason": "duration-completed",
+    "quality": "auto"
+  },
+  "device": {
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.8127.18 Safari/537.36",
+    "platform": "MacIntel",
+    "hardwareConcurrency": 8,
+    "deviceMemoryGiB": 8,
+    "viewport": {
+      "width": 844,
+      "height": 390,
+      "devicePixelRatio": 1
+    },
+    "gpu": {
+      "vendor": "Google Inc. (Google)",
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver)"
+    },
+    "jsHeap": {
+      "usedBytes": 157137610,
+      "totalBytes": 172988330,
+      "limitBytes": 4395630592
+    }
+  },
+  "assetProvenance": {
+    "status": "unchanged-loader-pin",
+    "document": "same",
+    "start": {
+      "schemaVersion": 1,
+      "pckSha256": "b34d95211a61354eebf9cd218455d1c2f4e4b99723b57e4cfbe2b0a113f0ba26",
+      "pckBytes": 64495984,
+      "partCount": 62,
+      "verification": "all-parts-verified-manifest"
+    },
+    "end": {
+      "schemaVersion": 1,
+      "pckSha256": "b34d95211a61354eebf9cd218455d1c2f4e4b99723b57e4cfbe2b0a113f0ba26",
+      "pckBytes": 64495984,
+      "partCount": 62,
+      "verification": "all-parts-verified-manifest"
+    }
+  },
+  "frameScheduling": {
+    "intervalsMs": {
+      "count": 455,
+      "p50": 50,
+      "p95": 83.39999999999418,
+      "max": 2199.7999999999993
+    },
+    "hitches": {
+      "over50Ms": 113,
+      "over100Ms": 17,
+      "over250Ms": 4,
+      "over1000Ms": 2
+    },
+    "eligibleCallbacks": 457,
+    "pausedCallbacks": 43,
+    "droppedIntervals": 0
+  },
+  "engine": {
+    "fps": {
+      "count": 25,
+      "p50": 19,
+      "p95": 23,
+      "max": 23
+    },
+    "processMs": {
+      "count": 25,
+      "p50": 87.4,
+      "p95": 150.3,
+      "max": 276
+    },
+    "physicsMs": {
+      "count": 25,
+      "p50": 1.1,
+      "p95": 1.2,
+      "max": 1.6
+    },
+    "drawCalls": {
+      "count": 25,
+      "p50": 435,
+      "p95": 438,
+      "max": 438
+    },
+    "renderObjects": {
+      "count": 25,
+      "p50": 657,
+      "p95": 661,
+      "max": 661
+    },
+    "renderPrimitives": {
+      "count": 25,
+      "p50": 81367,
+      "p95": 81557,
+      "max": 81557
+    },
+    "pathQueue": {
+      "count": 0,
+      "p50": null,
+      "p95": null,
+      "max": null
+    }
+  },
+  "samples": [
+    {
+      "elapsedMs": 1102.3000000715256,
+      "paused": false,
+      "values": {
+        "fps": 16,
+        "processMs": 127.8,
+        "physicsMs": 1.2,
+        "drawCalls": 428,
+        "renderObjects": 550,
+        "renderPrimitives": 81245,
+        "quality": {
+          "requested": "auto",
+          "effective": "low"
+        }
+      },
+      "jsHeapUsedBytes": 158635157
+    },
+    {
+      "elapsedMs": 2127.8000000715256,
+      "paused": false,
+      "values": {
+        "fps": 19,
+        "processMs": 130.8,
+        "physicsMs": 1.1,
+        "drawCalls": 438,
+        "renderObjects": 613,
+        "renderPrimitives": 81353,
+        "quality": {
+          "requested": "auto",
+          "effective": "low"
+        }
+      },
+      "jsHeapUsedBytes": 159809147
+    },
+    {
+      "elapsedMs": 3136.2000000476837,
+      "paused": false,
+      "values": {
+        "fps": 16,
+        "processMs": 75,
+        "physicsMs": 1.2,
+        "drawCalls": 438,
+        "renderObjects": 627,
+        "renderPrimitives": 81367,
+        "quality": {
+          "requested": "auto",
+          "effective": "low"
+        }
+      },
+      "jsHeapUsedBytes": 160247055
+    },
+    {
+      "elapsedMs": 5534.300000071526,
+      "paused": false,
+      "values": {
+        "fps": 16,
+        "processMs": 75,
+        "physicsMs": 1.2,
+        "drawCalls": 438,
+        "renderObjects": 627,
+        "renderPrimitives": 81367,
+        "quality": {
+          "requested": "auto",
+          "effective": "low"
+        }
+      },
+      "jsHeapUsedBytes": 160401595
+    },
+    {
+      "elapsedMs": 6162.700000047684,
+      "paused": false,
+      "values": {
+        "fps": 16,
+        "processMs": 75,
+        "physicsMs": 1.2,
+        "drawCalls": 438,
+        "renderObjects": 627,
+        "renderPrimitives": 81367,
+        "quality": {
+          "requested": "auto",
+          "effective": "low"
+        }
+      },
+      "jsHeapUsedBytes": 160925861
+    },
+    {
+      "elapsedMs": 7578.300000071526,
+      "paused": true,
+      "values": {
+        "fps": 17,
+        "processMs": 115.3,
+        "physicsMs": 1.1,
+        "drawCalls": 432,
+        "renderObjects": 649,
+        "renderPrimitives": 81235,
+        "quality": {
+          "requested": "auto",
+          "effective": "low"
+        }
+      },
+      "jsHeapUsedBytes": 161528276
+    },
+    {
+      "elapsedMs": 8117,
+      "paused": true,
+      "values": {
+        "fps": 14,
+        "processMs": 428.5,
+        "physicsMs": 1,
+        "drawCalls": 431,
+        "renderObjects": 656,
+        "renderPrimitives": 81241,
+        "quality": {
+          "requested": "auto",
+          "effective": "low"
+        }
+      },
+      "jsHeapUsedBytes": 161774663
+    },
+    {
+      "elapsedMs": 9118.5,
+      "paused": true,
+      "values": {
+        "fps": 15,
+        "processMs": 83.9,
+        "physicsMs": 0.6,
+        "drawCalls": 431,
+        "renderObjects": 656,
+        "renderPrimitives": 81241,
+        "quality": {
+          "requested": "auto",
+          "effective": "low"
+        }
+      },
+      "jsHeapUsedBytes": 163051557
+    },
+    {
+      "elapsedMs": 10093.399999976158,
+      "paused": false,
+      "values": {
+        "fps": 16,
+        "processMs": 143.1,
+        "physicsMs": 0.5,
+        "drawCalls": 431,
+        "renderObjects": 656,
+        "renderPrimitives": 81241,
+        "quality": {
+          "requested": "auto",
+          "effective": "low"
+        }
+      },
+      "jsHeapUsedBytes": 163703790
+    },
+    {
+      "elapsedMs": 11122.600000023842,
+      "paused": false,
+      "values": {
+        "fps": 21,
+        "processMs": 94.9,
+        "physicsMs": 1,
+        "drawCalls": 432,
+        "renderObjects": 657,
+        "renderPrimitives": 81243,
+        "quality": {
+          "requested": "auto",
+          "effective": "low"
+        }
+      },
+      "jsHeapUsedBytes": 158982536
+    },
+    {
+      "elapsedMs": 12094.399999976158,
+      "paused": false,
+      "values": {
+        "fps": 23,
+        "processMs": 57.9,
+        "physicsMs": 1.1,
+        "drawCalls": 430,
+        "renderObjects": 655,
+        "renderPrimitives": 81239,
+        "quality": {
+          "requested": "auto",
+          "effective": "low"
+        }
+      },
+      "jsHeapUsedBytes": 159549265
+    },
+    {
+      "elapsedMs": 13111.200000047684,
+      "paused": false,
+      "values": {
+        "fps": 20,
+        "processMs": 113.1,
+        "physicsMs": 1,
+        "drawCalls": 430,
+        "renderObjects": 655,
+        "renderPrimitives": 81225,
+        "quality": {
+          "requested": "auto",
+          "effective": "low"
+        }
+      },
+      "jsHeapUsedBytes": 160153868
+    },
+    {
+      "elapsedMs": 15120.600000023842,
+      "paused": false,
+      "values": {
+        "fps": 23,
+        "processMs": 48.4,
+        "physicsMs": 1.1,
+        "drawCalls": 428,
+        "renderObjects": 653,
+        "renderPrimitives": 81221,
+        "quality": {
+          "requested": "auto",
+          "effective": "low"
+        }
+      },
+      "jsHeapUsedBytes": 163158264
+    },
+    {
+      "elapsedMs": 16102.100000023842,
+      "paused": false,
+      "values": {
+        "fps": 5,
+        "processMs": 110.4,
+        "physicsMs": 0.9,
+        "drawCalls": 430,
+        "renderObjects": 655,
+        "renderPrimitives": 81265,
+        "quality": {
+          "requested": "auto",
+          "effective": "low"
+        }
+      },
+      "jsHeapUsedBytes": 163686153
+    },
+    {
+      "elapsedMs": 17092.399999976158,
+      "paused": false,
+      "values": {
+        "fps": 22,
+        "processMs": 49.2,
+        "physicsMs": 1.2,
+        "drawCalls": 431,
+        "renderObjects": 656,
+        "renderPrimitives": 81267,
+        "quality": {
+          "requested": "auto",
+          "effective": "low"
+        }
+      },
+      "jsHeapUsedBytes": 164246539
+    },
+    {
+      "elapsedMs": 18151.399999976158,
+      "paused": false,
+      "values": {
+        "fps": 21,
+        "processMs": 60.3,
+        "physicsMs": 0.8,
+        "drawCalls": 430,
+        "renderObjects": 655,
+        "renderPrimitives": 81265,
+        "quality": {
+          "requested": "auto",
+          "effective": "low"
+        }
+      },
+      "jsHeapUsedBytes": 164724833
+    },
+    {
+      "elapsedMs": 19116.600000023842,
+      "paused": false,
+      "values": {
+        "fps": 15,
+        "processMs": 150.3,
+        "physicsMs": 1.2,
+        "drawCalls": 436,
+        "renderObjects": 661,
+        "renderPrimitives": 81557,
+        "quality": {
+          "requested": "auto",
+          "effective": "low"
+        }
+      },
+      "jsHeapUsedBytes": 165273800
+    },
+    {
+      "elapsedMs": 20110.5,
+      "paused": false,
+      "values": {
+        "fps": 23,
+        "processMs": 53.7,
+        "physicsMs": 1.1,
+        "drawCalls": 435,
+        "renderObjects": 660,
+        "renderPrimitives": 81555,
+        "quality": {
+          "requested": "auto",
+          "effective": "low"
+        }
+      },
+      "jsHeapUsedBytes": 165854750
+    },
+    {
+      "elapsedMs": 21098.5,
+      "paused": false,
+      "values": {
+        "fps": 18,
+        "processMs": 148.7,
+        "physicsMs": 1.1,
+        "drawCalls": 436,
+        "renderObjects": 661,
+        "renderPrimitives": 81557,
+        "quality": {
+          "requested": "auto",
+          "effective": "low"
+        }
+      },
+      "jsHeapUsedBytes": 166537097
+    },
+    {
+      "elapsedMs": 22142.600000023842,
+      "paused": false,
+      "values": {
+        "fps": 20,
+        "processMs": 51.2,
+        "physicsMs": 1.1,
+        "drawCalls": 436,
+        "renderObjects": 661,
+        "renderPrimitives": 81557,
+        "quality": {
+          "requested": "auto",
+          "effective": "low"
+        }
+      },
+      "jsHeapUsedBytes": 167058271
+    },
+    {
+      "elapsedMs": 23489.5,
+      "paused": false,
+      "values": {
+        "fps": 19,
+        "processMs": 121.7,
+        "physicsMs": 1.1,
+        "drawCalls": 435,
+        "renderObjects": 660,
+        "renderPrimitives": 81555,
+        "quality": {
+          "requested": "auto",
+          "effective": "low"
+        }
+      },
+      "jsHeapUsedBytes": 167536910
+    },
+    {
+      "elapsedMs": 24098,
+      "paused": false,
+      "values": {
+        "fps": 19,
+        "processMs": 121.7,
+        "physicsMs": 1.1,
+        "drawCalls": 435,
+        "renderObjects": 660,
+        "renderPrimitives": 81555,
+        "quality": {
+          "requested": "auto",
+          "effective": "low"
+        }
+      },
+      "jsHeapUsedBytes": 168793558
+    },
+    {
+      "elapsedMs": 25093.899999976158,
+      "paused": false,
+      "values": {
+        "fps": 19,
+        "processMs": 87.4,
+        "physicsMs": 1.6,
+        "drawCalls": 436,
+        "renderObjects": 661,
+        "renderPrimitives": 81557,
+        "quality": {
+          "requested": "auto",
+          "effective": "low"
+        }
+      },
+      "jsHeapUsedBytes": 169356808
+    },
+    {
+      "elapsedMs": 26105.399999976158,
+      "paused": false,
+      "values": {
+        "fps": 22,
+        "processMs": 53.9,
+        "physicsMs": 1.1,
+        "drawCalls": 435,
+        "renderObjects": 660,
+        "renderPrimitives": 81555,
+        "quality": {
+          "requested": "auto",
+          "effective": "low"
+        }
+      },
+      "jsHeapUsedBytes": 164377566
+    },
+    {
+      "elapsedMs": 27099.800000071526,
+      "paused": false,
+      "values": {
+        "fps": 17,
+        "processMs": 142.5,
+        "physicsMs": 1,
+        "drawCalls": 436,
+        "renderObjects": 661,
+        "renderPrimitives": 81557,
+        "quality": {
+          "requested": "auto",
+          "effective": "low"
+        }
+      },
+      "jsHeapUsedBytes": 164913126
+    },
+    {
+      "elapsedMs": 28127.100000023842,
+      "paused": false,
+      "values": {
+        "fps": 20,
+        "processMs": 52.2,
+        "physicsMs": 1.1,
+        "drawCalls": 435,
+        "renderObjects": 660,
+        "renderPrimitives": 81555,
+        "quality": {
+          "requested": "auto",
+          "effective": "low"
+        }
+      },
+      "jsHeapUsedBytes": 165311856
+    },
+    {
+      "elapsedMs": 29057.899999976158,
+      "paused": false,
+      "values": {
+        "fps": 14,
+        "processMs": 276,
+        "physicsMs": 1.2,
+        "drawCalls": 436,
+        "renderObjects": 661,
+        "renderPrimitives": 81557,
+        "quality": {
+          "requested": "auto",
+          "effective": "low"
+        }
+      },
+      "jsHeapUsedBytes": 149381519
+    },
+    {
+      "elapsedMs": 30103.800000071526,
+      "paused": false,
+      "values": {
+        "fps": 20,
+        "processMs": 59.6,
+        "physicsMs": 1.1,
+        "drawCalls": 435,
+        "renderObjects": 660,
+        "renderPrimitives": 81555,
+        "quality": {
+          "requested": "auto",
+          "effective": "low"
+        }
+      },
+      "jsHeapUsedBytes": 149935985
+    }
+  ],
+  "definitions": {
+    "frameScheduling": "Visible, unpaused iframe requestAnimationFrame intervals; a browser scheduling measure, not GPU frame duration.",
+    "engine": "Godot diagnostic monitor samples taken once per second. Menu/hidden samples are excluded from distributions.",
+    "jsHeap": "Optional browser JavaScript heap counters; not total process memory, WASM linear memory or GPU memory.",
+    "privacy": "No account, email, cookie, token, game inventory, world coordinates, API data or page URL is included. This file is generated locally and is not uploaded.",
+    "limitations": "GPU time, VRAM and WASM memory are not measured. Hardware strings are reported by this browser and may identify a software renderer or be unavailable.",
+    "assetProvenance": "Allowlisted identity from this iframe loader after each PCK part passed SHA-256 and reached its consumer. The whole-file hash is the manifest declaration, not a new whole-file digest, proof of Godot READY or a runtime attestation. Older loaders report unavailable. No manifest or API request is made by this recorder."
+  }
+}
