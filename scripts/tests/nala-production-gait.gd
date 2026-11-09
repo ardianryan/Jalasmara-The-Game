@@ -28,11 +28,16 @@ class PhysicalInputDriver extends Node:
 	var actor:Node2D
 	var controller:Node
 	var requested:=Vector2.ZERO
+	var logical_heading:=Vector2.ZERO
 	var delivered:=Vector2.ZERO
 	var observations:Array=[]
 	func _physics_process(_delta:float) -> void:
-		delivered=preload("res://scripts/NalaPhysicalMotion.gd").screen_input(renderer,requested,actor.position)
-		observations.append({"tick":Engine.get_physics_frames(),"position":actor.position,"requested":requested,"delivered":delivered,"gradient":renderer.ground_gradient(actor.position)})
+		var screen_request:=requested
+		if not logical_heading.is_zero_approx() and not requested.is_zero_approx():
+			var gradient:Vector2=renderer.ground_gradient(actor.position)
+			screen_request=renderer.view_projection.logical_motion_to_view(logical_heading,gradient.dot(logical_heading)).normalized()*requested.length()
+		delivered=preload("res://scripts/NalaPhysicalMotion.gd").screen_input(renderer,screen_request,actor.position)
+		observations.append({"tick":Engine.get_physics_frames(),"position":actor.position,"requested":screen_request,"delivered":delivered,"gradient":renderer.ground_gradient(actor.position)})
 		if observations.size()>64: observations.pop_front()
 		if controller.has_method("_is_walkable"): controller.set("touch_direction",delivered)
 		else: actor.set("touch",delivered)
@@ -185,7 +190,7 @@ func _production_tick(value:Vector2,label:String) -> bool:
 	var swing:=str(pose.contacts.swingSide)
 	var planner_phase:Variant=null
 	if swing!="": planner_phase=(0.0 if swing=="right" else .5)+float(pose.contacts.swingDistance)/maxf(.001,float(pose.contacts.landingDistance))*.5
-	var record:={"case":label,"physicsFrame":now,"physicsDelta":last_delta,"elapsedPhysics":elapsed_physics,"elapsedWall":float(Time.get_ticks_usec()-began_usec)/1000000.0,"input":[value.x,value.y],"rawJoystickRadius":raw_joystick_radius,"deliveredInput":[delivered_input.x,delivered_input.y],"physicalPilot":physical_pilot,"position":[player.position.x,player.position.y],"acceptedLogical":logical_travel,"acceptedPhysical":physical_travel,"source":source,"upperAtlasRegion":[region.position.x,region.position.y,region.size.x,region.size.y],"actualEquipmentState":equipment.get("state").duplicate(true),"plannerCyclePhase":planner_phase,"legacyContacts":legacy_contacts,"pose":pose.duplicate(true)}
+	var record:={"case":label,"physicsFrame":now,"physicsDelta":last_delta,"elapsedPhysics":elapsed_physics,"elapsedWall":float(Time.get_ticks_usec()-began_usec)/1000000.0,"input":[value.x,value.y],"rawJoystickRadius":raw_joystick_radius,"fixtureLogicalHeading":input_driver.get("logical_heading") if is_instance_valid(input_driver) else Vector2.ZERO,"deliveredInput":[delivered_input.x,delivered_input.y],"physicalPilot":physical_pilot,"position":[player.position.x,player.position.y],"acceptedLogical":logical_travel,"acceptedPhysical":physical_travel,"source":source,"upperAtlasRegion":[region.position.x,region.position.y,region.size.x,region.size.y],"actualEquipmentState":equipment.get("state").duplicate(true),"plannerCyclePhase":planner_phase,"legacyContacts":legacy_contacts,"pose":pose.duplicate(true)}
 	sample_log.store_line(JSON.stringify(record))
 	sample_log.flush()
 	if capture and checks%capture_stride==0:
