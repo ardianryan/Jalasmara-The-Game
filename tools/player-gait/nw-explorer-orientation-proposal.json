@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "status": "AUTHORED new explorer NW upper arrangement; not recovered source or atlas/runtime replacement",
+  "identity": "male_nusantara",
+  "targetOutfit": "explorer",
+  "targetView": "north_west",
+  "candidateFrameCoverage": [0],
+  "unresolvedFrames": [1, 2, 3, 4, 5, 6, 7],
+  "headReference": "original daily NW WALK0 rows0..42",
+  "bodyReference": "original explorer NW IDLE column5 rows43..75",
+  "splitY": 43,
+  "transform": { "scale": 1, "mirror": false, "offset": [0, 0] },
+  "sourceAnatomicalSides": "unknown",
+  "wrist": null,
+  "grip": null,
+  "contactPhase": null,
+  "newGearPixels": 0,
+  "newRuntimeNodes": 0,
+  "authoredScope": "The arrangement/reference choice is new original authoring. Individual referenced RGBA texels are copied byte-exact. Neck/pose quality remains visual review."
+}
