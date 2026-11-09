@@ -1,0 +1,1021 @@
+{
+  "schemaVersion": 1,
+  "status": "Original visible SOUTH palm annotations; wrists/grips ambiguous, no runtime phase acceptance",
+  "identity": "male_nusantara",
+  "cell": [
+    128,
+    128
+  ],
+  "view": "south",
+  "row": 2,
+  "coordinates": "Cell-local integer texel, top-left origin; front anatomical left is viewer right. Representative palm texel, never joint/grip center.",
+  "sources": {
+    "daily": {
+      "path": "client-godot/resources/art/player-gait/male-nusantara-daily-walk-8way-v1.png",
+      "sha256": "342724d1724490279cd0f65c0340c5b35cdf366ecc36a99af716c51f751b8fc3"
+    },
+    "explorer": {
+      "path": "client-godot/resources/art/player-gait/male-nusantara-explorer-walk-8way-v1.png",
+      "sha256": "a429c378400bd5ac60a45124ac48672b4cb1360beb379cc83297b52ea48ae3b9"
+    }
+  },
+  "priorReviewedMarks": {
+    "path": "tools/player-gait/upper_arm_annotations.json",
+    "sha256": "e4b4f92cf2cb6b9cf017047a738fce7a358bd69b88aefa233571ea085729eecc",
+    "scope": "Original SOUTH frame0/4 palm landmarks only; preserved exactly"
+  },
+  "entries": [
+    {
+      "outfit": "daily",
+      "frame": 0,
+      "side": "left",
+      "sourceSha256": "342724d1724490279cd0f65c0340c5b35cdf366ecc36a99af716c51f751b8fc3",
+      "upperFrameRgbaSha256": "2f8c2e372c562619fe1890fdcd90f01237fc86196bfa45ba6c21ef0ea23fc237",
+      "palm": {
+        "visibility": "visible",
+        "pixel": [
+          74,
+          62
+        ],
+        "rgba": [
+          223,
+          165,
+          120,
+          255
+        ],
+        "meaning": "Representative visible palm texel; not centroid, wrist, grip or axis"
+      },
+      "wrist": {
+        "status": "ambiguous",
+        "pixel": null,
+        "reason": "No unambiguous articulation crease/joint center in original low-resolution forearm/fist silhouette"
+      },
+      "grip": {
+        "status": "unknown",
+        "origin": null,
+        "axis": null
+      }
+    },
+    {
+      "outfit": "daily",
+      "frame": 0,
+      "side": "right",
+      "sourceSha256": "342724d1724490279cd0f65c0340c5b35cdf366ecc36a99af716c51f751b8fc3",
+      "upperFrameRgbaSha256": "2f8c2e372c562619fe1890fdcd90f01237fc86196bfa45ba6c21ef0ea23fc237",
+      "palm": {
+        "visibility": "visible",
+        "pixel": [
+          49,
+          65
+        ],
+        "rgba": [
+          206,
+          157,
+          113,
+          255
+        ],
+        "meaning": "Representative visible palm texel; not centroid, wrist, grip or axis"
+      },
+      "wrist": {
+        "status": "ambiguous",
+        "pixel": null,
+        "reason": "No unambiguous articulation crease/joint center in original low-resolution forearm/fist silhouette"
+      },
+      "grip": {
+        "status": "unknown",
+        "origin": null,
+        "axis": null
+      }
+    },
+    {
+      "outfit": "daily",
+      "frame": 1,
+      "side": "left",
+      "sourceSha256": "342724d1724490279cd0f65c0340c5b35cdf366ecc36a99af716c51f751b8fc3",
+      "upperFrameRgbaSha256": "14f21cd51fb3a02cf2e03c27c569d4c00ba2e724187f7fdc882c9e911fab362d",
+      "palm": {
+        "visibility": "visible",
+        "pixel": [
+          74,
+          62
+        ],
+        "rgba": [
+          209,
+          154,
+          109,
+          255
+        ],
+        "meaning": "Representative visible palm texel; not centroid, wrist, grip or axis"
+      },
+      "wrist": {
+        "status": "ambiguous",
+        "pixel": null,
+        "reason": "No unambiguous articulation crease/joint center in original low-resolution forearm/fist silhouette"
+      },
+      "grip": {
+        "status": "unknown",
+        "origin": null,
+        "axis": null
+      }
+    },
+    {
+      "outfit": "daily",
+      "frame": 1,
+      "side": "right",
+      "sourceSha256": "342724d1724490279cd0f65c0340c5b35cdf366ecc36a99af716c51f751b8fc3",
+      "upperFrameRgbaSha256": "14f21cd51fb3a02cf2e03c27c569d4c00ba2e724187f7fdc882c9e911fab362d",
+      "palm": {
+        "visibility": "visible",
+        "pixel": [
+          49,
+          66
+        ],
+        "rgba": [
+          204,
+          152,
+          104,
+          255
+        ],
+        "meaning": "Representative visible palm texel; not centroid, wrist, grip or axis"
+      },
+      "wrist": {
+        "status": "ambiguous",
+        "pixel": null,
+        "reason": "No unambiguous articulation crease/joint center in original low-resolution forearm/fist silhouette"
+      },
+      "grip": {
+        "status": "unknown",
+        "origin": null,
+        "axis": null
+      }
+    },
+    {
+      "outfit": "daily",
+      "frame": 2,
+      "side": "left",
+      "sourceSha256": "342724d1724490279cd0f65c0340c5b35cdf366ecc36a99af716c51f751b8fc3",
+      "upperFrameRgbaSha256": "6388e562b230473fc0dc3dda821b1434f18d62b46b5d5d07d45eefaced847c08",
+      "palm": {
+        "visibility": "visible",
+        "pixel": [
+          72,
+          58
+        ],
+        "rgba": [
+          234,
+          179,
+          123,
+          255
+        ],
+        "meaning": "Representative visible palm texel; not centroid, wrist, grip or axis"
+      },
+      "wrist": {
+        "status": "ambiguous",
+        "pixel": null,
+        "reason": "No unambiguous articulation crease/joint center in original low-resolution forearm/fist silhouette"
+      },
+      "grip": {
+        "status": "unknown",
+        "origin": null,
+        "axis": null
+      }
+    },
+    {
+      "outfit": "daily",
+      "frame": 2,
+      "side": "right",
+      "sourceSha256": "342724d1724490279cd0f65c0340c5b35cdf366ecc36a99af716c51f751b8fc3",
+      "upperFrameRgbaSha256": "6388e562b230473fc0dc3dda821b1434f18d62b46b5d5d07d45eefaced847c08",
+      "palm": {
+        "visibility": "visible",
+        "pixel": [
+          49,
+          66
+        ],
+        "rgba": [
+          207,
+          157,
+          117,
+          255
+        ],
+        "meaning": "Representative visible palm texel; not centroid, wrist, grip or axis"
+      },
+      "wrist": {
+        "status": "ambiguous",
+        "pixel": null,
+        "reason": "No unambiguous articulation crease/joint center in original low-resolution forearm/fist silhouette"
+      },
+      "grip": {
+        "status": "unknown",
+        "origin": null,
+        "axis": null
+      }
+    },
+    {
+      "outfit": "daily",
+      "frame": 3,
+      "side": "left",
+      "sourceSha256": "342724d1724490279cd0f65c0340c5b35cdf366ecc36a99af716c51f751b8fc3",
+      "upperFrameRgbaSha256": "f960cc2b019447538932ce04a88cc0a5fa9b3d9c94c39f037beb8727d34aa9d8",
+      "palm": {
+        "visibility": "visible",
+        "pixel": [
+          80,
+          61
+        ],
+        "rgba": [
+          196,
+          147,
+          105,
+          255
+        ],
+        "meaning": "Representative visible palm texel; not centroid, wrist, grip or axis"
+      },
+      "wrist": {
+        "status": "ambiguous",
+        "pixel": null,
+        "reason": "No unambiguous articulation crease/joint center in original low-resolution forearm/fist silhouette"
+      },
+      "grip": {
+        "status": "unknown",
+        "origin": null,
+        "axis": null
+      }
+    },
+    {
+      "outfit": "daily",
+      "frame": 3,
+      "side": "right",
+      "sourceSha256": "342724d1724490279cd0f65c0340c5b35cdf366ecc36a99af716c51f751b8fc3",
+      "upperFrameRgbaSha256": "f960cc2b019447538932ce04a88cc0a5fa9b3d9c94c39f037beb8727d34aa9d8",
+      "palm": {
+        "visibility": "visible",
+        "pixel": [
+          56,
+          58
+        ],
+        "rgba": [
+          216,
+          161,
+          117,
+          255
+        ],
+        "meaning": "Representative visible palm texel; not centroid, wrist, grip or axis"
+      },
+      "wrist": {
+        "status": "ambiguous",
+        "pixel": null,
+        "reason": "No unambiguous articulation crease/joint center in original low-resolution forearm/fist silhouette"
+      },
+      "grip": {
+        "status": "unknown",
+        "origin": null,
+        "axis": null
+      }
+    },
+    {
+      "outfit": "daily",
+      "frame": 4,
+      "side": "left",
+      "sourceSha256": "342724d1724490279cd0f65c0340c5b35cdf366ecc36a99af716c51f751b8fc3",
+      "upperFrameRgbaSha256": "26918a074c31cee7d8cdd782a8829a120eaf1cc4caa08e568243efd34641ab33",
+      "palm": {
+        "visibility": "visible",
+        "pixel": [
+          81,
+          66
+        ],
+        "rgba": [
+          214,
+          159,
+          111,
+          255
+        ],
+        "meaning": "Representative visible palm texel; not centroid, wrist, grip or axis"
+      },
+      "wrist": {
+        "status": "ambiguous",
+        "pixel": null,
+        "reason": "No unambiguous articulation crease/joint center in original low-resolution forearm/fist silhouette"
+      },
+      "grip": {
+        "status": "unknown",
+        "origin": null,
+        "axis": null
+      }
+    },
+    {
+      "outfit": "daily",
+      "frame": 4,
+      "side": "right",
+      "sourceSha256": "342724d1724490279cd0f65c0340c5b35cdf366ecc36a99af716c51f751b8fc3",
+      "upperFrameRgbaSha256": "26918a074c31cee7d8cdd782a8829a120eaf1cc4caa08e568243efd34641ab33",
+      "palm": {
+        "visibility": "visible",
+        "pixel": [
+          55,
+          63
+        ],
+        "rgba": [
+          222,
+          171,
+          120,
+          255
+        ],
+        "meaning": "Representative visible palm texel; not centroid, wrist, grip or axis"
+      },
+      "wrist": {
+        "status": "ambiguous",
+        "pixel": null,
+        "reason": "No unambiguous articulation crease/joint center in original low-resolution forearm/fist silhouette"
+      },
+      "grip": {
+        "status": "unknown",
+        "origin": null,
+        "axis": null
+      }
+    },
+    {
+      "outfit": "daily",
+      "frame": 5,
+      "side": "left",
+      "sourceSha256": "342724d1724490279cd0f65c0340c5b35cdf366ecc36a99af716c51f751b8fc3",
+      "upperFrameRgbaSha256": "fc2a6156521928cfaa21dba80306c46066988147ffb05e50e466ded406f4d655",
+      "palm": {
+        "visibility": "visible",
+        "pixel": [
+          81,
+          66
+        ],
+        "rgba": [
+          202,
+          144,
+          97,
+          255
+        ],
+        "meaning": "Representative visible palm texel; not centroid, wrist, grip or axis"
+      },
+      "wrist": {
+        "status": "ambiguous",
+        "pixel": null,
+        "reason": "No unambiguous articulation crease/joint center in original low-resolution forearm/fist silhouette"
+      },
+      "grip": {
+        "status": "unknown",
+        "origin": null,
+        "axis": null
+      }
+    },
+    {
+      "outfit": "daily",
+      "frame": 5,
+      "side": "right",
+      "sourceSha256": "342724d1724490279cd0f65c0340c5b35cdf366ecc36a99af716c51f751b8fc3",
+      "upperFrameRgbaSha256": "fc2a6156521928cfaa21dba80306c46066988147ffb05e50e466ded406f4d655",
+      "palm": {
+        "visibility": "visible",
+        "pixel": [
+          56,
+          62
+        ],
+        "rgba": [
+          216,
+          161,
+          116,
+          255
+        ],
+        "meaning": "Representative visible palm texel; not centroid, wrist, grip or axis"
+      },
+      "wrist": {
+        "status": "ambiguous",
+        "pixel": null,
+        "reason": "No unambiguous articulation crease/joint center in original low-resolution forearm/fist silhouette"
+      },
+      "grip": {
+        "status": "unknown",
+        "origin": null,
+        "axis": null
+      }
+    },
+    {
+      "outfit": "daily",
+      "frame": 6,
+      "side": "left",
+      "sourceSha256": "342724d1724490279cd0f65c0340c5b35cdf366ecc36a99af716c51f751b8fc3",
+      "upperFrameRgbaSha256": "2620dbfe772acec546440983b51f4d33a8257c62256258575ed386b26b58ca19",
+      "palm": {
+        "visibility": "visible",
+        "pixel": [
+          81,
+          63
+        ],
+        "rgba": [
+          172,
+          116,
+          76,
+          255
+        ],
+        "meaning": "Representative visible palm texel; not centroid, wrist, grip or axis"
+      },
+      "wrist": {
+        "status": "ambiguous",
+        "pixel": null,
+        "reason": "No unambiguous articulation crease/joint center in original low-resolution forearm/fist silhouette"
+      },
+      "grip": {
+        "status": "unknown",
+        "origin": null,
+        "axis": null
+      }
+    },
+    {
+      "outfit": "daily",
+      "frame": 6,
+      "side": "right",
+      "sourceSha256": "342724d1724490279cd0f65c0340c5b35cdf366ecc36a99af716c51f751b8fc3",
+      "upperFrameRgbaSha256": "2620dbfe772acec546440983b51f4d33a8257c62256258575ed386b26b58ca19",
+      "palm": {
+        "visibility": "visible",
+        "pixel": [
+          56,
+          61
+        ],
+        "rgba": [
+          221,
+          166,
+          122,
+          255
+        ],
+        "meaning": "Representative visible palm texel; not centroid, wrist, grip or axis"
+      },
+      "wrist": {
+        "status": "ambiguous",
+        "pixel": null,
+        "reason": "No unambiguous articulation crease/joint center in original low-resolution forearm/fist silhouette"
+      },
+      "grip": {
+        "status": "unknown",
+        "origin": null,
+        "axis": null
+      }
+    },
+    {
+      "outfit": "daily",
+      "frame": 7,
+      "side": "left",
+      "sourceSha256": "342724d1724490279cd0f65c0340c5b35cdf366ecc36a99af716c51f751b8fc3",
+      "upperFrameRgbaSha256": "26a2fba84e1e8927322bcfbd119603c4f7839f4a59716bf7dfbeb3421762fd82",
+      "palm": {
+        "visibility": "visible",
+        "pixel": [
+          81,
+          60
+        ],
+        "rgba": [
+          200,
+          148,
+          106,
+          255
+        ],
+        "meaning": "Representative visible palm texel; not centroid, wrist, grip or axis"
+      },
+      "wrist": {
+        "status": "ambiguous",
+        "pixel": null,
+        "reason": "No unambiguous articulation crease/joint center in original low-resolution forearm/fist silhouette"
+      },
+      "grip": {
+        "status": "unknown",
+        "origin": null,
+        "axis": null
+      }
+    },
+    {
+      "outfit": "daily",
+      "frame": 7,
+      "side": "right",
+      "sourceSha256": "342724d1724490279cd0f65c0340c5b35cdf366ecc36a99af716c51f751b8fc3",
+      "upperFrameRgbaSha256": "26a2fba84e1e8927322bcfbd119603c4f7839f4a59716bf7dfbeb3421762fd82",
+      "palm": {
+        "visibility": "visible",
+        "pixel": [
+          56,
+          57
+        ],
+        "rgba": [
+          217,
+          159,
+          113,
+          255
+        ],
+        "meaning": "Representative visible palm texel; not centroid, wrist, grip or axis"
+      },
+      "wrist": {
+        "status": "ambiguous",
+        "pixel": null,
+        "reason": "No unambiguous articulation crease/joint center in original low-resolution forearm/fist silhouette"
+      },
+      "grip": {
+        "status": "unknown",
+        "origin": null,
+        "axis": null
+      }
+    },
+    {
+      "outfit": "explorer",
+      "frame": 0,
+      "side": "left",
+      "sourceSha256": "a429c378400bd5ac60a45124ac48672b4cb1360beb379cc83297b52ea48ae3b9",
+      "upperFrameRgbaSha256": "da3e6b5f82b985885c6b064ad443dafc50f51db8e874ac6d07d66de0763279d6",
+      "palm": {
+        "visibility": "visible",
+        "pixel": [
+          74,
+          62
+        ],
+        "rgba": [
+          229,
+          167,
+          113,
+          255
+        ],
+        "meaning": "Representative visible palm texel; not centroid, wrist, grip or axis"
+      },
+      "wrist": {
+        "status": "ambiguous",
+        "pixel": null,
+        "reason": "No unambiguous articulation crease/joint center in original low-resolution forearm/fist silhouette"
+      },
+      "grip": {
+        "status": "unknown",
+        "origin": null,
+        "axis": null
+      }
+    },
+    {
+      "outfit": "explorer",
+      "frame": 0,
+      "side": "right",
+      "sourceSha256": "a429c378400bd5ac60a45124ac48672b4cb1360beb379cc83297b52ea48ae3b9",
+      "upperFrameRgbaSha256": "da3e6b5f82b985885c6b064ad443dafc50f51db8e874ac6d07d66de0763279d6",
+      "palm": {
+        "visibility": "visible",
+        "pixel": [
+          49,
+          65
+        ],
+        "rgba": [
+          224,
+          164,
+          114,
+          255
+        ],
+        "meaning": "Representative visible palm texel; not centroid, wrist, grip or axis"
+      },
+      "wrist": {
+        "status": "ambiguous",
+        "pixel": null,
+        "reason": "No unambiguous articulation crease/joint center in original low-resolution forearm/fist silhouette"
+      },
+      "grip": {
+        "status": "unknown",
+        "origin": null,
+        "axis": null
+      }
+    },
+    {
+      "outfit": "explorer",
+      "frame": 1,
+      "side": "left",
+      "sourceSha256": "a429c378400bd5ac60a45124ac48672b4cb1360beb379cc83297b52ea48ae3b9",
+      "upperFrameRgbaSha256": "999e3626b689667b9d2e6a7195ce535bb8b77ed89714505506ccfe09c1fc0da2",
+      "palm": {
+        "visibility": "visible",
+        "pixel": [
+          74,
+          62
+        ],
+        "rgba": [
+          167,
+          120,
+          81,
+          255
+        ],
+        "meaning": "Representative visible palm texel; not centroid, wrist, grip or axis"
+      },
+      "wrist": {
+        "status": "ambiguous",
+        "pixel": null,
+        "reason": "No unambiguous articulation crease/joint center in original low-resolution forearm/fist silhouette"
+      },
+      "grip": {
+        "status": "unknown",
+        "origin": null,
+        "axis": null
+      }
+    },
+    {
+      "outfit": "explorer",
+      "frame": 1,
+      "side": "right",
+      "sourceSha256": "a429c378400bd5ac60a45124ac48672b4cb1360beb379cc83297b52ea48ae3b9",
+      "upperFrameRgbaSha256": "999e3626b689667b9d2e6a7195ce535bb8b77ed89714505506ccfe09c1fc0da2",
+      "palm": {
+        "visibility": "visible",
+        "pixel": [
+          49,
+          66
+        ],
+        "rgba": [
+          228,
+          176,
+          131,
+          255
+        ],
+        "meaning": "Representative visible palm texel; not centroid, wrist, grip or axis"
+      },
+      "wrist": {
+        "status": "ambiguous",
+        "pixel": null,
+        "reason": "No unambiguous articulation crease/joint center in original low-resolution forearm/fist silhouette"
+      },
+      "grip": {
+        "status": "unknown",
+        "origin": null,
+        "axis": null
+      }
+    },
+    {
+      "outfit": "explorer",
+      "frame": 2,
+      "side": "left",
+      "sourceSha256": "a429c378400bd5ac60a45124ac48672b4cb1360beb379cc83297b52ea48ae3b9",
+      "upperFrameRgbaSha256": "6738b0cde4c1fdc76d6dd97fe37f4d3113842bfe4639f037d4b59227ba59a0db",
+      "palm": {
+        "visibility": "visible",
+        "pixel": [
+          72,
+          58
+        ],
+        "rgba": [
+          228,
+          184,
+          134,
+          255
+        ],
+        "meaning": "Representative visible palm texel; not centroid, wrist, grip or axis"
+      },
+      "wrist": {
+        "status": "ambiguous",
+        "pixel": null,
+        "reason": "No unambiguous articulation crease/joint center in original low-resolution forearm/fist silhouette"
+      },
+      "grip": {
+        "status": "unknown",
+        "origin": null,
+        "axis": null
+      }
+    },
+    {
+      "outfit": "explorer",
+      "frame": 2,
+      "side": "right",
+      "sourceSha256": "a429c378400bd5ac60a45124ac48672b4cb1360beb379cc83297b52ea48ae3b9",
+      "upperFrameRgbaSha256": "6738b0cde4c1fdc76d6dd97fe37f4d3113842bfe4639f037d4b59227ba59a0db",
+      "palm": {
+        "visibility": "visible",
+        "pixel": [
+          49,
+          66
+        ],
+        "rgba": [
+          224,
+          164,
+          115,
+          255
+        ],
+        "meaning": "Representative visible palm texel; not centroid, wrist, grip or axis"
+      },
+      "wrist": {
+        "status": "ambiguous",
+        "pixel": null,
+        "reason": "No unambiguous articulation crease/joint center in original low-resolution forearm/fist silhouette"
+      },
+      "grip": {
+        "status": "unknown",
+        "origin": null,
+        "axis": null
+      }
+    },
+    {
+      "outfit": "explorer",
+      "frame": 3,
+      "side": "left",
+      "sourceSha256": "a429c378400bd5ac60a45124ac48672b4cb1360beb379cc83297b52ea48ae3b9",
+      "upperFrameRgbaSha256": "43cde6a2ee6acad4a6600c97a7e5b2564c199d3c9dc8dc8f1cdb24db1178cec6",
+      "palm": {
+        "visibility": "visible",
+        "pixel": [
+          82,
+          63
+        ],
+        "rgba": [
+          223,
+          178,
+          125,
+          255
+        ],
+        "meaning": "Representative visible palm texel; not centroid, wrist, grip or axis"
+      },
+      "wrist": {
+        "status": "ambiguous",
+        "pixel": null,
+        "reason": "No unambiguous articulation crease/joint center in original low-resolution forearm/fist silhouette"
+      },
+      "grip": {
+        "status": "unknown",
+        "origin": null,
+        "axis": null
+      }
+    },
+    {
+      "outfit": "explorer",
+      "frame": 3,
+      "side": "right",
+      "sourceSha256": "a429c378400bd5ac60a45124ac48672b4cb1360beb379cc83297b52ea48ae3b9",
+      "upperFrameRgbaSha256": "43cde6a2ee6acad4a6600c97a7e5b2564c199d3c9dc8dc8f1cdb24db1178cec6",
+      "palm": {
+        "visibility": "visible",
+        "pixel": [
+          56,
+          58
+        ],
+        "rgba": [
+          222,
+          171,
+          118,
+          255
+        ],
+        "meaning": "Representative visible palm texel; not centroid, wrist, grip or axis"
+      },
+      "wrist": {
+        "status": "ambiguous",
+        "pixel": null,
+        "reason": "No unambiguous articulation crease/joint center in original low-resolution forearm/fist silhouette"
+      },
+      "grip": {
+        "status": "unknown",
+        "origin": null,
+        "axis": null
+      }
+    },
+    {
+      "outfit": "explorer",
+      "frame": 4,
+      "side": "left",
+      "sourceSha256": "a429c378400bd5ac60a45124ac48672b4cb1360beb379cc83297b52ea48ae3b9",
+      "upperFrameRgbaSha256": "5e0243526f8b58eafaa1e6c76999b906d13748b211100564cc06cd229488c4f0",
+      "palm": {
+        "visibility": "visible",
+        "pixel": [
+          81,
+          66
+        ],
+        "rgba": [
+          226,
+          173,
+          123,
+          255
+        ],
+        "meaning": "Representative visible palm texel; not centroid, wrist, grip or axis"
+      },
+      "wrist": {
+        "status": "ambiguous",
+        "pixel": null,
+        "reason": "No unambiguous articulation crease/joint center in original low-resolution forearm/fist silhouette"
+      },
+      "grip": {
+        "status": "unknown",
+        "origin": null,
+        "axis": null
+      }
+    },
+    {
+      "outfit": "explorer",
+      "frame": 4,
+      "side": "right",
+      "sourceSha256": "a429c378400bd5ac60a45124ac48672b4cb1360beb379cc83297b52ea48ae3b9",
+      "upperFrameRgbaSha256": "5e0243526f8b58eafaa1e6c76999b906d13748b211100564cc06cd229488c4f0",
+      "palm": {
+        "visibility": "visible",
+        "pixel": [
+          55,
+          63
+        ],
+        "rgba": [
+          227,
+          178,
+          125,
+          255
+        ],
+        "meaning": "Representative visible palm texel; not centroid, wrist, grip or axis"
+      },
+      "wrist": {
+        "status": "ambiguous",
+        "pixel": null,
+        "reason": "No unambiguous articulation crease/joint center in original low-resolution forearm/fist silhouette"
+      },
+      "grip": {
+        "status": "unknown",
+        "origin": null,
+        "axis": null
+      }
+    },
+    {
+      "outfit": "explorer",
+      "frame": 5,
+      "side": "left",
+      "sourceSha256": "a429c378400bd5ac60a45124ac48672b4cb1360beb379cc83297b52ea48ae3b9",
+      "upperFrameRgbaSha256": "9c69c28081f77eb65da8cdedc3602569907a815b54059ce6090214f0b6b5efaf",
+      "palm": {
+        "visibility": "visible",
+        "pixel": [
+          81,
+          66
+        ],
+        "rgba": [
+          218,
+          163,
+          106,
+          255
+        ],
+        "meaning": "Representative visible palm texel; not centroid, wrist, grip or axis"
+      },
+      "wrist": {
+        "status": "ambiguous",
+        "pixel": null,
+        "reason": "No unambiguous articulation crease/joint center in original low-resolution forearm/fist silhouette"
+      },
+      "grip": {
+        "status": "unknown",
+        "origin": null,
+        "axis": null
+      }
+    },
+    {
+      "outfit": "explorer",
+      "frame": 5,
+      "side": "right",
+      "sourceSha256": "a429c378400bd5ac60a45124ac48672b4cb1360beb379cc83297b52ea48ae3b9",
+      "upperFrameRgbaSha256": "9c69c28081f77eb65da8cdedc3602569907a815b54059ce6090214f0b6b5efaf",
+      "palm": {
+        "visibility": "visible",
+        "pixel": [
+          56,
+          62
+        ],
+        "rgba": [
+          231,
+          180,
+          131,
+          255
+        ],
+        "meaning": "Representative visible palm texel; not centroid, wrist, grip or axis"
+      },
+      "wrist": {
+        "status": "ambiguous",
+        "pixel": null,
+        "reason": "No unambiguous articulation crease/joint center in original low-resolution forearm/fist silhouette"
+      },
+      "grip": {
+        "status": "unknown",
+        "origin": null,
+        "axis": null
+      }
+    },
+    {
+      "outfit": "explorer",
+      "frame": 6,
+      "side": "left",
+      "sourceSha256": "a429c378400bd5ac60a45124ac48672b4cb1360beb379cc83297b52ea48ae3b9",
+      "upperFrameRgbaSha256": "706c8f565606951eeb50c29ee99dd80bd1cf7eb08fc93afbb60e9abe5c2687e5",
+      "palm": {
+        "visibility": "visible",
+        "pixel": [
+          81,
+          63
+        ],
+        "rgba": [
+          222,
+          167,
+          115,
+          255
+        ],
+        "meaning": "Representative visible palm texel; not centroid, wrist, grip or axis"
+      },
+      "wrist": {
+        "status": "ambiguous",
+        "pixel": null,
+        "reason": "No unambiguous articulation crease/joint center in original low-resolution forearm/fist silhouette"
+      },
+      "grip": {
+        "status": "unknown",
+        "origin": null,
+        "axis": null
+      }
+    },
+    {
+      "outfit": "explorer",
+      "frame": 6,
+      "side": "right",
+      "sourceSha256": "a429c378400bd5ac60a45124ac48672b4cb1360beb379cc83297b52ea48ae3b9",
+      "upperFrameRgbaSha256": "706c8f565606951eeb50c29ee99dd80bd1cf7eb08fc93afbb60e9abe5c2687e5",
+      "palm": {
+        "visibility": "visible",
+        "pixel": [
+          56,
+          61
+        ],
+        "rgba": [
+          245,
+          193,
+          142,
+          255
+        ],
+        "meaning": "Representative visible palm texel; not centroid, wrist, grip or axis"
+      },
+      "wrist": {
+        "status": "ambiguous",
+        "pixel": null,
+        "reason": "No unambiguous articulation crease/joint center in original low-resolution forearm/fist silhouette"
+      },
+      "grip": {
+        "status": "unknown",
+        "origin": null,
+        "axis": null
+      }
+    },
+    {
+      "outfit": "explorer",
+      "frame": 7,
+      "side": "left",
+      "sourceSha256": "a429c378400bd5ac60a45124ac48672b4cb1360beb379cc83297b52ea48ae3b9",
+      "upperFrameRgbaSha256": "cb135d4357f80f2e2f5a12f9d2d2857d0af6e4bb349bcc089a980b8d6f3aa497",
+      "palm": {
+        "visibility": "visible",
+        "pixel": [
+          81,
+          60
+        ],
+        "rgba": [
+          217,
+          167,
+          116,
+          255
+        ],
+        "meaning": "Representative visible palm texel; not centroid, wrist, grip or axis"
+      },
+      "wrist": {
+        "status": "ambiguous",
+        "pixel": null,
+        "reason": "No unambiguous articulation crease/joint center in original low-resolution forearm/fist silhouette"
+      },
+      "grip": {
+        "status": "unknown",
+        "origin": null,
+        "axis": null
+      }
+    },
+    {
+      "outfit": "explorer",
+      "frame": 7,
+      "side": "right",
+      "sourceSha256": "a429c378400bd5ac60a45124ac48672b4cb1360beb379cc83297b52ea48ae3b9",
+      "upperFrameRgbaSha256": "cb135d4357f80f2e2f5a12f9d2d2857d0af6e4bb349bcc089a980b8d6f3aa497",
+      "palm": {
+        "visibility": "visible",
+        "pixel": [
+          56,
+          57
+        ],
+        "rgba": [
+          232,
+          193,
+          146,
+          255
+        ],
+        "meaning": "Representative visible palm texel; not centroid, wrist, grip or axis"
+      },
+      "wrist": {
+        "status": "ambiguous",
+        "pixel": null,
+        "reason": "No unambiguous articulation crease/joint center in original low-resolution forearm/fist silhouette"
+      },
+      "grip": {
+        "status": "unknown",
+        "origin": null,
+        "axis": null
+      }
+    }
+  ]
+}
