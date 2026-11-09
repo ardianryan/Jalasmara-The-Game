@@ -5,7 +5,7 @@ from check_facing_recovery import audit
 
 def sample(body="south", foot="south", desired="south", distance=0, paused=False):
     return {"case": "daily/false/0 travel", "physicsDelta": .1,
-            "source": {"poseFrozen": paused},
+            "source": {"poseFrozen": paused, "requestedDirection": desired},
             "pose": {"direction": body, "desiredDirection": desired,
                      "contacts": {"acceptedDistance": distance, "feet": {
                          side: {"footDirection": foot, "grounded": False} for side in ["left", "right"]}}}}
@@ -58,6 +58,21 @@ class FacingRecoveryTests(unittest.TestCase):
         self.assertEqual(len(result["terminalMismatches"]), 3)
         self.assertEqual(result["cases"]["daily/false/0"]["artworkDirections"], ["north"])
         self.assertEqual(result["cases"]["daily/false/0"]["requestedDirectionObservations"], 1)
+
+    def test_legacy_artwork_fallback_is_insufficient_for_raw_request_acceptance(self):
+        row = sample()
+        del row["source"]["requestedDirection"]
+        result = audit([row], 1)
+        self.assertEqual(result["rawRequestedInsufficientCases"], ["daily/false/0"])
+        self.assertFalse(result["terminalRecoveryAccepted"])
+
+    def test_declared_initial_setup_does_not_count_as_missing_movement_request(self):
+        initial = sample()
+        initial["fixtureInitial"] = True
+        del initial["source"]
+        result = audit([initial, sample(distance=1)], 1)
+        self.assertEqual(result["rawRequestedInsufficientCases"], [])
+        self.assertTrue(result["terminalRecoveryAccepted"])
 
 
 if __name__ == "__main__":
