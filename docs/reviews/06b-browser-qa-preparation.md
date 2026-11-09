@@ -68,3 +68,15 @@ Harness menulis PNG, observations, operasi, pin PCK, hasil dan snapshot terakhir
 - **Agent QA:** sesudah mendapat slot, jalankan harness nyata, periksa semua kegagalan dan capture, serta laporkan cleanup. Jangan mengklaim hasil script yang baru disiapkan sebagai hasil penerimaan.
 - **Agent QA/integrator:** ulang transaksi malam dan tur Griya setelah perubahan alignment final. Pixel/bentuk/comfy, ketertutupan tubuh di bawah atap, pijakan dan arah/prostetik tetap dinilai melalui gambar/gerak aktual.
 - **Setelah rilis:** smoke staging baru memakai pin source/PCK yang benar; hasil lama dipertahankan sebagai sejarah. Windows/S23 fisik, sesi panjang dan kamera kiri gameplay global tetap belum ditutup oleh harness ini.
+
+## Eksekusi awal kandidat: hasil parsial dan koreksi harness
+
+Actual-game browser pertama dijalankan pada kandidat runtime `e1bdf95` melalui API production lokal `http://localhost:3101`, dengan PCK SHA-256 `7f2ac59f0e39bed9ad5d6e47f4836f76a097b89cc2dadf388514cfbd5d02eaf9`, **64.289.088 B**. Tool aktual: Playwright Chromium dengan SwiftShader, viewport sentuh emulasi, API/Fastify, MongoDB dan Redis lokal nyata. Ini bukan perangkat fisik atau pengukuran FPS.
+
+Rangkaian berhasil mengunduh dan mencocokkan PCK, login, memigrasikan lokasi lama keluar post ke layout 9, berjalan ke Griya, masuk melalui UI, berjalan di interior dan menyimpan posisi. Rangkaian kemudian **gagal pada harness attach sesudah reload**: predicate dari script hutan menunggu `snapshot.hud`, sedangkan snapshot `HomesteadUI.gd` memang mengekspor `area/home`, `renderer` dan `homestead`, tanpa key HUD. Ia menunggu timeout 240 detik yang sudah dibatasi. Snapshot terakhir membuktikan game hidup di interior, renderer aktif dan posisi `[284.42,326.34]` tersimpan. Tidak ada kesalahan JavaScript/console atau respons API gagal yang tercatat.
+
+Bukti lokal: `Jalasmara-06-integration/artifacts/browser/plan06-layout-6174b6a2-be3c-47ab-a8ed-cb8e82e8a201/` memuat `home-porch-night-667x375.png`, `failure.png`, dan `results.json`. Kedua gambar diperiksa. Capture porch memperlihatkan Nala dapat dikenali di lantai Griya dan HUD malam berfungsi. Billboard abu-abu warga nonrig pada malam hari masih tampak dan tetap menjadi gap visual B3; gambar ini bukan persetujuan bahwa semua warga sudah selesai.
+
+Cleanup run gagal tetap lulus: player/email/role/name fixture, receipts dan shifts UUID tersebut serta kunci cache/sesi yang diverifikasi sudah nol melalui assertion. Laporan menyatakan `ownTemporaryPlayerRemoved: true`. Browser ditutup. Tidak memakai SIGKILL, tidak menyentuh proses 3100 atau data akun lain.
+
+Commit `b208942` memperbaiki predicate attach agar menerima renderer home yang aktif dan menambahkan progress fase/capture/states warga. Pemeriksaan sintaks lulus. Perbaikan ini hanya pada harness; tidak mengubah script atau paket game. **Tujuh shelter, hutan, laut dan penerimaan reload lengkap masih menunggu rerun yang berhasil.**
