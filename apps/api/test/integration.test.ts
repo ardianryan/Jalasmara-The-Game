@@ -748,6 +748,7 @@ test("tiga siklus siang-malam, anti-farming pelanggan, upgrade, dan boss sampai 
     );
     await fixtureSurface(u, "hub", WORLD.homestead.door);
     let home = await homeAction(b, "enter");
+    assert.equal(home.status, 200);
     await fixtureHome(u, { x: 270, y: 330 });
     home = await homeAction(b, "sleep");
     assert.equal(home.data.player.progress.day, Math.min(3, day + 1));

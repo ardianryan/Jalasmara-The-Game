@@ -177,7 +177,9 @@ function Auth({
         </div>
         <footer>
           <span>Jalasmara</span>
-          <a href="/credits.html" target="_blank" rel="noreferrer">Kredit aset</a>
+          <a href="/credits.html" target="_blank" rel="noreferrer">
+            Kredit aset
+          </a>
         </footer>
       </section>
     </main>
@@ -294,39 +296,45 @@ function App() {
     await api("/auth/logout", {});
     location.assign("/");
   }
+  const playing = !path.startsWith("/admin") && path !== "/settings";
   return (
     <>
-      <header
-        className={`app-header ${path.startsWith("/admin") ? "admin-header" : path === "/play" ? "game-header" : ""}`}
-      >
-        <Brand />
-        <nav aria-label="Navigasi utama">
-          <a href="/play" aria-current={path === "/play" ? "page" : undefined}>
-            Perjalanan
-          </a>
-          <a
-            href="/settings"
-            aria-current={path === "/settings" ? "page" : undefined}
-          >
-            Akun
-          </a>
-          {auth.user.role !== "player" && (
+      {!playing && (
+        <header
+          className={`app-header ${path.startsWith("/admin") ? "admin-header" : path === "/play" ? "game-header" : ""}`}
+        >
+          <Brand />
+          <nav aria-label="Navigasi utama">
             <a
-              href="/admin"
-              aria-current={path.startsWith("/admin") ? "page" : undefined}
+              href="/play"
+              aria-current={path === "/play" ? "page" : undefined}
             >
-              Pengelola
+              Perjalanan
             </a>
-          )}
-          <button
-            className="quiet"
-            onClick={() => void logout()}
-            aria-label="Keluar dari akun"
-          >
-            Keluar
-          </button>
-        </nav>
-      </header>
+            <a
+              href="/settings"
+              aria-current={path === "/settings" ? "page" : undefined}
+            >
+              Akun
+            </a>
+            {auth.user.role !== "player" && (
+              <a
+                href="/admin"
+                aria-current={path.startsWith("/admin") ? "page" : undefined}
+              >
+                Pengelola
+              </a>
+            )}
+            <button
+              className="quiet"
+              onClick={() => void logout()}
+              aria-label="Keluar dari akun"
+            >
+              Keluar
+            </button>
+          </nav>
+        </header>
+      )}
       {path.startsWith("/admin") ? (
         auth.user.role === "player" ? (
           <main className="settings">
@@ -339,7 +347,7 @@ function App() {
       ) : path === "/settings" ? (
         <Settings auth={auth} refresh={refresh} />
       ) : (
-        <Play />
+        <Play canManage={auth.user.role !== "player"} onLogout={logout} />
       )}
     </>
   );

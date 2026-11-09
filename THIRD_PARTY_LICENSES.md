@@ -17,6 +17,7 @@ Semua hak cipta, merek dagang, dan lisensi di bawah ini tetap menjadi milik peme
 | **Polyfork 3D Assets** | Polyfork (https://polyfork.dev) | **CC BY 4.0** | Model *Bamboo Stalk*, *Fern Plant*, dan *Small Reef Rock* |
 | **Procedural Pixel Creatures** | idlerunner00 | **MIT** | Alat generasi fauna prosedural offline |
 | **Pixelbolt** | skulitom / PixelForge contributors | **MIT** | Kompiler efek partikel piksel (*lantern-flame*, dll.) |
+| **Pillow** | Jeffrey A. Clark and contributors; PIL by Secret Labs AB/Fredrik Lundh | **MIT-CMU** | Pemrosesan atlas dan pemeriksaan alpha offline; tidak disematkan dalam runtime game |
 | **img2threejs** | img2threejs contributors | **Apache 2.0** | Pipa generasi mesh tablet relief offline |
 | **Three.js** | Ricardo Cabello (Mr.doob) and contributors | **MIT** | Pembantu kompilasi GLB offline |
 | **React & React-DOM** | Meta Platforms, Inc. and contributors | **MIT** | Kerangka kerja frontend aplikasi web |
@@ -132,6 +133,10 @@ Nunito Sans kini juga disematkan untuk teks dialog/kuis Godot. [Salinan lisensi 
 - **Keterangan:** Arsitektur relief tanah daratan mengadaptasi prinsip tata lapisan *top*, *side*, dan *edge* dari [Strata](https://github.com/carthageadev/strata). Seluruh kode ditulis ulang secara orisinal untuk Godot GDScript; tidak ada kode sumber maupun aset upstream Strata/Unity yang disalin ke proyek ini.
 
 ---
+
+### Pillow
+
+Alat Python pembuat atlas memakai Pillow. Versi authoring lokal 11.3.0 mencantumkan MIT-CMU; [salinan pemberitahuan](tools/player-gait/LICENSE-Pillow.txt) berasal dari paket terpasang. CI memasang paket distribusi `python3-pil` beserta pemberitahuan paketnya. Kode Pillow tidak disalin ke runtime Godot dan lisensi alat tersebut tidak mengubah lisensi artwork hasil generasi proyek.
 
 ## 5. Pustaka Node.js, Fastify & Ekosistem Web
 

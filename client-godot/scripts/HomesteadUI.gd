@@ -32,6 +32,7 @@ func configure(owner_node: Node,home_inside := false) -> void:
 	root_control.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	root_control.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	add_child(root_control)
+	get_viewport().size_changed.connect(_layout_page)
 	if inside:
 		game_hud=preload("res://scripts/GameHud.gd").new()
 		host.add_child.call_deferred(game_hud)
@@ -41,6 +42,7 @@ func configure(owner_node: Node,home_inside := false) -> void:
 		game_hud.inventory_requested.connect(func(): open_for("inventory"))
 		game_hud.character_requested.connect(func(): open_for("appearance"))
 		game_hud.map_requested.connect(func(): open_for("home_map"))
+		game_hud.objective_requested.connect(show_objective)
 		host.interaction_requested.connect(open_for)
 		_publish_ready.call_deferred()
 
@@ -70,7 +72,7 @@ func _process(delta: float) -> void:
 			_position_clock=0
 			if host.player.position.distance_to(_last_position)>1:
 				_sync_position()
-		if OS.has_feature("web") and Time.get_ticks_msec()-_snapshot_at>100:
+		if OS.has_feature("web") and preload("res://scripts/Diagnostics.gd").enabled() and Time.get_ticks_msec()-_snapshot_at>100:
 			_snapshot_at=Time.get_ticks_msec()
 			var snapshot: Dictionary=host.debug_snapshot()
 			snapshot["homestead"]=GameState.homestead
@@ -94,6 +96,30 @@ func _set_modal(active: bool) -> void:
 	if is_instance_valid(game_hud): game_hud.set_modal(active)
 	EnvironmentState.clock_paused=active
 
+func show_objective(text: String) -> void:
+	if busy or is_open: return
+	_page("Tujuan perjalanan")
+	_text(text)
+	_button("Kembali",close)
+
+func _ui_font() -> int:
+	return preload("res://scripts/UiMetrics.gd").body(self)
+
+func _ui_target() -> float:
+	return preload("res://scripts/UiMetrics.gd").target(self)
+
+func _layout_page() -> void:
+	if not is_instance_valid(panel): return
+	var view:=get_viewport().get_visible_rect().size
+	var safe:=ViewportLayout.insets()
+	var top:=ceilf(60*preload("res://scripts/UiMetrics.gd").ratio(self))+safe.y
+	panel.position=Vector2(maxf(16+safe.x,(view.x-760)*.5),top)
+	panel.size=Vector2(minf(760,view.x-32-safe.x-safe.z),view.y-top-16-safe.w)
+	for label in panel.find_children("*","Label",true,false): label.add_theme_font_size_override("font_size",_ui_font())
+	for button in panel.find_children("*","Button",true,false):
+		button.custom_minimum_size.y=_ui_target()
+		button.add_theme_font_size_override("font_size",_ui_font())
+
 func _page(title: String) -> void:
 	if is_instance_valid(panel):
 		root_control.remove_child(panel)
@@ -102,8 +128,10 @@ func _page(title: String) -> void:
 	panel=PanelContainer.new()
 	panel.name="HomesteadPanel"
 	var viewport_size:=get_viewport().get_visible_rect().size
-	panel.position=Vector2(maxf(16,(viewport_size.x-760)*.5),38)
-	panel.size=Vector2(minf(760,viewport_size.x-32),viewport_size.y-76)
+	var safe:=ViewportLayout.insets()
+	var top:=ceilf(60*preload("res://scripts/UiMetrics.gd").ratio(self))+safe.y
+	panel.position=Vector2(maxf(16+safe.x,(viewport_size.x-760)*.5),top)
+	panel.size=Vector2(minf(760,viewport_size.x-32-safe.x-safe.z),viewport_size.y-top-16-safe.w)
 	var paper:=StyleBoxFlat.new()
 	paper.bg_color=Color("f1e1bc")
 	paper.border_color=Color("654733")
@@ -128,7 +156,7 @@ func _page(title: String) -> void:
 	var heading:=Label.new()
 	heading.text=title
 	heading.add_theme_color_override("font_color",Color("302d2a"))
-	heading.add_theme_font_size_override("font_size",23)
+	heading.add_theme_font_size_override("font_size",maxi(23,_ui_font()))
 	heading.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	content.add_child(heading)
 	message_label=_text("")
@@ -139,7 +167,7 @@ func _text(value: String) -> Label:
 	label.text=value
 	label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	label.add_theme_font_override("font",BODY_FONT)
-	label.add_theme_font_size_override("font_size",24)
+	label.add_theme_font_size_override("font_size",_ui_font())
 	label.add_theme_color_override("font_color",Color("302d2a"))
 	content.add_child(label)
 	return label
@@ -147,9 +175,11 @@ func _text(value: String) -> Label:
 func _button(value: String,action: Callable) -> Button:
 	var button:=Button.new()
 	button.text=value
-	button.custom_minimum_size.y=82
+	button.custom_minimum_size.y=_ui_target()
+	button.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	button.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	button.add_theme_font_override("font",BODY_FONT)
-	button.add_theme_font_size_override("font_size",24)
+	button.add_theme_font_size_override("font_size",_ui_font())
 	button.add_theme_color_override("font_color",Color("f4ebd9"))
 	button.add_theme_color_override("font_hover_color",Color("fff4d8"))
 	button.add_theme_color_override("font_focus_color",Color("fff4d8"))

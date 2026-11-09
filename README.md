@@ -69,6 +69,7 @@ OIDC opsional melalui ZITADEL. Pemain menautkan identitas eksternal dari akun lo
 
 ## Dokumentasi
 
+- [Rencana 04: HUD, fullscreen, performa, dan gerak Nala](docs/plans/04-hud-fullscreen-performa-dan-gerak.md): implementasi aktif dari laporan Windows/Samsung S23, dengan bukti pengujian dan batas penerimaan.
 - [Rencana 03: desa hidup, rumah Nala, dan siklus harian](docs/plans/03-desa-hidup-dan-siklus-harian.md): animasi warga, Griya Sasmita, kalender, kebun, pasar/balai, dan finishing.
 - [Referensi teknis dan status integrasi](docs/reference-integrations.md): Polyfork, Strata, Procedural Pixel Creatures, img2threejs, SpriteCook, Ark Pixel Font, dan Pixelbolt.
 - [Operasi dan deployment](docs/operations.md), termasuk upstream reverse proxy **10.1.0.8:3000**.

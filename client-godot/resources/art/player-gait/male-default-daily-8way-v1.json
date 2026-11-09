@@ -1,0 +1,99 @@
+{
+  "identity": "male_default",
+  "outfit": "daily",
+  "directions": [
+    "east",
+    "south_east",
+    "south",
+    "south_west",
+    "west",
+    "north_west",
+    "north",
+    "north_east"
+  ],
+  "frames": 8,
+  "cell": [
+    128,
+    128
+  ],
+  "pivot": [
+    64,
+    104
+  ],
+  "stride": 64,
+  "contacts": [
+    0,
+    4
+  ],
+  "posePhases": [
+    "contact",
+    "down",
+    "passing",
+    "up",
+    "contact",
+    "down",
+    "passing",
+    "up"
+  ],
+  "drawnDirections": 8,
+  "mirroredDirections": 0,
+  "clips": [
+    {
+      "id": "east",
+      "row": 0,
+      "sourceSha256": "9a0322895331678d769a5bb0885ad2308da29fc499c0ec07715c5c94fc8192e9",
+      "scale": 0.2113022113022113,
+      "sourceBaseline": 425.0
+    },
+    {
+      "id": "south_east",
+      "row": 1,
+      "sourceSha256": "f7927900d74c79e319395f6e00f5b00031e7528f67a72a5e62f6a6d28de3ace8",
+      "scale": 0.2074788902291918,
+      "sourceBaseline": 428.0
+    },
+    {
+      "id": "south",
+      "row": 2,
+      "sourceSha256": "8c9fd85d739fbef5138e76ecedb289b57f6037f068afcc509cc51ee75781ba26",
+      "scale": 0.2079806529625151,
+      "sourceBaseline": 425.0
+    },
+    {
+      "id": "south_west",
+      "row": 3,
+      "sourceSha256": "5445b613cab62e359d35be3f9dcf826d891a9d6d408883c2c5b747bddb35304b",
+      "scale": 0.2123456790123457,
+      "sourceBaseline": 420.0
+    },
+    {
+      "id": "west",
+      "row": 4,
+      "sourceSha256": "e1f97fb817b5751832aba128ef34a38ae398ac92f7cbeea040b78036234cc036",
+      "scale": 0.21689785624211855,
+      "sourceBaseline": 422.0
+    },
+    {
+      "id": "north_west",
+      "row": 5,
+      "sourceSha256": "6ea2456ba36308f4519bd9016be11b20229bcfd01fe86ea5bc8f61133bff3d15",
+      "scale": 0.2120838471023428,
+      "sourceBaseline": 416.0
+    },
+    {
+      "id": "north",
+      "row": 6,
+      "sourceSha256": "7877cb857c220f4311572221685ae852501cc43d4f579a064ed23ff2dcf42e8b",
+      "scale": 0.2107843137254902,
+      "sourceBaseline": 419.5
+    },
+    {
+      "id": "north_east",
+      "row": 7,
+      "sourceSha256": "6f76894627af813692bfc16e06c54d7b18984818f1e348119b4641270d8b8bc4",
+      "scale": 0.21994884910485935,
+      "sourceBaseline": 411.5
+    }
+  ],
+  "method": "Original generated frames, threshold128 alpha, nearest normalization with shared per-clip baseline/headline, no cutout deformation"
+}

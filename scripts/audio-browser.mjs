@@ -81,6 +81,9 @@ try {
     headers: { Origin: origin, "X-CSRF-Token": session.csrf },
   });
   assert(login.ok(), "Local isolated player login failed.");
+  await page.addInitScript(() => {
+    window.jalasmaraDiagnostics = true;
+  });
   await page.goto(origin + "/play");
   await attach();
   let initial = (await read()).audio;

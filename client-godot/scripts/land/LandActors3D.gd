@@ -53,7 +53,7 @@ func _frame(texture: Texture2D, rect: Rect2) -> AtlasTexture:
 		_frames[key]=frame
 	return _frames[key]
 
-func _sprite(key: String, texture: Texture2D, feet: Vector2, dimensions: Vector2, rise: float, flip:=false) -> Sprite3D:
+func _sprite(key: String, texture: Texture2D, feet: Vector2, dimensions: Vector2, rise: float, flip:=false, authored_pivot_y := -1.0) -> Sprite3D:
 	var sprite: Sprite3D=sprites.get(key)
 	if sprite==null:
 		sprite=Sprite3D.new()
@@ -69,7 +69,7 @@ func _sprite(key: String, texture: Texture2D, feet: Vector2, dimensions: Vector2
 	sprite.texture=texture
 	sprite.pixel_size=1
 	sprite.scale=Vector3(dimensions.x/texture.get_width(),dimensions.y/texture.get_height(),1)
-	if not _alpha_bottom.has(texture.get_instance_id()):
+	if authored_pivot_y<0 and not _alpha_bottom.has(texture.get_instance_id()):
 		var image:=texture.get_image()
 		var bottom:=texture.get_height()
 		if image!=null and not image.is_empty():
@@ -83,7 +83,7 @@ func _sprite(key: String, texture: Texture2D, feet: Vector2, dimensions: Vector2
 						break
 				if found: break
 		_alpha_bottom[texture.get_instance_id()]=float(bottom)/texture.get_height()
-	rise=(float(_alpha_bottom[texture.get_instance_id()])-.5)*dimensions.y
+	rise=(authored_pivot_y/texture.get_height()-.5)*dimensions.y if authored_pivot_y>=0 else (float(_alpha_bottom[texture.get_instance_id()])-.5)*dimensions.y
 	var height: float=renderer.ground_height(feet)
 	var up: Vector3=renderer.camera_up()
 	var forward: Vector3=renderer.camera_forward()
@@ -145,7 +145,8 @@ func update_actors(delta: float) -> void:
 		if visual!=null and visual.texture!=null:
 			var cell:=visual.texture.get_size()/Vector2(visual.hframes,visual.vframes)
 			var rect:=Rect2(Vector2(visual.frame%visual.hframes,floori(float(visual.frame)/visual.hframes))*cell,cell)
-			var nala := _sprite("Nala",_frame(visual.texture,rect),actor.position,cell*visual.scale.abs(),-visual.position.y,visual.flip_h)
+			var pivot: Vector2=visual.get_land_pivot() if visual.has_method("get_land_pivot") else Vector2.ZERO
+			var nala := _sprite("Nala",_frame(visual.texture,rect),actor.position,cell*visual.scale.abs(),-visual.position.y,visual.flip_h,pivot.y if pivot!=Vector2.ZERO else -1.0)
 			var gear: Dictionary=visual.get_equipment_state() if visual.has_method("get_equipment_state") else {}
 			_update_equipment(nala,gear,false,visual.flip_h)
 			counts.player=1

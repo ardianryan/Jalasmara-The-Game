@@ -55,7 +55,7 @@ def crop_part(im, polygon):
     return crop,[(box[0]+box[2])/2,(box[1]+box[3])/2]
 
 
-def bone(im,a,b,width):
+def bone(im,a,b,width,solid=False):
     dx,dy=b[0]-a[0],b[1]-a[1];length=math.hypot(dx,dy);ux,uy=dx/length,dy/length
     w=max(3,round(width*SCALE));h=max(4,round(length*SCALE))
     part=Image.new('RGBA',(w,h))
@@ -66,6 +66,17 @@ def bone(im,a,b,width):
             if 0<=sx<512 and 0<=sy<512:
                 pixel=im.getpixel((sx,sy))
                 if pixel[3]>=128: part.putpixel((x,y),pixel)
+    if solid:
+        original=part.copy()
+        opaque=[(x,y,original.getpixel((x,y))) for y in range(h) for x in range(w) if original.getpixel((x,y))[3]>=128]
+        for y in range(h):
+            half=max(1.2,w*(.46-.10*y/max(1,h-1)))
+            for x in range(w):
+                if abs(x-(w-1)/2)>half:
+                    part.putpixel((x,y),(0,0,0,0));continue
+                if part.getpixel((x,y))[3]<128 and opaque:
+                    nearest=min(opaque,key=lambda pixel:(pixel[0]-x)**2+(pixel[1]-y)**2)
+                    part.putpixel((x,y),nearest[2])
     return part
 
 
@@ -102,7 +113,7 @@ def generate(key,spec):
     for i,side in enumerate(['left','right']):
         a,b,c=spec['legjoints'][i]
         metadata['joints'][side+'Hip']=[(a[0]-spec['feet'][0])*SCALE,(a[1]-spec['feet'][1])*SCALE]
-        upper=bone(raw,a,b,spec['widths'][0]);lower=bone(raw,b,c,spec['widths'][1])
+        upper=bone(raw,a,b,spec['widths'][0],True);lower=bone(raw,b,c,spec['widths'][1],True)
         add('upper_leg_'+side,upper,pivot=[upper.width/2,0]);add('lower_leg_'+side,lower,pivot=[lower.width/2,0])
         box=spec['footboxes'][i];foot=raw.crop(box).resize((round((box[2]-box[0])*SCALE),round((box[3]-box[1])*SCALE)),Image.Resampling.NEAREST)
         add('foot_'+side,foot,pivot=[foot.width/2,0])

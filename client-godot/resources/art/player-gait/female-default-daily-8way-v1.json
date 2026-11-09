@@ -1,0 +1,52 @@
+{
+  "identity": "female_default",
+  "outfit": "daily",
+  "directions": [
+    "east",
+    "south_east",
+    "south",
+    "south_west",
+    "west",
+    "north_west",
+    "north",
+    "north_east"
+  ],
+  "drawnDirections": 8,
+  "mirroredDirections": 0,
+  "frames": 8,
+  "cell": [
+    128,
+    128
+  ],
+  "pivot": [
+    64,
+    104
+  ],
+  "stride": 64,
+  "contacts": [
+    0,
+    4
+  ],
+  "equipmentBaked": false,
+  "review": "All eight views visually inspected; north repaired where diagonal duplicated. Native speed review separate.",
+  "sources": [
+    {
+      "path": "assets/source-2d/nala-eightway-batch/female-default-daily-source.png",
+      "sha256": "8f5c333edb72bd30e9d21bd5c7424e149099aa954829e2c2bb0170406cf1d734"
+    },
+    {
+      "path": "assets/source-2d/nala-eightway-batch/female-default-idle24.png",
+      "sha256": "76770fd11a26fcfaceca21247a33201d3f3724389e48da695ad8f7186c5dabea"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "client-godot/resources/art/player-gait/female-default-daily-walk-8way-v1.png",
+      "sha256": "f73bf26a1855950ee69b3572d0f01e802f074aba4954e524ebafbaf0b9f1b4c5"
+    },
+    {
+      "path": "client-godot/resources/art/player-gait/female-default-daily-idle-8way-v1.png",
+      "sha256": "19e2bba400abb9018110b21c7d8a71fb353067b05d2f55300b7ab2359e94a999"
+    }
+  ]
+}

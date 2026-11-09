@@ -40,12 +40,15 @@ func _run() -> void:
 			var world_point: Vector3=renderer.map_point(point,height)
 			assert(renderer.ground_projection(world_point).distance_to(point)<.001)
 			var pixel: Vector2=renderer.camera_3d.unproject_position(world_point)
-			var expected: Vector2=Vector2(240,135)+(point-renderer.get("_center"))*.44
+			var logical_size: Vector2=renderer.get_viewport().get_visible_rect().size
+			var expected: Vector2=Vector2(renderer.viewport_3d.size)/2.0+(point-renderer.get("_center"))*(float(renderer.viewport_3d.size.y)/logical_size.y)*camera.zoom.y
 			assert(pixel.distance_to(expected)<.05,"Rendered elevated feet must project onto the actual logical floor")
 			checks+=1
 	var status: Dictionary=renderer.debug_status()
 	assert(status.active and status.renderer=="LandSubViewport3D")
-	assert(status.elevationDegrees==35 and status.viewport==[480,270])
+	assert(status.elevationDegrees==35)
+	assert(status.viewport[0]*status.viewport[1]<=129600)
+	assert(absf(float(status.viewport[0])/status.viewport[1]-renderer.get_viewport().get_visible_rect().size.aspect())<.015)
 	assert(not status.bitmapGround and status.houses==8 and status.glbModels>0)
 	assert(status.meshes<60,"Static material batches must not become hundreds of draw calls")
 	assert(status.stairTreads>=10 and status.actors.player==1)

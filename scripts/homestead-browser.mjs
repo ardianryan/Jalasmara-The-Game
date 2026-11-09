@@ -366,6 +366,9 @@ async function shot(name) {
   }
 }
 try {
+  await page.addInitScript(() => {
+    window.jalasmaraDiagnostics = true;
+  });
   await page.goto(origin);
   await page.getByLabel("Email", { exact: true }).fill(email);
   await page.getByLabel("Password", { exact: true }).fill(password);

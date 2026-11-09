@@ -1,0 +1,33 @@
+{
+  "identity": "male_default",
+  "outfit": "daily",
+  "status": "genuine eight-way male_default daily pilot integrated; remaining identity/outfit combinations pending",
+  "generator": "built-in image_gen; original project identity reference",
+  "reference": "male-default-outfits-v1.png",
+  "source": "assets/source-2d/nala-daily-eightway/directions-idle.png",
+  "sha256": "c74e228da57fa795b53b4138b0df3ebfcfff274e75686dcdae691597b7706c4b",
+  "layout": [
+    4,
+    2
+  ],
+  "directions": [
+    "east",
+    "south_east",
+    "south",
+    "south_west",
+    "west",
+    "north_west",
+    "north",
+    "north_east"
+  ],
+  "visualReview": {
+    "eastWest": "true opposing profiles",
+    "south": "front facing two eyes",
+    "north": "back of head, no eyes",
+    "diagonalRear": "distinct away-left and away-right views",
+    "legs": "continuous anatomical calf/thigh, substantial sandals"
+  },
+  "paidCli": false,
+  "thirdPartyCharacterArt": false,
+  "runtimeEnabled": true
+}

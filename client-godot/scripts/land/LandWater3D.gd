@@ -13,6 +13,13 @@ var fleck_instances: MultiMeshInstance3D
 var material: ShaderMaterial
 var water_field = WaterFieldScript.new()
 var elapsed := 0.0
+var _active := true
+
+func set_active(value: bool) -> void:
+	if _active==value: return
+	_active=value
+	process_mode=Node.PROCESS_MODE_INHERIT if value else Node.PROCESS_MODE_DISABLED
+
 var _map: Dictionary = {}
 var _extent := Vector2(2400.0, 1600.0)
 var _wet_cells := 0
@@ -164,8 +171,9 @@ func pop_swell_events() -> Array[Dictionary]:
 	return out
 
 func _process(delta: float) -> void:
-	if material == null:
+	if material == null or not _active:
 		return
+	if is_instance_valid(_renderer) and "active" in _renderer and not bool(_renderer.get("active")): return
 	elapsed += delta
 	var weather: Dictionary = EnvironmentState.snapshot()
 	var target_rain := clampf(float(weather.get("rain", 0.0)), 0.0, 1.0)

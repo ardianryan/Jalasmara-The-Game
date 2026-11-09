@@ -26,6 +26,9 @@ const SEA := Color("254d5b")
 func _ready() -> void:
 	clip_contents = true
 	mouse_filter = Control.MOUSE_FILTER_IGNORE if mini else Control.MOUSE_FILTER_STOP
+	focus_mode = Control.FOCUS_NONE if mini else Control.FOCUS_ALL
+	focus_entered.connect(queue_redraw)
+	focus_exited.connect(queue_redraw)
 	for key in ["ocean-depth-background"]:
 		var path: String = "res://resources/art/" + str(key) + ".png"
 		if ResourceLoader.exists(path): _textures[key] = load(path)
@@ -35,6 +38,7 @@ func configure(data: Dictionary, location: String, point: Vector2) -> void:
 	world = data
 	area = location
 	player_point = point
+	selected = {}
 	places.clear()
 	if area == "sea":
 		for group in ["landmarks","puzzles","caches"]:
@@ -281,11 +285,34 @@ func _draw() -> void:
 		draw_circle(here,6 if mini else 8,Color("263538"))
 		draw_colored_polygon(PackedVector2Array([here+Vector2(0,-6),here+Vector2(5,5),here+Vector2(0,2),here+Vector2(-5,5)]),Color("fff1c4"))
 	draw_rect(Rect2(Vector2.ONE,size-Vector2.ONE*2),Color("af8759"),false,2)
+	if not mini and has_focus():
+		draw_rect(Rect2(Vector2(3,3),size-Vector2(6,6)),Color("302d2a"),false,5)
+		draw_rect(Rect2(Vector2(3,3),size-Vector2(6,6)),Color("f3c677"),false,2)
 	if mini: draw_string(PIXEL_FONT,Vector2(size.x-14,13),"m" if area=="sea" else "N",HORIZONTAL_ALIGNMENT_LEFT,-1,9,PAPER)
 
 func _gui_input(event: InputEvent) -> void:
 	if mini: return
-	if event is InputEventMouseButton:
+	if event is InputEventKey and event.pressed:
+		match event.keycode:
+			KEY_LEFT: pan.x -= _source().size.x*.08
+			KEY_RIGHT: pan.x += _source().size.x*.08
+			KEY_UP: pan.y -= _source().size.y*.08
+			KEY_DOWN: pan.y += _source().size.y*.08
+			KEY_PLUS,KEY_EQUAL,KEY_KP_ADD: zoom = minf(4,zoom*1.2)
+			KEY_MINUS,KEY_KP_SUBTRACT: zoom = maxf(1,zoom/1.2)
+			KEY_HOME:
+				zoom = 1
+				pan = Vector2.ZERO
+			KEY_PAGEDOWN,KEY_PAGEUP:
+				if not places.is_empty():
+					var index := places.find(selected)
+					selected = places[posmod(index+(1 if event.keycode==KEY_PAGEDOWN else -1),places.size())]
+					pan += Vector2(selected.point)-_source().get_center()
+					place_selected.emit(selected)
+			_: return
+		queue_redraw()
+		accept_event()
+	elif event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP and event.pressed:
 			zoom = minf(4,zoom*1.2)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN and event.pressed:

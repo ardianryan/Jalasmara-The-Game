@@ -1,0 +1,56 @@
+{
+  "identity": "female_nusantara",
+  "outfit": "diving",
+  "directions": [
+    "east",
+    "south_east",
+    "south",
+    "south_west",
+    "west",
+    "north_west",
+    "north",
+    "north_east"
+  ],
+  "drawnDirections": 8,
+  "mirroredDirections": 0,
+  "frames": 8,
+  "cell": [
+    128,
+    128
+  ],
+  "pivot": [
+    64,
+    104
+  ],
+  "stride": 64,
+  "contacts": [
+    0,
+    4
+  ],
+  "equipmentBaked": false,
+  "review": "All eight views visually inspected; north repaired where diagonal duplicated. Native speed review separate.",
+  "sources": [
+    {
+      "path": "assets/source-2d/nala-eightway-batch/female-nusantara-diving-source.png",
+      "sha256": "3d266b9a6d7c455bcae54b4702082a3dc77e0020ebe360c18be417fd985e5c59"
+    },
+    {
+      "path": "assets/source-2d/nala-eightway-batch/female-nusantara-idle24.png",
+      "sha256": "2a21f2c0bfdc0a3e420484cc55f7e178e6cca052dd48db9e3ea92fb412e6c552"
+    },
+    {
+      "path": "assets/source-2d/nala-eightway-batch/female-nusantara-diving-north-repair.png",
+      "sha256": "16fa4661e2e2865e8c7b3bc83d97ddb054a7f5b5643af631a6b3f2119e1173b4"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "client-godot/resources/art/player-gait/female-nusantara-diving-walk-8way-v1.png",
+      "sha256": "50f5891abb29a30f54ebdf9f68ea668875495c46969c360695a6ccc1e2f6b349"
+    },
+    {
+      "path": "client-godot/resources/art/player-gait/female-nusantara-diving-idle-8way-v1.png",
+      "sha256": "7bfb75675e3d54f325a28c9b03fe0b4dba25064a7461a496319f68f803077df1"
+    }
+  ]
+}

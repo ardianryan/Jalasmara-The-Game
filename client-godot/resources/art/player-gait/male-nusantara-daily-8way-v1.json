@@ -1,0 +1,56 @@
+{
+  "identity": "male_nusantara",
+  "outfit": "daily",
+  "directions": [
+    "east",
+    "south_east",
+    "south",
+    "south_west",
+    "west",
+    "north_west",
+    "north",
+    "north_east"
+  ],
+  "drawnDirections": 8,
+  "mirroredDirections": 0,
+  "frames": 8,
+  "cell": [
+    128,
+    128
+  ],
+  "pivot": [
+    64,
+    104
+  ],
+  "stride": 64,
+  "contacts": [
+    0,
+    4
+  ],
+  "equipmentBaked": false,
+  "review": "All eight views visually inspected; north repaired where diagonal duplicated. Native speed review separate.",
+  "sources": [
+    {
+      "path": "assets/source-2d/nala-eightway-batch/male-nusantara-daily-source.png",
+      "sha256": "fd18473471ac2ab8b57b85decca3ee5f1148e14658d314684d925a3c8f559a47"
+    },
+    {
+      "path": "assets/source-2d/nala-eightway-batch/male-nusantara-idle24.png",
+      "sha256": "1fd98d44c72597b5a1e19e4d70e0f3ba806b69a676f2dfb28e1580476a6aa621"
+    },
+    {
+      "path": "assets/source-2d/nala-eightway-batch/male-nusantara-daily-north-repair.png",
+      "sha256": "92c51809d16095eceeb97e26fb6e7ba65c247831c7d902f559c62d7e34a3deab"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "client-godot/resources/art/player-gait/male-nusantara-daily-walk-8way-v1.png",
+      "sha256": "342724d1724490279cd0f65c0340c5b35cdf366ecc36a99af716c51f751b8fc3"
+    },
+    {
+      "path": "client-godot/resources/art/player-gait/male-nusantara-daily-idle-8way-v1.png",
+      "sha256": "6b5e6f8b3bf19acbd5dbfe1a84429894d2f4de4fd985dc16c024a6bf1f44c054"
+    }
+  ]
+}

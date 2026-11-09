@@ -42,6 +42,13 @@ var _stream_cleared := false
 var _map_override: Dictionary = {}
 var _homestead_state: Dictionary = {}
 var _homestead_dirty := false
+var _plot_nodes: Dictionary = {}
+var _plot_components: Dictionary = {}
+var _plot_signatures: Dictionary = {}
+var _static_builds := 0
+var _plot_updates := 0
+var _surface_queries: Array[Dictionary] = []
+var _stair_queries: Array[Dictionary] = []
 var _cloth: Array[Dictionary] = []
 
 func _compute_garden_state() -> int:
@@ -83,7 +90,7 @@ func setup(scene: Node2D, player: Node2D, camera: Camera2D, place: String, overr
 	viewport_3d.own_world_3d=true
 	viewport_3d.transparent_bg=false
 	viewport_3d.msaa_3d=Viewport.MSAA_DISABLED
-	viewport_3d.positional_shadow_atlas_size=1024
+	viewport_3d.positional_shadow_atlas_size=512
 	viewport_3d.render_target_update_mode=SubViewport.UPDATE_DISABLED
 	add_child(viewport_3d)
 	display.texture=viewport_3d.get_texture()
@@ -114,9 +121,9 @@ func setup(scene: Node2D, player: Node2D, camera: Camera2D, place: String, overr
 	sunlight.shadow_opacity=.64
 	sunlight.light_color=Color("fff0ce")
 	sunlight.light_energy=1.15
-	sunlight.shadow_enabled=true
+	sunlight.shadow_enabled=bool(RenderQuality.get_profile().sunShadows)
 	sunlight.directional_shadow_mode=DirectionalLight3D.SHADOW_ORTHOGONAL
-	sunlight.directional_shadow_max_distance=3800
+	sunlight.directional_shadow_max_distance=float(RenderQuality.get_profile().sunShadowDistance)
 	sunlight.shadow_bias=.035
 	viewport_3d.add_child(sunlight)
 	set_area(place)
@@ -125,6 +132,11 @@ func set_area(place: String) -> void:
 	area=place
 	map=_map_override if not _map_override.is_empty() else GameState.world.get("landMaps",{}).get(area,{})
 	if map.is_empty() or not is_instance_valid(world_root): return
+	_static_builds+=1
+	_plot_nodes.clear()
+	_plot_components.clear()
+	_plot_signatures.clear()
+	_cache_ground_queries()
 	if is_instance_valid(_geometry):
 		world_root.remove_child(_geometry)
 		_geometry.queue_free()
@@ -173,9 +185,12 @@ func _refresh_homestead() -> void:
 	if "homestead" in GameState: set_homestead_state(GameState.get("homestead"))
 
 func set_homestead_state(home: Dictionary) -> void:
-	var changed:=JSON.stringify(_homestead_state.get("plots",[]))!=JSON.stringify(home.get("plots",[]))
 	_homestead_state=home.duplicate(true)
-	if changed and _built: _homestead_dirty=true
+	if not _built: return
+	for entry in map.get("obstacles",[]):
+		if str(entry.get("variant",""))=="home_plot" and _plot_signatures.get(str(entry.id),"")!=_plot_signature(str(entry.id)):
+			_homestead_dirty=true
+			return
 
 func camera_up() -> Vector3:
 	return Vector3(0,cos(TILT),sin(TILT))
@@ -189,23 +204,29 @@ func map_point(point: Vector2, height := 0.0) -> Vector3:
 func ground_projection(point: Vector3) -> Vector2:
 	return Vector2(point.x,-point.y*cos(TILT)-point.z*sin(TILT))
 
-func ground_height(point: Vector2) -> float:
-	var elevation:=0.0
-	var priority:=-10000
+func _cache_ground_queries() -> void:
+	_surface_queries.clear()
+	_stair_queries.clear()
 	for surface in map.get("surfaces",[]):
-		var poly:=_polygon(surface.get("polygon",[]))
-		if Geometry2D.is_point_in_polygon(point,poly) and int(surface.get("priority",0))>=priority:
-			priority=int(surface.get("priority",0))
-			elevation=float(surface.get("elevation",0))*LEVEL_HEIGHT
+		_surface_queries.append({"polygon":_polygon(surface.get("polygon",[])),"priority":int(surface.get("priority",0)),"height":float(surface.get("elevation",0))*LEVEL_HEIGHT})
 	for stair in map.get("stairs",[]):
 		var path: Array=stair.get("path",[])
 		if path.size()<2: continue
 		var start:=_v2(path[0])
 		var end:=_v2(path[1])
-		var t: float=(point-start).dot(end-start)/maxf(1,(end-start).length_squared())
-		if t<0 or t>1: continue
-		if point.distance_to(Geometry2D.get_closest_point_to_segment(point,start,end))<=float(stair.width)*.5:
-			elevation=lerpf(_level(str(stair.from)),_level(str(stair.to)),t)
+		_stair_queries.append({"start":start,"end":end,"lengthSquared":maxf(1,(end-start).length_squared()),"width":float(stair.width)*.5,"from":_level(str(stair.from)),"to":_level(str(stair.to))})
+
+func ground_height(point: Vector2) -> float:
+	var elevation:=0.0
+	var priority:=-10000
+	for surface in _surface_queries:
+		if surface.priority>=priority and Geometry2D.is_point_in_polygon(point,surface.polygon):
+			priority=surface.priority
+			elevation=surface.height
+	for stair in _stair_queries:
+		var t: float=(point-stair.start).dot(stair.end-stair.start)/stair.lengthSquared
+		if t>=0 and t<=1 and point.distance_to(Geometry2D.get_closest_point_to_segment(point,stair.start,stair.end))<=stair.width:
+			elevation=lerpf(stair.from,stair.to,t)
 	return elevation
 
 func _level(id: String) -> float:
@@ -816,7 +837,7 @@ func _rock(entry: Dictionary, rect: Rect2, center: Vector3) -> void:
 
 func _garden(_entry: Dictionary,rect: Rect2,center: Vector3) -> void:
 	if str(_entry.get("variant",""))=="home_plot":
-		_home_plot(_entry,rect,center)
+		_build_home_plot(_entry,rect,center)
 		return
 	var wood: Material=_materials.get_material("wood")
 	var dirt: Material=_materials.get_material("dirt")
@@ -870,6 +891,49 @@ func _garden(_entry: Dictionary,rect: Rect2,center: Vector3) -> void:
 	else:
 		_column(channel_marker+Vector3(-14,0,14),channel_marker+Vector3(14,0,14),2.4,bamboo)
 
+
+func _plot_signature(id: String) -> String:
+	for plot in _homestead_state.get("plots",[]):
+		if str(plot.get("id",""))==id.trim_prefix("home_"):
+			return str([plot.get("stage","empty"),plot.get("needsCare",false)])
+	return str(["empty",false])
+
+func _build_home_plot(entry: Dictionary,rect: Rect2,center: Vector3) -> void:
+	var id:=str(entry.id)
+	if _plot_nodes.has(id):
+		var old: Node3D=_plot_nodes[id]
+		if is_instance_valid(old):
+			old.get_parent().remove_child(old)
+			old.queue_free()
+		for label in _plot_components.get(id,{}):
+			_components[label]=int(_components.get(label,0))-int(_plot_components[id][label])
+	var holder:=Node3D.new()
+	holder.name=id
+	holder.set_meta("dynamic_plot",true)
+	_geometry.add_child(holder)
+	_plot_nodes[id]=holder
+	var static_geometry:=_geometry
+	var static_count:=_meshes
+	var before:=_components.duplicate()
+	_geometry=holder
+	_home_plot(entry,rect,center)
+	_batch_geometry(holder,false)
+	_geometry=static_geometry
+	_meshes=static_count
+	var emitted: Dictionary={}
+	for label in _components:
+		var count:=int(_components[label])-int(before.get(label,0))
+		if count>0: emitted[label]=count
+	_plot_components[id]=emitted
+	_plot_signatures[id]=_plot_signature(id)
+
+func _update_home_plots() -> void:
+	for entry in map.get("obstacles",[]):
+		if str(entry.get("variant",""))!="home_plot": continue
+		if _plot_signatures.get(str(entry.id),"")==_plot_signature(str(entry.id)): continue
+		var rect:=Rect2(float(entry.x),float(entry.y),float(entry.width),float(entry.height))
+		_build_home_plot(entry,rect,map_point(rect.get_center(),float(entry.get("elevation",0))*LEVEL_HEIGHT))
+		_plot_updates+=1
 
 func _home_plot(entry: Dictionary, rect: Rect2, center: Vector3) -> void:
 	var stage:="empty"
@@ -1010,10 +1074,14 @@ func _decor_ground(point: Vector2) -> bool:
 	return true
 
 func _batch_static_geometry() -> void:
+	_meshes=_batch_geometry(_geometry,true)
+
+func _batch_geometry(parent: Node3D,skip_plots: bool) -> int:
 	var batches: Dictionary={}
 	var originals: Array[MeshInstance3D]=[]
-	for child in _geometry.find_children("*","MeshInstance3D",true,false):
+	for child in parent.find_children("*","MeshInstance3D",true,false):
 		var mesh:=child as MeshInstance3D
+		if skip_plots and mesh.get_parent().has_meta("dynamic_plot"): continue
 		if mesh.has_meta("animated_cloth") or mesh.name=="TreeCrown" or (is_instance_valid(water_node) and water_node.is_ancestor_of(mesh)): continue
 		if mesh==water_mesh: continue
 		var material:=mesh.material_override
@@ -1025,7 +1093,7 @@ func _batch_static_geometry() -> void:
 			tool.begin(Mesh.PRIMITIVE_TRIANGLES)
 			batches[key]={"tool":tool,"material":material}
 		var tool: SurfaceTool=batches[key].tool
-		var transform_to_geometry: Transform3D=_geometry.global_transform.affine_inverse()*mesh.global_transform
+		var transform_to_geometry: Transform3D=parent.global_transform.affine_inverse()*mesh.global_transform
 		for surface in range(mesh.mesh.get_surface_count()): tool.append_from(mesh.mesh,surface,transform_to_geometry)
 		originals.append(mesh)
 	for key in batches:
@@ -1034,29 +1102,33 @@ func _batch_static_geometry() -> void:
 		combined.name="StaticMaterialBatch_"+str(key)
 		combined.mesh=tool.commit()
 		combined.material_override=batches[key].material
-		_geometry.add_child(combined)
+		parent.add_child(combined)
 	for mesh in originals:
 		mesh.get_parent().remove_child(mesh)
 		mesh.queue_free()
-	_meshes=batches.size()
+	return batches.size()
 
 func _process(delta: float) -> void:
 	if not _built or not is_instance_valid(actor) or not is_instance_valid(source_camera): return
 	if _homestead_dirty:
 		_homestead_dirty=false
-		set_area(area)
+		_update_home_plots()
 	if (area=="hub" and _garden_state!=_compute_garden_state()) or (area=="forest" and _stream_cleared!=_compute_stream_cleared()):
 		set_area(area)
 	active=area=="forest" or GameState.dive.is_empty()
 	display.visible=active
+	if is_instance_valid(water_node) and water_node.has_method("set_active"): water_node.set_active(active)
 	viewport_3d.render_target_update_mode=SubViewport.UPDATE_ALWAYS if active else SubViewport.UPDATE_DISABLED
 	if not active: return
-	display.size=get_viewport().get_visible_rect().size
+	var logical_size:=get_viewport().get_visible_rect().size
+	display.size=logical_size
+	var render_size:=preload("res://scripts/RenderBudget.gd").viewport_size(logical_size)
+	if viewport_3d.size!=render_size: viewport_3d.size=render_size
 	_center=source_camera.get_screen_center_position()
 	var center:=map_point(_center,0)
 	camera_3d.position=center+Vector3(0,-sin(TILT)*DISTANCE,cos(TILT)*DISTANCE)
 	camera_3d.look_at(center,Vector3(0,0,1))
-	camera_3d.size=540.0/maxf(.1,source_camera.zoom.y)
+	camera_3d.size=logical_size.y/maxf(.1,source_camera.zoom.y)
 	actors_3d.update_actors(delta)
 	var conditions:=EnvironmentState.snapshot()
 	var sway:=0.0 if bool(conditions.get("reduced_motion",false)) else 1.2+absf(float(conditions.get("wind_x",0)))*.035
@@ -1076,14 +1148,14 @@ func _process(delta: float) -> void:
 		_grade_material.set_shader_parameter("daylight",daylight)
 		sunlight.light_energy=lerpf(.035,.55,daylight)*(1-clouds*.25)
 		sunlight.light_color=Color("a5c2c0").lerp(Color("fff0d7"),daylight)
-		sunlight.shadow_enabled=daylight>.15
+		sunlight.shadow_enabled=daylight>.15 and bool(RenderQuality.get_profile().sunShadows)
 		for lantern in _lanterns: lantern.light_energy=lerpf(280.0,28.0,daylight)
 		if _glow_material: _glow_material.emission_energy_multiplier=lerpf(.85,.14,daylight)
 		environment.ambient_light_energy=lerpf(.65,.57,daylight) if area=="home" else lerpf(.50,.55,daylight)
 		environment.ambient_light_color=(Color("9faeae") if area=="home" else Color("8da4a8")).lerp(Color("bdc0b5"),daylight)
 
 func debug_status() -> Dictionary:
-	return {"active":active,"area":area,"renderer":"LandSubViewport3D","viewport":[480,270],"tilt":55,"elevationDegrees":35,"meshes":_meshes,"houses":_houses,"trees":_trees,"glbModels":_models,"stairTreads":_stair_treads,"surfaces":map.get("surfaces",[]).size(),"obstacles":map.get("obstacles",[]).size(),"actors":actors_3d.counts if is_instance_valid(actors_3d) else {},"maxFootError":actors_3d.max_foot_error if is_instance_valid(actors_3d) else 0,"camera":[_center.x,_center.y],"warmLanterns":_lanterns.size(),"gardenState":_garden_state,"streamCleared":_stream_cleared,"components":_components.duplicate(),"bridges":_bridges.duplicate(true),"bitmapGround":false,"water":water_node.debug_status() if is_instance_valid(water_node) else {}}
+	return {"active":active,"area":area,"renderer":"LandSubViewport3D","viewport":[viewport_3d.size.x,viewport_3d.size.y],"quality":RenderQuality.get_profile(),"performance":{"staticBuilds":_static_builds,"plotUpdates":_plot_updates},"tilt":55,"elevationDegrees":35,"meshes":_meshes,"houses":_houses,"trees":_trees,"glbModels":_models,"stairTreads":_stair_treads,"surfaces":map.get("surfaces",[]).size(),"obstacles":map.get("obstacles",[]).size(),"actors":actors_3d.counts if is_instance_valid(actors_3d) else {},"maxFootError":actors_3d.max_foot_error if is_instance_valid(actors_3d) else 0,"camera":[_center.x,_center.y],"warmLanterns":_lanterns.size(),"gardenState":_garden_state,"streamCleared":_stream_cleared,"components":_components.duplicate(),"bridges":_bridges.duplicate(true),"bitmapGround":false,"water":water_node.debug_status() if is_instance_valid(water_node) else {}}
 
 func _build_bridge(surface: Dictionary) -> void:
 	var polygon:=_polygon(surface.polygon)

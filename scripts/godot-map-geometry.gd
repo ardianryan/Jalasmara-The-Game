@@ -33,14 +33,14 @@ func run() -> void:
 	atlas.configure(world, {"progress": {"day": 1}}, "hub")
 	root.add_child(atlas)
 	var buttons: Dictionary = {}
-	for child in atlas.get_children():
+	for child in atlas.find_children("*","Button",true,false):
 		if child is Button:
 			buttons[child.text] = child
 	buttons["+"].pressed.emit()
 	assert(atlas._map.zoom > 1.0, "Plus button must zoom in")
 	buttons["-"].pressed.emit()
 	assert(is_equal_approx(atlas._map.zoom, 1.0), "Minus button must zoom out")
-	buttons["Penampang palung"].pressed.emit()
+	buttons["Palung"].pressed.emit()
 	assert(atlas._map.area == "sea", "Ocean section tab")
 	buttons["Daratan"].pressed.emit()
 	assert(atlas._map.area == "hub", "Land map tab")

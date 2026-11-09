@@ -147,6 +147,9 @@ try {
   );
   await post(context.request, "/game/tutorial", {}, csrf);
   await admin.dispose();
+  await page.addInitScript(() => {
+    window.jalasmaraDiagnostics = true;
+  });
   await page.goto(`${origin}/play`);
   await attachFrame();
   await frame.waitForFunction(() => window.jalasmaraSnapshot?.modal === true);

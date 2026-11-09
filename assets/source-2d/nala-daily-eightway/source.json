@@ -1,0 +1,103 @@
+{
+  "identity": "male_default",
+  "outfit": "daily",
+  "generator": "built-in image_gen",
+  "reference": "original Jalasmara male-default-outfits-v1.png \u2192 original8direction still source",
+  "paidCli": false,
+  "thirdPartySprite": false,
+  "directions": [
+    {
+      "id": "east",
+      "source": "east.png",
+      "sha256": "9a0322895331678d769a5bb0885ad2308da29fc499c0ec07715c5c94fc8192e9",
+      "layout": [
+        4,
+        2
+      ],
+      "frames": 8,
+      "review": "actual drawn direction verified; connected anatomical legs; original Nala clothing/headband preserved"
+    },
+    {
+      "id": "south_east",
+      "source": "south_east.png",
+      "sha256": "f7927900d74c79e319395f6e00f5b00031e7528f67a72a5e62f6a6d28de3ace8",
+      "layout": [
+        4,
+        2
+      ],
+      "frames": 8,
+      "review": "actual drawn direction verified; connected anatomical legs; original Nala clothing/headband preserved"
+    },
+    {
+      "id": "south",
+      "source": "south.png",
+      "sha256": "8c9fd85d739fbef5138e76ecedb289b57f6037f068afcc509cc51ee75781ba26",
+      "layout": [
+        4,
+        2
+      ],
+      "frames": 8,
+      "review": "actual drawn direction verified; connected anatomical legs; original Nala clothing/headband preserved"
+    },
+    {
+      "id": "south_west",
+      "source": "south_west.png",
+      "sha256": "5445b613cab62e359d35be3f9dcf826d891a9d6d408883c2c5b747bddb35304b",
+      "layout": [
+        4,
+        2
+      ],
+      "frames": 8,
+      "review": "actual drawn direction verified; connected anatomical legs; original Nala clothing/headband preserved"
+    },
+    {
+      "id": "west",
+      "source": "west.png",
+      "sha256": "e1f97fb817b5751832aba128ef34a38ae398ac92f7cbeea040b78036234cc036",
+      "layout": [
+        4,
+        2
+      ],
+      "frames": 8,
+      "review": "actual drawn direction verified; connected anatomical legs; original Nala clothing/headband preserved"
+    },
+    {
+      "id": "north_west",
+      "source": "north_west.png",
+      "sha256": "6ea2456ba36308f4519bd9016be11b20229bcfd01fe86ea5bc8f61133bff3d15",
+      "layout": [
+        4,
+        2
+      ],
+      "frames": 8,
+      "review": "actual drawn direction verified; connected anatomical legs; original Nala clothing/headband preserved"
+    },
+    {
+      "id": "north",
+      "source": "north.png",
+      "sha256": "7877cb857c220f4311572221685ae852501cc43d4f579a064ed23ff2dcf42e8b",
+      "layout": [
+        4,
+        2
+      ],
+      "frames": 8,
+      "review": "actual drawn direction verified; connected anatomical legs; original Nala clothing/headband preserved"
+    },
+    {
+      "id": "north_east",
+      "source": "north_east.png",
+      "sha256": "6f76894627af813692bfc16e06c54d7b18984818f1e348119b4641270d8b8bc4",
+      "layout": [
+        4,
+        2
+      ],
+      "frames": 8,
+      "review": "actual drawn direction verified; connected anatomical legs; original Nala clothing/headband preserved"
+    }
+  ],
+  "limitations": [
+    "One identity and daily outfit only",
+    "Generated pose timing has restrained early passing differences in front/back views; further motion polish remains possible",
+    "No claim of subpixel-perfect foot plant for image-generated frames before native review"
+  ]
+}

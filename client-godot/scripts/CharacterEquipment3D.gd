@@ -101,12 +101,32 @@ func update_attachment(sprite: Sprite3D,equipment: Dictionary,in_water: bool,fli
 	_net.visible = bool(equipment.get("net",false))
 	_satchel.visible = bool(equipment.get("satchel",false))
 	_vest.visible = bool(equipment.get("vest",false))
-	_tank.position = Vector3(-14*facing,4,-1.8) if not in_water else Vector3(-9*facing,14,-1.8)
-	_tank.rotation.z = 0 if not in_water else -PI*.5*facing
-	_net.position = Vector3(21*facing,-10,3) if not in_water else Vector3(30*facing,-2,3)
-	_net.scale.x = facing
-	_satchel.position = Vector3(-10*facing,-14,3)
-	_vest.position = Vector3(0,0,2.3)
+	if in_water:
+		_tank.position=Vector3(-9*facing,14,-1.8)
+		_tank.rotation.z=-PI*.5*facing
+		_net.position=Vector3(30*facing,-2,3)
+		_net.scale.x=facing
+		_satchel.position=Vector3(-10*facing,-14,3)
+	else:
+		var layout:=land_layout(str(equipment.get("facingDirection","west" if flip else "east")),float(equipment.get("gaitPhase",0)),bool(equipment.get("moving",false)))
+		_tank.position=layout.tank
+		_tank.rotation.z=0
+		_net.position=layout.net
+		_net.scale.x=float(layout.handFacing)
+		_satchel.position=layout.satchel
+	_vest.position=Vector3(0,0,2.3)
+
+static func land_layout(direction: String,phase: float,moving: bool) -> Dictionary:
+	var north:=direction in ["north","north_east","north_west"]
+	var west:=direction in ["west","north_west","south_west"]
+	var east:=direction in ["east","north_east","south_east"]
+	var side:=-1.0 if west else 1.0
+	var tank_x:=14.0 if west else -14.0 if east else 0.0
+	if direction in ["north_east","north_west","south_east","south_west"]: tank_x*=.55
+	var bob:=sin(phase*TAU)*1.1 if moving else 0.0
+	var bag_x:=13.0 if north else -13.0
+	var hand_x:=side*21 if east or west else -18.0 if north else 18.0
+	return {"tank":Vector3(tank_x,4,7 if north else -7),"net":Vector3(hand_x,-10+bob,-3 if north else 4),"satchel":Vector3(bag_x,-14-absf(bob)*.4,4 if north else 3),"handFacing":side}
 
 func debug_status() -> Dictionary:
-	return {"modular":bool(state.get("modular",false)),"tank":is_instance_valid(_tank) and _tank.visible and visible,"net":is_instance_valid(_net) and _net.visible and visible,"satchel":is_instance_valid(_satchel) and _satchel.visible and visible,"vest":is_instance_valid(_vest) and _vest.visible and visible,"meshes":find_children("*","MeshInstance3D",true,false).size()}
+	return {"facingDirection":state.get("facingDirection","east"),"gaitPhase":state.get("gaitPhase",0.0),"tankDepth":_tank.position.z if is_instance_valid(_tank) else 0.0,"netDepth":_net.position.z if is_instance_valid(_net) else 0.0,"modular":bool(state.get("modular",false)),"tank":is_instance_valid(_tank) and _tank.visible and visible,"net":is_instance_valid(_net) and _net.visible and visible,"satchel":is_instance_valid(_satchel) and _satchel.visible and visible,"vest":is_instance_valid(_vest) and _vest.visible and visible,"meshes":find_children("*","MeshInstance3D",true,false).size()}

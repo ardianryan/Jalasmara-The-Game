@@ -1,4 +1,5 @@
 extends CharacterBody2D
+const LAND_WALK_SPEED := 100.0
 var land_path := preload("res://scripts/land/LandPath.gd").new()
 var surface_traversal := preload("res://scripts/SurfaceTraversal.gd").new()
 var traversal_state: Dictionary = {}
@@ -55,15 +56,15 @@ func _physics_process(delta: float) -> void:
 		effect_clock = 0
 		if wet_marks.size()<24:
 			wet_marks.append({"at":position+Vector2(sin(walk_time*16)*12,12),"age":0.0})
-	if frozen or (not in_water and land_path.full()):
+	if frozen or ViewportLayout.host_paused or (not in_water and land_path.full()):
 		velocity = Vector2.ZERO
 	else:
-		var input := Input.get_vector("left","right","up","down")+touch
+		var input := touch if touch.length_squared()>0 else Input.get_vector("left","right","up","down")
 		input = input.limit_length()
 		if in_water:
 			velocity = velocity.move_toward(input*speed,delta*500)
 		else:
-			velocity = velocity.move_toward(input*175*float(traversal_state.get("paceScale",1.0)),delta*850)
+			velocity = velocity.move_toward(input*LAND_WALK_SPEED*float(traversal_state.get("paceScale",1.0)),delta*850)
 		if absf(velocity.x)>3:
 			direction = 1 if velocity.x>0 else -1
 	var previous := position
@@ -110,6 +111,7 @@ func _physics_process(delta: float) -> void:
 		swim_sprite.set_appearance(str(GameState.player.get("appearance","male_default")))
 		swim_sprite.set_outfit(outfit)
 		swim_sprite.set_equipment(equipment)
+		swim_sprite.set_locomotion(moved_velocity,delta)
 		swim_sprite.animate(moved_velocity.length()>10,in_water,direction,walk_time)
 		if not in_water: swim_sprite.position.y += float(traversal_state.get("footBob",0.0))
 		swim_sprite.visible = not hybrid_visual

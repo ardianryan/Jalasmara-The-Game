@@ -2,6 +2,14 @@ extends RefCounted
 
 const MASK_SIZE := Vector2i(160, 112)
 const MAX_SHORE_DISTANCE := 110.0
+const MAX_CACHED_AREAS := 6
+static var _cache: Dictionary = {}
+static var _cache_builds := 0
+static var _cache_hits := 0
+
+static func cache_stats() -> Dictionary:
+	return {"builds":_cache_builds,"hits":_cache_hits,"entries":_cache.size()}
+
 
 var extent := Vector2(2400.0, 1600.0)
 var cell_size := Vector2(15.0, 14.285714)
@@ -24,10 +32,37 @@ func configure(map: Dictionary) -> void:
 	is_river = area == "forest"
 	extent = Vector2(float(map.get("width", 2400.0)), float(map.get("height", 1600.0)))
 	cell_size = extent / Vector2(MASK_SIZE)
+	var key:=str(hash([map.get("id","hub"),map.get("layoutVersion",0),extent,map.get("surfaces",[]),map.get("obstacles",[]),map.get("landmass",[])]))
+	if _cache.has(key):
+		var saved: Dictionary=_cache[key]
+		_distance=saved.distance
+		_normal_x=saved.normalX
+		_normal_y=saved.normalY
+		_flow_x=saved.flowX
+		_flow_y=saved.flowY
+		_land_polygons=saved.land
+		_rock_rects=saved.rocks
+		emitters=saved.emitters
+		wet_cells=saved.wetCells
+		shoreline_texture=saved.texture
+		_cache_hits+=1
+		return
+	# A reused field must not mutate arrays retained by another area's cache entry.
+	_distance=PackedFloat32Array()
+	_normal_x=PackedFloat32Array()
+	_normal_y=PackedFloat32Array()
+	_flow_x=PackedFloat32Array()
+	_flow_y=PackedFloat32Array()
+	_land_polygons=[]
+	_rock_rects=[]
+	emitters=[]
 	_extract_geometry(map)
 	_build_distance_and_normals()
 	_build_emitters(map)
 	_build_texture()
+	_cache_builds+=1
+	if _cache.size()>=MAX_CACHED_AREAS: _cache.erase(_cache.keys()[0])
+	_cache[key]={"distance":_distance,"normalX":_normal_x,"normalY":_normal_y,"flowX":_flow_x,"flowY":_flow_y,"land":_land_polygons,"rocks":_rock_rects,"emitters":emitters,"wetCells":wet_cells,"texture":shoreline_texture}
 
 func _extract_geometry(map: Dictionary) -> void:
 	_land_polygons.clear()

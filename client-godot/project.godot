@@ -9,12 +9,15 @@ GameState="*res://autoloads/GameState.gd"
 EnvironmentState="*res://autoloads/EnvironmentState.gd"
 AudioManager="*res://autoloads/AudioManager.gd"
 CalendarSync="*res://autoloads/CalendarSync.gd"
+ViewportLayout="*res://autoloads/ViewportLayout.gd"
+RenderQuality="*res://autoloads/RenderQuality.gd"
 [display]
 window/size/viewport_width=960
 window/size/viewport_height=540
 window/size/window_width_override=1440
 window/size/window_height_override=810
 window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
 window/stretch/scale_mode="fractional"
 [gui]
 theme/custom="res://resources/fonts/game-theme.tres"

@@ -18,7 +18,7 @@ func _process(delta: float) -> void:
 	if GameState.player.is_empty() or GameState.calendar.is_empty(): return
 	_cooldown-=delta
 	var focused:=_focused()
-	var paused:=EnvironmentState.clock_paused
+	var paused:=EnvironmentState.clock_paused or ViewportLayout.host_paused
 	if not busy and (_cooldown<=0 or paused!=_last_paused or focused!=_last_focused):
 		sync(paused,focused)
 

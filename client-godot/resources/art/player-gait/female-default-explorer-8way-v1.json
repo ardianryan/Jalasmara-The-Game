@@ -1,0 +1,56 @@
+{
+  "identity": "female_default",
+  "outfit": "explorer",
+  "directions": [
+    "east",
+    "south_east",
+    "south",
+    "south_west",
+    "west",
+    "north_west",
+    "north",
+    "north_east"
+  ],
+  "drawnDirections": 8,
+  "mirroredDirections": 0,
+  "frames": 8,
+  "cell": [
+    128,
+    128
+  ],
+  "pivot": [
+    64,
+    104
+  ],
+  "stride": 64,
+  "contacts": [
+    0,
+    4
+  ],
+  "equipmentBaked": false,
+  "review": "All eight views visually inspected; north repaired where diagonal duplicated. Native speed review separate.",
+  "sources": [
+    {
+      "path": "assets/source-2d/nala-eightway-batch/female-default-explorer-source.png",
+      "sha256": "0b896c865684e5e55cc9482eab1a6a35163bd2e91b1696eee45979cd7f1a042b"
+    },
+    {
+      "path": "assets/source-2d/nala-eightway-batch/female-default-idle24.png",
+      "sha256": "76770fd11a26fcfaceca21247a33201d3f3724389e48da695ad8f7186c5dabea"
+    },
+    {
+      "path": "assets/source-2d/nala-eightway-batch/female-default-explorer-north-repair.png",
+      "sha256": "c1372039aabe520d10302af05811bb0a0c1ba276eb3c98a4f994f18f2d79e49e"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "client-godot/resources/art/player-gait/female-default-explorer-walk-8way-v1.png",
+      "sha256": "c9fcd98430fc7fb27f0d08470e69030bd768a87a550f65f8033ce3c1398ab38f"
+    },
+    {
+      "path": "client-godot/resources/art/player-gait/female-default-explorer-idle-8way-v1.png",
+      "sha256": "e11f9d3a45dcbf40f8c7ef1702a5e590d3d5398aff215e943839034caa1a6f92"
+    }
+  ]
+}

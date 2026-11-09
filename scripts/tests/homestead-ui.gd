@@ -14,7 +14,7 @@ func _run() -> void:
 	host.add_child(ui)
 	ui.configure(host,false)
 	var fired:Array[int]=[]
-	for screen in [Vector2i(844,390),Vector2i(667,375)]:
+	for screen in [Vector2i(844,390),Vector2i(667,375),Vector2i(390,844)]:
 		root.size=screen
 		for frame in range(3): await process_frame
 		ui._page("Peti Griya Sasmita")
@@ -24,6 +24,7 @@ func _run() -> void:
 		var last:Button=ui._button("Kembali",func(): fired.append(2))
 		for frame in range(4): await process_frame
 		var scale:float=root.get_final_transform().x.length()
+		assert(root.get_visible_rect().grow(2).encloses(ui.panel.get_global_rect()),"Home page must fit portrait and landscape")
 		assert(paragraph.get_theme_font_size("font_size")*scale>=16,"Home body must remain readable on narrow landscape")
 		assert(first.size.y*scale>=56 and last.size.y*scale>=56,"Home actions need56physicalpx touch targets")
 		assert(root.gui_get_focus_owner()==first,"Recreated pages must focus their first action")
@@ -52,11 +53,18 @@ func _run() -> void:
 		ui.busy=false
 		ui.close()
 		assert(not host.modal and not root.get_node("EnvironmentState").clock_paused)
+	ui.show_objective("Kembali ke Kedai Waras untuk menyiapkan pesanan warga.")
+	for frame in range(4): await process_frame
+	assert(host.modal and root.get_node("EnvironmentState").clock_paused)
+	var return_button: Button = root.gui_get_focus_owner()
+	assert(return_button.text=="Kembali","Objective details need a reachable close action on touch and keyboard")
+	return_button.pressed.emit()
+	assert(not ui.is_open and not host.modal and not root.get_node("EnvironmentState").clock_paused)
 	ui._pending={"body":{"action":"sleep"},"key":"ui-only"}
 	ui.open_for("bed")
 	for frame in range(4): await process_frame
 	assert(root.gui_get_focus_owner() is Button and root.gui_get_focus_owner().text=="Periksa kegiatan sebelumnya","Pending operation recovery must be keyboard reachable")
 	ui.close()
 	host.queue_free()
-	print("HOMESTEAD UI PASS: real844x390/667x375 layouts,16pxbody/56pxactions, page focus/Tab/Enter, focus-following scroll, busy guard, reading pause and pending-operation recovery; no network mutations")
+	print("HOMESTEAD UI PASS: real844x390/667x375/390x844 layouts,16pxbody/56pxactions, page focus/Tab/Enter, focus-following scroll, busy guard, reading pause and pending-operation recovery; no network mutations")
 	quit()

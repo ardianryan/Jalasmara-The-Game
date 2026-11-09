@@ -1,0 +1,214 @@
+extends PanelContainer
+
+signal advance_requested
+const BODY = preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2")
+var text_view: RichTextLabel
+var nameplate: Label
+var portrait: TextureRect
+var next_button: Button
+var _revealed := 0.0
+var _blip_at := 0.0
+var _speaker := ""
+var _total := 0
+var _scroll: ScrollContainer
+var _layout_pending := false
+var _emotion := "neutral"
+var _emote: Emote
+
+class Emote extends Control:
+	var mood := "neutral"
+	func _draw() -> void:
+		draw_rect(Rect2(0,0,30,28),Color("231710"))
+		draw_rect(Rect2(2,2,26,24),Color("f4ebd9"))
+		var ink := Color("654733")
+		if mood=="happy":
+			draw_rect(Rect2(8,7,3,3),ink)
+			draw_rect(Rect2(19,7,3,3),ink)
+			draw_polyline(PackedVector2Array([Vector2(8,15),Vector2(12,19),Vector2(18,19),Vector2(22,15)]),ink,2)
+		elif mood=="thinking":
+			draw_rect(Rect2(8,10,3,3),ink)
+			draw_rect(Rect2(14,10,3,3),ink)
+			draw_rect(Rect2(20,10,3,3),ink)
+		else:
+			draw_rect(Rect2(13,5,4,11),Color("a7442b"))
+			draw_rect(Rect2(13,20,4,3),Color("a7442b"))
+
+func _ready() -> void:
+	set_meta("dialogue",true)
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color("362419")
+	style.border_color = Color("c89240")
+	style.set_border_width_all(3)
+	style.shadow_color = Color("140d08")
+	style.shadow_size = 0
+	style.shadow_offset = Vector2(0,5)
+	style.content_margin_left = 22
+	style.content_margin_right = 22
+	style.content_margin_top = 20
+	style.content_margin_bottom = 16
+	add_theme_stylebox_override("panel",style)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation",18)
+	add_child(row)
+	portrait = TextureRect.new()
+	portrait.custom_minimum_size = Vector2(108,128)
+	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	portrait.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_child(portrait)
+	_emote = Emote.new()
+	_emote.position = Vector2(68,-8)
+	_emote.size = Vector2(30,28)
+	_emote.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	portrait.add_child(_emote)
+	_emote.hide()
+	var column := VBoxContainer.new()
+	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	column.add_theme_constant_override("separation",10)
+	row.add_child(column)
+	nameplate = Label.new()
+	nameplate.add_theme_color_override("font_color",Color("ffd18a"))
+	nameplate.add_theme_font_size_override("font_size",22)
+	nameplate.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	column.add_child(nameplate)
+	_scroll = ScrollContainer.new()
+	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_scroll.follow_focus = true
+	column.add_child(_scroll)
+	text_view = RichTextLabel.new()
+	text_view.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	text_view.fit_content = true
+	text_view.bbcode_enabled = true
+	text_view.scroll_active = false
+	text_view.add_theme_font_override("normal_font",BODY)
+	text_view.add_theme_font_override("bold_font",BODY)
+	text_view.add_theme_color_override("default_color",Color("f4ebd9"))
+	_scroll.add_child(text_view)
+	next_button = Button.new()
+	next_button.text = "Lanjut"
+	next_button.add_theme_font_override("font",BODY)
+	for state in ["font_color","font_hover_color","font_pressed_color","font_focus_color"]:
+		next_button.add_theme_color_override(state,Color("f4ebd9"))
+	for state in ["normal","hover","pressed"]:
+		var button_style := StyleBoxFlat.new()
+		button_style.bg_color=Color("543b28") if state=="normal" else Color("694b32") if state=="hover" else Color("362419")
+		button_style.border_color=Color("c89240")
+		button_style.set_border_width_all(2)
+		next_button.add_theme_stylebox_override(state,button_style)
+	next_button.custom_minimum_size.y = 56
+	next_button.pressed.connect(advance)
+	column.add_child(next_button)
+	get_viewport().size_changed.connect(_layout)
+	resized.connect(_schedule_layout)
+	_layout()
+	_schedule_layout()
+	if not EnvironmentState.reduced_motion:
+		modulate.a = 0
+		create_tween().tween_property(self,"modulate:a",1.0,.16)
+
+static func formatted(raw: String) -> String:
+	# Escape authored bracket text before allowing our limited keyword markup.
+	var parts := raw.replace("[","\u0001").replace("]","\u0002").split("**")
+	var result := ""
+	for index in range(parts.size()):
+		var part := str(parts[index]).replace("\u0001","[lb]").replace("\u0002","[rb]")
+		result += "[color=#8ee0ce]"+part+"[/color]" if index%2==1 else part
+	return result
+
+func present(speaker: String,text: String,emotion := "neutral") -> void:
+	_speaker = speaker.split(" · ")[0]
+	_emotion = emotion if emotion in ["neutral","happy","shock","angry","thinking"] else "neutral"
+	_emote.mood = _emotion
+	_emote.visible = _emotion!="neutral"
+	_emote.queue_redraw()
+	nameplate.text = speaker
+	text_view.text = formatted(text)
+	_total = text.replace("**","").length()
+	_revealed = 0.0
+	text_view.visible_characters = -1 if EnvironmentState.reduced_motion else 0
+	portrait.texture = _portrait(_speaker)
+	portrait.visible = portrait.texture != null
+	_scroll.scroll_vertical = 0
+	_layout()
+	next_button.grab_focus()
+
+func _portrait(speaker: String) -> Texture2D:
+	var sheet: Texture2D
+	var grid := Vector2i(2,2)
+	var index := int({"Mbah Wira":0,"Beno":1,"Bu Darmi":2,"Inspektur Raka":3}.get(speaker,-1))
+	if index>=0:
+		sheet = load("res://resources/art/npc-atlas.png")
+	else:
+		for resident in GameState.world.get("surface_hub",{}).get("residents",[]):
+			if str(resident.name)==speaker:
+				sheet = load("res://resources/art/village-residents-v1.png")
+				grid = Vector2i(3,2)
+				index = int(resident.appearance)
+				break
+	if speaker=="Nala":
+		var path := "res://resources/art/"+str(GameState.player.get("appearance","male_default")).replace("_","-")+"-outfits-v1.png"
+		if ResourceLoader.exists(path):
+			sheet = load(path)
+			grid = Vector2i(3,3)
+			index = 0
+	if sheet==null: return null
+	var cell := Vector2(sheet.get_size())/Vector2(grid)
+	var atlas := AtlasTexture.new()
+	atlas.atlas = sheet
+	atlas.region = Rect2(Vector2(index%grid.x,index/grid.x)*cell+cell*Vector2(.20,.02),cell*Vector2(.62,.60))
+	return atlas
+
+func _layout() -> void:
+	var view := get_viewport().get_visible_rect().size
+	var portrait_screen := view.x<800
+	var ratio := view.x/maxf(1,Vector2(get_window().size).x)
+	var available := view.y-ceilf(60*ratio)-24-ViewportLayout.insets().y-ViewportLayout.insets().w
+	var h := minf(available,500 if portrait_screen else 340)
+	var font_size := maxi(24,ceili(16*ratio))
+	nameplate.add_theme_font_size_override("font_size",font_size)
+	next_button.custom_minimum_size.y=maxf(84 if get_window().size.x<900 else 56,ceilf(48*ratio))
+	next_button.add_theme_font_size_override("font_size",font_size)
+	_scroll.custom_minimum_size.y=0
+	size = Vector2(minf(1040,view.x-32),h)
+	position = Vector2((view.x-size.x)/2,view.y-h-20-ViewportLayout.insets().w)
+	text_view.add_theme_font_size_override("normal_font_size",font_size)
+	portrait.custom_minimum_size = Vector2(84,112) if portrait_screen else Vector2(132,164)
+	portrait.size_flags_vertical=Control.SIZE_SHRINK_CENTER
+
+func _schedule_layout() -> void:
+	if _layout_pending: return
+	_layout_pending=true
+	_finish_layout.call_deferred()
+
+func _finish_layout() -> void:
+	_layout_pending=false
+	if is_inside_tree(): _layout()
+
+func advance() -> void:
+	if text_view.visible_characters>=0 and text_view.visible_characters<_total:
+		text_view.visible_characters = -1
+		return
+	advance_requested.emit()
+
+func _input(event: InputEvent) -> void:
+	if not is_visible_in_tree() or not event is InputEventKey: return
+	if event.pressed and not event.echo and event.physical_keycode in [KEY_SPACE,KEY_ENTER]:
+		advance()
+		get_viewport().set_input_as_handled()
+
+func _process(delta: float) -> void:
+	if text_view.visible_characters<0: return
+	_revealed += delta/0.022
+	var count := mini(int(_revealed),_total)
+	if count>text_view.visible_characters:
+		text_view.visible_characters = count
+		_blip_at += delta
+		if _blip_at>.10 and AudioManager.can_play_environment():
+			_blip_at = 0
+			AudioManager.play_sfx("wooden_click_light",.85 if _speaker=="Mbah Wira" else 1.1,-28)
+	if count>=_total: text_view.visible_characters = -1
+
+func debug_state() -> Dictionary:
+	return {"speaker":_speaker,"emotion":_emotion,"visibleCharacters":text_view.visible_characters,"total":text_view.get_total_character_count(),"portrait":portrait.texture!=null,"position":[position.x,position.y],"size":[size.x,size.y]}

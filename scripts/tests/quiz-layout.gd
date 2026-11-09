@@ -20,10 +20,10 @@ func run() -> void:
 	assert(buttons.size()==4)
 	for i in range(4):
 		var button:Button=buttons[i]
-		assert(button.custom_minimum_size.x>=285 and button.custom_minimum_size.y>=82)
+		assert(button.custom_minimum_size.y>=82)
 		assert(button.shortcut.events[0].physical_keycode==KEY_1+i)
 		var label:Label=button.get_child(0)
-		assert(label.get_theme_font_size("font_size")==24)
+		assert(label.get_theme_font_size("font_size")>=24)
 		assert(label.get_theme_font("font").resource_path.ends_with("nunito-sans-latin-400-normal.woff2"))
 		assert(label.mouse_filter==Control.MOUSE_FILTER_IGNORE and label.autowrap_mode==TextServer.AUTOWRAP_WORD_SMART)
 	var fired:Array[int]=[]
@@ -58,12 +58,15 @@ func run() -> void:
 	enter.pressed=false
 	root.push_input(enter)
 	assert(fired.back()==3 and fired.size()==5,"Enter must choose focused option once")
-	for size in [Vector2i(844,390),Vector2i(667,375)]:
+	for size in [Vector2i(844,390),Vector2i(667,375),Vector2i(390,844)]:
 		root.size=size
+		for frame in range(4): await process_frame
+		scene._layout_modal()
+		buttons[3].grab_focus()
 		for frame in range(4): await process_frame
 		var transform:Transform2D=root.get_final_transform()
 		var visible:Rect2=root.get_visible_rect()
-		assert(visible.has_point(scene.modal.position),"Quiz modal must start within logical viewport")
+		assert(visible.grow(2).encloses(scene.modal.get_global_rect()),"Quiz modal must fit portrait and landscape")
 		for button in buttons:
 			assert(button.get_rect().size.x>=285)
 			var label:Label=button.get_child(0)
@@ -81,11 +84,13 @@ func run() -> void:
 	controls.append_array(hud.get("_dpad").get_children())
 	var scale:float=root.get_final_transform().x.length()
 	for control in controls:
-		assert(minf(control.size.x,control.size.y)*scale>=44.0,"Touch controls must remain44physicalpx")
+		assert(minf(control.size.x,control.size.y)*scale>=48.0,"Touch controls must remain48physicalpx")
 		assert(root.get_visible_rect().encloses(control.get_global_rect()),"HUD control must remain on logicalscreen")
-	print("NARROW TOUCH HUD PASS ",controls.size()," controls >=44px at667x375; critical warning remains visible")
+	print("NARROW TOUCH HUD PASS ",controls.size()," controls >=48px atportrait; critical warning remains visible")
 	state.dive.challenge.question.options=["Air","Tanah","Cahaya","Udara"]
 	scene._show_quiz()
+	for frame in range(4): await process_frame
+	scene._layout_modal()
 	for frame in range(4): await process_frame
 	var short_buttons:Array=scene.modal.find_children("*","Button",true,false)
 	assert(short_buttons.size()==4)
@@ -96,5 +101,5 @@ func run() -> void:
 	scene.nala.free()
 	hud.free()
 	scene.free()
-	print("QUIZ LAYOUT PASS: actual Main modal at844x390/667x375,56px short-answer targets,16px body,24px Nunito, wrapping, keyboard1..4/Tab/Enter, focused-row scrolling, pause; no network calls")
+	print("QUIZ LAYOUT PASS: actual Main modal at844x390/667x375/390x844,56px short-answer targets,16px body,24px Nunito, wrapping, keyboard1..4/Tab/Enter, focused-row scrolling, pause; no network calls")
 	quit()

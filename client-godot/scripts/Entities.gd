@@ -2,6 +2,7 @@ extends Node2D
 const WildlifeScript = preload("res://scripts/Wildlife.gd")
 var wildlife: Node2D
 var elapsed := 0.0
+var presentation_updates := 0
 var player: Node2D
 var nearest := ""
 var boss_texture: Texture2D
@@ -18,7 +19,9 @@ func _process(delta: float) -> void:
 	elapsed += delta
 	if wildlife:
 		wildlife.player = player
-	queue_redraw()
+	if is_visible_in_tree():
+		presentation_updates+=1
+		queue_redraw()
 func _draw() -> void:
 	if not player:
 		return

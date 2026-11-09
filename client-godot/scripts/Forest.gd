@@ -4,7 +4,7 @@ const HudScript = preload("res://scripts/GameHud.gd")
 const AtlasScript = preload("res://scripts/WorldAtlas.gd")
 const EXTENT := Vector2(2400, 1600)
 const ENTRY := Vector2(200, 1320)
-const WALK_SPEED := 175.0
+const WALK_SPEED = preload("res://scripts/Player.gd").LAND_WALK_SPEED
 var land_renderer: Node2D
 var land_collision: Node2D
 var land_path := preload("res://scripts/land/LandPath.gd").new()
@@ -21,6 +21,8 @@ var hint: Label
 var notice: Label
 var wallet: Label
 var atlas_panel: PanelContainer
+var _dialog_scroll: ScrollContainer
+var _dialog_close: Button
 var dialog: PanelContainer
 var dialog_text: RichTextLabel
 var dialog_title: Label
@@ -49,6 +51,8 @@ var world_foley: Node
 var surface_water: Node2D
 var depth_planes: Node2D
 var forest_canopies: Array[Node2D] = []
+var conversation: PanelContainer
+var field_panel: Control
 
 class ForestProp extends Node2D:
 	var kind := "canopy"
@@ -131,10 +135,15 @@ class ForestAvatar extends CharacterBody2D:
 	var variant := "male_default"
 	var outfit := "explorer"
 	var equipment: Dictionary = {"tank":false,"net":false,"satchel":true}
+	var swim_sprite: Sprite2D
+	func _ready() -> void:
+		swim_sprite = preload("res://scripts/CharacterVisual.gd").new()
+		add_child(swim_sprite)
 	func _draw() -> void:
 		draw_set_transform(Vector2(0,-1),0,Vector2(1,0.35))
 		draw_circle(Vector2.ZERO,21,Color(0.015,0.055,0.04,0.35))
 		draw_set_transform(Vector2.ZERO)
+		if is_instance_valid(swim_sprite): return
 		if sheet != null:
 			var cell := sheet.get_size() / 3.0
 			var frame := 1+int(clock * 8.0) % 2 if walking else 0
@@ -397,15 +406,19 @@ func _draw() -> void:
 	draw_polyline(stream,Color(0.60,0.81,0.71,0.0 if background != null else 0.4),7,false)
 
 func _physics_process(delta: float) -> void:
-	EnvironmentState.clock_paused = modal_open
+	EnvironmentState.clock_paused = modal_open or ViewportLayout.host_paused
 	if avatar == null:
+		return
+	if modal_open and is_instance_valid(field_panel) and field_panel.get_meta("world_map",false) and Input.is_action_just_pressed("map"):
+		_close_dialog()
 		return
 	if is_instance_valid(depth_planes): depth_planes.update_camera(avatar.position)
 	var direction := Input.get_vector("left","right","up","down")
 	if touch_direction != Vector2.ZERO:
-		direction = touch_direction.normalized()
-	if modal_open or busy or land_path.full():
+		direction = touch_direction.limit_length()
+	if modal_open or ViewportLayout.host_paused or busy or land_path.full():
 		direction = Vector2.ZERO
+		avatar.velocity=Vector2.ZERO
 	avatar.velocity = avatar.velocity.move_toward(direction*WALK_SPEED*float(traversal_state.get("paceScale",1.0)),delta*1250)
 	if direction == Vector2.ZERO:
 		avatar.velocity = avatar.velocity.move_toward(Vector2.ZERO,delta*1700)
@@ -437,6 +450,13 @@ func _physics_process(delta: float) -> void:
 	traversal_state = surface_traversal.sample(avatar.position,moved_velocity,delta)
 	land_path.record(avatar.position)
 	avatar.walking = moved_velocity.length() > 8
+	if is_instance_valid(avatar.swim_sprite):
+		avatar.swim_sprite.set_appearance(str(GameState.player.get("appearance","male_default")))
+		avatar.swim_sprite.set_outfit("explorer")
+		avatar.swim_sprite.set_equipment(avatar.equipment)
+		avatar.swim_sprite.set_locomotion(moved_velocity,delta)
+		avatar.swim_sprite.animate(avatar.walking,false,-1 if avatar.facing.x<0 else 1,avatar.clock)
+		avatar.swim_sprite.visible = not is_instance_valid(land_renderer)
 	light_clock += delta
 	if Engine.get_physics_frames() % 6 == 0:
 		_update_lighting()
@@ -445,7 +465,7 @@ func _physics_process(delta: float) -> void:
 		avatar.facing = direction
 	avatar.queue_redraw()
 	_find_nearby()
-	if OS.has_feature("web") and Time.get_ticks_msec()-_snapshot_at>=100:
+	if OS.has_feature("web") and preload("res://scripts/Diagnostics.gd").enabled() and Time.get_ticks_msec()-_snapshot_at>=100:
 		_snapshot_at = Time.get_ticks_msec()
 		_publish_snapshot()
 	if Input.is_action_just_pressed("interact") and not modal_open:
@@ -611,11 +631,12 @@ func _interact() -> void:
 		text += "\n\nPenemuan baru: +%d koin. Tersimpan di jurnal." % reward
 	else:
 		text += "\n\nPengamatan tersimpan di jurnal."
-	_show_dialog(str(knowledge.get("title",item.get("title",item.name))),text)
+	_show_conversation(str(knowledge.get("title",item.get("title",item.name))),text)
 
 func _build_ui() -> void:
 	game_hud = HudScript.new()
 	add_child(game_hud)
+	game_hud.objective_requested.connect(func(text: String): _show_conversation("Tujuan perjalanan",text))
 	game_hud.interact_requested.connect(_interact)
 	game_hud.journal_requested.connect(_show_journal)
 	game_hud.map_requested.connect(_show_map)
@@ -644,26 +665,37 @@ func _build_ui() -> void:
 	style.content_margin_top = 18
 	style.content_margin_bottom = 18
 	dialog.add_theme_stylebox_override("panel",style)
+	_dialog_scroll=ScrollContainer.new()
+	_dialog_scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
+	_dialog_scroll.follow_focus=true
+	dialog.add_child(_dialog_scroll)
 	var box := VBoxContainer.new()
-	dialog.add_child(box)
+	box.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	_dialog_scroll.add_child(box)
 	dialog_title = Label.new()
 	dialog_title.add_theme_font_size_override("font_size",20)
+	dialog_title.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	box.add_child(dialog_title)
 	dialog_text = RichTextLabel.new()
 	dialog_text.add_theme_font_override("normal_font",preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2"))
 	dialog_text.add_theme_font_size_override("normal_font_size",18)
-	dialog_text.custom_minimum_size = Vector2(540,175)
+	dialog_text.custom_minimum_size = Vector2.ZERO
+	dialog_text.fit_content=true
+	dialog_text.scroll_active=false
 	dialog_text.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	dialog_text.bbcode_enabled = false
 	box.add_child(dialog_text)
 	dialog_actions = VBoxContainer.new()
 	box.add_child(dialog_actions)
 	var close := Button.new()
+	_dialog_close=close
 	close.text = "Lanjut berjalan"
 	close.custom_minimum_size.y = 42
 	close.pressed.connect(_close_dialog)
 	box.add_child(close)
 	ui.add_child(dialog)
+	get_viewport().size_changed.connect(_layout_legacy_dialog)
+	_layout_legacy_dialog()
 	dialog.hide()
 
 func _show_dialog(title: String,text: String) -> void:
@@ -672,84 +704,91 @@ func _show_dialog(title: String,text: String) -> void:
 	for child in dialog_actions.get_children():
 		child.queue_free()
 	touch_direction = Vector2.ZERO
-	dialog.position = Vector2(180,130)
-	dialog_text.custom_minimum_size.y = 175
+	dialog_text.custom_minimum_size.y = 0
 	dialog_title.text = title
 	dialog_text.text = text
 	dialog.show()
+	_layout_legacy_dialog.call_deferred()
+
+func _layout_legacy_dialog() -> void:
+	if not is_instance_valid(dialog): return
+	var view:=get_viewport().get_visible_rect().size
+	var metrics=preload("res://scripts/UiMetrics.gd")
+	var ratio:=float(metrics.ratio(self))
+	var body:=int(metrics.body(self))
+	var safe:=ViewportLayout.insets()
+	var top:=ceilf(60*ratio)+safe.y
+	dialog.position=Vector2(16+safe.x,top)
+	dialog.size=Vector2(view.x-32-safe.x-safe.z,minf(800,view.y-top-16-safe.w))
+	dialog_text.custom_minimum_size=Vector2.ZERO
+	dialog_text.add_theme_font_size_override("normal_font_size",body)
+	dialog_title.add_theme_font_size_override("font_size",body)
+	for button in dialog.find_children("*","Button",true,false):
+		button.custom_minimum_size.y=metrics.target(self)
+		button.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+		button.add_theme_font_override("font",preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2"))
+		button.add_theme_font_size_override("font_size",body)
+		for state in ["font_color","font_hover_color","font_pressed_color","font_focus_color"]: button.add_theme_color_override(state,Color("f4ebd9"))
+		for state in ["normal","hover","pressed"]:
+			var style:=StyleBoxFlat.new()
+			style.bg_color=Color("3d2b1f")
+			style.border_color=Color("a77943")
+			style.set_border_width_all(2)
+			button.add_theme_stylebox_override(state,style)
 
 func _close_dialog() -> void:
 	modal_open = false
 	game_hud.set_modal(false)
 	dialog.hide()
+	if is_instance_valid(conversation):
+		conversation.queue_free()
+		conversation = null
+	if is_instance_valid(field_panel):
+		field_panel.queue_free()
+		field_panel = null
 	if is_instance_valid(atlas_panel):
 		atlas_panel.hide()
 
+func _show_conversation(title: String,text: String) -> void:
+	modal_open = true
+	game_hud.set_modal(true)
+	touch_direction = Vector2.ZERO
+	avatar.velocity = Vector2.ZERO
+	if is_instance_valid(conversation): conversation.queue_free()
+	conversation = preload("res://scripts/DialoguePresenter.gd").new()
+	conversation.theme = game_hud.root_control.theme
+	ui.add_child(conversation)
+	conversation.advance_requested.connect(_close_dialog)
+	conversation.present(title,text)
+
 func _show_journal() -> void:
-	if busy:
-		return
-	var entries: Array = GameState.adventure.get("discoveries",[])
-	var progress: Dictionary = GameState.player.get("progress",{})
-	var missions: Array = progress.get("missions",[])
-	var garden_count := 0
-	for gid in ["garden_leaf","garden_root","garden_channel"]:
-		if entries.has(gid): garden_count += 1
-	var forest_count := 0
-	for fid in ["forest_canopy","forest_roots","forest_stream"]:
-		if entries.has(fid): forest_count += 1
-	var sea_count := 0
-	for sid in ["nitrogen","photosynthesis","osmosis"]:
-		if entries.has(sid): sea_count += 1
-	var has_klorofil := false
-	for inv in GameState.player.get("inventory",[]):
-		if str(inv.get("fragmentId","")) == "klorofil" and int(inv.get("quantity",0)) > 0:
-			has_klorofil = true
-	var text := "=== 1. LANGKAH BERIKUTNYA ===\n"
-	text += "• Gejala Kebun Apung Bu Darmi (Bandar Hujung): %d/3\n" % garden_count
-	text += "• Pembanding Daratan (Hutan Pesisir Wringin): %d/3\n" % forest_count
-	text += "• Ekosistem Bawah Laut (Hutan Lamun Wringin 25–60 m): %d/3\n" % sea_count
-	text += "• Fragmen Benih Hayati (Biologi Tumbuhan) di Tas: %s\n" % ("Siap diracik" if has_klorofil else "Belum ada (jala di laut)")
-	if missions.has("akar"):
-		text += "Status Misi Kebun Apung: Selesai diracik (%s).\n\n" % ("Pulih bertahap" if int(progress.get("day",1)) >= 3 else "Perawatan dimulai malam ini")
-	elif forest_count < 3:
-		text += "Saran: Amati Celah Cahaya Tajuk, Akar dan Serasah, serta bersihkan Aliran Hulu Bandar di hutan ini.\n\n"
-	else:
-		text += "Saran: Kembali ke Bandar Hujung melalui gerbang barat daya, lalu selami Hutan Lamun Wringin (25–60 m) atau buka Kedai Waras saat malam.\n\n"
-	text += "=== 2. DUGAAN & HUBUNGAN KONSEP ===\n"
-	text += "• Mengapa tanaman Bu Darmi layu walau terendam? Media kebun apung yang rapat dan tergenang membuat akar kekurangan oksigen untuk respirasi seluler, ditambah rembesan air payau yang mengganggu osmosis.\n"
-	text += "• Pembeda Wilayah: Hutan Pesisir Wringin adalah hutan daratan di timur laut desa (tempat mengamati humus berpori dan aliran hulu), sedangkan Hutan Lamun Wringin adalah zona penyelaman bawah laut (25–60 m) tempat mengamati Koral Nitrogen, Lentera Fotosintesis, dan Kerang Osmosis.\n\n"
-	text += "=== 3. CATATAN TEMUAN LAPANGAN ===\n"
-	var found_any := false
-	for item in landmarks:
-		if entries.has(str(item.id)):
-			found_any = true
-			text += "• %s: %s\n\n" % [str(item.name),str(item.get("text","Perbekalan ditemukan."))]
-	for item in GameState.world.get("surface_hub",{}).get("landmarks",[]):
-		if entries.has(str(item.id)):
-			found_any = true
-			text += "• %s (Kebun Apung): %s\n\n" % [str(item.name),str(item.get("text",""))]
-	if not found_any:
-		text += "Belum ada catatan temuan. Dekati penanda di sepanjang jalan, lalu tekan E untuk mengamati.\n"
-	_show_dialog("Jurnal Lapangan Nala",text)
+	_open_field_panel(preload("res://scripts/FieldBook.gd").new())
+
+func _open_field_panel(panel: Control) -> void:
+	modal_open = true
+	game_hud.set_modal(true)
+	touch_direction = Vector2.ZERO
+	if is_instance_valid(field_panel): field_panel.queue_free()
+	field_panel = panel
+	ui.add_child(field_panel)
+	field_panel.close_requested.connect(_close_dialog)
+
 
 func _show_inventory() -> void:
-	var text := ""
-	for item in GameState.player.get("inventory",[]):
-		text += "%s  x%s\n" % [GameState.fragment_name(str(item.get("fragmentId",item.get("id","fragmen")))),str(item.get("quantity",1))]
-	_show_dialog("Tas Nala",text if not text.is_empty() else "Tas masih kosong. Amati lingkungan, lalu jelajahi laut untuk menemukan fragmen ilmu.")
+	_open_field_panel(preload("res://scripts/InventoryView.gd").new())
 
 func _show_characters() -> void:
 	_show_dialog("Penampilan Nala","Pilih penampilan. Kemampuan dan progres tetap mengikuti pemain.")
-	dialog.position.y = 45
-	dialog_text.custom_minimum_size.y = 65
+	dialog_text.custom_minimum_size.y = 0
 	for option in [["male_default","Nala laki-laki"],["male_nusantara","Nala laki-laki · kain pesisir"],["female_default","Nala perempuan"],["female_nusantara","Nala perempuan · kain pesisir"]]:
 		var button := Button.new()
 		button.text = option[1]
-		button.custom_minimum_size.y = 36
+		button.custom_minimum_size.y = preload("res://scripts/UiMetrics.gd").target(self)
 		button.pressed.connect(func(): _select_character(str(option[0])))
 		dialog_actions.add_child(button)
 		if str(option[0]) == avatar.variant:
 			button.grab_focus()
+	_layout_legacy_dialog.call_deferred()
 
 func _select_character(id: String) -> void:
 	if busy:
@@ -769,7 +808,9 @@ func _select_character(id: String) -> void:
 	_close_dialog()
 
 func _publish_snapshot() -> void:
+	if not preload("res://scripts/Diagnostics.gd").enabled(): return
 	var snapshot := {"area":"forest","x":avatar.position.x,"y":avatar.position.y,"modal":modal_open,"nearby":str(nearest.get("id","")),"appearance":avatar.variant,"diving":false}
+	snapshot["performance"] = preload("res://scripts/Diagnostics.gd").performance_sample(avatar)
 	snapshot["outfit"] = avatar.outfit
 	snapshot["equipment"] = avatar.equipment
 	var trees: Array[Dictionary] = []
@@ -787,35 +828,12 @@ func _publish_snapshot() -> void:
 	JavaScriptBridge.get_interface("window").jalasmaraSnapshot = JavaScriptBridge.get_interface("JSON").parse(JSON.stringify(snapshot))
 
 func _show_map() -> void:
-	if modal_open and is_instance_valid(atlas_panel):
+	if modal_open and is_instance_valid(field_panel) and field_panel.get_meta("world_map",false):
 		_close_dialog()
 		return
-	if busy:
-		return
-	modal_open = true
-	touch_direction = Vector2.ZERO
-	game_hud.set_modal(true)
-	dialog.hide()
-	if is_instance_valid(atlas_panel):
-		atlas_panel.queue_free()
-	atlas_panel = PanelContainer.new()
-	atlas_panel.position = Vector2(139,52)
-	atlas_panel.size = Vector2(682,422)
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color("F1E1BC")
-	style.border_color = Color("654733")
-	style.set_border_width_all(2)
-	style.content_margin_left = 16
-	style.content_margin_right = 16
-	style.content_margin_top = 16
-	style.content_margin_bottom = 16
-	atlas_panel.add_theme_stylebox_override("panel",style)
-	var atlas := AtlasScript.new()
-	atlas.configure(GameState.world,GameState.player,"forest_wringin")
-	atlas.set_player_position(avatar.position)
-	atlas.close_requested.connect(_close_dialog)
-	atlas_panel.add_child(atlas)
-	ui.add_child(atlas_panel)
+	if busy: return
+	_open_field_panel(preload("res://scripts/AtlasOverlay.gd").new())
+	field_panel.configure("forest_wringin",avatar.position)
 
 func _is_walkable(point: Vector2) -> bool:
 	return is_instance_valid(land_collision) and land_collision.is_walkable(point)

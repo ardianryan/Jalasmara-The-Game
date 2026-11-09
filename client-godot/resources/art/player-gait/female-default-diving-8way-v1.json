@@ -1,0 +1,56 @@
+{
+  "identity": "female_default",
+  "outfit": "diving",
+  "directions": [
+    "east",
+    "south_east",
+    "south",
+    "south_west",
+    "west",
+    "north_west",
+    "north",
+    "north_east"
+  ],
+  "drawnDirections": 8,
+  "mirroredDirections": 0,
+  "frames": 8,
+  "cell": [
+    128,
+    128
+  ],
+  "pivot": [
+    64,
+    104
+  ],
+  "stride": 64,
+  "contacts": [
+    0,
+    4
+  ],
+  "equipmentBaked": false,
+  "review": "All eight views visually inspected; north repaired where diagonal duplicated. Native speed review separate.",
+  "sources": [
+    {
+      "path": "assets/source-2d/nala-eightway-batch/female-default-diving-source.png",
+      "sha256": "7addfd9f4e60908d3eef1559d4c38df2c018ff5e9dd45f2a78f2926f6c431d1b"
+    },
+    {
+      "path": "assets/source-2d/nala-eightway-batch/female-default-idle24.png",
+      "sha256": "76770fd11a26fcfaceca21247a33201d3f3724389e48da695ad8f7186c5dabea"
+    },
+    {
+      "path": "assets/source-2d/nala-eightway-batch/female-default-diving-north-repair.png",
+      "sha256": "2c14ed7387f407283777f519126db6e0b05f2d5b59f8453179f873739e06831e"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "client-godot/resources/art/player-gait/female-default-diving-walk-8way-v1.png",
+      "sha256": "15b555bd59bc8f4970f963145737756df8d6d8498bf039724cc641c2e5caa218"
+    },
+    {
+      "path": "client-godot/resources/art/player-gait/female-default-diving-idle-8way-v1.png",
+      "sha256": "f86d42cc9d242be1cf2cb7e6744d2f0258a381a1fbde2692e81d9fed6a30337a"
+    }
+  ]
+}

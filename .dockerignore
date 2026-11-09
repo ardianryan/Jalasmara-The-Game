@@ -11,6 +11,7 @@ deploy
 docs
 moodboard
 references/private
+assets/source-2d
 client-godot/.godot
 
 .cache

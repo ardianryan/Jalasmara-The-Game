@@ -224,6 +224,7 @@ func _add_growth(at: Vector2,kind: int,dimensions: Vector2,phase: float,flip := 
 	decoration_count += 1
 
 func _process(delta: float) -> void:
+	if not is_visible_in_tree(): return
 	elapsed += delta
 	if is_instance_valid(harbor_backdrop):
 		harbor_backdrop.position = Vector2(-250,-250)+camera_point*0.018

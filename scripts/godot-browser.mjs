@@ -114,6 +114,9 @@ async function walkTo(frame, x, y, tolerance = 22, accept = null) {
   );
 }
 try {
+  await page.addInitScript(() => {
+    window.jalasmaraDiagnostics = true;
+  });
   await page.goto(origin);
   await page.getByLabel("Email", { exact: true }).fill(user.email);
   await page.getByLabel("Password", { exact: true }).fill(fixture.password);
@@ -408,7 +411,9 @@ try {
           architecture.land.components?.CorporateServiceWindow === 1,
         "Resident roofs, two-tier village hall and corporate container must actually be emitted",
       );
-      const garden = maps.hub.obstacles.find((item) => item.id === "kebun_darmi");
+      const garden = maps.hub.obstacles.find(
+        (item) => item.id === "kebun_darmi",
+      );
       assert(garden);
       await go(maps.hub, { x: garden.x - 70, y: garden.y + garden.height / 2 });
       const beforeGarden = await snapshot(frame);

@@ -1545,3 +1545,92 @@ dd {
 .game-header nav a { font-size:12px; }
 .game-header button { min-height:36px; padding:4px 8px; font-size:12px; }
 .godot-player { height:calc(100svh - 44px); }
+
+/* Browser chrome stays separate from the native game HUD. */
+.godot-player.immersive-player {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  isolation: isolate;
+}
+.immersive-player:fullscreen { width: 100%; height: 100%; }
+.immersive-player .play-safe-area {
+  position: absolute;
+  visibility: hidden;
+  pointer-events: none;
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+}
+.immersive-player .play-menu-toggle {
+  position: absolute;
+  z-index: 3;
+  top: max(4px, env(safe-area-inset-top, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 88px;
+  min-height: 48px;
+  padding: 8px 14px;
+  border: 2px solid #b68a50;
+  border-radius: 2px;
+  background: #2b302d;
+  color: #f1e1bc;
+  font-size: 16px;
+  line-height: 1.2;
+}
+.immersive-player .play-menu-toggle:hover { background: #3d423b; }
+.immersive-player .play-menu-toggle:active { transform: translateX(-50%) translateY(1px); }
+.immersive-player .play-menu-backdrop {
+  position: absolute;
+  z-index: 4;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: max(12px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(12px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  background: rgb(7 25 27 / 78%);
+}
+.immersive-player .play-browser-menu {
+  width: min(100%, 360px);
+  max-height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
+  border: 2px solid #a77943;
+  border-radius: 2px;
+  background: #f1e1bc;
+  color: #302d2a;
+}
+.immersive-player .play-browser-menu h1 { margin: 0 0 6px; font: 500 25px "Lora", serif; }
+.immersive-player .play-browser-menu button,
+.immersive-player .play-browser-menu a {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 10px 12px;
+  border: 1px solid #654733;
+  border-radius: 2px;
+  background: #f1e1bc;
+  color: #302d2a;
+  font: inherit;
+  font-size: 16px;
+  text-decoration: none;
+}
+.immersive-player .play-browser-menu .play-resume { background: #2b302d; color: #f1e1bc; }
+.immersive-player .play-browser-menu .play-resume:hover:not(:disabled) { background: #3d423b; }
+.immersive-player .play-browser-menu button:disabled { opacity: .65; cursor: wait; }
+.immersive-player .play-browser-menu a:hover,
+.immersive-player .play-browser-menu button:hover:not(:disabled) { border-color: #302d2a; text-decoration: underline; }
+.immersive-player button:focus-visible,
+.immersive-player a:focus-visible { outline: 3px solid #b46a24; outline-offset: 3px; }
+.immersive-player .play-fullscreen-notice { margin: 2px 0; font-size: 16px; line-height: 1.5; }
+.immersive-player .game-loading { z-index: 2; padding-top: 64px; }
+.immersive-player .landscape-hint {
+  bottom: max(12px, env(safe-area-inset-bottom, 0px));
+  left: max(12px, env(safe-area-inset-left, 0px));
+  right: max(12px, env(safe-area-inset-right, 0px));
+}

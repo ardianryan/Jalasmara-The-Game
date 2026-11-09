@@ -1,0 +1,166 @@
+{
+  "identity": "male_default",
+  "outfit": "daily",
+  "source": "male-default-daily-directions-source-v1.png",
+  "sha256": "c74e228da57fa795b53b4138b0df3ebfcfff274e75686dcdae691597b7706c4b",
+  "cell": [
+    128,
+    128
+  ],
+  "scale": 1,
+  "directions": [
+    {
+      "id": "east",
+      "sourceCell": [
+        0,
+        0,
+        444,
+        444
+      ],
+      "opaqueBox": [
+        129,
+        18,
+        281,
+        428
+      ],
+      "footPivot": [
+        64,
+        104
+      ]
+    },
+    {
+      "id": "south_east",
+      "sourceCell": [
+        444,
+        0,
+        887,
+        444
+      ],
+      "opaqueBox": [
+        127,
+        16,
+        299,
+        431
+      ],
+      "footPivot": [
+        64,
+        104
+      ]
+    },
+    {
+      "id": "south",
+      "sourceCell": [
+        887,
+        0,
+        1330,
+        444
+      ],
+      "opaqueBox": [
+        142,
+        16,
+        302,
+        428
+      ],
+      "footPivot": [
+        64,
+        104
+      ]
+    },
+    {
+      "id": "south_west",
+      "sourceCell": [
+        1330,
+        0,
+        1774,
+        444
+      ],
+      "opaqueBox": [
+        143,
+        16,
+        305,
+        431
+      ],
+      "footPivot": [
+        64,
+        104
+      ]
+    },
+    {
+      "id": "west",
+      "sourceCell": [
+        0,
+        444,
+        444,
+        887
+      ],
+      "opaqueBox": [
+        163,
+        17,
+        313,
+        428
+      ],
+      "footPivot": [
+        64,
+        104
+      ]
+    },
+    {
+      "id": "north_west",
+      "sourceCell": [
+        444,
+        444,
+        887,
+        887
+      ],
+      "opaqueBox": [
+        139,
+        15,
+        312,
+        430
+      ],
+      "footPivot": [
+        64,
+        104
+      ]
+    },
+    {
+      "id": "north",
+      "sourceCell": [
+        887,
+        444,
+        1330,
+        887
+      ],
+      "opaqueBox": [
+        141,
+        14,
+        304,
+        427
+      ],
+      "footPivot": [
+        64,
+        104
+      ]
+    },
+    {
+      "id": "north_east",
+      "sourceCell": [
+        1330,
+        444,
+        1774,
+        887
+      ],
+      "opaqueBox": [
+        138,
+        14,
+        301,
+        430
+      ],
+      "footPivot": [
+        64,
+        104
+      ]
+    }
+  ],
+  "method": "original built-in imagegen views; nearest normalization; threshold128 alpha"
+}

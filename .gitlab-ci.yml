@@ -57,7 +57,7 @@ godot_web:
     key: godot-4.7.2-web
     paths: [.cache/godot-4.7.2/]
   script:
-    - apt-get update -qq && apt-get install -y -qq curl unzip libfontconfig1 libx11-6 libxcursor1 libxinerama1 libxrandr2 libxi6 libgl1 libasound2 python3
+    - apt-get update -qq && apt-get install -y -qq curl unzip libfontconfig1 libx11-6 libxcursor1 libxinerama1 libxrandr2 libxi6 libgl1 libasound2 python3 python3-pil
     - bash ci/setup-godot.sh
   artifacts:
     when: always

@@ -3,6 +3,7 @@ const CreatureAnimator = preload("res://scripts/CreatureAnimator.gd")
 
 var player: Node2D
 var elapsed := 0.0
+var presentation_updates := 0
 var creatures: Array[Dictionary] = []
 var session_id := ""
 var rng := RandomNumberGenerator.new()
@@ -27,7 +28,9 @@ func _process(delta: float) -> void:
 	var step := minf(delta, 0.05)
 	for creature in creatures:
 		_move_creature(creature, step)
-	queue_redraw()
+	if is_visible_in_tree():
+		presentation_updates+=1
+		queue_redraw()
 
 # Sizes and speeds are authored for the fictional coastal species, in world pixels.
 const PROFILES := {

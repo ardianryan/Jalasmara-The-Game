@@ -50,7 +50,7 @@ func setup(source: Node2D) -> void:
 	viewport_3d.msaa_3d = Viewport.MSAA_DISABLED
 	viewport_3d.screen_space_aa = Viewport.SCREEN_SPACE_AA_DISABLED
 	viewport_3d.render_target_update_mode = SubViewport.UPDATE_DISABLED
-	viewport_3d.positional_shadow_atlas_size = 1024
+	viewport_3d.positional_shadow_atlas_size = 512
 	viewport_3d.canvas_item_default_texture_filter = Viewport.DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST
 	add_child(viewport_3d)
 	display.texture = viewport_3d.get_texture()
@@ -66,6 +66,8 @@ func setup(source: Node2D) -> void:
 func _resize_display() -> void:
 	if is_instance_valid(display):
 		display.size = get_viewport().get_visible_rect().size
+	if is_instance_valid(viewport_3d):
+		viewport_3d.size = preload("res://scripts/RenderBudget.gd").viewport_size(get_viewport().get_visible_rect().size)
 
 # Helpers use pixel coordinates (x, -y, z). Their common parent applies the
 # camera's inverse Y foreshortening so the z=0 plane follows the 2D collision map.
@@ -115,9 +117,9 @@ func _create_world() -> void:
 	sunlight.rotation_degrees = Vector3(-24, -25, -12)
 	sunlight.light_color = Color("f0eee1")
 	sunlight.light_energy = 1.35
-	sunlight.shadow_enabled = true
+	sunlight.shadow_enabled = bool(RenderQuality.get_profile().sunShadows)
 	sunlight.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
-	sunlight.directional_shadow_max_distance = 3100.0
+	sunlight.directional_shadow_max_distance = float(RenderQuality.get_profile().sunShadowDistance)
 	viewport_3d.add_child(sunlight)
 	_fill_light = DirectionalLight3D.new()
 	_fill_light.rotation_degrees = Vector3(22, 40, 0)
@@ -194,7 +196,7 @@ func _process(delta: float) -> void:
 	var center := Vector3(_camera_center.x, -_camera_center.y / cos(TILT), 0)
 	camera_3d.position = center + Vector3(0, sin(TILT) * CAMERA_DISTANCE, cos(TILT) * CAMERA_DISTANCE)
 	camera_3d.look_at(center, Vector3.UP)
-	camera_3d.size = 540.0 / maxf(0.1, main.camera.zoom.y)
+	camera_3d.size = get_viewport().get_visible_rect().size.y / maxf(0.1, main.camera.zoom.y)
 	if is_instance_valid(terrain_geometry): terrain_geometry.update_camera(_camera_center)
 	var at: Vector2 = main.nala.position
 	var facing := float(main.nala.direction)
@@ -228,6 +230,7 @@ func _flashlight_status() -> Dictionary:
 	return {"mount":[mount.x,mount.y],"aim":[aim.x,aim.y],"facing":float(main.nala.direction) if is_instance_valid(main) else 1.0,"depth":origin.z,"shadow":headlamp.shadow_enabled}
 
 func _update_lighting() -> void:
+	sunlight.shadow_enabled = bool(RenderQuality.get_profile().sunShadows)
 	var state := EnvironmentState.snapshot()
 	var daylight := float(state.get("daylight", 0.8))
 	if display.material is ShaderMaterial:
@@ -252,7 +255,7 @@ func _count_nodes(node: Node, type_name: String) -> int:
 
 func debug_status() -> Dictionary:
 	return {
-		"active": active, "enabled": enabled, "renderer": "SubViewport3D", "viewport": [480, 270],
+		"quality": RenderQuality.get_profile(), "active": active, "enabled": enabled, "renderer": "SubViewport3D", "viewport": [480, 270],
 		"orthographic": is_instance_valid(camera_3d) and camera_3d.projection == Camera3D.PROJECTION_ORTHOGONAL,
 		"mesh_count": _count_nodes(world_root, "MeshInstance3D") if _built else 0,
 		"sprite_count": _count_nodes(world_root, "Sprite3D") if _built else 0,

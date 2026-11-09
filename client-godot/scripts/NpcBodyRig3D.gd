@@ -57,7 +57,9 @@ func _place_part(name: String,center: Vector2,rotation: float,depth: float) -> v
 func _bone(name: String,joint: Vector2,end: Vector2,depth: float) -> void:
 	var part: Dictionary=data.parts[name]
 	var delta:=(end-joint).angle()-PI*.5
-	var center:=joint+Vector2(0,float(part.size[1])*.5).rotated(delta)
+	var length:=joint.distance_to(end)
+	var center:=(joint+end)*.5
+	sprites[name].scale.y=length/maxf(1,float(part.size[1]))
 	_place_part(name,center,delta,depth)
 
 func _ik(a: Vector2,b: Vector2,first: float,second: float,bend: float) -> Vector2:
@@ -99,14 +101,12 @@ func update_pose(tint: Color) -> void:
 	for index in range(2):
 		var side:="left" if index==0 else "right"
 		var hip:=_v(data.joints[side+"Hip"])
-		var first:=_length("upper_leg_"+side)
-		var second:=_length("lower_leg_"+side)
 		var foot_part: Dictionary=data.parts["foot_"+side]
 		var phase:=stride+index*PI
 		var lift:=maxf(0,sin(phase))*3.4 if walking and not reduced else 0.0
 		var sole:=float(foot_part.size[1])
 		var ankle:=Vector2(hip.x+sin(phase)*3.5 if walking and not reduced else hip.x,-sole-lift)
-		var knee:=_ik(hip,ankle,first,second,1 if index==0 else -1)
+		var knee:=hip.lerp(ankle,.52)+Vector2(1.0+lift*.35,0)
 		var depth: float=-.2 if index==0 else -.05
 		_bone("upper_leg_"+side,hip,knee,depth)
 		_bone("lower_leg_"+side,knee,ankle,depth+.01)

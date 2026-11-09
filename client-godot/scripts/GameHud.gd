@@ -9,6 +9,7 @@ signal journal_requested
 signal inventory_requested
 signal character_requested
 signal move_changed(direction: Vector2)
+signal objective_requested(text: String)
 
 const INK := Color("202d3a")
 const CREAM := Color("f1e1bc")
@@ -23,7 +24,7 @@ class Plate extends Panel:
 		var h := size.y
 		var outline := PackedVector2Array([Vector2(3,0),Vector2(w-3,0),Vector2(w-3,3),Vector2(w,3),Vector2(w,h-3),Vector2(w-3,h-3),Vector2(w-3,h),Vector2(3,h),Vector2(3,h-3),Vector2(0,h-3),Vector2(0,3),Vector2(3,3)])
 		draw_colored_polygon(outline,Color("654733"))
-		draw_rect(Rect2(2,2,w-4,h-5),Color("f1e1bc") if paper else Color(0.125,0.176,0.227,0.92))
+		draw_rect(Rect2(2,2,w-4,h-5),Color("f1e1bc") if paper else Color(0.21,0.14,0.10,0.94))
 		draw_line(Vector2(4,2),Vector2(w-4,2),Color("af8759"),1)
 		for x in range(8,int(w)-7,12):
 			draw_rect(Rect2(x,h-3,3,1),Color("af8759"))
@@ -121,6 +122,9 @@ var _net_title: Label
 var _net_charge: ColorRect
 var _deck: Panel
 var _dpad: Control
+var _utility_plate: Panel
+var _identity_plate: Panel
+var _objective_toggle: Button
 var _utilities: Array[Button] = []
 var _modal := false
 var _net_held := false
@@ -129,6 +133,13 @@ var _can_net := false
 var _held_seconds := 0.0
 var _message_until := 0.0
 var _state: Dictionary = {}
+var _weather_plate: Panel
+var _action_plate: Panel
+var _warning_plate: Panel
+var _oxygen_caption: Label
+var _depth_caption: Label
+var _action_title: Label
+var _net_hint: Label
 
 func _ready() -> void:
 	layer = 10
@@ -146,11 +157,23 @@ func _ready() -> void:
 	_build_utilities()
 	_build_actions()
 	_build_dpad()
+	ViewportLayout.host_pause_changed.connect(func(paused: bool):
+		if paused:
+			_dpad.release()
+			_release_net()
+	)
+	get_viewport().size_changed.connect(func():
+		_dpad.release()
+		_release_net()
+		_layout()
+	)
 	_status_panel = _panel(Rect2(320,118,320,45),false)
 	status_label = _label(_status_panel,"",Vector2(10,8),Vector2(300,30),12)
 	status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_status_panel.hide()
+	_layout()
 	update_state(_state)
+	_layout.call_deferred()
 
 func _theme() -> Theme:
 	var theme := Theme.new()
@@ -220,30 +243,47 @@ func _icon(parent: Node,kind: String,at: Vector2,dimensions: Vector2) -> void:
 	parent.add_child(icon)
 
 func _build_identity() -> void:
+	_identity_plate = _panel(Rect2(12,10,340,94),false)
 	_region = _label(root_control,"Bandar Hujung",Vector2(18,12),Vector2(310,23),18 if touch_enabled else 16)
 	_resources = _label(root_control,"",Vector2(18,38),Vector2(300,22),14 if touch_enabled else 12)
 	_resources.add_theme_color_override("font_color",CREAM)
 	_objective = _label(root_control,"",Vector2(18,67),Vector2(312,28),13 if touch_enabled else 12)
 	_objective.tooltip_text = "Tujuan perjalanan"
+	_objective.add_theme_font_override("font",preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2"))
+	_objective.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_objective.clip_text = false
+	_objective.text_overrun_behavior = TextServer.OVERRUN_NO_TRIMMING
+	_objective_toggle = _button("",Rect2(18,67,312,60),func():
+		if not _modal and not _objective.text.is_empty(): objective_requested.emit(_objective.text)
+	)
+	_objective_toggle.flat = true
+	_objective_toggle.focus_mode=Control.FOCUS_ALL
+	_objective_toggle.text = "+"
+	_objective_toggle.add_theme_font_size_override("font_size",22)
+	_objective_toggle.tooltip_text = "Baca tujuan perjalanan lengkap"
+	_objective_toggle.move_to_front()
+	root_control.move_child(_objective,root_control.get_child_count()-1)
+	_weather_plate = _panel(Rect2(705,77,220,30),false)
 	_weather = _label(root_control,"",Vector2(705,77) if touch_enabled else Vector2(723,68),Vector2(220,22),13 if touch_enabled else 11)
 	_weather.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 
 func _build_instrument() -> void:
 	_instrument = DiveInstrument.new()
 	_instrument.position = Vector2(16,104) if touch_enabled else Vector2(16,420)
-	_instrument.size = Vector2(296,104)
+	_instrument.size = Vector2(296,140)
 	_instrument.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root_control.add_child(_instrument)
-	_label(_instrument,"OKSIGEN",Vector2(49,10),Vector2(90,18),10)
+	_oxygen_caption = _label(_instrument,"OKSIGEN",Vector2(49,8),Vector2(96,28),20)
 	_oxygen_text = _label(_instrument,"100",Vector2(47,27),Vector2(98,38),32)
-	_oxygen_max = _label(_instrument,"/ 100 O2",Vector2(50,71),Vector2(93,20),11)
+	_oxygen_max = _label(_instrument,"/ 100 O2",Vector2(50,80),Vector2(93,26),18)
 	_oxygen_loss = _label(_instrument,"",Vector2(99,10),Vector2(47,18),10)
 	_oxygen_loss.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_oxygen_loss.add_theme_color_override("font_color",Color("ffd0aa"))
 	_oxygen_loss.hide()
-	_label(_instrument,"KEDALAMAN",Vector2(164,10),Vector2(119,17),9)
+	_depth_caption = _label(_instrument,"KEDALAMAN",Vector2(164,8),Vector2(119,28),20)
 	_depth = _label(_instrument,"0 m",Vector2(162,28),Vector2(120,28),24)
-	_bag = _label(_instrument,"",Vector2(164,65),Vector2(120,27),11)
+	_bag = _label(_instrument,"",Vector2(164,65),Vector2(120,48),18)
+	_warning_plate = _panel(Rect2(16,220,296,32),false)
 	_warning = _label(root_control,"UDARA TIPIS · NAIK",_instrument.position-Vector2(0,26),Vector2(296,23),13)
 	if touch_enabled: _warning.position.y = 214
 	_warning.add_theme_color_override("font_color",Color("ffd0aa"))
@@ -251,7 +291,7 @@ func _build_instrument() -> void:
 func _build_utilities() -> void:
 	var cell := 64.0 if touch_enabled else 42.0
 	var start := 620.0 if touch_enabled else 734.0
-	_panel(Rect2(start-4,10,cell*5+8,cell+8),false)
+	_utility_plate = _panel(Rect2(start-4,10,cell*5+8,cell+8),false)
 	var index := 0
 	for item in [["map","Peta","M",func():map_requested.emit()],["journal","Jurnal","J",func():journal_requested.emit()],["bag","Tas","I",func():inventory_requested.emit()],["character","Tampilan","C",func():character_requested.emit()]]:
 		var button := _button("",Rect2(start+index*cell,14,cell,cell),item[3])
@@ -260,26 +300,29 @@ func _build_utilities() -> void:
 		key.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		button.tooltip_text = str(item[1])+" ["+str(item[2])+"]"
 		_utilities.append(button)
+		key.visible = not touch_enabled
 		index += 1
 	_sound_button = _button("",Rect2(start+cell*4,14,cell,cell),func():AudioManager.toggle_mute())
-	_sound_button.add_theme_font_size_override("font_size",11 if touch_enabled else 9)
+	_sound_button.add_theme_font_size_override("font_size",18 if touch_enabled else 12)
 	var refresh: Callable = func(_muted: bool):
-		_sound_button.text = "SUNYI" if AudioManager.muted else "SUARA"
+		_sound_button.text = "Sunyi" if AudioManager.muted else "Suara"
 		_sound_button.tooltip_text = "Suara nonaktif [V]" if AudioManager.muted else "Suara aktif [V]"
 	AudioManager.mute_changed.connect(refresh)
 	refresh.call(AudioManager.muted)
 
 func _build_actions() -> void:
 	_deck = _panel(Rect2(766,432,180,94) if touch_enabled else Rect2(784,448,162,78),false)
+	_action_plate = _panel(Rect2(632,402,310,40),false)
 	_action_label = _label(root_control,"",Vector2(632,402) if touch_enabled else Vector2(622,418),Vector2(310,27),15 if touch_enabled else 12)
 	_action_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	var net_rect := Rect2(774,438,80,80) if touch_enabled else Rect2(792,454,70,66)
 	var action_rect := Rect2(862,438,80,80) if touch_enabled else Rect2(870,454,70,66)
 	_net = _button("",net_rect,Callable())
 	_icon(_net,"net",Vector2((net_rect.size.x-34)/2,6) if touch_enabled else Vector2(22,5),Vector2(34,34) if touch_enabled else Vector2(26,26))
-	_net_title = _label(_net,"JALA",Vector2(0,40 if touch_enabled else 35),Vector2(net_rect.size.x,17 if touch_enabled else 14),12 if touch_enabled else 10)
+	_net_title = _label(_net,"JALA",Vector2(0,40 if touch_enabled else 35),Vector2(net_rect.size.x,28 if touch_enabled else 14),22 if touch_enabled else 12)
 	_net_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	var hint := _label(_net,"TAHAN" if touch_enabled else "SPASI",Vector2(0,net_rect.size.y-16),Vector2(net_rect.size.x,13),8)
+	var hint := _label(_net,"TAHAN" if touch_enabled else "SPASI",Vector2(0,net_rect.size.y-18),Vector2(net_rect.size.x,20),14 if touch_enabled else 10)
+	_net_hint=hint
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_net.tooltip_text = "Tahan untuk membentangkan jala; lepas untuk menangkap [Spasi]"
 	_net_charge = ColorRect.new()
@@ -297,34 +340,144 @@ func _build_actions() -> void:
 	_net.button_up.connect(_release_net)
 	_action = _button("",action_rect,func():interact_requested.emit())
 	_icon(_action,"action",Vector2((action_rect.size.x-34)/2,6) if touch_enabled else Vector2(22,5),Vector2(34,34) if touch_enabled else Vector2(26,26))
-	var action_text := _label(_action,"AKSI",Vector2(0,40 if touch_enabled else 35),Vector2(action_rect.size.x,18 if touch_enabled else 14),12 if touch_enabled else 10)
+	var action_text := _label(_action,"AKSI",Vector2(0,40 if touch_enabled else 35),Vector2(action_rect.size.x,28 if touch_enabled else 14),22 if touch_enabled else 12)
+	_action_title=action_text
 	action_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	var action_key := _label(_action,"SENTUH" if touch_enabled else "E",Vector2(0,action_rect.size.y-16),Vector2(action_rect.size.x,13),8)
 	action_key.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	action_key.visible = not touch_enabled
 	_action.tooltip_text = "Berinteraksi [E]"
 
 func _build_dpad() -> void:
-	_dpad = Control.new()
-	_dpad.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_dpad = preload("res://scripts/AnalogJoystick.gd").new()
+	_dpad.size = Vector2(176,176)
 	root_control.add_child(_dpad)
-	for item in [["^",Vector2(96,368),Vector2.UP],["<",Vector2(20,444),Vector2.LEFT],["v",Vector2(96,444),Vector2.DOWN],[">",Vector2(172,444),Vector2.RIGHT]]:
-		var button := Button.new()
-		button.position = item[1]
-		button.size = Vector2(72,72)
-		button.focus_mode = Control.FOCUS_NONE
-		var style := StyleBoxFlat.new()
-		style.bg_color = Color(0.125,0.176,0.227,0.72)
-		style.set_border_width_all(2)
-		style.border_color = Color(0.69,0.53,0.35,0.85)
-		button.add_theme_stylebox_override("normal",style)
-		button.text = item[0]
-		button.add_theme_font_size_override("font_size",23)
-		button.button_down.connect(func():
-			if not _modal: move_changed.emit(item[2])
-		)
-		button.button_up.connect(func():move_changed.emit(Vector2.ZERO))
-		_dpad.add_child(button)
+	_dpad.direction_changed.connect(func(value: Vector2):
+		move_changed.emit(value if not _modal else Vector2.ZERO)
+	)
 	_dpad.visible = touch_enabled
+
+func _layout() -> void:
+	if not is_instance_valid(_deck): return
+	var viewport := get_viewport().get_visible_rect().size
+	var ratio := viewport.x/maxf(1,Vector2(get_window().size).x)
+	var body := maxi(24 if touch_enabled else 18,ceili(16*ratio))
+	var line := ceilf(body*1.5)
+	var inset := ViewportLayout.insets()
+	var portrait := viewport.x<800
+	var compact_dive := touch_enabled and bool(_state.get("diving",false))
+	var margin := Vector2(16+inset.x,16+inset.y+(ceilf(60*ratio) if portrait else 0))
+	var right := viewport.x-16-inset.z
+	var bottom := viewport.y-16-inset.w
+	var cell := maxf(48,ceilf(48*ratio))
+	var identity_height := cell+12 if compact_dive else line*4+12
+	var utilities_y := margin.y+identity_height+8 if portrait else margin.y
+	_utility_plate.position=Vector2(right-cell*5-4,utilities_y-4)
+	_utility_plate.size=Vector2(cell*5+8,cell+8)
+	var controls:Array=_utilities+[_sound_button]
+	for index in range(controls.size()):
+		var button:Button=controls[index]
+		button.position=Vector2(right-cell*(5-index),utilities_y)
+		button.size=Vector2(cell,cell)
+		for child in button.get_children():
+			if child is HudIcon:
+				child.position=Vector2.ONE*(cell-32)/2
+				child.size=Vector2(32,32)
+	_sound_button.add_theme_font_size_override("font_size",body)
+	_sound_button.add_theme_font_override("font",preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2"))
+	_sound_button.text="Sunyi" if AudioManager.muted else "Suara"
+	var width:=minf(410,viewport.x-margin.x-24) if portrait else minf(370,viewport.x-cell*5-48)
+	_identity_plate.position=margin-Vector2(6,6)
+	_identity_plate.size=Vector2(width+12,identity_height)
+	_region.position=margin
+	_region.size=Vector2(width-cell-8 if compact_dive else width,line)
+	_region.add_theme_font_size_override("font_size",body+2)
+	_resources.position=margin+Vector2(0,line)
+	_resources.size=Vector2(width,line)
+	_resources.add_theme_font_size_override("font_size",body)
+	_resources.add_theme_font_override("font",preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2"))
+	_resources.visible=not compact_dive and not _modal
+	_objective.position=margin+Vector2(0,line*2)
+	_objective.size=Vector2(width-cell-8,line*2)
+	_objective.max_lines_visible=2
+	_objective.add_theme_font_size_override("font_size",body)
+	_objective.visible=not compact_dive and not _modal
+	_objective_toggle.position=margin+Vector2(width-cell,0 if compact_dive else line*2)
+	_objective_toggle.size=Vector2(cell,cell)
+	_objective_toggle.text="+"
+	_objective_toggle.disabled=_modal
+	_objective_toggle.visible=not _modal
+	_weather.position=Vector2(right-350,utilities_y+cell+12)
+	_weather.size=Vector2(350,line)
+	_weather.add_theme_font_size_override("font_size",body)
+	_weather.add_theme_font_override("font",preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2"))
+	_weather_plate.position=_weather.position-Vector2(6,3)
+	_weather_plate.size=_weather.size+Vector2(12,6)
+	_weather_plate.visible=not _weather.text.is_empty()
+	_dpad.position=Vector2(margin.x,bottom-_dpad.size.y)
+	var action_side:=maxf(88 if touch_enabled else 76,ceilf(48*ratio))
+	var action_size:=Vector2.ONE*action_side
+	_action.size=action_size
+	_net.size=action_size
+	if touch_enabled:
+		_net_hint.hide()
+		for label in [_net_title,_action_title]:
+			label.position=Vector2(0,42)
+			label.size=Vector2(action_side,42)
+			label.add_theme_font_override("font",preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2"))
+			label.add_theme_font_size_override("font_size",body)
+	_action.position=Vector2(right-action_side,bottom-action_side)
+	_net.position=Vector2(right-action_side*(2 if _can_interact else 1)-(10 if _can_interact else 0),bottom-action_side)
+	_deck.position=Vector2(_net.position.x-6,bottom-action_side-6) if _net.visible else _action.position-Vector2(6,6)
+	_deck.size=Vector2(right-_deck.position.x+6,action_side+12)
+	_action_label.position=Vector2(right-minf(380,viewport.x-32),bottom-action_side-line*2-12)
+	_action_label.size=Vector2(minf(380,viewport.x-32),line*2)
+	_action_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+	_action_label.add_theme_font_override("font",preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2"))
+	_action_label.add_theme_font_size_override("font_size",body)
+	var action_height:=clampf(_action_label.get_theme_font("font").get_multiline_string_size(_action_label.text,HORIZONTAL_ALIGNMENT_RIGHT,_action_label.size.x,body).y+4,line,line*2)
+	_action_label.size.y=action_height
+	_action_label.position.y=bottom-action_side-action_height-12
+	_action_plate.position=_action_label.position-Vector2(6,3)
+	_action_plate.size=_action_label.size+Vector2(12,6)
+	_action_plate.visible=_action_label.visible
+	var instrument_scale:=1.25 if compact_dive else 1.4 if touch_enabled else 1.0
+	var instrument_y:=margin.y+identity_height+12
+	if portrait: instrument_y=_dpad.position.y-_instrument.size.y*instrument_scale-line-24
+	_instrument.position=Vector2(margin.x,instrument_y)
+	_instrument.scale=Vector2.ONE*instrument_scale
+	_oxygen_text.position.y=40
+	_oxygen_text.size.y=42
+	_oxygen_max.position.y=110
+	_oxygen_max.size.y=30
+	_depth.position.y=40
+	_depth.size.y=36
+	_bag.position.y=80
+	_bag.size.y=56
+	_oxygen_loss.position=Vector2(49,82)
+	_oxygen_loss.size=Vector2(96,28)
+	for label in [_oxygen_caption,_depth_caption,_oxygen_max,_bag,_oxygen_loss]:
+		label.add_theme_font_override("font",preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2"))
+		label.add_theme_font_size_override("font_size",maxi(20,ceili(16*ratio/instrument_scale)))
+	var bag_width:=120.0
+	for text_line in _bag.text.split("\n"):
+		bag_width=maxf(bag_width,ceilf(_bag.get_theme_font("font").get_string_size(text_line,HORIZONTAL_ALIGNMENT_LEFT,-1,_bag.get_theme_font_size("font_size")).x)+4)
+	_bag.size.x=bag_width
+	_instrument.size.x=maxf(296,_bag.position.x+bag_width+12)
+	_depth_caption.text="Kedalaman"
+	_warning.position=_instrument.position+Vector2(0,_instrument.size.y*instrument_scale+6)
+	_warning.size=Vector2(_instrument.size.x*instrument_scale,line)
+	_warning.add_theme_font_override("font",preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2"))
+	_warning.add_theme_font_size_override("font_size",body)
+	_warning_plate.position=_warning.position-Vector2(6,3)
+	_warning_plate.size=_warning.size+Vector2(12,6)
+	_warning_plate.visible=_warning.visible
+	if is_instance_valid(_navigation): _navigation.position=Vector2(viewport.x/2-64,bottom-94)
+	_status_panel.position=Vector2(viewport.x/2-210,viewport.y/2-60)
+	_status_panel.size=Vector2(420,120)
+	status_label.size=Vector2(400,100)
+	status_label.add_theme_font_override("font",preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2"))
+	status_label.add_theme_font_size_override("font_size",body)
 
 func update_state(state: Dictionary) -> void:
 	_state = state.duplicate()
@@ -335,6 +488,7 @@ func update_state(state: Dictionary) -> void:
 	_resources.text = "%d KOIN" % int(state.get("coins",0))
 	if not diving:
 		_resources.text += "   TAS %.1f / %.1f kg" % [float(state.get("weight",0)),float(state.get("capacity",0))]
+		if touch_enabled: _resources.text="%d koin · %.1f/%.1f kg" % [int(state.get("coins",0)),float(state.get("weight",0)),float(state.get("capacity",0))]
 	_weather.text = (str(state.get("clock",""))+"  "+str(state.get("weather",""))).strip_edges()
 	if state.get("authoritative",false):
 		_weather.text="H%d · %s" % [int(state.get("calendarDay",1)),_weather.text]
@@ -361,7 +515,7 @@ func update_state(state: Dictionary) -> void:
 	_oxygen_max.text = "/ %d O2" % int(maximum)
 	_oxygen_text.add_theme_color_override("font_color",Color("f0a080") if oxygen/maximum<=0.15 else (Color("e6bd76") if oxygen/maximum<=0.35 else CREAM))
 	_depth.text = "%d m" % int(state.get("depth",0))
-	_bag.text = "TAS\n%.1f / %.1f kg" % [float(state.get("weight",0)),float(state.get("capacity",0))]
+	_bag.text = "TAS\n%.1f/%.1f kg" % [float(state.get("weight",0)),float(state.get("capacity",0))]
 	_warning.text = "O2 KRITIS - NAIK SEKARANG" if oxygen/maximum<=0.15 else "O2 MENIPIS - CARI TANGGA"
 	_warning.add_theme_color_override("font_color",Color("f0a080") if oxygen/maximum<=0.15 else Color("e6bd76"))
 	_warning.visible = diving and oxygen/maximum<=0.35 and not _modal
@@ -385,11 +539,13 @@ func update_state(state: Dictionary) -> void:
 	_deck.size.x = (180.0 if touch_enabled else 162.0) if _can_interact else (92.0 if touch_enabled else 84.0)
 	_deck.visible = (diving or _can_net or _can_interact) and not _modal
 	_dpad.visible = touch_enabled and not _modal
+	_layout()
 
 func set_modal(open: bool) -> void:
 	_modal = open
 	if is_instance_valid(_navigation): _navigation.visible = not open
 	if open:
+		_dpad.release()
 		move_changed.emit(Vector2.ZERO)
 		_release_net()
 	if is_instance_valid(root_control):
@@ -436,19 +592,18 @@ func set_navigation(data: Dictionary,area: String,point: Vector2) -> void:
 		root_control.add_child(_navigation)
 	_navigation.configure(data,area,point)
 	_navigation.visible = not _modal
+	_layout()
 
 func debug_layout() -> Dictionary:
 	var layout := {"touch":touch_enabled,"oxygen":{"position":[_instrument.position.x,_instrument.position.y],"size":[_instrument.size.x,_instrument.size.y],"visible":_instrument.visible,"value":float(_state.get("oxygen",100)),"maximum":float(_state.get("maxOxygen",100)),"warning":_warning.visible,"warningText":_warning.text,"status":"critical" if _instrument.ratio<=.15 else ("low" if _instrument.ratio<=.35 else "normal"),"lossText":_oxygen_loss.text if _loss_seconds>0 else "","reducedMotion":_instrument.reduced_motion},"logicalSize":[960,540]}
-	for item in [["sound",_sound_button],["net",_net],["action",_action]]:
+	for item in [["sound",_sound_button],["net",_net],["action",_action],["objective",_objective_toggle]]:
 		var center: Vector2 = item[1].get_global_rect().get_center()
 		layout[item[0]] = [center.x,center.y]
 	var names := ["map","journal","bag","character"]
 	for index in range(_utilities.size()):
 		var center := _utilities[index].get_global_rect().get_center()
 		layout[names[index]] = [center.x,center.y]
-	var dpad_names := ["dpadUp","dpadLeft","dpadDown","dpadRight"]
-	for index in range(_dpad.get_child_count()):
-		var button: Control = _dpad.get_child(index)
-		var center := button.get_global_rect().get_center()
-		layout[dpad_names[index]] = [center.x,center.y]
+	var center := _dpad.get_global_rect().get_center()
+	layout["joystick"] = {"center":[center.x,center.y],"radius":_dpad.size.x*.32,"direction":[_dpad.direction.x,_dpad.direction.y],"pointer":_dpad.pointer}
+	layout["logicalSize"] = [get_viewport().get_visible_rect().size.x,get_viewport().get_visible_rect().size.y]
 	return layout

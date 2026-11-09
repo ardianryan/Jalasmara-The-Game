@@ -46,6 +46,7 @@ var hybrid: Node2D
 var world_foley: Node
 var previous_outfit := "daily"
 var homestead_ui: CanvasLayer
+var field_panel: Control
 func _ready() -> void:
 	y_sort_enabled = true
 	_setup_input()
@@ -192,6 +193,7 @@ func _build_ui() -> void:
 	hud.journal_requested.connect(_show_journal)
 	hud.inventory_requested.connect(_show_inventory)
 	hud.character_requested.connect(func(): _show_character(false))
+	hud.objective_requested.connect(func(text: String): _show_message("Tujuan perjalanan",text))
 	hud.move_changed.connect(func(direction: Vector2): nala.touch = direction)
 	status = hud.status_label
 	hint = Label.new()
@@ -200,21 +202,34 @@ func _build_ui() -> void:
 	ui.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	ui.theme = hud.root_control.theme
 	hud.add_child(ui)
-func _button(parent: Node, text: String, callback: Callable) -> Button:
+	get_viewport().size_changed.connect(_layout_modal)
+	ViewportLayout.host_pause_changed.connect(func(paused: bool):
+		if not GameState.dive.is_empty():
+			ApiClient.call_api("/dive/reading",{"diveId":GameState.dive.id,"paused":paused or modal_open})
+	)
+func _ui_font() -> int:
+	return preload("res://scripts/UiMetrics.gd").body(self,hud)
+func _ui_target() -> float:
+	return preload("res://scripts/UiMetrics.gd").target(self,hud)
+func _button(parent: Node,text: String,callback: Callable) -> Button:
 	var b := Button.new()
-	b.text = text
-	b.custom_minimum_size.y = 42
+	b.text=text
+	b.custom_minimum_size.y=_ui_target()
+	b.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	b.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+	b.add_theme_font_override("font",BODY_FONT)
+	b.add_theme_font_size_override("font_size",_ui_font())
 	b.pressed.connect(callback)
 	parent.add_child(b)
 	return b
-func _label(parent: Node, text: String, size := 16) -> Label:
+func _label(parent: Node,text: String,size := 16) -> Label:
 	var label := Label.new()
-	label.text = text
-	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	label.add_theme_font_size_override("font_size",size)
-	if size<=19:
-		label.add_theme_font_override("font",BODY_FONT)
-		label.add_theme_font_size_override("font_size",maxi(18,size))
+	label.text=text
+	label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+	label.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	label.set_meta("base_font_size",size)
+	label.add_theme_font_size_override("font_size",maxi(size,_ui_font()))
+	if size<=19: label.add_theme_font_override("font",BODY_FONT)
 	parent.add_child(label)
 	return label
 func _open(title: String, pause_reading := true) -> VBoxContainer:
@@ -240,12 +255,16 @@ func _open(title: String, pause_reading := true) -> VBoxContainer:
 	bg.set_border_width_all(2)
 	modal.add_theme_stylebox_override("panel",bg)
 	ui.add_child(modal)
+	call_deferred("_layout_modal")
 	var scroll := ScrollContainer.new()
 	scroll.follow_focus = true
-	scroll.custom_minimum_size = Vector2(600,370)
+	scroll.custom_minimum_size = Vector2.ZERO
+	scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.size_flags_vertical=Control.SIZE_EXPAND_FILL
+	scroll.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	modal.add_child(scroll)
 	modal_box = VBoxContainer.new()
-	modal_box.custom_minimum_size.x = 590
+	modal_box.custom_minimum_size.x = 0
 	modal_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	modal_box.add_theme_constant_override("separation",12)
 	scroll.add_child(modal_box)
@@ -253,7 +272,40 @@ func _open(title: String, pause_reading := true) -> VBoxContainer:
 	if pause_reading and not GameState.dive.is_empty():
 		ApiClient.call_api("/dive/reading",{"diveId":GameState.dive.id,"paused":true})
 	return modal_box
+
+func _layout_modal() -> void:
+	if not is_instance_valid(modal) or not modal.is_inside_tree() or modal.get_meta("dialogue",false): return
+	var view:=modal.get_viewport().get_visible_rect().size
+	var ratio:=preload("res://scripts/UiMetrics.gd").ratio(self,hud)
+	var safe:=ViewportLayout.insets()
+	var top:=ceilf(60*ratio)+safe.y
+	var dimensions:=Vector2(minf(900,view.x-32-safe.x-safe.z),minf(800 if view.x<800 else 520,view.y-top-16-safe.w))
+	modal.size=dimensions
+	modal.position=Vector2((view.x-dimensions.x)/2,top)
+	if modal.get_child_count()>0 and modal.get_child(0) is ScrollContainer:
+		var scroll:ScrollContainer=modal.get_child(0)
+		scroll.custom_minimum_size=Vector2.ZERO
+		if is_instance_valid(modal_box): modal_box.custom_minimum_size.x=0
+	for label in modal.find_children("*","Label",true,false):
+		if label.has_meta("base_font_size"): label.add_theme_font_size_override("font_size",maxi(int(label.get_meta("base_font_size")),_ui_font()))
+	for button in modal.find_children("*","Button",true,false):
+		button.custom_minimum_size.y=maxf(button.custom_minimum_size.y,_ui_target())
+		button.add_theme_font_size_override("font_size",_ui_font())
+	for grid in modal.find_children("*","GridContainer",true,false):
+		if grid.get_meta("quiz_answers",false): _layout_quiz_answers(grid,dimensions.x-50)
+func _layout_quiz_answers(answers: GridContainer,width: float) -> void:
+	var view:=preload("res://scripts/UiMetrics.gd").viewport(self,hud).get_visible_rect().size
+	answers.columns=1 if view.x<800 else 2
+	var column_width:float=(width-12*(answers.columns-1))/answers.columns
+	for answer in answers.get_children():
+		var option_label:Label=answer.get_child(0)
+		option_label.add_theme_font_size_override("font_size",_ui_font())
+		var measured:=BODY_FONT.get_multiline_string_size(option_label.text,HORIZONTAL_ALIGNMENT_LEFT,maxf(80,column_width-28),_ui_font())
+		answer.custom_minimum_size=Vector2(0,maxf(_ui_target(),measured.y+28))
 func _close() -> void:
+	if is_instance_valid(field_panel):
+		field_panel.queue_free()
+		field_panel = null
 	if modal:
 		modal.queue_free()
 		modal = null
@@ -261,7 +313,7 @@ func _close() -> void:
 	hud.set_modal(false)
 	nala.frozen = false
 	if not GameState.dive.is_empty():
-		ApiClient.call_api("/dive/reading",{"diveId":GameState.dive.id,"paused":false})
+		ApiClient.call_api("/dive/reading",{"diveId":GameState.dive.id,"paused":ViewportLayout.host_paused})
 func _show_message(title: String, text: String) -> void:
 	var box := _open(title)
 	_label(box,text)
@@ -277,14 +329,22 @@ func _next_line() -> void:
 			chain_end.call()
 		return
 	var line: Dictionary = chain_lines.pop_front()
-	var box := _open(str(line.name))
-	_label(box,str(line.text),18)
-	_button(box,"Lanjut",_next_line).grab_focus()
+	if is_instance_valid(modal): modal.queue_free()
+	modal_open = true
+	hud.set_modal(true)
+	nala.frozen = true
+	modal = preload("res://scripts/DialoguePresenter.gd").new()
+	modal.theme = hud.root_control.theme
+	ui.add_child(modal)
+	modal.advance_requested.connect(_next_line)
+	modal.present(str(line.name),str(line.text),str(line.get("emotion","neutral")))
+	if not GameState.dive.is_empty():
+		ApiClient.call_api("/dive/reading",{"diveId":GameState.dive.id,"paused":true})
 func _story_intro() -> void:
 	_talk([
 		{"name":"Babak 1 · Kabut dan Kopi Pahit","text":"Bandar Hujung terapung di atas ingatan yang tenggelam. Kabut Nir-Aksara membuat warga lupa ilmu yang dahulu mereka kuasai. Kapal Nala rusak, dan uang sewanya hampir habis."},
-		{"name":"Beno","text":"Kapalmu bisa kuperbaiki. Gratis? Hampir. Bantu Mbah Wira membuka Kedai Waras, dan jangan sentuh tuas merah di bengkelnya."},
-		{"name":"Nala","text":"Baik. Utang kapal dibayar dengan kopi. Sejauh ini rencana hidupku makin masuk akal."},
+		{"name":"Beno","emotion":"happy","text":"Kapalmu bisa kuperbaiki. Gratis? Hampir. Bantu Mbah Wira membuka Kedai Waras, dan jangan sentuh tuas merah di bengkelnya."},
+		{"name":"Nala","emotion":"thinking","text":"Baik. Utang kapal dibayar dengan kopi. Sejauh ini rencana hidupku makin masuk akal."},
 		{"name":"Mbah Wira","text":"Di bawah dermaga ada ingatan yang mengkristal. Berenanglah. Amati taman tua itu. Tidak semua ilmu datang dari menjawab pertanyaan: banyak yang hanya perlu kamu temukan."},
 		{"name":"Petualangan dimulai","text":"WASD / arah: bergerak. E: bicara atau mengamati. Tahan lalu lepas spasi: Jala Kognisi. M: peta, J: jurnal, I: tas. Datangi tangga selam di kanan Galangan Bubat; kembali ke tangga untuk naik."}
 	],func():
@@ -293,7 +353,7 @@ func _story_intro() -> void:
 		_update_hud()
 	)
 func _process(delta: float) -> void:
-	EnvironmentState.clock_paused = modal_open or GameState.dive.has("challenge")
+	EnvironmentState.clock_paused = modal_open or ViewportLayout.host_paused or GameState.dive.has("challenge")
 	if not nala:
 		return
 	terrain.camera_point = nala.position
@@ -354,9 +414,11 @@ func _process(delta: float) -> void:
 			surface_clock = 0
 			_sync_surface()
 	entities.nearest = str(nearby.get("id",""))
-	if OS.has_feature("web") and Time.get_ticks_msec()-snapshot_at>=100:
+	if OS.has_feature("web") and preload("res://scripts/Diagnostics.gd").enabled() and Time.get_ticks_msec()-snapshot_at>=100:
 		snapshot_at = Time.get_ticks_msec()
 		var snapshot := {"x":nala.position.x,"y":nala.position.y,"stage":GameState.player.get("progress",{}).get("stage",""),"modal":modal_open,"nearby":str(nearby.get("id","")),"diving":not GameState.dive.is_empty()}
+		if is_instance_valid(modal) and modal.has_method("debug_state"): snapshot["dialogue"] = modal.debug_state()
+		snapshot["performance"] = preload("res://scripts/Diagnostics.gd").performance_sample(nala)
 		snapshot["outfit"] = nala.outfit
 		snapshot["equipment"] = nala.equipment
 		snapshot["audio"] = AudioManager.debug_status()
@@ -377,7 +439,7 @@ func _process(delta: float) -> void:
 	if modal_open and is_instance_valid(modal) and modal.get_meta("world_map",false) and Input.is_action_just_pressed("map"):
 		_close()
 		return
-	if not modal_open:
+	if not modal_open and not ViewportLayout.host_paused:
 		if Input.is_action_just_pressed("interact"):
 			_interact()
 		if Input.is_action_just_pressed("net"):
@@ -410,13 +472,13 @@ func _process(delta: float) -> void:
 			nala.position.y = max_y
 			nala.velocity.y = minf(nala.velocity.y,0)
 			status.text = "Arus terlalu kuat. Bantu warga untuk membuka jalur kedalaman berikutnya."
-		if not modal_open and not network_busy and flash<=0:
+		if not modal_open and not ViewportLayout.host_paused and not network_busy and flash<=0:
 			for hazard in GameState.world.get("hazards",[]):
 				if nala.position.distance_to(Vector2(float(hazard.x),float(hazard.y)))<float(hazard.radius)+18:
 					flash = 3.1
 					_hazard_hit()
 					break
-		if not modal_open and GameState.dive.get("mode","")=="boss" and nala.position.distance_to(Vector2(3820,3140))<650:
+		if not modal_open and not ViewportLayout.host_paused and GameState.dive.get("mode","")=="boss" and nala.position.distance_to(Vector2(3820,3140))<650:
 			_boss_tick(delta)
 		else:
 			for shot in attacks:
@@ -620,8 +682,10 @@ func _sync_position() -> bool:
 			nala.position = _surface_point()
 		return false
 	_update_hud()
-	if OS.has_feature("web"):
+	if OS.has_feature("web") and preload("res://scripts/Diagnostics.gd").enabled():
 		var snapshot := {"x":nala.position.x,"y":nala.position.y,"stage":GameState.player.get("progress",{}).get("stage",""),"modal":modal_open,"nearby":str(nearby.get("id","")),"diving":not GameState.dive.is_empty()}
+		if is_instance_valid(modal) and modal.has_method("debug_state"): snapshot["dialogue"] = modal.debug_state()
+		snapshot["performance"] = preload("res://scripts/Diagnostics.gd").performance_sample(nala)
 		snapshot["outfit"] = nala.outfit
 		snapshot["equipment"] = nala.equipment
 		snapshot["audio"] = AudioManager.debug_status()
@@ -879,6 +943,7 @@ func _show_quiz() -> void:
 	else:
 		var answers := GridContainer.new()
 		answers.columns = 2
+		answers.set_meta("quiz_answers",true)
 		answers.add_theme_constant_override("h_separation",12)
 		answers.add_theme_constant_override("v_separation",12)
 		box.add_child(answers)
@@ -896,11 +961,12 @@ func _show_quiz() -> void:
 			)
 			var option_text := "%s. %s" % [String.chr(65+i),str(challenge.question.options[i])]
 			var measured := BODY_FONT.get_multiline_string_size(option_text,HORIZONTAL_ALIGNMENT_LEFT,250,24)
-			answer.custom_minimum_size = Vector2(285,maxf(82,measured.y+28))
+			answer.custom_minimum_size = Vector2(0,maxf(_ui_target(),measured.y+28))
 			var option_label := Label.new()
 			option_label.text = option_text
 			option_label.add_theme_font_override("font",BODY_FONT)
-			option_label.add_theme_font_size_override("font_size",24)
+			option_label.add_theme_font_size_override("font_size",_ui_font())
+			option_label.set_meta("base_font_size",24)
 			option_label.add_theme_color_override("font_color",Color("f4ebd9"))
 			option_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			option_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -942,7 +1008,7 @@ func _npc_interact(name_text: String) -> void:
 		_show_upgrades()
 	elif name_text=="Bu Darmi":
 		if missions.has("akar") and (day>=3 or stage in ["boss","done"]):
-			_talk([{"name":"Bu Darmi · Kebun Apung Pulih Bertahap","text":"Lihatlah petak kebunku, Nala! Pucuk-pucuk hijau sudah tumbuh tinggi dan mulai berbunga. Sejak kita memasang penyangga aerasi bambu dan menjaga saluran pasang tetap lancar, akarnya tidak lagi membusuk."},{"name":"Nala","text":"Saat pori media memiliki udara untuk respirasi seluler dan air tidak lagi tergenang payau, akar mampu menyerap nitrogen untuk membentuk klorofil kembali."}])
+			_talk([{"name":"Bu Darmi · Kebun Apung Pulih Bertahap","emotion":"happy","text":"Lihatlah petak kebunku, Nala! Pucuk-pucuk hijau sudah tumbuh tinggi dan mulai berbunga. Sejak kita memasang penyangga aerasi bambu dan menjaga saluran pasang tetap lancar, akarnya tidak lagi membusuk."},{"name":"Nala","text":"Saat pori media memiliki udara untuk respirasi seluler dan air tidak lagi tergenang payau, akar mampu menyerap nitrogen untuk membentuk klorofil kembali."}])
 		elif missions.has("akar"):
 			_talk([{"name":"Bu Darmi · Perawatan Kebun Dimulai","text":"Terima kasih atas seduhan di Kedai Waras malam ini, Nala. Aku sudah melonggarkan media tanam, memasang penyangga bambu, dan membuka saluran pembuangan di tepi selatan agar air pasang tidak menggenang."},{"name":"Nala","text":"Perawatan sudah dimulai malam ini, Bu. Begitu akarnya kembali mendapat oksigen untuk bernapas, kebun apung akan pulih bertahap mulai besok."}])
 		elif stage=="night":
@@ -1060,63 +1126,26 @@ func _close_shift(abandon: bool) -> void:
 	else:
 		status.text = str(r.get("error","Giliran belum selesai."))
 func _show_inventory() -> void:
-	var box := _open("Tas Nala")
-	_label(box,"%d koin · Fragmen permanen" % int(GameState.player.get("coins",0)))
-	preload("res://scripts/InventoryView.gd").add_rows(box,GameState.player.get("inventory",[]))
-	if GameState.player.get("inventory",[]).is_empty():
-		_label(box,"Belum ada fragmen yang dibawa pulang.",14)
-	if not GameState.dive.is_empty():
-		_label(box,"Di dalam jala: %d/%d kg. Kembali ke tangga untuk menyimpannya." % [int(GameState.dive.weight),int(GameState.dive.capacity)],14)
-	for key in GameState.adventure.get("keyItems",[]):
-		_label(box,"Benda penting: Prasasti Smara Kuno" if key=="prasasti_smara_kuno" else str(key),14)
-	_button(box,"Tutup tas",_close)
+	_open_field_panel(preload("res://scripts/InventoryView.gd").new())
+
+func _open_field_panel(panel: Control) -> void:
+	if is_instance_valid(field_panel): field_panel.queue_free()
+	_open("")
+	modal.hide()
+	field_panel = panel
+	ui.add_child(field_panel)
+	field_panel.close_requested.connect(_close)
+
 func _show_journal() -> void:
-	var box := _open("Jurnal Smara")
-	var scroll := ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(590,260)
-	box.add_child(scroll)
-	var entries := VBoxContainer.new()
-	entries.custom_minimum_size.x = 560
-	entries.add_theme_constant_override("separation",12)
-	scroll.add_child(entries)
-	var counts := _mission_counts()
-	var progress: Dictionary = GameState.player.get("progress",{})
-	var missions: Array = progress.get("missions",[])
-	var day := int(progress.get("day",1))
-	var stage := str(progress.get("stage","dive"))
-	_label(entries,"1. Langkah Berikutnya & Kesiapan Misi",18)
-	var garden_status := "Pulih Bertahap (Hari 3+)" if (missions.has("akar") and (day>=3 or stage in ["boss","done"])) else "Perawatan Dimulai (Malam Hari 2)" if missions.has("akar") else "Sekarat / Layu (Menunggu Solusi)"
-	_label(entries,"• Status Kebun Apung Bu Darmi: %s\n• Gejala Kebun Apung (Bandar Hujung): %d/3\n• Pembanding Daratan (Hutan Pesisir Wringin): %d/3\n• Pengamatan Bawah Laut (Hutan Lamun Wringin 25–60 m): %d/3\n• Fragmen Benih Hayati (Biologi Tumbuhan) di Tas: %s" % [garden_status,int(counts.garden),int(counts.forest),int(counts.sea),"Tersedia" if bool(counts.has_klorofil) else "Belum ada — jala Ubur-Ubur Klorofil di laut"],14)
-	_label(entries,"2. Dugaan & Hubungan Konsep",18)
-	_label(entries,"• Mengapa kebun apung layu walau terendam? Media tanam yang terus tergenang kehilangan oksigen di pori-porinya sehingga respirasi seluler akar terhenti (hipoksia akar), ditambah saluran pasang yang menahan air payau dan menghambat osmosis serta serapan nitrogen.\n• Pembeda Wilayah Wringin: Hutan Pesisir Wringin adalah hutan daratan di timur laut desa (tempat mengamati celah tajuk, humus berpori, dan membersihkan aliran hulu), sedangkan Hutan Lamun Wringin adalah zona penyelaman bawah laut (25–60 m) tempat mengamati Koral Nitrogen, Lentera Fotosintesis, dan Kerang Osmosis.\n• Cakupan Benih Hayati: Menyimpan ingatan biologi tumbuhan secara utuh—bukan hanya klorofil daun, melainkan juga respirasi akar, osmosis, dan asimilasi nitrogen.",14)
-	_label(entries,"3. Catatan Temuan Lapangan",18)
-	var count := 0
-	var all_landmarks: Array = GameState.world.get("surface_hub",{}).get("landmarks",[]) + GameState.world.get("forest",{}).get("landmarks",[]) + GameState.world.get("landmarks",[])
-	for item in all_landmarks:
-		if GameState.adventure.get("discoveries",[]).has(item.id):
-			count += 1
-			_label(entries,"• "+str(item.title),16)
-			_label(entries,str(item.text),14)
-	if count==0:
-		_label(entries,"Belum ada catatan temuan. Amati petak Kebun Apung Bu Darmi di timur pelataran, Hutan Pesisir Wringin di daratan, dan prasasti bawah laut.",15)
-	_label(entries,"Catatan biologi: lamun adalah tumbuhan berbunga laut; kelp adalah alga cokelat. Hutan Lamun Wringin adalah ekosistem fantasi bawah laut yang menggabungkan biota bercahaya.",13)
-	_button(box,"Tutup jurnal",_close)
+	_open_field_panel(preload("res://scripts/FieldBook.gd").new())
+
 func _show_map() -> void:
-	if modal_open and is_instance_valid(modal) and modal.get_meta("world_map",false):
+	if modal_open and is_instance_valid(field_panel) and field_panel.get_meta("world_map",false):
 		_close()
 		return
-	var box := _open("Atlas Jalasmara")
+	_open_field_panel(preload("res://scripts/AtlasOverlay.gd").new())
+	field_panel.configure("sea" if not GameState.dive.is_empty() else "hub",nala.position)
 	modal.set_meta("world_map",true)
-	modal.position = Vector2(105,38)
-	modal.size = Vector2(750,480)
-	var scroll: ScrollContainer = modal.get_child(0)
-	scroll.custom_minimum_size = Vector2(690,430)
-	box.custom_minimum_size.x = 680
-	var atlas = preload("res://scripts/WorldAtlas.gd").new()
-	box.add_child(atlas)
-	atlas.configure(GameState.world,GameState.player,"harbor" if GameState.dive.is_empty() else "reef" if int(GameState.player.progress.day)==1 else "kelp" if int(GameState.player.progress.day)==2 else "cave")
-	atlas.set_player_position(nala.position)
-	atlas.close_requested.connect(_close)
 func _boss_tick(delta: float) -> void:
 	if int(GameState.dive.get("hits",0))>=_required_hits():
 		return

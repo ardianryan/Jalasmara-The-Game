@@ -114,6 +114,8 @@ func _process(delta: float) -> void:
 		return
 	_material = "underwater" if underwater else material_at(actor.position)
 	if not AudioManager.can_play_environment():
+		if "swim_sprite" in actor and is_instance_valid(actor.get("swim_sprite")) and actor.get("swim_sprite").has_method("consume_foot_contacts"):
+			actor.get("swim_sprite").consume_foot_contacts()
 		_distance = 0
 		_cadence = 0
 		_breath = 0
@@ -141,7 +143,11 @@ func _process(delta: float) -> void:
 			AudioManager.play_sfx("water_drip",0.88+float(_step%4)*0.04,-22)
 	else:
 		_distance += travelled
-		if _distance>38 and _cadence>0.24:
+		var contact := false
+		var has_gait: bool = "swim_sprite" in actor and is_instance_valid(actor.get("swim_sprite")) and actor.get("swim_sprite").has_method("consume_foot_contacts")
+		if has_gait:
+			contact = not actor.get("swim_sprite").consume_foot_contacts().is_empty()
+		if (contact if has_gait else _distance>38 and _cadence>0.24):
 			_distance = fmod(_distance,38)
 			_cadence = 0
 			if FOOTSTEPS.has(_material):

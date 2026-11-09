@@ -3,6 +3,7 @@ signal completed(id: int, status: int, data: Dictionary)
 var csrf := ""
 var origin := "http://localhost:5173"
 var serial := 0
+var response_times: Dictionary = {}
 var _callbacks: Array = []
 func _ready() -> void:
 	if OS.has_feature("web"):
@@ -18,11 +19,14 @@ func call_api(path: String, body: Variant = null, method := HTTPClient.METHOD_PO
 	var headers := PackedStringArray(["Content-Type: application/json", "X-CSRF-Token: " + csrf, "Idempotency-Key: " + (_uuid() if operation_key.is_empty() else operation_key)])
 	var payload := "" if body == null else JSON.stringify(body)
 	var endpoint := origin + "/api" + path
+	var measured := preload("res://scripts/Diagnostics.gd").enabled()
+	var started := Time.get_ticks_usec() if measured else 0
 	var err := http.request(endpoint, headers, method, payload)
 	if err != OK:
 		http.queue_free()
 		return {"ok": false, "error": "Koneksi tidak dapat dimulai."}
 	var result: Array = await http.request_completed
+	if measured: response_times[path] = float(Time.get_ticks_usec()-started)/1000.0
 	http.queue_free()
 	if result[3].is_empty():
 		return {"ok":false,"status":int(result[1]),"error":"Koneksi terputus. Coba lagi."}

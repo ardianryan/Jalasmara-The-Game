@@ -1,5 +1,7 @@
 # Rencana next-gen world authoring
 
+Prioritas aktif: [Rencana 04: HUD, fullscreen, performa, dan gerak Nala](plans/04-hud-fullscreen-performa-dan-gerak.md). Pengguna telah mengizinkan implementasi Rencana 04, kemudian penyelesaian backlog desa/hutan/laut sesuai urutan. Penyelesaian pengalaman bermain ini mendahului perluasan alat authoring.
+
 Putaran dasar yang diimplementasikan mengikuti [Rencana 03: desa hidup dan siklus harian](plans/03-desa-hidup-dan-siklus-harian.md). Kalender, rumah, dua petak kebun, pasar/balai dan tiga pilot animasi sudah tersedia; perluasan warga, arah animasi dan playtest tetap mengikuti catatan penerimaan rencana itu. Dokumen ini tetap menjadi backlog alat authoring; perluasan tooling mengikuti kebutuhan hasil yang dapat dimainkan.
 
 Prioritas pengguna, 9 November 2026: selesaikan perubahan desa, hutan, laut, pakaian modular, warna, dan HUD yang sedang berjalan sebelum menambah tooling baru.
