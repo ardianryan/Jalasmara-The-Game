@@ -1,0 +1,2240 @@
+{
+  "atlas": "res://resources/art/resident-rigs-v1/atlas.png",
+  "sourceSha256": "6dc5fbb107327c97205660817cf245661bea838d50be606735fe2c6a247d413e",
+  "authoredViews": 1,
+  "partsAreOriginalPixels": true,
+  "people": {
+    "npc_direktur_cakrawala": {
+      "id": "npc_direktur_cakrawala",
+      "authoredViews": 1,
+      "view": "front_three_quarter",
+      "pivot": [
+        48.0,
+        120
+      ],
+      "sourceCell": [
+        0,
+        0,
+        96,
+        128
+      ],
+      "parts": {
+        "head": {
+          "rect": [
+            0,
+            0,
+            24,
+            29
+          ],
+          "sourceBounds": [
+            32,
+            8,
+            56,
+            37
+          ],
+          "hiddenByAuthoredClothing": false
+        },
+        "torso": {
+          "rect": [
+            96,
+            0,
+            35,
+            44
+          ],
+          "sourceBounds": [
+            28,
+            35,
+            63,
+            79
+          ],
+          "hiddenByAuthoredClothing": false
+        },
+        "upper_arm_left": {
+          "rect": [
+            192,
+            0,
+            11,
+            45
+          ],
+          "sourceBounds": [
+            22,
+            21,
+            33,
+            66
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              30,
+              48
+            ],
+            [
+              28,
+              64
+            ]
+          ]
+        },
+        "lower_arm_left": {
+          "rect": [
+            288,
+            0,
+            8,
+            18
+          ],
+          "sourceBounds": [
+            25,
+            62,
+            33,
+            80
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              28,
+              64
+            ],
+            [
+              30,
+              78
+            ]
+          ]
+        },
+        "upper_leg_left": {
+          "rect": [
+            384,
+            0,
+            15,
+            21
+          ],
+          "sourceBounds": [
+            33,
+            77,
+            48,
+            98
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              41,
+              76
+            ],
+            [
+              38,
+              96
+            ]
+          ]
+        },
+        "lower_leg_left": {
+          "rect": [
+            480,
+            0,
+            15,
+            22
+          ],
+          "sourceBounds": [
+            31,
+            94,
+            46,
+            116
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              38,
+              96
+            ],
+            [
+              37,
+              114
+            ]
+          ]
+        },
+        "hand_left": {
+          "rect": [
+            576,
+            0,
+            13,
+            13
+          ],
+          "sourceBounds": [
+            26,
+            73,
+            39,
+            86
+          ],
+          "hiddenByAuthoredClothing": false,
+          "grip": [
+            31.5,
+            79.5
+          ]
+        },
+        "foot_left": {
+          "rect": [
+            0,
+            128,
+            13,
+            9
+          ],
+          "sourceBounds": [
+            31,
+            111,
+            44,
+            120
+          ],
+          "hiddenByAuthoredClothing": false,
+          "sole": [
+            38.0,
+            120
+          ]
+        },
+        "upper_arm_right": {
+          "rect": [
+            96,
+            128,
+            10,
+            30
+          ],
+          "sourceBounds": [
+            59,
+            36,
+            69,
+            66
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              62,
+              48
+            ],
+            [
+              66,
+              64
+            ]
+          ]
+        },
+        "lower_arm_right": {
+          "rect": [
+            192,
+            128,
+            11,
+            18
+          ],
+          "sourceBounds": [
+            61,
+            62,
+            72,
+            80
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              66,
+              64
+            ],
+            [
+              70,
+              78
+            ]
+          ]
+        },
+        "upper_leg_right": {
+          "rect": [
+            288,
+            128,
+            16,
+            24
+          ],
+          "sourceBounds": [
+            46,
+            74,
+            62,
+            98
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              55,
+              76
+            ],
+            [
+              54,
+              96
+            ]
+          ]
+        },
+        "lower_leg_right": {
+          "rect": [
+            384,
+            128,
+            15,
+            22
+          ],
+          "sourceBounds": [
+            46,
+            94,
+            61,
+            116
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              54,
+              96
+            ],
+            [
+              56,
+              114
+            ]
+          ]
+        },
+        "hand_right": {
+          "rect": [
+            480,
+            128,
+            13,
+            11
+          ],
+          "sourceBounds": [
+            61,
+            73,
+            74,
+            84
+          ],
+          "hiddenByAuthoredClothing": false,
+          "grip": [
+            68.5,
+            78.5
+          ]
+        },
+        "foot_right": {
+          "rect": [
+            576,
+            128,
+            21,
+            9
+          ],
+          "sourceBounds": [
+            48,
+            111,
+            69,
+            120
+          ],
+          "hiddenByAuthoredClothing": false,
+          "sole": [
+            63.5,
+            120
+          ]
+        }
+      },
+      "joints": {
+        "leftShoulder": [
+          30,
+          48
+        ],
+        "leftHip": [
+          41,
+          76
+        ],
+        "rightShoulder": [
+          62,
+          48
+        ],
+        "rightHip": [
+          55,
+          76
+        ]
+      },
+      "legs": {
+        "left": [
+          [
+            41,
+            76
+          ],
+          [
+            38,
+            96
+          ],
+          [
+            37,
+            114
+          ]
+        ],
+        "right": [
+          [
+            55,
+            76
+          ],
+          [
+            54,
+            96
+          ],
+          [
+            56,
+            114
+          ]
+        ]
+      },
+      "exactRestReconstruction": true
+    },
+    "npc_kid_bagas": {
+      "id": "npc_kid_bagas",
+      "authoredViews": 1,
+      "view": "front_three_quarter",
+      "pivot": [
+        47.5,
+        120
+      ],
+      "sourceCell": [
+        96,
+        0,
+        96,
+        128
+      ],
+      "parts": {
+        "head": {
+          "rect": [
+            0,
+            256,
+            33,
+            33
+          ],
+          "sourceBounds": [
+            30,
+            8,
+            63,
+            41
+          ],
+          "hiddenByAuthoredClothing": false
+        },
+        "torso": {
+          "rect": [
+            96,
+            256,
+            35,
+            41
+          ],
+          "sourceBounds": [
+            29,
+            40,
+            64,
+            81
+          ],
+          "hiddenByAuthoredClothing": false
+        },
+        "upper_arm_left": {
+          "rect": [
+            192,
+            256,
+            10,
+            50
+          ],
+          "sourceBounds": [
+            24,
+            18,
+            34,
+            68
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              35,
+              49
+            ],
+            [
+              29,
+              66
+            ]
+          ]
+        },
+        "lower_arm_left": {
+          "rect": [
+            288,
+            256,
+            11,
+            19
+          ],
+          "sourceBounds": [
+            23,
+            64,
+            34,
+            83
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              29,
+              66
+            ],
+            [
+              25,
+              81
+            ]
+          ]
+        },
+        "upper_leg_left": {
+          "rect": [
+            384,
+            256,
+            16,
+            22
+          ],
+          "sourceBounds": [
+            32,
+            80,
+            48,
+            102
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              40,
+              84
+            ],
+            [
+              39,
+              100
+            ]
+          ]
+        },
+        "lower_leg_left": {
+          "rect": [
+            480,
+            256,
+            10,
+            18
+          ],
+          "sourceBounds": [
+            34,
+            98,
+            44,
+            116
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              39,
+              100
+            ],
+            [
+              38,
+              114
+            ]
+          ]
+        },
+        "hand_left": {
+          "rect": [
+            576,
+            256,
+            12,
+            11
+          ],
+          "sourceBounds": [
+            22,
+            77,
+            34,
+            88
+          ],
+          "hiddenByAuthoredClothing": false,
+          "grip": [
+            26.5,
+            81.5
+          ]
+        },
+        "foot_left": {
+          "rect": [
+            0,
+            384,
+            15,
+            9
+          ],
+          "sourceBounds": [
+            30,
+            111,
+            45,
+            120
+          ],
+          "hiddenByAuthoredClothing": false,
+          "sole": [
+            37.5,
+            120
+          ]
+        },
+        "upper_arm_right": {
+          "rect": [
+            96,
+            384,
+            5,
+            11
+          ],
+          "sourceBounds": [
+            63,
+            56,
+            68,
+            67
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              62,
+              49
+            ],
+            [
+              67,
+              66
+            ]
+          ]
+        },
+        "lower_arm_right": {
+          "rect": [
+            192,
+            384,
+            10,
+            25
+          ],
+          "sourceBounds": [
+            62,
+            64,
+            72,
+            89
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              67,
+              66
+            ],
+            [
+              70,
+              81
+            ]
+          ]
+        },
+        "upper_leg_right": {
+          "rect": [
+            288,
+            384,
+            18,
+            22
+          ],
+          "sourceBounds": [
+            47,
+            80,
+            65,
+            102
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              55,
+              84
+            ],
+            [
+              54,
+              100
+            ]
+          ]
+        },
+        "lower_leg_right": {
+          "rect": [
+            384,
+            384,
+            9,
+            18
+          ],
+          "sourceBounds": [
+            50,
+            98,
+            59,
+            116
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              54,
+              100
+            ],
+            [
+              54,
+              114
+            ]
+          ]
+        },
+        "hand_right": {
+          "rect": [
+            480,
+            384,
+            12,
+            11
+          ],
+          "sourceBounds": [
+            61,
+            77,
+            73,
+            88
+          ],
+          "hiddenByAuthoredClothing": false,
+          "grip": [
+            67.5,
+            82.5
+          ]
+        },
+        "foot_right": {
+          "rect": [
+            576,
+            384,
+            19,
+            9
+          ],
+          "sourceBounds": [
+            49,
+            110,
+            68,
+            119
+          ],
+          "hiddenByAuthoredClothing": false,
+          "sole": [
+            58.5,
+            119
+          ]
+        }
+      },
+      "joints": {
+        "leftShoulder": [
+          35,
+          49
+        ],
+        "leftHip": [
+          40,
+          84
+        ],
+        "rightShoulder": [
+          62,
+          49
+        ],
+        "rightHip": [
+          55,
+          84
+        ]
+      },
+      "legs": {
+        "left": [
+          [
+            40,
+            84
+          ],
+          [
+            39,
+            100
+          ],
+          [
+            38,
+            114
+          ]
+        ],
+        "right": [
+          [
+            55,
+            84
+          ],
+          [
+            54,
+            100
+          ],
+          [
+            54,
+            114
+          ]
+        ]
+      },
+      "exactRestReconstruction": true
+    },
+    "npc_kid_kinasih": {
+      "id": "npc_kid_kinasih",
+      "authoredViews": 1,
+      "view": "front_three_quarter",
+      "pivot": [
+        50.0,
+        120
+      ],
+      "sourceCell": [
+        192,
+        0,
+        96,
+        128
+      ],
+      "parts": {
+        "head": {
+          "rect": [
+            0,
+            512,
+            33,
+            36
+          ],
+          "sourceBounds": [
+            32,
+            8,
+            65,
+            44
+          ],
+          "hiddenByAuthoredClothing": false
+        },
+        "torso": {
+          "rect": [
+            96,
+            512,
+            37,
+            67
+          ],
+          "sourceBounds": [
+            30,
+            40,
+            67,
+            107
+          ],
+          "hiddenByAuthoredClothing": false
+        },
+        "upper_arm_left": {
+          "rect": [
+            192,
+            512,
+            12,
+            58
+          ],
+          "sourceBounds": [
+            22,
+            13,
+            34,
+            71
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              30,
+              55
+            ],
+            [
+              26,
+              69
+            ]
+          ]
+        },
+        "lower_arm_left": {
+          "rect": [
+            288,
+            512,
+            10,
+            15
+          ],
+          "sourceBounds": [
+            21,
+            67,
+            31,
+            82
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              26,
+              69
+            ],
+            [
+              25,
+              80
+            ]
+          ]
+        },
+        "upper_leg_left": {
+          "rect": [
+            384,
+            512,
+            12,
+            4
+          ],
+          "sourceBounds": [
+            32,
+            101,
+            44,
+            105
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              43,
+              90
+            ],
+            [
+              42,
+              103
+            ]
+          ]
+        },
+        "lower_leg_left": {
+          "rect": [
+            480,
+            512,
+            19,
+            16
+          ],
+          "sourceBounds": [
+            31,
+            101,
+            50,
+            117
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              42,
+              103
+            ],
+            [
+              42,
+              115
+            ]
+          ]
+        },
+        "hand_left": {
+          "rect": [
+            576,
+            512,
+            10,
+            10
+          ],
+          "sourceBounds": [
+            21,
+            76,
+            31,
+            86
+          ],
+          "hiddenByAuthoredClothing": false,
+          "grip": [
+            25.5,
+            80.5
+          ]
+        },
+        "foot_left": {
+          "rect": [
+            0,
+            640,
+            18,
+            8
+          ],
+          "sourceBounds": [
+            32,
+            112,
+            50,
+            120
+          ],
+          "hiddenByAuthoredClothing": false,
+          "sole": [
+            39.0,
+            120
+          ]
+        },
+        "upper_arm_right": {
+          "rect": [
+            96,
+            640,
+            7,
+            27
+          ],
+          "sourceBounds": [
+            65,
+            44,
+            72,
+            71
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              67,
+              55
+            ],
+            [
+              70,
+              69
+            ]
+          ]
+        },
+        "lower_arm_right": {
+          "rect": [
+            192,
+            640,
+            7,
+            15
+          ],
+          "sourceBounds": [
+            67,
+            67,
+            74,
+            82
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              70,
+              69
+            ],
+            [
+              72,
+              80
+            ]
+          ]
+        },
+        "upper_leg_right": {
+          "rect": [
+            288,
+            640,
+            4,
+            4
+          ],
+          "sourceBounds": [
+            56,
+            101,
+            60,
+            105
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              57,
+              90
+            ],
+            [
+              58,
+              103
+            ]
+          ]
+        },
+        "lower_leg_right": {
+          "rect": [
+            384,
+            640,
+            12,
+            16
+          ],
+          "sourceBounds": [
+            50,
+            101,
+            62,
+            117
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              58,
+              103
+            ],
+            [
+              58,
+              115
+            ]
+          ]
+        },
+        "hand_right": {
+          "rect": [
+            480,
+            640,
+            8,
+            10
+          ],
+          "sourceBounds": [
+            67,
+            76,
+            75,
+            86
+          ],
+          "hiddenByAuthoredClothing": false,
+          "grip": [
+            71.5,
+            80.5
+          ]
+        },
+        "foot_right": {
+          "rect": [
+            576,
+            640,
+            18,
+            8
+          ],
+          "sourceBounds": [
+            50,
+            112,
+            68,
+            120
+          ],
+          "hiddenByAuthoredClothing": false,
+          "sole": [
+            62.5,
+            120
+          ]
+        }
+      },
+      "joints": {
+        "leftShoulder": [
+          30,
+          55
+        ],
+        "leftHip": [
+          43,
+          90
+        ],
+        "rightShoulder": [
+          67,
+          55
+        ],
+        "rightHip": [
+          57,
+          90
+        ]
+      },
+      "legs": {
+        "left": [
+          [
+            43,
+            90
+          ],
+          [
+            42,
+            103
+          ],
+          [
+            42,
+            115
+          ]
+        ],
+        "right": [
+          [
+            57,
+            90
+          ],
+          [
+            58,
+            103
+          ],
+          [
+            58,
+            115
+          ]
+        ]
+      },
+      "exactRestReconstruction": true
+    },
+    "npc_kid_danu": {
+      "id": "npc_kid_danu",
+      "authoredViews": 1,
+      "view": "front_three_quarter",
+      "pivot": [
+        48.0,
+        120
+      ],
+      "sourceCell": [
+        0,
+        128,
+        96,
+        128
+      ],
+      "parts": {
+        "head": {
+          "rect": [
+            0,
+            768,
+            46,
+            35
+          ],
+          "sourceBounds": [
+            24,
+            8,
+            70,
+            43
+          ],
+          "hiddenByAuthoredClothing": false
+        },
+        "torso": {
+          "rect": [
+            96,
+            768,
+            36,
+            40
+          ],
+          "sourceBounds": [
+            29,
+            39,
+            65,
+            79
+          ],
+          "hiddenByAuthoredClothing": false
+        },
+        "upper_arm_left": {
+          "rect": [
+            192,
+            768,
+            12,
+            37
+          ],
+          "sourceBounds": [
+            23,
+            29,
+            35,
+            66
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              31,
+              48
+            ],
+            [
+              29,
+              64
+            ]
+          ]
+        },
+        "lower_arm_left": {
+          "rect": [
+            288,
+            768,
+            7,
+            17
+          ],
+          "sourceBounds": [
+            25,
+            62,
+            32,
+            79
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              29,
+              64
+            ],
+            [
+              28,
+              77
+            ]
+          ]
+        },
+        "upper_leg_left": {
+          "rect": [
+            384,
+            768,
+            16,
+            22
+          ],
+          "sourceBounds": [
+            32,
+            79,
+            48,
+            101
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              41,
+              80
+            ],
+            [
+              39,
+              99
+            ]
+          ]
+        },
+        "lower_leg_left": {
+          "rect": [
+            480,
+            768,
+            11,
+            19
+          ],
+          "sourceBounds": [
+            34,
+            97,
+            45,
+            116
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              39,
+              99
+            ],
+            [
+              38,
+              114
+            ]
+          ]
+        },
+        "hand_left": {
+          "rect": [
+            576,
+            768,
+            9,
+            9
+          ],
+          "sourceBounds": [
+            24,
+            73,
+            33,
+            82
+          ],
+          "hiddenByAuthoredClothing": false,
+          "grip": [
+            28.5,
+            77.5
+          ]
+        },
+        "foot_left": {
+          "rect": [
+            0,
+            896,
+            12,
+            9
+          ],
+          "sourceBounds": [
+            31,
+            111,
+            43,
+            120
+          ],
+          "hiddenByAuthoredClothing": false,
+          "sole": [
+            37.5,
+            120
+          ]
+        },
+        "upper_arm_right": {
+          "rect": [
+            96,
+            896,
+            4,
+            14
+          ],
+          "sourceBounds": [
+            64,
+            52,
+            68,
+            66
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              63,
+              48
+            ],
+            [
+              67,
+              64
+            ]
+          ]
+        },
+        "lower_arm_right": {
+          "rect": [
+            192,
+            896,
+            9,
+            17
+          ],
+          "sourceBounds": [
+            63,
+            62,
+            72,
+            79
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              67,
+              64
+            ],
+            [
+              69,
+              77
+            ]
+          ]
+        },
+        "upper_leg_right": {
+          "rect": [
+            288,
+            896,
+            18,
+            22
+          ],
+          "sourceBounds": [
+            47,
+            79,
+            65,
+            101
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              55,
+              80
+            ],
+            [
+              54,
+              99
+            ]
+          ]
+        },
+        "lower_leg_right": {
+          "rect": [
+            384,
+            896,
+            14,
+            19
+          ],
+          "sourceBounds": [
+            47,
+            97,
+            61,
+            116
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              54,
+              99
+            ],
+            [
+              55,
+              114
+            ]
+          ]
+        },
+        "hand_right": {
+          "rect": [
+            480,
+            896,
+            13,
+            11
+          ],
+          "sourceBounds": [
+            60,
+            73,
+            73,
+            84
+          ],
+          "hiddenByAuthoredClothing": false,
+          "grip": [
+            67.5,
+            77.5
+          ]
+        },
+        "foot_right": {
+          "rect": [
+            576,
+            896,
+            18,
+            8
+          ],
+          "sourceBounds": [
+            52,
+            111,
+            70,
+            119
+          ],
+          "hiddenByAuthoredClothing": false,
+          "sole": [
+            61.833333333333336,
+            119
+          ]
+        }
+      },
+      "joints": {
+        "leftShoulder": [
+          31,
+          48
+        ],
+        "leftHip": [
+          41,
+          80
+        ],
+        "rightShoulder": [
+          63,
+          48
+        ],
+        "rightHip": [
+          55,
+          80
+        ]
+      },
+      "legs": {
+        "left": [
+          [
+            41,
+            80
+          ],
+          [
+            39,
+            99
+          ],
+          [
+            38,
+            114
+          ]
+        ],
+        "right": [
+          [
+            55,
+            80
+          ],
+          [
+            54,
+            99
+          ],
+          [
+            55,
+            114
+          ]
+        ]
+      },
+      "exactRestReconstruction": true
+    },
+    "npc_kid_gito": {
+      "id": "npc_kid_gito",
+      "authoredViews": 1,
+      "view": "front_three_quarter",
+      "pivot": [
+        49.0,
+        120
+      ],
+      "sourceCell": [
+        96,
+        128,
+        96,
+        128
+      ],
+      "parts": {
+        "head": {
+          "rect": [
+            0,
+            1024,
+            30,
+            33
+          ],
+          "sourceBounds": [
+            31,
+            8,
+            61,
+            41
+          ],
+          "hiddenByAuthoredClothing": false
+        },
+        "torso": {
+          "rect": [
+            96,
+            1024,
+            38,
+            45
+          ],
+          "sourceBounds": [
+            29,
+            38,
+            67,
+            83
+          ],
+          "hiddenByAuthoredClothing": false
+        },
+        "upper_arm_left": {
+          "rect": [
+            192,
+            1024,
+            10,
+            47
+          ],
+          "sourceBounds": [
+            23,
+            19,
+            33,
+            66
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              33,
+              47
+            ],
+            [
+              27,
+              64
+            ]
+          ]
+        },
+        "lower_arm_left": {
+          "rect": [
+            288,
+            1024,
+            10,
+            18
+          ],
+          "sourceBounds": [
+            20,
+            62,
+            30,
+            80
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              27,
+              64
+            ],
+            [
+              25,
+              78
+            ]
+          ]
+        },
+        "upper_leg_left": {
+          "rect": [
+            384,
+            1024,
+            19,
+            21
+          ],
+          "sourceBounds": [
+            30,
+            81,
+            49,
+            102
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              41,
+              83
+            ],
+            [
+              40,
+              100
+            ]
+          ]
+        },
+        "lower_leg_left": {
+          "rect": [
+            480,
+            1024,
+            11,
+            18
+          ],
+          "sourceBounds": [
+            31,
+            98,
+            42,
+            116
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              40,
+              100
+            ],
+            [
+              38,
+              114
+            ]
+          ]
+        },
+        "hand_left": {
+          "rect": [
+            576,
+            1024,
+            14,
+            9
+          ],
+          "sourceBounds": [
+            20,
+            73,
+            34,
+            82
+          ],
+          "hiddenByAuthoredClothing": false,
+          "grip": [
+            24.5,
+            77.5
+          ]
+        },
+        "foot_left": {
+          "rect": [
+            0,
+            1152,
+            13,
+            9
+          ],
+          "sourceBounds": [
+            27,
+            111,
+            40,
+            120
+          ],
+          "hiddenByAuthoredClothing": false,
+          "sole": [
+            34.0,
+            120
+          ]
+        },
+        "upper_arm_right": {
+          "rect": [
+            96,
+            1152,
+            5,
+            9
+          ],
+          "sourceBounds": [
+            66,
+            57,
+            71,
+            66
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              64,
+              47
+            ],
+            [
+              70,
+              64
+            ]
+          ]
+        },
+        "lower_arm_right": {
+          "rect": [
+            192,
+            1152,
+            10,
+            18
+          ],
+          "sourceBounds": [
+            66,
+            62,
+            76,
+            80
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              70,
+              64
+            ],
+            [
+              74,
+              78
+            ]
+          ]
+        },
+        "upper_leg_right": {
+          "rect": [
+            288,
+            1152,
+            18,
+            21
+          ],
+          "sourceBounds": [
+            49,
+            81,
+            67,
+            102
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              57,
+              83
+            ],
+            [
+              57,
+              100
+            ]
+          ]
+        },
+        "lower_leg_right": {
+          "rect": [
+            384,
+            1152,
+            10,
+            19
+          ],
+          "sourceBounds": [
+            53,
+            98,
+            63,
+            117
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              57,
+              100
+            ],
+            [
+              57,
+              115
+            ]
+          ]
+        },
+        "hand_right": {
+          "rect": [
+            480,
+            1152,
+            7,
+            8
+          ],
+          "sourceBounds": [
+            69,
+            73,
+            76,
+            81
+          ],
+          "hiddenByAuthoredClothing": false,
+          "grip": [
+            72.5,
+            77.5
+          ]
+        },
+        "foot_right": {
+          "rect": [
+            576,
+            1152,
+            21,
+            8
+          ],
+          "sourceBounds": [
+            51,
+            111,
+            72,
+            119
+          ],
+          "hiddenByAuthoredClothing": false,
+          "sole": [
+            62.0,
+            119
+          ]
+        }
+      },
+      "joints": {
+        "leftShoulder": [
+          33,
+          47
+        ],
+        "leftHip": [
+          41,
+          83
+        ],
+        "rightShoulder": [
+          64,
+          47
+        ],
+        "rightHip": [
+          57,
+          83
+        ]
+      },
+      "legs": {
+        "left": [
+          [
+            41,
+            83
+          ],
+          [
+            40,
+            100
+          ],
+          [
+            38,
+            114
+          ]
+        ],
+        "right": [
+          [
+            57,
+            83
+          ],
+          [
+            57,
+            100
+          ],
+          [
+            57,
+            115
+          ]
+        ]
+      },
+      "exactRestReconstruction": true
+    },
+    "npc_kid_cempaka": {
+      "id": "npc_kid_cempaka",
+      "authoredViews": 1,
+      "view": "front_three_quarter",
+      "pivot": [
+        49.0,
+        120
+      ],
+      "sourceCell": [
+        192,
+        128,
+        96,
+        128
+      ],
+      "parts": {
+        "head": {
+          "rect": [
+            0,
+            1280,
+            37,
+            31
+          ],
+          "sourceBounds": [
+            30,
+            8,
+            67,
+            39
+          ],
+          "hiddenByAuthoredClothing": false
+        },
+        "torso": {
+          "rect": [
+            96,
+            1280,
+            41,
+            66
+          ],
+          "sourceBounds": [
+            28,
+            39,
+            69,
+            105
+          ],
+          "hiddenByAuthoredClothing": false
+        },
+        "upper_arm_left": {
+          "rect": [
+            192,
+            1280,
+            15,
+            52
+          ],
+          "sourceBounds": [
+            18,
+            14,
+            33,
+            66
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              28,
+              52
+            ],
+            [
+              24,
+              64
+            ]
+          ]
+        },
+        "lower_arm_left": {
+          "rect": [
+            288,
+            1280,
+            8,
+            13
+          ],
+          "sourceBounds": [
+            20,
+            62,
+            28,
+            75
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              24,
+              64
+            ],
+            [
+              23,
+              73
+            ]
+          ]
+        },
+        "upper_leg_left": {
+          "rect": [
+            384,
+            1280,
+            3,
+            4
+          ],
+          "sourceBounds": [
+            38,
+            103,
+            41,
+            107
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              41,
+              92
+            ],
+            [
+              40,
+              105
+            ]
+          ]
+        },
+        "lower_leg_left": {
+          "rect": [
+            480,
+            1280,
+            11,
+            14
+          ],
+          "sourceBounds": [
+            30,
+            103,
+            41,
+            117
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              40,
+              105
+            ],
+            [
+              39,
+              115
+            ]
+          ]
+        },
+        "hand_left": {
+          "rect": [
+            576,
+            1280,
+            10,
+            11
+          ],
+          "sourceBounds": [
+            18,
+            69,
+            28,
+            80
+          ],
+          "hiddenByAuthoredClothing": false,
+          "grip": [
+            22.5,
+            73.5
+          ]
+        },
+        "foot_left": {
+          "rect": [
+            0,
+            1408,
+            14,
+            8
+          ],
+          "sourceBounds": [
+            28,
+            112,
+            42,
+            120
+          ],
+          "hiddenByAuthoredClothing": false,
+          "sole": [
+            35.5,
+            120
+          ]
+        },
+        "upper_arm_right": {
+          "rect": [
+            96,
+            1408,
+            6,
+            16
+          ],
+          "sourceBounds": [
+            66,
+            50,
+            72,
+            66
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              65,
+              52
+            ],
+            [
+              70,
+              64
+            ]
+          ]
+        },
+        "lower_arm_right": {
+          "rect": [
+            192,
+            1408,
+            9,
+            24
+          ],
+          "sourceBounds": [
+            68,
+            62,
+            77,
+            86
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              70,
+              64
+            ],
+            [
+              75,
+              73
+            ]
+          ]
+        },
+        "upper_leg_right": {
+          "rect": [
+            288,
+            1408,
+            16,
+            21
+          ],
+          "sourceBounds": [
+            55,
+            86,
+            71,
+            107
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              57,
+              92
+            ],
+            [
+              57,
+              105
+            ]
+          ]
+        },
+        "lower_leg_right": {
+          "rect": [
+            384,
+            1408,
+            15,
+            14
+          ],
+          "sourceBounds": [
+            51,
+            103,
+            66,
+            117
+          ],
+          "hiddenByAuthoredClothing": false,
+          "bone": [
+            [
+              57,
+              105
+            ],
+            [
+              57,
+              115
+            ]
+          ]
+        },
+        "hand_right": {
+          "rect": [
+            480,
+            1408,
+            9,
+            10
+          ],
+          "sourceBounds": [
+            69,
+            68,
+            78,
+            78
+          ],
+          "hiddenByAuthoredClothing": false,
+          "grip": [
+            74.5,
+            73.5
+          ]
+        },
+        "foot_right": {
+          "rect": [
+            576,
+            1408,
+            22,
+            7
+          ],
+          "sourceBounds": [
+            49,
+            112,
+            71,
+            119
+          ],
+          "hiddenByAuthoredClothing": false,
+          "sole": [
+            64.0,
+            119
+          ]
+        }
+      },
+      "joints": {
+        "leftShoulder": [
+          28,
+          52
+        ],
+        "leftHip": [
+          41,
+          92
+        ],
+        "rightShoulder": [
+          65,
+          52
+        ],
+        "rightHip": [
+          57,
+          92
+        ]
+      },
+      "legs": {
+        "left": [
+          [
+            41,
+            92
+          ],
+          [
+            40,
+            105
+          ],
+          [
+            39,
+            115
+          ]
+        ],
+        "right": [
+          [
+            57,
+            92
+          ],
+          [
+            57,
+            105
+          ],
+          [
+            57,
+            115
+          ]
+        ]
+      },
+      "exactRestReconstruction": true
+    }
+  }
+}

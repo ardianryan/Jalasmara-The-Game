@@ -2,6 +2,8 @@ extends RefCounted
 
 const STRIDE := 25.0
 const LIFT := 3.4
+var stride_length:=STRIDE
+var lift_height:=LIFT
 const SOLE_RADIUS := 6.0
 var _renderer:Node
 var _actor:Node2D
@@ -25,6 +27,10 @@ const TURN_DISTANCE:=6.0
 
 func configure(renderer:Node,actor:Node2D,data:Dictionary) -> bool:
 	if not ("map" in renderer) or renderer.map.is_empty(): return false
+	var step_scale:=clampf(float(data.get("stepScale",1.0)),.5,1.15)
+	if not is_finite(step_scale): step_scale=1.0
+	stride_length=STRIDE*step_scale
+	lift_height=LIFT*step_scale
 	_renderer=renderer
 	_actor=actor
 	for surface in renderer.map.get("surfaces",[]):
@@ -101,8 +107,8 @@ func _up() -> Vector3:
 
 func _begin_swing(entry:Dictionary,phase:float,at:Vector2,side:String,from_stance_boundary:=false) -> void:
 	entry.swingFrom=entry.logical
-	var remaining:float=(1.0-phase)*STRIDE
-	entry.swingTo=_safe(_base(side,at)+_direction*(remaining+STRIDE*.25)/_ratio,at)
+	var remaining:float=(1.0-phase)*stride_length
+	entry.swingTo=_safe(_base(side,at)+_direction*(remaining+stride_length*.25)/_ratio,at)
 	# A regular stance crossing already consumed part of this swing during the
 	# accepted movement. Startup and turn handover instead start at this pose.
 	entry.startProgress=0.0 if from_stance_boundary else (phase-.5)*2.0
@@ -125,15 +131,15 @@ func _advance_turn(physical:float,at:Vector2) -> void:
 	var side:String=_turn.side
 	var entry:Dictionary=_feet[side]
 	entry.logical=_safe(Vector2(_turn.from).lerp(_turn.target,smooth),at)
-	entry.sole=_ground(entry.logical)+_up()*(lerpf(float(_turn.lift),0,u)+sin(u*PI)*LIFT)
+	entry.sole=_ground(entry.logical)+_up()*(lerpf(float(_turn.lift),0,u)+sin(u*PI)*lift_height)
 	if u>=1:
 		entry.plant=_ground(entry.logical)
 		entry.sole=entry.plant
 		entry.grounded=true
 		# The arriving foot supports the body before the old support begins its swing.
-		_phase_distance=0.0 if side=="left" else STRIDE*.5
+		_phase_distance=0.0 if side=="left" else stride_length*.5
 		for name in ["left","right"]:
-			_feet[name].phase=fposmod(_phase_distance/STRIDE+(.25 if name=="left" else .75),1.0)
+			_feet[name].phase=fposmod(_phase_distance/stride_length+(.25 if name=="left" else .75),1.0)
 		var released:="right" if side=="left" else "left"
 		_begin_swing(_feet[released],.75,at,released)
 		_turn.clear()
@@ -145,7 +151,7 @@ func update(at:Vector2,velocity:Vector2,time:float,_flip:float) -> Dictionary:
 	var physical:=body_ground.distance_to(_last_ground) if _ready else 0.0
 	var delta:=clampf(time-_last_time,0,.15) if _ready else 0.0
 	var walking:=velocity.length()>.1 and moved>.00001
-	if moved>50 or physical>STRIDE*.5:
+	if moved>50 or physical>stride_length*.5:
 		_resets+=1
 		_ready=false
 		walking=false
@@ -171,7 +177,7 @@ func update(at:Vector2,velocity:Vector2,time:float,_flip:float) -> Dictionary:
 			else: _phase_distance+=physical
 			for side in ["left","right"]:
 				var entry:Dictionary=_feet[side]
-				var phase:=fposmod(_phase_distance/STRIDE+(.25 if side=="left" else .75),1.0)
+				var phase:=fposmod(_phase_distance/stride_length+(.25 if side=="left" else .75),1.0)
 				if phase<.5:
 					if not bool(entry.grounded):
 						entry.logical=entry.swingTo
@@ -184,7 +190,7 @@ func update(at:Vector2,velocity:Vector2,time:float,_flip:float) -> Dictionary:
 					var smooth:=u*u*(3.0-2.0*u)
 					entry.logical=Vector2(entry.swingFrom).lerp(entry.swingTo,smooth)
 					entry.logical=_safe(entry.logical,at)
-					entry.sole=_ground(entry.logical)+_up()*sin(u*PI)*LIFT
+					entry.sole=_ground(entry.logical)+_up()*sin(u*PI)*lift_height
 				entry.phase=phase
 	else:
 		_turn.clear()
@@ -199,4 +205,4 @@ func update(at:Vector2,velocity:Vector2,time:float,_flip:float) -> Dictionary:
 	_last_at=at
 	_last_ground=body_ground
 	_last_time=time
-	return {"feet":_feet.duplicate(true),"walking":walking,"phaseDistance":_phase_distance,"physicalRatio":_ratio,"stride":STRIDE,"essentialMotion":true,"discontinuityResets":_resets,"anatomicalSidesStable":true,"lateralLogical":[_lateral.x,_lateral.y],"turnStep":not _turn.is_empty(),"turnSteps":_turn_steps}
+	return {"feet":_feet.duplicate(true),"walking":walking,"phaseDistance":_phase_distance,"physicalRatio":_ratio,"stride":stride_length,"essentialMotion":true,"discontinuityResets":_resets,"anatomicalSidesStable":true,"lateralLogical":[_lateral.x,_lateral.y],"turnStep":not _turn.is_empty(),"turnSteps":_turn_steps}
