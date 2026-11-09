@@ -27,6 +27,8 @@ Nala datang ke Kota Apung Bandar Hujung, menjelajah desa/hutan/gua daratan, meny
 
 ## Prioritas pengembangan
 
+Arahan aktif pengguna: kerjakan seluruh [delapan jalur overnight](reviews/overnight-eight-workstreams.md) melalui tiga subagent dan satu integrator, bukan berhenti setelah rencana. Kandidat runtime tetap terpisah dari staging sampai tes gabungan dan browser diterima. Pengguna bersedia membantu Windows/S23 fisik setelah recorder siap; angka target performa di atas belum hasil pengukuran perangkat tersebut.
+
 Keputusan operasional terbaru: migrasi GitLab CE dibatalkan pengguna. GitLab.com tetap menjalankan CI, GitHub menjadi mirror; pekerjaan auth/runner CE dihentikan. Prioritas adalah rilis finishing yang sudah diterima lokal dan penutupan startup publik, lalu sisa gerak/rig sebelum perluasan desa.
 
 Arahan terbaru memajukan [paket rumah/gapura06-B2](plans/06b2-keselarasan-rumah-dan-gapura.md): rumah warga mengikuti sistem modular3D Griya; gapura dan jalan memakai orientasi/bukaan/collider yang konsisten. Kerjakan penerimaan lokalnya secara terisolasi, sambil mempertahankan blocker startup publik yang belum selesai.
@@ -47,4 +49,4 @@ Godot tetap runtime; referensi Phaser diterjemahkan ke arsitektur yang ada. Noxe
 
 Tidak termasuk asumsi otomatis: migrasi ke Phaser/Three.js, semua interior langsung playable, exporter GLB Noxe tersedia, semua delapan arah asli selesai, atau perf HP terjamin. Keputusan itu memerlukan implementasi dan bukti tersendiri.
 
-Permintaan terbaru: [Fish Gen](world/fish-gen-reference.md) disimpan untuk produksi fauna laut sesudah pekerjaan inti. Lisensi software MIT dan izin penggunaan hasil dicatat terpisah. Pilot harus membuktikan renang/putaran, alpha, pivot, palet dan biaya atlas sebelum penambahan spesies; penyimpanan tool ini belum merupakan integrasi runtime atau generator terrain/air.
+Permintaan [Fish Gen](world/fish-gen-reference.md) sudah dilanjutkan menjadi [pilot kandidat overnight](reviews/overnight-fishgen-pilot.md): satu atlas asli dengan renang/putaran dan adapter tiga ikan dekoratif, terpisah dari sepuluh spesies gameplay. Reproduksi, animasi/kontak serta native render lulus; ekspor/browser/rilis masih menunggu. Lisensi MIT, izin hasil dan provenance disertakan. Pilot ini bukan generator terrain/air dan tidak mengubah aturan tangkapan atau ekonomi.
