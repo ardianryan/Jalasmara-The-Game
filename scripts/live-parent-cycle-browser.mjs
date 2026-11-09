@@ -18,6 +18,7 @@ import { fetchWorld } from "./game-navigation.mjs";
 import { physicalRoute } from "./plan06-physical-route.mjs";
 import { corridorTargets, keyboardPulse } from "./land-view-navigation.mjs";
 import { oceanRoute } from "./live-parent-navigation.mjs";
+import { findFixtureAuthKeys } from "./own-fixture-auth.mjs";
 
 const origin = process.env.APP_TEST_ORIGIN ?? "http://localhost:3111";
 assert(
@@ -72,7 +73,8 @@ let browser,
   heartbeat,
   failureSnapshot = null,
   failureScreenshot = false,
-  browserClosed = false;
+  browserClosed = false,
+  ownAuthKeysRemaining = null;
 const snapshot = () => frame.evaluate(() => window.jalasmaraSnapshot);
 function budget() {
   assert(
@@ -779,7 +781,8 @@ try {
           keys.push(key);
         }
       }
-      await cache.del(...keys);
+      keys.push(...(await findFixtureAuthKeys(cache, id)));
+      await cache.del(...new Set(keys));
       assert.equal(
         await mongo.db().collection("players").countDocuments({ id, email }),
         0,
@@ -796,6 +799,8 @@ try {
         0,
       );
       assert((await cache.mget(...keys)).every((v) => v === null));
+      ownAuthKeysRemaining = (await findFixtureAuthKeys(cache, id)).length;
+      assert.equal(ownAuthKeysRemaining, 0);
       cleaned = true;
     }
   } finally {
@@ -813,6 +818,7 @@ try {
           fixtureAttempted,
           fixtureInsertAcknowledged: created,
           browserClosed,
+          ownAuthKeysRemaining,
           failureScreenshot,
           failureSnapshot,
           ownTemporaryPlayerRemoved: cleaned,
