@@ -30,7 +30,12 @@ def source_cell(outfit,frame):
 
 def split(case):
 	source=source_cell(case['outfit'],case['frame'])
-	layers={};used=set()
+	layers={};used=set();plate_owned=set()
+	for record in case.get('plateOwnedPixels',[]):
+		point=record['pixel']
+		anchors.require(isinstance(point,list) and len(point)==2 and all(type(v) is int for v in point) and 0<=point[0]<128 and 43<=point[1]<76,'Reserved plate pixel outside source upper body')
+		anchors.require(tuple(point) not in plate_owned and list(source.getpixel(tuple(point)))==record['rgba'] and record['rgba'][3]==255,'Reserved plate pixel differs from opaque original source')
+		plate_owned.add(tuple(point))
 	for side in ('left','right'):
 		for part in ('palm','fore','upper'):
 			name=side+'/'+part
@@ -40,7 +45,7 @@ def split(case):
 				ImageDraw.Draw(mask).line((x0,y,x1-1,y),fill=255)
 			for y in range(43,76):
 				for x in range(128):
-					if mask.getpixel((x,y)) and source.getpixel((x,y))[3] and (x,y) not in used:
+					if mask.getpixel((x,y)) and source.getpixel((x,y))[3] and (x,y) not in used and (x,y) not in plate_owned:
 						layer.putpixel((x,y),source.getpixel((x,y)));used.add((x,y))
 			layers[name]=layer
 	plate=source.copy()
@@ -87,7 +92,7 @@ def authored_plate(spec,source,plate,layers):
 				anchors.require(bool(row_donors),'No original owned-cloth donor on this row')
 				donor=min(row_donors,key=lambda p:abs(p[0]-x));rgba=source.getpixel(donor)
 				repair.putpixel((x,y),rgba);repaired.putpixel((x,y),rgba)
-				provenance.append({'destination':[x,y],'donor':list(donor),'rgba':list(rgba),'status':'newly-authored-hidden-cloth'})
+				provenance.append({'destination':[x,y],'donor':list(donor),'rgba':list(rgba),'status':'newly-authored-hidden-cloth','bodyRegion':proposal.get('bodyRegionByRow',{}).get(str(y),'shirt')})
 	rest=repaired.copy()
 	for layer in layers.values(): rest.alpha_composite(layer)
 	if rest.tobytes()!=source.tobytes(): raise ValueError('Hidden repair must stay occluded at original rest')
@@ -124,6 +129,34 @@ def authored_extremes(spec,repaired,layers):
 		results.append((pose['name'],result,transforms))
 	return results
 
+def contour_review(spec,source,repaired,layers,extremes):
+	rows={y:(x0,x1) for y,x0,x1 in spec['daily0AuthoredProposal']['torsoOnlyRunsYX0X1']}
+	alpha=Image.new('RGBA',source.size)
+	holes=[]
+	for y in range(76):
+		for x in range(128):
+			inside=y in rows and rows[y][0]<=x<rows[y][1]
+			if inside:
+				if repaired.getpixel((x,y))[3]:color=(99,211,166,255)
+				else:color=(255,36,50,255);holes.append([x,y])
+			else:color=(140,151,161,255) if repaired.getpixel((x,y))[3] else (35,48,68,255)
+			alpha.putpixel((x,y),color)
+	panels=[(repaired,'BODY ONLY: actual alpha/color'),(alpha,'GREEN intended body; RED interior cavity'),(extremes[1][1],'AUTHORED extreme composite')]
+	for side in ('left','right'):
+		separate=Image.new('RGBA',source.size)
+		for part in ('upper','fore','palm'): separate.alpha_composite(moved_cutout(layers[side+'/'+part],extremes[1][2][side][part]))
+		panels.append((separate,'SEPARATE anatomical '+side+' arm (authored pose)'))
+	panels.append((source,'ORIGINAL REST: reconstructed byte-exact'))
+	sheet=Image.new('RGB',(3*480,2*440),(20,38,43));draw=ImageDraw.Draw(sheet)
+	for i,(image,label) in enumerate(panels):
+		x=i%3*480+32;y=i//3*440+40;draw.text((x,y-30),label,fill='white')
+		crop=image.crop((48,44,84,76)).resize((432,384),Image.Resampling.NEAREST);sheet.paste(crop,(x,y),crop)
+		for px in range(48,84,2):
+			sx=x+(px-48)*12;draw.line((sx,y,sx,y+384),fill=(68,80,84));draw.text((sx,y-14),str(px),fill='white')
+		for py in range(44,76,2):
+			sy=y+(py-44)*12;draw.line((x,sy,x+432,sy),fill=(68,80,84));draw.text((x-25,sy),str(py),fill='white')
+	return sheet,holes
+
 def repair_comparison(source,plate,repaired,repair,rest,spec):
 	sheet=Image.new('RGB',(3*440,2*340),(20,38,43));draw=ImageDraw.Draw(sheet)
 	provenance=source.copy();provenance.paste(COLORS['authored'],(0,0),repair.getchannel('A'))
@@ -152,12 +185,15 @@ def main():
 		for key,layer in layers.items():
 			filename=key.replace('/','-')+'.png';layer.save(folder/filename)
 			parts[key]={'file':filename,'sourceRunsYX0X1':row_runs(layer),'opaquePixels':sum(a>0 for a in layer.getchannel('A').getdata())}
-		entry={'outfit':case['outfit'],'frame':case['frame'],'sourceUpperRgbaSha256':digest(source.tobytes()),'exactSourceRecomposition':source.tobytes()==rebuilt.tobytes(),'originalPlateRunsYX0X1':row_runs(plate),'parts':parts}
+		entry={'outfit':case['outfit'],'frame':case['frame'],'sourceUpperRgbaSha256':digest(source.tobytes()),'exactSourceRecomposition':source.tobytes()==rebuilt.tobytes(),'originalPlateRunsYX0X1':row_runs(plate),'reviewedPlateOwnedPixels':case.get('plateOwnedPixels',[]),'parts':parts}
 		if case['outfit']=='daily' and case['frame']==0:
 			repaired,repair,provenance,rest=authored_plate(spec,source,plate,layers)
 			repaired.save(folder/'authored-hidden-cloth-plate.png');repair.save(folder/'authored-hidden-cloth-only.png');rest.save(folder/'rest-with-authored-hidden-cloth.png')
 			repair_comparison(source,plate,repaired,repair,rest,spec).save(output/'south-daily0-hidden-cloth-proposal.png')
 			extremes=authored_extremes(spec,repaired,layers)
+			contour_image,holes=contour_review(spec,source,repaired,layers,extremes)
+			contour_image.save(output/'south-daily0-alpha-contour-and-separate-arms.png')
+			entry['authoredInteriorAlphaHoles']=holes
 			extreme_sheet=Image.new('RGB',(2*440,340),(20,38,43));ed=ImageDraw.Draw(extreme_sheet)
 			for i,(label,image,transforms) in enumerate(extremes):
 				ed.text((i*440+8,8),'AUTHORED REVIEW: '+label,fill='white');crop=image.crop((40,42,92,76)).resize((416,272),Image.Resampling.NEAREST);extreme_sheet.paste(crop,(i*440+8,40),crop)

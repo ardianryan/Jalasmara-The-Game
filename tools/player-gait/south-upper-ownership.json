@@ -263,7 +263,152 @@
             55
           ]
         ]
-      }
+      },
+      "plateOwnedPixels": [
+        {
+          "pixel": [
+            70,
+            58
+          ],
+          "rgba": [
+            91,
+            109,
+            107,
+            255
+          ],
+          "reason": "Visible original shirt contiguous with adjacent owned torso cloth; not hand skin or sleeve cap"
+        },
+        {
+          "pixel": [
+            71,
+            58
+          ],
+          "rgba": [
+            52,
+            67,
+            61,
+            255
+          ],
+          "reason": "Visible original shirt contiguous with adjacent owned torso cloth; not hand skin or sleeve cap"
+        },
+        {
+          "pixel": [
+            69,
+            59
+          ],
+          "rgba": [
+            86,
+            106,
+            104,
+            255
+          ],
+          "reason": "Visible original shirt contiguous with adjacent owned torso cloth; not hand skin or sleeve cap"
+        },
+        {
+          "pixel": [
+            70,
+            59
+          ],
+          "rgba": [
+            84,
+            104,
+            100,
+            255
+          ],
+          "reason": "Visible original shirt contiguous with adjacent owned torso cloth; not hand skin or sleeve cap"
+        },
+        {
+          "pixel": [
+            68,
+            60
+          ],
+          "rgba": [
+            82,
+            101,
+            99,
+            255
+          ],
+          "reason": "Visible original shirt contiguous with adjacent owned torso cloth; not hand skin or sleeve cap"
+        },
+        {
+          "pixel": [
+            69,
+            60
+          ],
+          "rgba": [
+            90,
+            113,
+            109,
+            255
+          ],
+          "reason": "Visible original shirt contiguous with adjacent owned torso cloth; not hand skin or sleeve cap"
+        },
+        {
+          "pixel": [
+            70,
+            60
+          ],
+          "rgba": [
+            53,
+            69,
+            66,
+            255
+          ],
+          "reason": "Visible original shirt contiguous with adjacent owned torso cloth; not hand skin or sleeve cap"
+        },
+        {
+          "pixel": [
+            68,
+            61
+          ],
+          "rgba": [
+            85,
+            99,
+            100,
+            255
+          ],
+          "reason": "Visible original shirt contiguous with adjacent owned torso cloth; not hand skin or sleeve cap"
+        },
+        {
+          "pixel": [
+            68,
+            62
+          ],
+          "rgba": [
+            78,
+            93,
+            89,
+            255
+          ],
+          "reason": "Visible original shirt contiguous with adjacent owned torso cloth; not hand skin or sleeve cap"
+        },
+        {
+          "pixel": [
+            68,
+            63
+          ],
+          "rgba": [
+            99,
+            116,
+            110,
+            255
+          ],
+          "reason": "Visible original shirt contiguous with adjacent owned torso cloth; not hand skin or sleeve cap"
+        },
+        {
+          "pixel": [
+            69,
+            64
+          ],
+          "rgba": [
+            74,
+            80,
+            77,
+            255
+          ],
+          "reason": "Visible original shirt contiguous with adjacent owned torso cloth; not hand skin or sleeve cap"
+        }
+      ]
     },
     {
       "outfit": "daily",
@@ -929,107 +1074,117 @@
       68,
       58
     ],
-    "repairRule": "Newly authored cloth only within explicit body-only row contour; source sleeve caps and old arm/palm area outside it stay alpha. Exact per-row visible owned-cloth donors with original palette shading; not recovered hidden art.",
+    "repairRule": "Authored continuous torso/waist contour, independently reviewed against original daily0/daily4/idleSOUTH source; only original removed-arm areas inside contour repaired. Upper sleeve caps/outsidebody stay alpha. Same-row owned-shirt donors untily65; explicit original trouser-waist donors rows66/67. No claimed recovery or phase acceptance.",
     "torsoOnlyRunsYX0X1": [
       [
         46,
         57,
-        73
+        74
       ],
       [
         47,
         57,
-        73
+        74
       ],
       [
         48,
         57,
-        73
+        74
       ],
       [
         49,
         57,
-        73
+        74
       ],
       [
         50,
         57,
-        73
+        74
       ],
       [
         51,
         57,
-        73
+        74
       ],
       [
         52,
         57,
-        73
+        74
       ],
       [
         53,
         56,
-        73
+        76
       ],
       [
         54,
         56,
-        73
+        76
       ],
       [
         55,
         56,
-        73
+        76
       ],
       [
         56,
         56,
-        73
+        76
       ],
       [
         57,
         56,
-        73
+        76
       ],
       [
         58,
         56,
-        73
+        76
       ],
       [
         59,
         56,
-        73
+        76
       ],
       [
         60,
         56,
-        73
+        76
       ],
       [
         61,
         56,
-        73
+        76
       ],
       [
         62,
         56,
-        73
+        76
       ],
       [
         63,
         56,
-        73
+        76
       ],
       [
         64,
-        57,
-        72
+        56,
+        76
       ],
       [
         65,
-        60,
-        71
+        56,
+        76
+      ],
+      [
+        66,
+        56,
+        76
+      ],
+      [
+        67,
+        56,
+        76
       ]
     ],
     "visibleClothRowDonorCandidates": [
@@ -1043,7 +1198,8 @@
           103,
           103,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1055,7 +1211,8 @@
           105,
           103,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1067,7 +1224,8 @@
           102,
           103,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1079,7 +1237,8 @@
           81,
           81,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1091,7 +1250,8 @@
           110,
           105,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1103,7 +1263,8 @@
           110,
           102,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1115,7 +1276,8 @@
           85,
           81,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1127,7 +1289,8 @@
           101,
           99,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1139,7 +1302,8 @@
           103,
           103,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1151,7 +1315,8 @@
           105,
           104,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1163,7 +1328,8 @@
           104,
           106,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1175,7 +1341,8 @@
           97,
           97,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1187,7 +1354,8 @@
           97,
           95,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1199,7 +1367,8 @@
           88,
           83,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1211,7 +1380,8 @@
           101,
           98,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1223,7 +1393,8 @@
           101,
           100,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1235,7 +1406,8 @@
           98,
           99,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1247,7 +1419,8 @@
           104,
           105,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1259,7 +1432,8 @@
           106,
           105,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1271,7 +1445,8 @@
           108,
           108,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1283,7 +1458,8 @@
           97,
           98,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1295,7 +1471,8 @@
           96,
           93,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1307,7 +1484,8 @@
           106,
           105,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1319,7 +1497,8 @@
           103,
           102,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1331,7 +1510,8 @@
           78,
           75,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1343,7 +1523,8 @@
           107,
           106,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1355,7 +1536,8 @@
           108,
           108,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1367,7 +1549,8 @@
           109,
           109,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1379,7 +1562,8 @@
           107,
           106,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1391,7 +1575,8 @@
           110,
           109,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1403,7 +1588,8 @@
           107,
           105,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1415,7 +1601,8 @@
           107,
           106,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1427,7 +1614,8 @@
           59,
           57,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1439,7 +1627,8 @@
           107,
           107,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1451,7 +1640,8 @@
           109,
           109,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1463,7 +1653,8 @@
           109,
           110,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1475,7 +1666,8 @@
           108,
           108,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1487,7 +1679,8 @@
           109,
           108,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1499,7 +1692,8 @@
           108,
           106,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1511,7 +1705,8 @@
           106,
           106,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1523,7 +1718,8 @@
           49,
           46,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1535,7 +1731,8 @@
           110,
           108,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1547,7 +1744,8 @@
           110,
           110,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1559,7 +1757,8 @@
           110,
           110,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1571,7 +1770,8 @@
           110,
           110,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1583,7 +1783,8 @@
           108,
           108,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1595,7 +1796,8 @@
           107,
           106,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1607,7 +1809,8 @@
           110,
           107,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1619,7 +1822,8 @@
           33,
           30,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1631,7 +1835,8 @@
           113,
           111,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1643,7 +1848,8 @@
           112,
           111,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1655,7 +1861,8 @@
           111,
           111,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1667,7 +1874,8 @@
           109,
           108,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1679,7 +1887,8 @@
           109,
           109,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1691,7 +1900,8 @@
           107,
           106,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1703,7 +1913,8 @@
           106,
           104,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1715,7 +1926,8 @@
           38,
           37,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1727,7 +1939,8 @@
           113,
           111,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1739,7 +1952,8 @@
           113,
           112,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1751,7 +1965,8 @@
           112,
           111,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1763,7 +1978,8 @@
           109,
           108,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1775,7 +1991,8 @@
           109,
           108,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1787,7 +2004,8 @@
           105,
           105,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1799,7 +2017,8 @@
           98,
           94,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1811,7 +2030,8 @@
           41,
           40,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1823,7 +2043,8 @@
           113,
           111,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1835,7 +2056,8 @@
           112,
           111,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1847,7 +2069,8 @@
           110,
           109,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1859,7 +2082,8 @@
           109,
           109,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1871,7 +2095,8 @@
           109,
           108,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1883,7 +2108,8 @@
           107,
           106,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1895,7 +2121,8 @@
           95,
           92,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1907,7 +2134,8 @@
           30,
           26,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1919,7 +2147,8 @@
           100,
           97,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1931,7 +2160,8 @@
           110,
           108,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1943,7 +2173,8 @@
           110,
           109,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1955,7 +2186,8 @@
           109,
           109,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1967,7 +2199,8 @@
           108,
           107,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1979,7 +2212,8 @@
           108,
           107,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -1991,7 +2225,8 @@
           114,
           110,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2003,7 +2238,8 @@
           44,
           38,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2015,7 +2251,8 @@
           97,
           94,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2027,7 +2264,8 @@
           103,
           101,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2039,7 +2277,8 @@
           108,
           106,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2051,7 +2290,8 @@
           107,
           107,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2063,7 +2303,8 @@
           108,
           107,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2075,7 +2316,8 @@
           109,
           108,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2087,7 +2329,8 @@
           110,
           110,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2099,7 +2342,8 @@
           47,
           40,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2111,7 +2355,8 @@
           105,
           102,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2123,7 +2368,8 @@
           102,
           100,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2135,7 +2381,8 @@
           107,
           105,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2147,7 +2394,8 @@
           105,
           104,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2159,7 +2407,8 @@
           105,
           104,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2171,7 +2420,8 @@
           108,
           107,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2183,7 +2433,8 @@
           111,
           110,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2195,7 +2446,8 @@
           59,
           58,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2207,7 +2459,8 @@
           104,
           99,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2219,7 +2472,8 @@
           101,
           98,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2231,7 +2485,8 @@
           100,
           99,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2243,7 +2498,8 @@
           101,
           99,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2255,7 +2511,8 @@
           101,
           99,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2267,7 +2524,8 @@
           104,
           102,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2279,7 +2537,8 @@
           67,
           61,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2291,7 +2550,8 @@
           77,
           74,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2303,7 +2563,8 @@
           102,
           100,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2315,7 +2576,8 @@
           103,
           101,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2327,7 +2589,8 @@
           93,
           92,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2339,7 +2602,8 @@
           100,
           99,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2351,7 +2615,8 @@
           99,
           98,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2363,7 +2628,8 @@
           106,
           104,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2375,7 +2641,8 @@
           94,
           90,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2387,7 +2654,8 @@
           100,
           97,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2399,7 +2667,8 @@
           103,
           101,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2411,7 +2680,8 @@
           98,
           95,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2423,7 +2693,8 @@
           100,
           98,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2435,7 +2706,8 @@
           100,
           98,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2447,7 +2719,8 @@
           113,
           109,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2459,7 +2732,8 @@
           106,
           103,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2471,7 +2745,8 @@
           96,
           92,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2483,7 +2758,8 @@
           89,
           87,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2495,7 +2771,8 @@
           105,
           104,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2507,7 +2784,8 @@
           99,
           98,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2519,7 +2797,8 @@
           98,
           95,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2531,7 +2810,8 @@
           41,
           37,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2543,7 +2823,8 @@
           107,
           104,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2555,7 +2836,8 @@
           100,
           97,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2567,7 +2849,8 @@
           93,
           89,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2579,7 +2862,8 @@
           92,
           91,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2591,7 +2875,8 @@
           102,
           98,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2603,7 +2888,8 @@
           92,
           91,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2615,7 +2901,8 @@
           32,
           27,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2627,7 +2914,8 @@
           108,
           106,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2639,7 +2927,8 @@
           99,
           97,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2651,7 +2940,8 @@
           99,
           96,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2663,7 +2953,8 @@
           98,
           94,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2675,7 +2966,8 @@
           98,
           95,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2687,7 +2979,8 @@
           104,
           99,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2699,7 +2992,8 @@
           58,
           50,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2711,7 +3005,8 @@
           43,
           45,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2723,7 +3018,8 @@
           103,
           102,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2735,7 +3031,8 @@
           105,
           102,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2747,7 +3044,8 @@
           105,
           101,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2759,7 +3057,8 @@
           106,
           103,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2771,7 +3070,8 @@
           104,
           102,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2783,7 +3083,8 @@
           80,
           77,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2795,7 +3096,8 @@
           65,
           65,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2807,7 +3109,8 @@
           94,
           94,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2819,7 +3122,8 @@
           99,
           98,
           255
-        ]
+        ],
+        "region": "shirt"
       },
       {
         "pixel": [
@@ -2831,7 +3135,216 @@
           83,
           79,
           255
-        ]
+        ],
+        "region": "shirt"
+      },
+      {
+        "pixel": [
+          57,
+          66
+        ],
+        "rgba": [
+          68,
+          65,
+          66,
+          255
+        ],
+        "region": "visible-trouser-waist"
+      },
+      {
+        "pixel": [
+          59,
+          66
+        ],
+        "rgba": [
+          80,
+          76,
+          78,
+          255
+        ],
+        "region": "visible-trouser-waist"
+      },
+      {
+        "pixel": [
+          61,
+          66
+        ],
+        "rgba": [
+          85,
+          79,
+          81,
+          255
+        ],
+        "region": "visible-trouser-waist"
+      },
+      {
+        "pixel": [
+          63,
+          66
+        ],
+        "rgba": [
+          54,
+          49,
+          53,
+          255
+        ],
+        "region": "visible-trouser-waist"
+      },
+      {
+        "pixel": [
+          65,
+          66
+        ],
+        "rgba": [
+          40,
+          37,
+          39,
+          255
+        ],
+        "region": "visible-trouser-waist"
+      },
+      {
+        "pixel": [
+          67,
+          66
+        ],
+        "rgba": [
+          41,
+          39,
+          38,
+          255
+        ],
+        "region": "visible-trouser-waist"
+      },
+      {
+        "pixel": [
+          69,
+          66
+        ],
+        "rgba": [
+          37,
+          37,
+          38,
+          255
+        ],
+        "region": "visible-trouser-waist"
+      },
+      {
+        "pixel": [
+          71,
+          66
+        ],
+        "rgba": [
+          43,
+          44,
+          43,
+          255
+        ],
+        "region": "visible-trouser-waist"
+      },
+      {
+        "pixel": [
+          57,
+          67
+        ],
+        "rgba": [
+          69,
+          62,
+          68,
+          255
+        ],
+        "region": "visible-trouser-waist"
+      },
+      {
+        "pixel": [
+          59,
+          67
+        ],
+        "rgba": [
+          73,
+          69,
+          71,
+          255
+        ],
+        "region": "visible-trouser-waist"
+      },
+      {
+        "pixel": [
+          61,
+          67
+        ],
+        "rgba": [
+          79,
+          74,
+          75,
+          255
+        ],
+        "region": "visible-trouser-waist"
+      },
+      {
+        "pixel": [
+          63,
+          67
+        ],
+        "rgba": [
+          91,
+          87,
+          88,
+          255
+        ],
+        "region": "visible-trouser-waist"
+      },
+      {
+        "pixel": [
+          65,
+          67
+        ],
+        "rgba": [
+          72,
+          70,
+          71,
+          255
+        ],
+        "region": "visible-trouser-waist"
+      },
+      {
+        "pixel": [
+          67,
+          67
+        ],
+        "rgba": [
+          68,
+          66,
+          65,
+          255
+        ],
+        "region": "visible-trouser-waist"
+      },
+      {
+        "pixel": [
+          69,
+          67
+        ],
+        "rgba": [
+          71,
+          70,
+          71,
+          255
+        ],
+        "region": "visible-trouser-waist"
+      },
+      {
+        "pixel": [
+          71,
+          67
+        ],
+        "rgba": [
+          67,
+          64,
+          65,
+          255
+        ],
+        "region": "visible-trouser-waist"
       }
     ],
     "newPoseProposal": {
@@ -2864,6 +3377,30 @@
           ]
         }
       ]
+    },
+    "bodyRegionByRow": {
+      "46": "shirt",
+      "47": "shirt",
+      "48": "shirt",
+      "49": "shirt",
+      "50": "shirt",
+      "51": "shirt",
+      "52": "shirt",
+      "53": "shirt",
+      "54": "shirt",
+      "55": "shirt",
+      "56": "shirt",
+      "57": "shirt",
+      "58": "shirt",
+      "59": "shirt",
+      "60": "shirt",
+      "61": "shirt",
+      "62": "shirt",
+      "63": "shirt",
+      "64": "shirt",
+      "65": "shirt",
+      "66": "hidden-trouser-waist",
+      "67": "hidden-trouser-waist"
     }
   }
 }

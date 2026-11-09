@@ -42,10 +42,31 @@ class Ownership(unittest.TestCase):
 				point=tuple(entry['palm']['pixel'])
 				self.assertEqual(list(layers[side+'/palm'].getpixel(point)),entry['palm']['rgba'])
 
+	def test_reviewed_original_cloth_stays_on_plate_and_hand_outline_stays_on_arm(self):
+		case,(source,plate,layers,_)=self.cases[0]
+		expected={(70,58),(71,58),(69,59),(70,59),(68,60),(69,60),(70,60),(68,61),(68,62),(68,63),(69,64)}
+		self.assertEqual({tuple(r['pixel']) for r in case['plateOwnedPixels']},expected)
+		for point in expected:
+			self.assertEqual(plate.getpixel(point),source.getpixel(point))
+			self.assertTrue(all(layer.getpixel(point)[3]==0 for layer in layers.values()))
+		# Boundary judgments are explicit coordinates, not a skin/gray color classifier.
+		for point in [(69,61),(69,62),(69,63),(70,65),(76,65),(74,67),(75,67),(76,67)]:
+			self.assertEqual(layers['left/palm'].getpixel(point),source.getpixel(point))
+			self.assertEqual(plate.getpixel(point)[3],0)
+
+	def test_changed_duplicate_or_outside_plate_provenance_is_rejected(self):
+		for change in ('rgba','duplicate','outside','transparent'):
+			case=copy.deepcopy(self.spec['cases'][0])
+			if change=='rgba':case['plateOwnedPixels'][0]['rgba'][0]^=1
+			if change=='duplicate':case['plateOwnedPixels'].append(copy.deepcopy(case['plateOwnedPixels'][0]))
+			if change=='outside':case['plateOwnedPixels'][0]['pixel']=[128,60]
+			if change=='transparent':case['plateOwnedPixels'][0]={'pixel':[0,60],'rgba':[0,0,0,0]}
+			with self.assertRaises(ValueError):tool.split(case)
+
 	def test_authored_repair_is_explicit_source_palette_and_occluded_at_rest(self):
 		_,(source,plate,layers,_)=self.cases[0]
 		repaired,repair,records,rest=tool.authored_plate(self.spec,source,plate,layers)
-		self.assertEqual(len(records),54)
+		self.assertEqual(len(records),93)
 		self.assertEqual(rest.tobytes(),source.tobytes())
 		palette=set(source.getdata())
 		body={y:(x0,x1) for y,x0,x1 in self.spec['daily0AuthoredProposal']['torsoOnlyRunsYX0X1']}
@@ -61,14 +82,20 @@ class Ownership(unittest.TestCase):
 			self.assertIn(repaired.getpixel((x,y)),palette)
 			self.assertTrue(any(im.getpixel((x,y))[3] for im in layers.values()))
 			self.assertEqual(plate.getpixel((x,y))[3],0)
-		self.assertEqual(len({r['donor'][1] for r in records}),18)
+		self.assertEqual(len({r['donor'][1] for r in records}),22)
+		self.assertEqual(sum(r['bodyRegion']=='hidden-trouser-waist' for r in records),5)
 		self.assertGreater(len({tuple(r['rgba']) for r in records}),10)
-		for point in [(76,65),(75,66),(55,57),(55,61),(76,49)]:
+		for point in [(76,65),(55,57),(55,61),(76,49)]:
 			self.assertEqual(repaired.getpixel(point)[3],0,'Old hand fringe/sleeve cap must stay outside neutral torso')
+		self.assertEqual(repaired.getpixel((75,66))[3],255,'Authored hidden waist must close the former abrupt notch')
 		for y in range(76):
 			for x in range(128):
 				if repaired.getpixel((x,y))!=plate.getpixel((x,y)):
 					self.assertTrue(y in body and body[y][0]<=x<body[y][1])
+		for y,(x0,x1) in body.items():
+			for x in range(x0,x1):
+				self.assertEqual(source.getpixel((x,y))[3],255,'Any transparent original interior would be an explicit rest-reconstruction blocker')
+				self.assertEqual(repaired.getpixel((x,y))[3],255,'Intended body contour must not contain an alpha cavity')
 
 	def test_authored_extremes_preserve_head_palette_and_rigid_source_scale(self):
 		_,(source,plate,layers,_)=self.cases[0]
