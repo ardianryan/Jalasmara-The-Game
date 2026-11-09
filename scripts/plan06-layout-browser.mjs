@@ -34,6 +34,8 @@ import { watchGameplayFailures } from "./gameplay-api-failure.mjs";
 import { deriveSarasFixture } from "./saras-alpha-fixture.mjs";
 import { deriveLeftForestFixture } from "./left-forest-fixture.mjs";
 import { deriveWardrobeFixture } from "./wardrobe-route-fixture.mjs";
+import { wardrobeNodeMode, assertEquipmentNodeSnapshot } from "./equipment-node-proof.mjs";
+import { deriveWardrobeVisibilityFixture, projectedWardrobeClear } from "./wardrobe-visibility-fixture.mjs";
 import {
   keyboardPulse,
   corridorTargets,
@@ -128,6 +130,8 @@ assert(
   Number.isSafeInteger(expectedPckBytes) && expectedPckBytes > 0,
   "Set PLAN06_EXPECT_PCK_BYTES to the exact exported PCK size.",
 );
+const wardrobeNodeProof = wardrobeNodeMode(process.env.PLAN06_WARDROBE_NODES, routeMode, expectedPck);
+const wardrobeVisibilitySource = wardrobeNodeProof ? readFileSync(new URL("../client-godot/scripts/land/LandWorld3D.gd", import.meta.url), "utf8") : null;
 let shelterPredecessor;
 assert(
   !process.env.PLAN06_SHELTER_PREDECESSOR_PCK ||
@@ -1239,13 +1243,24 @@ async function verifyCompactDialogue() {
 async function verifyWardrobe() {
   const fixture = deriveWardrobeFixture(world);
   assert.deepEqual(fixture, wardrobeFixture);
+  if (wardrobeNodeProof) {
+    assertEquipmentNodeSnapshot(await snapshot(), "daily");
+    checks.push("new-export-preflight-supports-opt-in-actual-equipment-node-schema1");
+  }
   const assertOutfit = async (outfit, tag) => {
-    const value = await waitState(
+    let value = await waitState(
       (state) => state.outfit === outfit && state.land?.actors?.player === 1,
     );
     assert.equal(value.equipment.tank, outfit === "diving");
     assert.equal(value.equipment.net, outfit === "diving");
     assert.equal(value.equipment.satchel, false);
+    if (wardrobeNodeProof) {
+      // Give the actor mirror one snapshot interval after an outfit transition.
+      await page.waitForTimeout(220);
+      value = await snapshot();
+      const actual = assertEquipmentNodeSnapshot(value, outfit);
+      observations.push({ name: tag + "-actual-node-tree-visibility", actual });
+    }
     observations.push({
       name: tag + "-requested-gear-state",
       x: value.x,
@@ -1261,6 +1276,22 @@ async function verifyWardrobe() {
   await assertOutfit("daily", "wardrobe-curtain-retains-daily-from-village");
   await walkTo(fixture.diving.x, fixture.diving.y);
   await assertOutfit("diving", "wardrobe-crossing-equips-diving-tank-and-net");
+  if (wardrobeNodeProof) {
+    const current = await snapshot();
+    const view = { azimuth: current.land.view.azimuth, elevation: current.land.view.elevation };
+    const clear = deriveWardrobeVisibilityFixture(world, view, wardrobeVisibilitySource);
+    observations.push({ name: "source-derived-next-export-unobscured-frame-candidate", ...clear });
+    await routeTo(clear.point, "hub");
+    await page.waitForTimeout(600);
+    const before = await snapshot();
+    await page.waitForTimeout(300);
+    const actual = await assertOutfit("diving", "wardrobe-next-export-actual-gear-at-unobscured-dock-candidate");
+    assert(Math.hypot(actual.x - before.x, actual.y - before.y) < 0.25, "The gear frame must be captured at actual standstill");
+    assert.equal(actual.land.view.targetHeight, 0);
+    assert(projectedWardrobeClear(world, {x: actual.x, y: actual.y}, {azimuth: actual.land.view.azimuth, elevation: actual.land.view.elevation}, wardrobeVisibilitySource), "Actual reached position still overlaps projected booth geometry; do not substitute the target or loosen arrival tolerance");
+    observations.push({ name: "actual-next-export-projected-booth-clearance", point: {x: actual.x, y: actual.y}, modelScope: clear.modelScope, actual: assertEquipmentNodeSnapshot(actual, "diving") });
+    checks.push("actual-next-export-tank-net-nodes-and-meshes-visible-at-physically-reached-booth-clear-frame-needs-image-review");
+  }
   await walkTo(fixture.curtain.x, fixture.curtain.y);
   await assertOutfit("diving", "wardrobe-curtain-retains-diving-from-ladder");
   await walkTo(fixture.daily.x, fixture.daily.y);
@@ -1286,6 +1317,12 @@ async function verifyWardrobe() {
       state.equipment?.tank &&
       state.equipment?.net,
   );
+  if (wardrobeNodeProof) {
+    await page.waitForTimeout(220);
+    const actual = assertEquipmentNodeSnapshot(await snapshot(), "diving");
+    observations.push({ name: "actual-next-export-ocean-tank-net-node-tree-visibility", actual });
+    checks.push("actual-next-export-ocean-renderer-has-visible-separate-tank-and-net-nodes");
+  }
   await shot("wardrobe-actual-ocean-entry-diving-state");
   await walkTo(world.spawn.x, world.spawn.y);
   await waitState((state) => state.nearby === "boat");
@@ -1326,6 +1363,7 @@ async function verifyWardrobe() {
     "daily-outfit-recomputed-after-real-position-save-reload-without-invented-rewards",
   );
 }
+
 
 async function verifyOcean() {
   await routeTo(world.hub.divePoint, "hub");
@@ -2041,6 +2079,7 @@ try {
           initialLeftForest,
           leftForestFixture,
           wardrobeFixture,
+          ...(wardrobeNodeProof ? { wardrobeNodeProof: { enabled: true, scope: "actual-node-tree-visibility-plus-booth-projection-needs-image-review", historicalRequestedOnlyProof: false } } : {}),
           outcome: runCompleted && cleaned ? "completed" : "failed",
           completed: runCompleted && cleaned,
           errors,

@@ -41,3 +41,24 @@ After source commit09d9fc4, integrator granted a bounded necessary import and fo
 The first fresh import exited0 after9,151ms but logged seven font/theme resource errors because the project theme referenced fontdata before the empty `.godot` cache had imported it. This attempt is **FAIL**, retained at `.runtime/equipment-node-import.log`; the focused test was not started from that result. The bounded second necessary import completed2,649ms with0errors. Then the real `equipment-node-diagnostics.gd` completed485ms, exit0, emitted its explicit `EQUIPMENT NODE DIAGNOSTICS PASS` marker, with0`SCRIPT ERROR`, `ERROR:` or assertion failures. Logs `.runtime/equipment-node-import-second.log` and `.runtime/equipment-node-focused.log`.
 
 This actual gate proves opt-in allowlist/three outfit node states/actual descendants, inherited parent hiding, individually hidden mesh, real land and ocean wrapper reports, unchanged retained counts, and off/on/off toggling. It does not turn the CPU projected dock candidate into an accepted screenshot or prove final combined export/browser behavior. Root should run the fixture in the next coherent integration suite and later verify actual node fields plus unobscured pixels on its newly pinned PCK. Generated `.godot` and two missing UID cache-side files were not staged.
+
+## Explicit next-export browser mode prepared
+
+The future actual-node gate requires **both** `PLAN06_ROUTE_MODE=wardrobe` and `PLAN06_WARDROBE_NODES=1`. The flag accepts only explicit1, rejects other modes and rejects historical requested-onlyPCK73d **before allocating a fixture**. After actual attachment, strict schema1 preflight must pass before navigation. It never substitutes requested gear booleans if actual-node data is absent, unsupported, locally hidden or inherited-hidden. Existing ordinary wardrobe mode remains the historical requested-state route; its actual4PASS is not widened.
+
+The allowlisted protocol validator is used by the real harness and unit-tested. It requires active renderer/root, exact known attachment nodes, current actual mesh hierarchy (tank6/net12/satchel4/vest6), local/inherited visibility and all descendant meshes matching daily/diving expectations. An enabled but partially hidden net, missing schema, extra account-like field or inactive renderer is rejected. These are CPU protocol fixtures, not simulated gameplay acceptance.
+
+On the future flagged route, every existing dock/reload checkpoint also records actual node state. After the first diving crossing, the game must physically walk to the derived dock corner, stop, and satisfy the conservative projection test at **actual snapshot coordinates and actual camera basis**, groundheight0. Merely being within the ordinary five-unit arrival radius is insufficient; that arrival threshold, the source bounds and the geometry are unchanged. A failing actual clearance preserves the first failure rather than snapping the player to the target or widening tolerances. A short220ms wait lets the real actor mirror advance beyond an outfit-transition snapshot interval; it does not replace a node failure with requested state. An original screenshot still needs visual review for other occluders and actual art quality.
+
+The separate ocean snapshot must show the active ocean renderer with the same actual tank/net nodes and visible meshes. Empty extraction then returns through the real booth, and saved/reloaded daily state must hide these nodes. No forest actor/node injection or new explorer proof is included. Existing five-minute post-attach budget, real input, authoritative actions, owned UUID and cleanup remain unchanged.
+
+CPU **7/7 PASS**:3protocol tests plus4route/geometry tests. Browser harness syntax and `git diff --check` pass. No actual browser/build/export run for this new mode; root owns the coherent export and GPU slot. Invocation after root supplies its newly verified hash/byte count:
+
+```sh
+APP_TEST_ORIGIN=http://localhost:3111 PLAN06_ROUTE_MODE=wardrobe \
+PLAN06_WARDROBE_NODES=1 PLAN06_EXPECT_PCK="$NEXT_PCK_SHA" \
+PLAN06_EXPECT_PCK_BYTES="$NEXT_PCK_BYTES" \
+node --import tsx scripts/plan06-layout-browser.mjs
+```
+
+The historical73d four-check command deliberately fails this new opt-in mode preflight. A future new PCK with no schema also fails after attachment, without travelling or claiming actual-node acceptance.
