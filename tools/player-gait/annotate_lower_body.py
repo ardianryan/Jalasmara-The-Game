@@ -10,6 +10,7 @@ DIRECTIONS=['east','south_east','south','south_west','west','north_west','north'
 # Anatomical left/right, including the occluded profile leg. Profile legs reuse
 # their own authored view; no east/west mirroring or replacement anatomy.
 HIP_X=[(65,68),(70,59),(71,58),(68,58),(61,64),(59,70),(58,71),(61,71)]
+FOOT_X=[[(59,72),(67,80)],[(65,82),(53,65)],[(67,77),(51,61)],[(60,75),(46,60)],[(48,62),(56,69)],[(47,64),(64,75)],[(51,62),(66,77)],[(54,66),(65,82)]]
 
 def generate(outfit):
     source=ART/f'male-nusantara-{outfit}-idle-8way-v1.png'
@@ -17,10 +18,10 @@ def generate(outfit):
     views={}
     for index,direction in enumerate(DIRECTIONS):
         legs={}
-        for side,x in zip(['left','right'],HIP_X[index]):
+        for leg_index,(side,x) in enumerate(zip(['left','right'],HIP_X[index])):
             specs={'thigh':[x-4,76,8,12],'shin':[x-4,88,8,11],
-                   'foot':[x-6,98,14,6]}
-            foot=image.crop((index*128+specs['foot'][0],98,index*128+specs['foot'][0]+14,104))
+                   'foot':[FOOT_X[index][leg_index][0],98,FOOT_X[index][leg_index][1]-FOOT_X[index][leg_index][0],6]}
+            foot=image.crop((index*128+specs['foot'][0],98,index*128+specs['foot'][0]+specs['foot'][2],104))
             bottom=foot.getbbox()[3] if foot.getbbox() else 0
             opaque=[px for px in range(foot.width) if bottom and foot.getpixel((px,bottom-1))[3]>=128]
             if not opaque: raise AssertionError((outfit,direction,side,'no original sole pixel'))
