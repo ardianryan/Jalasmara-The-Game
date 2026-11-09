@@ -138,9 +138,10 @@ func _begin(side:String,at:Vector2,hips:Dictionary,right:Vector3) -> void:
 	var entry:Dictionary=_feet[side]
 	entry.from=entry.logical
 	entry.lateralOffset=float(hips[side])
-	entry.to=_safe(_base(at,float(hips[side]),right)+_heading*(STEP_DISTANCE+LANDING_LEAD)/maxf(.001,_world_motion(at,_heading).length()),at,side)
+	entry.to=_safe(_base(at,float(hips[side]),right)+_heading*(_landing_distance+LANDING_LEAD)/maxf(.001,_world_motion(at,_heading).length()),at,side)
 	entry.fromWorld=entry.sole
 	entry.toWorld=_ground(entry.to)
+	entry.landingHeight=Vector3(entry.toWorld).z
 	entry.grounded=false
 
 func _reset(at:Vector2,hips:Dictionary,right:Vector3) -> void:
@@ -192,18 +193,30 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 			var entry:Dictionary=_feet[_swing]
 			entry.lateralOffset=move_toward(float(entry.lateralOffset),float(hips[_swing]),chunk)
 			# Retarget only the free foot; an already planted sole never follows the torso.
-			var target:=_safe(_base(sample,float(entry.lateralOffset),right)+_heading*(_landing_distance-_distance+LANDING_LEAD)/maxf(.001,_world_motion(sample,_heading).length()),sample,_swing)
+			var target:=_safe(_base(sample,float(entry.lateralOffset),right)+_heading*(_landing_distance-_distance+LANDING_LEAD)/maxf(.001,_world_motion(sample,_heading).length()),sample,_swing,float(entry.landingHeight))
 			entry.to=target
 			entry.toWorld=_ground(target)
 			_transfer_body(sample,chunk,_swing)
 			body_advanced=true
 			var u:=clampf(_distance/_landing_distance,0,1)
-			var smooth:=u*u*(3.0-2.0*u)
+			var advance:=u
+			var elevation:=u
+			var rise:=Vector3(entry.toWorld).z-Vector3(entry.fromWorld).z
+			if absf(rise)>.01:
+				var window:=clampf(absf(rise)/(_landing_distance*3.0),.25,.65)
+				var delay:=window*.5
+				if rise>0:
+					advance=clampf((u-delay)/(1.0-delay),0,1)
+					elevation=clampf(u/window,0,1)
+				else:
+					advance=clampf(u/(1.0-delay),0,1)
+					elevation=clampf((u-(1.0-window))/window,0,1)
+			var smooth:=advance*advance*(3.0-2.0*advance)
+			var rise_smooth:=elevation*elevation*(3.0-2.0*elevation)
 			entry.logical=Vector2(entry.from).lerp(target,smooth)
 			var floor_world:=_ground(entry.logical)
-			var world:=Vector3(entry.fromWorld).lerp(entry.toWorld,smooth)
-			var lift:=TOE_CLEARANCE+absf(Vector3(entry.toWorld).z-Vector3(entry.fromWorld).z)*.5
-			world.z=maxf(world.z+sin(u*PI)*lift,floor_world.z+.02)
+			var world:=Vector3(entry.fromWorld).lerp(entry.toWorld,rise_smooth)
+			world.z=maxf(world.z+sin(u*PI)*TOE_CLEARANCE,floor_world.z+.02)
 			entry.sole=Vector3(floor_world.x,floor_world.y,world.z)
 			if u>=1:
 				entry.logical=target
