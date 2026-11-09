@@ -9,6 +9,7 @@ import { fetchWorld } from "./game-navigation.mjs";
 import { physicalRoute } from "./plan06-physical-route.mjs";
 import { watchGameplayFailures } from "./gameplay-api-failure.mjs";
 import { keyboardPulse, corridorTargets } from "./land-view-navigation.mjs";
+import { calendarResumeProof } from "./calendar-resume-proof.mjs";
 import {
   deriveCanopyTarget,
   readCanopyAlpha,
@@ -341,6 +342,67 @@ async function apiState() {
   return response.json();
 }
 
+async function verifyReloadCalendar() {
+  const observation = {
+    name: "post-reload-actual-calendar-heartbeats",
+    startedAt: Date.now(),
+    timeoutMs: 35000,
+    records: [],
+  };
+  observations.push(observation);
+  const currentFrame = frame;
+  const collect = async (response) => {
+    const request = response.request();
+    if (
+      new URL(response.url()).pathname !== "/api/calendar/heartbeat" ||
+      request.method() !== "POST" ||
+      request.frame() !== currentFrame
+    )
+      return;
+    const sent = request.postDataJSON() ?? {};
+    const body = await response.json().catch(() => ({}));
+    const calendar = body.calendar ?? {};
+    observation.records.push({
+      at: Date.now(),
+      status: response.status(),
+      focused: sent.focused,
+      paused: sent.paused,
+      writer: calendar.writer,
+      serverNow: calendar.serverNow,
+      leaseExpiresAt: calendar.leaseExpiresAt,
+      calendarDay: calendar.calendarDay,
+      minuteOfDay: calendar.minuteOfDay,
+      calendarRevision: calendar.calendarRevision,
+      dayLengthMs: calendar.dayLengthMs,
+    });
+  };
+  page.on("response", collect);
+  try {
+    while (Date.now() - observation.startedAt < observation.timeoutMs) {
+      budget();
+      const proof = calendarResumeProof(observation.records);
+      if (proof) {
+        const value = await snapshot();
+        if (
+          value.weather.clockWriter === true &&
+          value.weather.clockConnected === true &&
+          value.weather.clockPaused === false &&
+          !value.modal
+        ) {
+          Object.assign(observation, { proof, completedAt: Date.now() });
+          return proof;
+        }
+      }
+      await page.waitForTimeout(250);
+    }
+    assert.fail(
+      "New game iframe did not regain clock writer and advance authoritative active time within35seconds",
+    );
+  } finally {
+    page.off("response", collect);
+  }
+}
+
 try {
   const health = await fetch(`${origin}/api/health`, {
     signal: AbortSignal.timeout(15000),
@@ -579,6 +641,12 @@ try {
   assert(Math.hypot(resumed.x - before.x, resumed.y - before.y) < 30);
   await page.waitForTimeout(800);
   await shot("04-public-forest-resumes-after-reload");
+  stage = "post-reload-calendar-writer";
+  await verifyReloadCalendar();
+  await shot("05-public-calendar-writer-resumes-after-reload");
+  checks.push(
+    "public-reloaded-game-regains-clock-writer-and-advances-authoritative-active-time",
+  );
   const finalState = await apiState();
   assert.equal(finalState.player.coins, 200);
   assert.equal(finalState.player.progress.day, 1);
