@@ -137,6 +137,7 @@ func _begin(side:String,at:Vector2,hips:Dictionary,right:Vector3) -> void:
 	_distance=0.0
 	var entry:Dictionary=_feet[side]
 	entry.from=entry.logical
+	entry.lateralOffset=float(hips[side])
 	entry.to=_safe(_base(at,float(hips[side]),right)+_heading*(STEP_DISTANCE+LANDING_LEAD)/maxf(.001,_world_motion(at,_heading).length()),at,side)
 	entry.fromWorld=entry.sole
 	entry.toWorld=_ground(entry.to)
@@ -190,7 +191,7 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 			_distance+=chunk
 			var entry:Dictionary=_feet[_swing]
 			# Retarget only the free foot; an already planted sole never follows the torso.
-			var target:=_safe(_base(sample,float(hips[_swing]),right)+_heading*(_landing_distance-_distance+LANDING_LEAD)/maxf(.001,_world_motion(sample,_heading).length()),sample,_swing)
+			var target:=_safe(_base(sample,float(entry.lateralOffset),right)+_heading*(_landing_distance-_distance+LANDING_LEAD)/maxf(.001,_world_motion(sample,_heading).length()),sample,_swing)
 			entry.to=target
 			entry.toWorld=_ground(target)
 			_transfer_body(sample,chunk,_swing)
