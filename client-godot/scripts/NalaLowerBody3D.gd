@@ -248,6 +248,9 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 		if physical_plane:
 			var current:=_plane(side)
 			var target:Quaternion=FootPlane.contact_rotation(renderer,entry.logical if bool(entry.grounded) else entry.to,right)
+			var current_terrain:Quaternion=FootPlane.contact_rotation(renderer,entry.logical,right)
+			if not bool(entry.grounded) and current_terrain.angle_to(Quaternion.IDENTITY)>.001: target=current_terrain
+			entry["orientationFollowsCurrentRamp"]=not bool(entry.grounded) and current_terrain.angle_to(Quaternion.IDENTITY)>.001
 			if bool(entry.grounded):
 				if current.angle_to(target)>.001:
 					visible=false

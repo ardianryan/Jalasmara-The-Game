@@ -131,6 +131,7 @@ func _measure(label:String) -> void:
 		if str(pose.contacts.swingSide)==side and not entry.has("settlingTarget"):
 			var plan:Dictionary=entry.get("treadPlan",entry.get("rampCurvePlan",{}))
 			if not plan.is_empty():
+				if not _check(bool(plan.valid) and is_finite(float(plan.curveSpeedBound)) and float(plan.curveSpeedBound)<=4.9,"Invalid terrain curve budget accepted "+label): return
 				if not _check(str(plan.curveType)==("ramp_support_profile" if bool(entry.get("fixedRampTarget",false)) else "stair_clearance"),"Terrain bound does not match actual path type "+label): return
 				if not _check(absf(float(plan.distance)-float(pose.contacts.landingDistance))<.00001 and Vector3(plan.fromWorld).distance_to(entry.fromWorld)<.003 and Vector3(plan.toWorld).distance_to(entry.toWorld)<.003,"Terrain curve budget is stale after reanchor/retarget "+label+" side="+side): return
 		var foot:Sprite3D=rig.get("_parts")[side+"_foot"]
