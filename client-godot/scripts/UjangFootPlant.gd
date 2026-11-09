@@ -82,9 +82,11 @@ func _ground(point:Vector2) -> Vector3:
 func _update_lateral(at:Vector2) -> void:
 	var camera:Camera3D=_renderer.get("camera_3d")
 	if camera==null: return
-	var origin:Vector3=_ground(at)
-	var x:Vector3=_ground(at+Vector2.RIGHT)-origin
-	var y:Vector3=_ground(at+Vector2.DOWN)-origin
+	# Hip spacing is a horizontal camera-frame offset; each sole samples the ramp separately.
+	# Folding the ramp gradient into this inverse stretches that spacing along the slope.
+	var origin:Vector3=_renderer.map_point(at,0)
+	var x:Vector3=_renderer.map_point(at+Vector2.RIGHT,0)-origin
+	var y:Vector3=_renderer.map_point(at+Vector2.DOWN,0)-origin
 	var right:=camera.global_basis.x
 	var determinant:=x.x*y.y-y.x*x.y
 	if absf(determinant)<.00001: return
