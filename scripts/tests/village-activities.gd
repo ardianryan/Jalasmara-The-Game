@@ -19,6 +19,12 @@ func _run() -> void:
 	var gardener: Dictionary=state.world.surface_hub.districtActivities["Bu Darmi"].duplicate(true)
 	gardener["name"]="Bu Darmi"
 	profiles.append(gardener)
+	for index in range(profiles.size()):
+		for other in range(index+1,profiles.size()):
+			for station in ["rest","shelter"]:
+				var a: Array=profiles[index].activity[station]
+				var b: Array=profiles[other].activity[station]
+				assert(Vector2(a[0],a[1]).distance_to(Vector2(b[0],b[1]))>=60,"Residents must not stack at shared home or shelter entrances")
 	var steps:=0
 	for profile in profiles:
 		var actor: Node2D=load("res://scripts/HubActor.gd").new()

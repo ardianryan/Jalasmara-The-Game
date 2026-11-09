@@ -38,7 +38,7 @@ export const VILLAGE_RESIDENTS = [
   {
     id: "npc_saras", name: "Saras", title: "Arkeolog Maritim", appearance: 5, cycle: 2,
     route: [[1480, 680], [1540, 690]],
-    activity: { kind: "research", startMinute: 540, endMinute: 1020, work: [1480, 680], rest: [940, 310], shelter: [940, 310], commute: [[1480, 680], [1350, 635], [900, 650], [900, 350], [940, 310]] },
+    activity: { kind: "research", startMinute: 540, endMinute: 1020, work: [1480, 680], rest: [1020, 310], shelter: [1020, 310], commute: [[1480, 680], [1350, 635], [900, 650], [900, 350], [940, 310], [1020, 310]] },
     line: "Aku sedang membandingkan ukiran batu dengan catatan warga. Jika menemukan prasasti di palung, catat tempat penemuannya. Benda kuno kehilangan banyak cerita jika dipisahkan dari konteksnya.",
     evening: "Mbah Wira mengizinkanku memeriksa catatan di kedai. Gerbang di bawah Tamansari mungkin menyimpan jejak peradaban yang lebih tua dari Bandar Hujung.",
   },
@@ -49,8 +49,8 @@ export const VILLAGE_DISTRICT_ACTIVITIES = {
   "Bu Darmi": {
     activity: {
       kind: "gardening", startMinute: 420, endMinute: 1050,
-      work: [1720, 520], rest: [1325, 300], shelter: [1325, 300],
-      commute: [[1720, 520], [1350, 635], [900, 650], [900, 350], [940, 310], [1150, 320], [1325, 300]],
+      work: [1720, 520], rest: [1395, 310], shelter: [1395, 310],
+      commute: [[1720, 520], [1350, 635], [900, 650], [900, 350], [940, 310], [1150, 320], [1395, 310]],
     },
   },
 } as const;
