@@ -1,0 +1,1166 @@
+{
+  "schemaVersion": 1,
+  "status": "AUTHORED NW explorer ownership/rig on new coherent head/IDLE-body arrangement; not source anatomy/contact or full walk repair",
+  "identity": "male_nusantara",
+  "outfit": "explorer",
+  "view": "north_west",
+  "orientationSpecSha256": "531fac8333f7cd843e024a3f7efe42316c6165a6b3a9e9b40903be484503ab9d",
+  "sourceMeasurement": {
+    "anatomicalSide": "unknown",
+    "wrist": null,
+    "grip": null
+  },
+  "authoredConvention": {
+    "status": "AUTHORED skeleton naming, not measured original sides",
+    "left": "ChainA: visible screen-left sleeve/arm above authored rear-left frame LEFT hipx59; side chosen for new rig convention, not from hand screenX",
+    "right": "ChainB: mostly occluded screen-right sleeve/arm above authored RIGHT hipx70. Source physical identity remains unverified",
+    "contactPhase": null
+  },
+  "parts": {
+    "left": {
+      "cap": [
+        [
+          54,
+          45
+        ],
+        [
+          57,
+          45
+        ],
+        [
+          59,
+          48
+        ],
+        [
+          59,
+          52
+        ],
+        [
+          58,
+          55
+        ],
+        [
+          53,
+          55
+        ],
+        [
+          51,
+          52
+        ],
+        [
+          52,
+          48
+        ]
+      ],
+      "upper": [
+        [
+          53,
+          54
+        ],
+        [
+          58,
+          54
+        ],
+        [
+          58,
+          60
+        ],
+        [
+          56,
+          63
+        ],
+        [
+          52,
+          62
+        ],
+        [
+          50,
+          58
+        ]
+      ],
+      "fore": [
+        [
+          50,
+          59
+        ],
+        [
+          56,
+          59
+        ],
+        [
+          57,
+          62
+        ],
+        [
+          56,
+          66
+        ],
+        [
+          54,
+          69
+        ],
+        [
+          49,
+          70
+        ],
+        [
+          47,
+          67
+        ],
+        [
+          49,
+          63
+        ]
+      ],
+      "hand": [
+        [
+          48,
+          66
+        ],
+        [
+          53,
+          66
+        ],
+        [
+          55,
+          69
+        ],
+        [
+          54,
+          73
+        ],
+        [
+          50,
+          74
+        ],
+        [
+          47,
+          71
+        ],
+        [
+          46,
+          68
+        ]
+      ]
+    },
+    "right": {
+      "cap": [
+        [
+          74,
+          48
+        ],
+        [
+          75,
+          49
+        ],
+        [
+          75,
+          53
+        ],
+        [
+          74,
+          54
+        ]
+      ],
+      "upper": [
+        [
+          74,
+          53
+        ],
+        [
+          76,
+          54
+        ],
+        [
+          76,
+          60
+        ],
+        [
+          75,
+          62
+        ],
+        [
+          74,
+          60
+        ]
+      ],
+      "fore": [
+        [
+          74,
+          59
+        ],
+        [
+          76,
+          60
+        ],
+        [
+          77,
+          64
+        ],
+        [
+          76,
+          67
+        ],
+        [
+          74,
+          67
+        ]
+      ],
+      "hand": [
+        [
+          75,
+          64
+        ],
+        [
+          77,
+          65
+        ],
+        [
+          78,
+          67
+        ],
+        [
+          77,
+          69
+        ],
+        [
+          75,
+          69
+        ],
+        [
+          74,
+          67
+        ]
+      ]
+    }
+  },
+  "bodyContour": [
+    [
+      45,
+      60,
+      73
+    ],
+    [
+      46,
+      60,
+      73
+    ],
+    [
+      47,
+      60,
+      73
+    ],
+    [
+      48,
+      60,
+      73
+    ],
+    [
+      49,
+      60,
+      73
+    ],
+    [
+      50,
+      60,
+      73
+    ],
+    [
+      51,
+      60,
+      73
+    ],
+    [
+      52,
+      60,
+      73
+    ],
+    [
+      53,
+      59,
+      73
+    ],
+    [
+      54,
+      59,
+      73
+    ],
+    [
+      55,
+      59,
+      73
+    ],
+    [
+      56,
+      59,
+      73
+    ],
+    [
+      57,
+      59,
+      73
+    ],
+    [
+      58,
+      59,
+      73
+    ],
+    [
+      59,
+      59,
+      73
+    ],
+    [
+      60,
+      57,
+      73
+    ],
+    [
+      61,
+      57,
+      73
+    ],
+    [
+      62,
+      57,
+      73
+    ],
+    [
+      63,
+      57,
+      73
+    ],
+    [
+      64,
+      57,
+      73
+    ],
+    [
+      65,
+      57,
+      73
+    ],
+    [
+      66,
+      57,
+      73
+    ],
+    [
+      67,
+      57,
+      73
+    ],
+    [
+      68,
+      57,
+      73
+    ],
+    [
+      69,
+      57,
+      73
+    ],
+    [
+      70,
+      57,
+      73
+    ]
+  ],
+  "garmentPolygons": {
+    "vest": [
+      [
+        59,
+        45
+      ],
+      [
+        69,
+        45
+      ],
+      [
+        73,
+        48
+      ],
+      [
+        73,
+        60
+      ],
+      [
+        74,
+        70
+      ],
+      [
+        56,
+        70
+      ],
+      [
+        58,
+        58
+      ]
+    ],
+    "belt": [
+      [
+        56,
+        60
+      ],
+      [
+        74,
+        60
+      ],
+      [
+        74,
+        64
+      ],
+      [
+        56,
+        64
+      ]
+    ],
+    "shirt": [
+      [
+        50,
+        45
+      ],
+      [
+        76,
+        45
+      ],
+      [
+        76,
+        57
+      ],
+      [
+        50,
+        57
+      ]
+    ]
+  },
+  "jointsStatus": "AUTHORED NW explorer design anchors; unknown source wrists/grips stay unknown",
+  "joints": {
+    "left": {
+      "shoulder": [
+        56,
+        50
+      ],
+      "elbow": [
+        54,
+        59
+      ],
+      "wrist": [
+        51,
+        68
+      ]
+    },
+    "right": {
+      "shoulder": [
+        74,
+        51
+      ],
+      "elbow": [
+        75,
+        59
+      ],
+      "wrist": [
+        76,
+        67
+      ]
+    }
+  },
+  "poses": [
+    {
+      "name": "authored-neutral-reference",
+      "left": {
+        "upperDeg": 0,
+        "foreRelativeDeg": 0
+      },
+      "right": {
+        "upperDeg": 0,
+        "foreRelativeDeg": 0
+      },
+      "behindTorso": [
+        "right"
+      ]
+    },
+    {
+      "name": "authored-A-forward-B-back",
+      "left": {
+        "upperDeg": 0,
+        "foreRelativeDeg": 32
+      },
+      "right": {
+        "upperDeg": 0,
+        "foreRelativeDeg": -24
+      },
+      "behindTorso": [
+        "right"
+      ]
+    }
+  ],
+  "gearContract": {
+    "newNodes": 0,
+    "newGearPixels": 0,
+    "atlasVestMeshEnabled": false,
+    "sourceOriginalClothingOnly": true
+  },
+  "donorCandidates": [
+    {
+      "pixel": [
+        60,
+        53
+      ],
+      "rgba": [
+        63,
+        52,
+        39,
+        255
+      ]
+    },
+    {
+      "pixel": [
+        60,
+        54
+      ],
+      "rgba": [
+        104,
+        89,
+        63,
+        255
+      ]
+    },
+    {
+      "pixel": [
+        60,
+        55
+      ],
+      "rgba": [
+        104,
+        84,
+        54,
+        255
+      ]
+    },
+    {
+      "pixel": [
+        60,
+        60
+      ],
+      "rgba": [
+        99,
+        82,
+        57,
+        255
+      ]
+    },
+    {
+      "pixel": [
+        60,
+        61
+      ],
+      "rgba": [
+        30,
+        15,
+        9,
+        255
+      ]
+    },
+    {
+      "pixel": [
+        60,
+        62
+      ],
+      "rgba": [
+        124,
+        64,
+        53,
+        255
+      ]
+    },
+    {
+      "pixel": [
+        60,
+        63
+      ],
+      "rgba": [
+        201,
+        155,
+        120,
+        255
+      ]
+    }
+  ],
+  "sourceBoundaryAssignments": [
+    {
+      "part": "left/cap",
+      "pixel": [
+        53,
+        45
+      ],
+      "rgba": [
+        66,
+        61,
+        47,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "left/cap",
+      "pixel": [
+        52,
+        47
+      ],
+      "rgba": [
+        22,
+        17,
+        15,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "left/cap",
+      "pixel": [
+        59,
+        47
+      ],
+      "rgba": [
+        63,
+        79,
+        74,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "left/cap",
+      "pixel": [
+        51,
+        50
+      ],
+      "rgba": [
+        31,
+        31,
+        26,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "left/cap",
+      "pixel": [
+        51,
+        53
+      ],
+      "rgba": [
+        46,
+        56,
+        55,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "left/cap",
+      "pixel": [
+        51,
+        54
+      ],
+      "rgba": [
+        7,
+        13,
+        13,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "left/cap",
+      "pixel": [
+        59,
+        54
+      ],
+      "rgba": [
+        58,
+        73,
+        70,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "left/cap",
+      "pixel": [
+        51,
+        55
+      ],
+      "rgba": [
+        58,
+        52,
+        39,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "left/cap",
+      "pixel": [
+        59,
+        55
+      ],
+      "rgba": [
+        47,
+        59,
+        55,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "left/hand",
+      "pixel": [
+        48,
+        73
+      ],
+      "rgba": [
+        34,
+        23,
+        19,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "left/hand",
+      "pixel": [
+        49,
+        74
+      ],
+      "rgba": [
+        35,
+        22,
+        15,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "left/hand",
+      "pixel": [
+        51,
+        74
+      ],
+      "rgba": [
+        182,
+        138,
+        89,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "left/hand",
+      "pixel": [
+        52,
+        74
+      ],
+      "rgba": [
+        142,
+        93,
+        58,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "left/hand",
+      "pixel": [
+        53,
+        74
+      ],
+      "rgba": [
+        194,
+        143,
+        94,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "left/hand",
+      "pixel": [
+        54,
+        74
+      ],
+      "rgba": [
+        56,
+        33,
+        19,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "left/hand",
+      "pixel": [
+        51,
+        75
+      ],
+      "rgba": [
+        31,
+        23,
+        20,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "left/hand",
+      "pixel": [
+        52,
+        75
+      ],
+      "rgba": [
+        9,
+        8,
+        9,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "left/hand",
+      "pixel": [
+        53,
+        75
+      ],
+      "rgba": [
+        12,
+        7,
+        10,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "right/cap",
+      "pixel": [
+        76,
+        50
+      ],
+      "rgba": [
+        40,
+        32,
+        26,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "right/cap",
+      "pixel": [
+        76,
+        51
+      ],
+      "rgba": [
+        4,
+        3,
+        1,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "right/cap",
+      "pixel": [
+        76,
+        52
+      ],
+      "rgba": [
+        8,
+        3,
+        1,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "right/upper",
+      "pixel": [
+        73,
+        54
+      ],
+      "rgba": [
+        155,
+        118,
+        85,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "right/upper",
+      "pixel": [
+        73,
+        55
+      ],
+      "rgba": [
+        190,
+        135,
+        91,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "right/upper",
+      "pixel": [
+        73,
+        56
+      ],
+      "rgba": [
+        173,
+        117,
+        80,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "right/upper",
+      "pixel": [
+        73,
+        57
+      ],
+      "rgba": [
+        168,
+        114,
+        75,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "right/upper",
+      "pixel": [
+        73,
+        58
+      ],
+      "rgba": [
+        176,
+        122,
+        84,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "right/upper",
+      "pixel": [
+        73,
+        59
+      ],
+      "rgba": [
+        170,
+        117,
+        76,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "right/fore",
+      "pixel": [
+        73,
+        60
+      ],
+      "rgba": [
+        172,
+        123,
+        82,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "right/fore",
+      "pixel": [
+        73,
+        61
+      ],
+      "rgba": [
+        177,
+        129,
+        93,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "right/fore",
+      "pixel": [
+        73,
+        62
+      ],
+      "rgba": [
+        158,
+        112,
+        79,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "right/fore",
+      "pixel": [
+        73,
+        63
+      ],
+      "rgba": [
+        137,
+        94,
+        60,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "right/fore",
+      "pixel": [
+        73,
+        64
+      ],
+      "rgba": [
+        156,
+        109,
+        74,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "right/hand",
+      "pixel": [
+        73,
+        65
+      ],
+      "rgba": [
+        153,
+        106,
+        72,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "right/hand",
+      "pixel": [
+        73,
+        66
+      ],
+      "rgba": [
+        129,
+        90,
+        62,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "right/hand",
+      "pixel": [
+        73,
+        67
+      ],
+      "rgba": [
+        105,
+        77,
+        54,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "right/hand",
+      "pixel": [
+        74,
+        68
+      ],
+      "rgba": [
+        193,
+        154,
+        118,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "right/hand",
+      "pixel": [
+        74,
+        69
+      ],
+      "rgba": [
+        75,
+        46,
+        26,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "right/hand",
+      "pixel": [
+        74,
+        70
+      ],
+      "rgba": [
+        148,
+        115,
+        85,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "right/hand",
+      "pixel": [
+        75,
+        70
+      ],
+      "rgba": [
+        76,
+        48,
+        29,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "right/hand",
+      "pixel": [
+        74,
+        71
+      ],
+      "rgba": [
+        51,
+        38,
+        27,
+        255
+      ],
+      "status": "AUTHORED boundary ownership of original source outline/skin/sleeve adjacent that arm; not palette classification or recovered anatomy"
+    },
+    {
+      "part": "left/upper",
+      "pixel": [
+        51,
+        56
+      ],
+      "rgba": [
+        35,
+        29,
+        21,
+        255
+      ],
+      "status": "AUTHORED ownership of original dark arm outline beside51,55 cap/52,56 upper, not fixed torso; sourceRGBA preserved"
+    }
+  ]
+}
