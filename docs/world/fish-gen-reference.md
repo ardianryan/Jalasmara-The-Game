@@ -1,6 +1,6 @@
-# Fish Gen: referensi fauna laut yang disimpan
+# Fish Gen: referensi dan pilot fauna laut
 
-Tanggal pemeriksaan: 9 November 2026. Permintaan pengguna: simpan tool untuk kemungkinan memperkaya lingkungan laut. **Status: source tersimpan dan audit baca selesai; belum dipasang, dieksekusi, menghasilkan aset, atau diintegrasikan.** Pekerjaan inti 06 dan konflik sinkronisasi setelah ekstraksi tetap didahulukan.
+Tanggal pemeriksaan awal: 9 November 2026. **Status terbaru: pilot offline dan adapter runtime sudah diterapkan pada kandidat overnight, belum dirilis.** [Laporan pilot](../reviews/overnight-fishgen-pilot.md) memuat versi dependensi, command, hash, tes dan gambar. Tiga ikan dekoratif memakai atlas32bingkai; sepuluh spesies gameplay tetap. Bagian berikut mempertahankan audit awal, sehingga kalimat tentang eksekusi yang belum dilakukan berlaku pada checkpoint audit tersebut.
 
 ## Source dan salinan lokal
 

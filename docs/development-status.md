@@ -1,5 +1,7 @@
 # Status pengembangan
 
+Kandidat overnight `a11ca54` sudah menggabungkan restart Nala, koreksi lutut Ujang, recorder performa privat dan pilot FishGen dekoratif. HUD ukuran fisik dan perluasan desa/keramba masih dikerjakan, belum dirilis. [Delapan jalur aktif](reviews/overnight-eight-workstreams.md) mengatasi antrean lama di bawah. Pengguna bersedia membantu pengujian fisik Windows/S23; belum ada angka perangkat yang diklaim.
+
 Checkpoint terbaru: finishing06-B2 sudah aktif di staging (image d60aab/PCK5f5baf,64.333.184byte), CI3045337293 lulus5job/API100/world50. [Galeri pengembangan](visual/README.md) sudah tersedia di GitHub. Default browser publik masih gagal startup120detik pada slowtransfer; health/hash publik benar, bukan penerimaan gameplay. Kandidat Nala restart lulus fullworld/native terpisah tetapi belum digabung/dirilis. GitLabCE dibatalkan; GitLab.com tetapCI. Detail dan pin/rollback pada [handoff aktif](agent-handoff.md).
 
 ## Kandidat lokal06-B2: terrain dan warna

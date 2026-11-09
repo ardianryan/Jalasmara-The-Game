@@ -24,3 +24,14 @@ Tidak ada pekerjaan CE, resetowner/reseed, penghapusan volume, atau pengubahan p
 SerialcurlPCK membuktikan pola berulang padaURL/IP yang sama: curlidentity1,62detik lalu1,37detik; browseridentity/gzip dancurlgzip tidak selesai6detik. Semuanya200, length/ETag sama. Ini mempersempit penelitian, belum sebab yang terbukti. Artefak `.runtime/overnight-transfer-probes.json`.
 
 FishGen environment Python3.11 terisolasi dengan NumPy2.2.6/Pillow11.3.0 sedang disiapkan, nativeC dinonaktifkan pada pilot awal. Source upstream tetap pin0faa790; belum ada perubahan pada10spesies aktif. Pengujian fisik memerlukan perangkat; pertanyaan ketersediaan dikirim tanpa menghentikan lane lain.
+
+## Checkpoint kandidat gabungan a11ca54
+
+- Jalur2/5: port restart Nala dan koreksi arah lutut Ujang digabung. Regresi836tekukan barat diperbaiki;1.242kontak dan168belok tetap lulus. Ini belum penerimaan natural walking seluruh arah. Tubuh modular enam warga baru masih diuji, kegagalan panjang limb tidak disembunyikan.
+- Jalur3: recorder lokal opt-in30detik/5menit dan hostMenu64×48fisik digabung. Lima tes CPU dan focusedGodot subagent lulus; native/browser ekspor unduhan belum dibuktikan integrator. Fixture performance-capture kini terdaftar runner. Pengguna menyatakan bersedia membantu pengujian Windows/S23 nanti; belum ada hasil perangkat fisik.
+- Jalur4: akar pembesaran24/82logical menjadi40/137pxfisik pada1440×900 ditemukan. Subagent memperbaiki kontrak ukuran fisik dan memverifikasi dialog/kuis/buku serta layar hasil kedai sebelum commit.
+- Jalur6/8: server tanaman jahe dan keramba berbasis tangkapan hidup sedang dikerjakan di lane desa; tujuh skenario API awal lulus di lane tersebut. Belum digabung. Rumah lurah/RV dan rute warga masih menjalani validasi layout.
+- Jalur8 FishGen:73392a1 diterima lokal. Atlas384×128/32bingkai diproduksi ulang dengan hash sama; adapter960langkah+5.400kontak dan40frame native lulus. Tiga ikan dekoratif, profil ringan satu ikan; biota gameplay tidak diganti. Lihat [laporan pilot](overnight-fishgen-pilot.md). Belum ekspor/browser/rilis.
+- Jalur1: proxyloopback PCK0,59detik tetapi browserpublik masih1,95MB/20detik saat Range0-. Range tidak memperbaiki browser; jangan memasangnya pada loader. Percobaan berikut membandingkan precompressedPCK yang terdekompresi menjadi SHA5f5baf identik, tanpa perubahan game/API/proxy. Hasil gagal tetap disimpan.
+
+Staging masih image d60aab21/PCK5f5baf. Candidate commit dan bukti lokal tidak berarti sudah dirilis. Root menjalankan tes gabungan setelah kontrak desa/HUD/rig dibekukan; native/browser tetap bergantian.
