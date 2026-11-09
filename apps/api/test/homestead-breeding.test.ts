@@ -359,6 +359,66 @@ test(
         },
       );
       await t.test(
+        "two-star net catches do not become parents and fainted extraction loses all live catch",
+        async () => {
+          const before = await state();
+          await surface(WORLD.hub.divePoint);
+          const started = await request("/dive/start", { mode: "dive" });
+          assert.equal(started.status, 200, JSON.stringify(started.data));
+          const diveId = started.data.dive.id;
+          let dive = JSON.parse((await store!.redis.get(`dive:${id}`))!);
+          const targets = dive.targets
+            .filter((target: { fragmentId: string }) =>
+              ["ekosistem", "netralisasi"].includes(target.fragmentId),
+            )
+            .slice(0, 2);
+          assert.equal(targets.length, 2);
+          for (const [index, target] of targets.entries()) {
+            dive = JSON.parse((await store!.redis.get(`dive:${id}`))!);
+            dive.position = { x: target.x, y: target.y };
+            dive.netAt = Date.now() - (index === 0 ? 2000 : 900);
+            await store!.redis.set(
+              `dive:${id}`,
+              JSON.stringify(dive),
+              "EX",
+              1800,
+            );
+            const caught = await request("/dive/collect", {
+              diveId,
+              targetId: target.id,
+            });
+            assert.equal(caught.status, 200, JSON.stringify(caught.data));
+            assert.equal(caught.data.stars, index === 0 ? 2 : 3);
+            const saved = JSON.parse((await store!.redis.get(`dive:${id}`))!);
+            assert.equal(saved.liveCatch?.reef_seruni ?? 0, index);
+          }
+          dive = JSON.parse((await store!.redis.get(`dive:${id}`))!);
+          dive.oxygen = 0;
+          await store!.redis.set(
+            `dive:${id}`,
+            JSON.stringify(dive),
+            "EX",
+            1800,
+          );
+          const key = randomUUID();
+          const extracted = await request("/dive/extract", { diveId }, key);
+          assert.equal(extracted.status, 200, JSON.stringify(extracted.data));
+          assert.equal(extracted.data.fainted, true);
+          assert.equal(
+            (await state()).homestead.liveCatch.reef_seruni,
+            before.homestead.liveCatch.reef_seruni,
+          );
+          assert.deepEqual(
+            (await request("/dive/extract", { diveId }, key)).data,
+            extracted.data,
+          );
+          assert.equal(
+            (await state()).homestead.liveCatch.reef_seruni,
+            before.homestead.liveCatch.reef_seruni,
+          );
+        },
+      );
+      await t.test(
         "two fed settlements breed once; unfed days, duplicate day settlement and receipt replay do not",
         async () => {
           await surface(WORLD.homestead.fishPen.interaction);
