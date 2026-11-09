@@ -39,7 +39,7 @@ func run() -> void:
 			var scale:float=root.get_final_transform().x.length()
 			var before:Vector2=presenter.size
 			assert(logical.grow(1).encloses(presenter.get_global_rect()))
-			assert(presenter.text_view.get_theme_font_size("normal_font_size")*scale>=15.99)
+			assert(presenter.text_view.get_theme_font_size("normal_font_size")*scale>=(17.99 if physical.x>=1024 else 15.99))
 			assert(presenter.text_view.get_theme_font_size("normal_font_size")*scale<=24,"Body must remain readable without desktop inflation")
 			var action:Rect2=presenter.next_button.get_global_rect()
 			assert(action.size.y*scale>=47.99 and action.size.x*scale>=47.99)

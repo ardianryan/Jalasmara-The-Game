@@ -71,7 +71,7 @@ func run() -> void:
 			assert(button.get_rect().size.x>=285)
 			var label:Label=button.get_child(0)
 			assert(label.size.x>200 and label.size.y>=label.get_theme_font("font").get_height(label.get_theme_font_size("font_size")),"Every answer retains at least one complete text line")
-			assert(label.get_theme_font_size("font_size")*transform.x.length()>=16.0)
+			assert(label.get_theme_font_size("font_size")*transform.x.length()>=(18.0 if root.size.x>=1024 else 16.0))
 			assert(label.get_theme_font_size("font_size")*transform.x.length()<=24.0,"Quiz body must not inflate to40physical pixels on desktop")
 			assert(button.size.y*transform.x.length()>=56.0)
 		var scroll:ScrollContainer=scene.modal.get_child(0)

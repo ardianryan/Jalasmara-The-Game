@@ -36,11 +36,12 @@ func run() -> void:
 				assert(font_pixels <= 21,"Persistent body should not upscale to30px desktop text: " + key)
 		if phase == "after":
 			for control in [hud.get("_sound_button"),hud.get("_action")]:
-				assert(minf(control.size.x,control.size.y)*scale >= 48)
-				assert(maxf(control.size.x,control.size.y)*scale <= 65,"Standalone controls must remain compact physical targets")
-			assert(hud.get("_identity_plate").size.y*scale <= 83)
-		await RenderingServer.frame_post_draw
-		root.get_texture().get_image().save_png(output+"/%dx%d-night.png"%[physical.x,physical.y])
+				assert(minf(control.get_global_rect().size.x,control.get_global_rect().size.y)*scale >= 48)
+				assert(maxf(control.get_global_rect().size.x,control.get_global_rect().size.y)*scale <= 65,"Standalone controls must remain compact physical targets")
+			assert(hud.get("_identity_plate").get_global_rect().size.y*scale <= 83)
+		if DisplayServer.get_name()!="headless":
+			await RenderingServer.frame_post_draw
+			root.get_texture().get_image().save_png(output+"/%dx%d-night.png"%[physical.x,physical.y])
 		hud.update_state({"area":"Dangkalan Segaran","coins":525,"weight":4,"capacity":12,"clock":"20:35","weather":"Hujan ringan","canInteract":true,"action":"Naik ke dermaga","diving":true,"oxygen":80,"maxOxygen":100,"depth":42})
 		for frame in range(2): await process_frame
 		var instrument:Control=hud.get("_instrument")
@@ -49,8 +50,9 @@ func run() -> void:
 		if phase=="after" and not hud.touch_enabled:
 			assert(stats.size.x*scale<=301 and stats.size.y*scale<=170,"Desktop instrument must retain compact, measured physical rows")
 			assert(hud.get("_bag").get_theme_font_size("font_size")*instrument.scale.x*scale>=16)
-		await RenderingServer.frame_post_draw
-		root.get_texture().get_image().save_png(output+"/%dx%d-ocean.png"%[physical.x,physical.y])
+		if DisplayServer.get_name()!="headless":
+			await RenderingServer.frame_post_draw
+			root.get_texture().get_image().save_png(output+"/%dx%d-ocean.png"%[physical.x,physical.y])
 		hud.set_modal(true)
 		for key in ["_identity_plate","_action","_weather_plate","_action_plate"]:
 			assert(not hud.get(key).visible,"Night service reading must hide the persistent gameplay HUD")

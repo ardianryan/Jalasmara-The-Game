@@ -361,26 +361,28 @@ func _layout() -> void:
 	for index in range(controls.size()):
 		var button:Button=controls[index]
 		button.position=Vector2(right-cell*(5-index),utilities_y)
-		button.size=Vector2(cell,cell)
+		button.size=Vector2(cell,cell) if touch_enabled else Vector2(48,48)
+		button.scale=Vector2.ONE if touch_enabled else Vector2.ONE*ratio
 		button.visible=not _modal
 		for child in button.get_children():
 			if child is HudIcon:
-				child.position=Vector2.ONE*(cell-32)/2 if touch_enabled else Vector2((cell-24*ratio)/2,4*ratio)
-				child.size=Vector2.ONE*(32 if touch_enabled else 24*ratio)
+				child.position=Vector2.ONE*(cell-32)/2 if touch_enabled else Vector2(12,4)
+				child.size=Vector2.ONE*(32 if touch_enabled else 24)
 			elif child is Label and not touch_enabled:
-				child.position=Vector2(0,cell-14*ratio)
-				child.size=Vector2(cell,12*ratio)
-				child.add_theme_font_size_override("font_size",maxi(6,ceili(8*ratio)))
+				child.position=Vector2(0,34)
+				child.size=Vector2(48,12)
+				child.add_theme_font_size_override("font_size",8)
 	_sound_button.add_theme_font_size_override("font_size",body)
 	_sound_button.add_theme_font_override("font",preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2"))
 	_sound_button.text=""
-	HudArt.set_icon(_sound_button,"speaker-off" if AudioManager.muted else "speaker-on",32 if touch_enabled else ceili(24*ratio))
+	HudArt.set_icon(_sound_button,"speaker-off" if AudioManager.muted else "speaker-on",32 if touch_enabled else 24)
 	var width:=minf(410,viewport.x-margin.x-24) if portrait else minf(370*unit,viewport.x-cell*5-48)
 	if not portrait:
 		var host_control:=ViewportLayout.host_control_bounds()
 		width=minf(width,host_control.position.x-margin.x-6-ceilf(8*ratio))
 	_identity_plate.position=margin-Vector2(6,6)
-	_identity_plate.size=Vector2(width+12,identity_height)
+	_identity_plate.scale=Vector2.ONE if touch_enabled else Vector2.ONE*ratio
+	_identity_plate.size=Vector2(width+12,identity_height)/(1.0 if touch_enabled else ratio)
 	_identity_plate.visible=not _modal
 	_region.visible=not _modal
 	_identity_portrait.position=margin+Vector2(10*unit,6*unit)
@@ -400,9 +402,10 @@ func _layout() -> void:
 	_objective.add_theme_font_size_override("font_size",body)
 	_objective.hide()
 	_objective_toggle.position=margin+Vector2(width-cell,0)
-	_objective_toggle.size=Vector2(cell,cell)
+	_objective_toggle.size=Vector2(cell,cell) if touch_enabled else Vector2(48,48)
+	_objective_toggle.scale=Vector2.ONE if touch_enabled else Vector2.ONE*ratio
 	_objective_toggle.text=""
-	HudArt.set_icon(_objective_toggle,"quest-scroll",ceili(32*unit))
+	HudArt.set_icon(_objective_toggle,"quest-scroll",32)
 	_objective_toggle.disabled=_modal
 	_objective_toggle.visible=not _modal
 	var weather_width:=minf(350,ceilf(_weather.get_theme_font("font").get_string_size(_weather.text,HORIZONTAL_ALIGNMENT_RIGHT,-1,body).x)+12)
@@ -418,8 +421,10 @@ func _layout() -> void:
 	_dpad.position=Vector2(margin.x,bottom-_dpad.size.y)
 	var action_side:=maxf(88,ceilf(48*ratio)) if touch_enabled else maxf(28,ceilf(56*ratio))
 	var action_size:=Vector2.ONE*action_side
-	_action.size=action_size
-	_net.size=action_size
+	_action.size=action_size/(1.0 if touch_enabled else ratio)
+	_net.size=_action.size
+	_action.scale=Vector2.ONE if touch_enabled else Vector2.ONE*ratio
+	_net.scale=_action.scale
 	if touch_enabled:
 		_net_hint.hide()
 		for label in [_net_title,_action_title]:
@@ -431,18 +436,19 @@ func _layout() -> void:
 		for button in [_action,_net]:
 			for child in button.get_children():
 				if child is HudIcon:
-					child.position=Vector2((action_side-24*ratio)/2,4*ratio)
-					child.size=Vector2.ONE*24*ratio
+					child.position=Vector2((button.size.x-24)/2,4)
+					child.size=Vector2.ONE*24
 				elif child is Label:
 					var title:bool=child==_action_title or child==_net_title
-					child.position=Vector2(0,(30 if title else 44)*ratio)
-					child.size=Vector2(action_side,(15 if title else 10)*ratio)
-					child.add_theme_font_size_override("font_size",maxi(6,ceili((11 if title else 8)*ratio)))
-		_net_charge.position=Vector2(4*ratio,action_side-3*ratio)
+					child.position=Vector2(0,30 if title else 44)
+					child.size=Vector2(button.size.x,15 if title else 10)
+					child.add_theme_font_size_override("font_size",11 if title else 8)
+		_net_charge.position=Vector2(4,_net.size.y-3)
 	_action.position=Vector2(right-action_side,bottom-action_side)
 	_net.position=Vector2(right-action_side*(2 if _can_interact else 1)-(10 if _can_interact else 0),bottom-action_side)
 	_deck.position=Vector2(_net.position.x-6,bottom-action_side-6) if _net.visible else _action.position-Vector2(6,6)
-	_deck.size=Vector2(right-_deck.position.x+6,action_side+12)
+	_deck.scale=Vector2.ONE if touch_enabled else Vector2.ONE*ratio
+	_deck.size=Vector2(right-_deck.position.x+6,action_side+12)/(1.0 if touch_enabled else ratio)
 	_action_label.position=Vector2(right-minf(380*unit,viewport.x-32),bottom-action_side-line*2-12)
 	_action_label.size=Vector2(minf(380*unit,viewport.x-32),line*2)
 	_action_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
