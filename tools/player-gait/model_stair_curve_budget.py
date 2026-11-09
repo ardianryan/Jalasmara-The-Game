@@ -38,7 +38,7 @@ def main():
     parser.add_argument("--world", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
-    hub = json.loads(args.world.read_text())["hub"]
+    hub = json.loads(args.world.read_text())["landMaps"]["hub"]
     heights = {t["id"]: t["elevation"] * 48 for t in hub["terraces"]}
     tilt = math.radians(55)
     rows = []
