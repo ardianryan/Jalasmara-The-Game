@@ -102,6 +102,6 @@ func _run() -> void:
 	var output := FileAccess.open(directory+"/results.json",FileAccess.WRITE)
 	output.store_string(JSON.stringify({"outcome":"passed" if mismatches.is_empty() else "failed","layoutVersion":manifest.layoutVersion,"samples":samples,"mutationChecks":mutation_checks,"mismatches":mismatches,"limits":"Actual point-query components only; no body rendering, audible footstep or browser/device claim"},"  "))
 	output.close()
-	print("GROUND CONSUMERS samples=",samples.size()," mismatches=",mismatches.size()," results=",directory+"/results.json")
+	print("GROUND CONSUMERS ","PASS" if mismatches.is_empty() else "FAILED"," samples=",samples.size()," mismatches=",mismatches.size()," results=",directory+"/results.json")
 	if not mismatches.is_empty(): printerr("GROUND CONSUMERS FAILED: ",mismatches)
 	quit(0 if mismatches.is_empty() else 1)
