@@ -46,6 +46,21 @@ func _run() -> void:
 	var pen:MultiMeshInstance3D=renderer._fish_pen._fish
 	assert(is_instance_valid(pen) and pen.get_parent()==renderer.world_root)
 	assert(pen.multimesh.visible_instance_count==5)
+	var service:Dictionary=state.world.homestead.fishPen.interaction
+	var service_at:=Vector2(float(service.x),float(service.y))
+	var service_world:Vector3=renderer.ground_point(service_at)
+	var pen_world:Vector3=renderer._fish_pen._center
+	assert(Vector2(service_world.x,service_world.y).distance_to(Vector2(pen_world.x,pen_world.y))<100,"Pen must remain close to the real elevated feeding edge in native XY")
+	assert(service_world.distance_to(pen_world)<150,"Do not move the floating pen far from the actual service point to improve a screenshot")
+	var raft:PackedVector2Array=[]
+	for floor in renderer.map.surfaces:
+		if str(floor.id)=="sasmita_garden_raft":
+			for at in floor.polygon: raft.append(Vector2(float(at[0]),float(at[1])))
+	for corner in [Vector3(-36,-28,0),Vector3(36,-28,0),Vector3(36,28,0),Vector3(-36,28,0)]:
+		var water_point:Vector3=pen_world+corner
+		var ray:Vector3=renderer.camera_3d.global_basis.z
+		var at_deck:Vector3=water_point+ray*((service_world.z-water_point.z)/ray.z)
+		assert(not Geometry2D.is_point_in_polygon(renderer.ground_projection(at_deck),raft),"The actual left-camera ray from every pen corner must clear the raised raft")
 	var samples:=0
 	var readback:=DisplayServer.get_name()!="headless"
 	renderer._fish_pen.capture_transforms=true

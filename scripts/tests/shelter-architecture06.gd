@@ -67,6 +67,11 @@ func run() -> void:
 	renderer._shelter_architecture.update(renderer,1)
 	for id in renderer._shelter_architecture._panels:
 		var panel: Dictionary=renderer._shelter_architecture._panels[id]
+		assert(panel.materials.size()==1,"Roof and soffit must share one per-awning draw material, with no global cutaway")
+		var shared_material:ShaderMaterial=panel.materials[0]
+		var bamboo:ShaderMaterial=renderer._materials.get_material("bamboo")
+		for parameter in ["base_color","kind","has_atlas","atlas_cell","material_atlas","has_micro"]:
+			assert(shared_material.get_shader_parameter("soffit_"+parameter)==bamboo.get_shader_parameter(parameter),"Shared material must retain the real soffit palette/pattern/atlas parameters")
 		assert(float(panel.amount)==(1.0 if id=="griya_sasmita_serambi" else 0.0),"Only the roof above Nala may open")
 		for material in panel.materials:
 			assert(material.get_shader_parameter("base_color")!=null,"Cutaway keeps the existing material palette")

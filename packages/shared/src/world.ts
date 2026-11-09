@@ -66,7 +66,7 @@ export const WORLD = {
     permitBoard: { x: 940, y: 310 },
     fishPen: {
       interaction: { x: 275, y: 850 },
-      waterAnchor: { x: 360, y: 940, z: -11 },
+      waterAnchor: { x: 275, y: 990, z: -11 },
       speciesId: "reef_seruni",
     },
     privateHomes: [

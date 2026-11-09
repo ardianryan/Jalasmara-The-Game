@@ -5,10 +5,32 @@ var support_count := 0
 var _cutaway_shader: Shader
 var _panels: Dictionary = {}
 
-func _panel_material(renderer: Node, kind: String) -> ShaderMaterial:
+func _panel_material(renderer: Node, kind: String, soffit_kind: String) -> ShaderMaterial:
 	if _cutaway_shader==null:
 		_cutaway_shader=Shader.new()
 		var source: String=renderer.Materials.SHADER_SOURCE
+		source=source.replace("varying vec3 at;", """
+	uniform vec4 soffit_base_color : source_color;
+	uniform int soffit_kind = 0;
+	uniform bool soffit_has_atlas = false;
+	uniform int soffit_atlas_cell = 0;
+	uniform sampler2D soffit_material_atlas : source_color, filter_nearest, repeat_enable;
+	uniform bool soffit_has_micro = false;
+	uniform sampler2D soffit_micro_texture : source_color, filter_nearest, repeat_enable;
+	varying vec3 at;""")
+		source=source.replace("vec2 planar=", """
+	bool is_soffit = COLOR.r < 0.5;
+	int surface_kind = is_soffit ? soffit_kind : kind;
+	vec4 surface_base = is_soffit ? soffit_base_color : base_color;
+	bool surface_has_micro = is_soffit ? soffit_has_micro : has_micro;
+	bool surface_has_atlas = is_soffit ? soffit_has_atlas : has_atlas;
+	int surface_atlas_cell = is_soffit ? soffit_atlas_cell : atlas_cell;
+	vec2 planar=""")
+		source=source.replace("base_color.rgb", "surface_base.rgb").replace("kind==", "surface_kind==")
+		source=source.replace("if(has_micro)", "if(surface_has_micro)").replace("if(has_atlas)", "if(surface_has_atlas)")
+		source=source.replace("texture(micro_texture,fract(planar/128.0)).rgb", "(is_soffit ? texture(soffit_micro_texture,fract(planar/128.0)).rgb : texture(micro_texture,fract(planar/128.0)).rgb)")
+		source=source.replace("float(atlas_cell%3)", "float(surface_atlas_cell%3)").replace("float(atlas_cell/3)", "float(surface_atlas_cell/3)")
+		source=source.replace("texture(material_atlas,origin+tile*vec2(1.0/3.0,.5)).rgb", "(is_soffit ? texture(soffit_material_atlas,origin+tile*vec2(1.0/3.0,.5)).rgb : texture(material_atlas,origin+tile*vec2(1.0/3.0,.5)).rgb)")
 		source=source.replace("varying vec3 at;", "uniform float roof_reveal = 0.0;\nuniform vec3 reveal_center;\nuniform vec3 reveal_right;\nuniform vec3 reveal_up;\nvarying vec3 at;")
 		source=source.replace("ALBEDO=color;", """
 	if (roof_reveal > 0.001) {
@@ -21,6 +43,10 @@ func _panel_material(renderer: Node, kind: String) -> ShaderMaterial:
 		_cutaway_shader.code=source
 	var material: ShaderMaterial=renderer._materials.get_material(kind).duplicate()
 	material.shader=_cutaway_shader
+	var soffit:ShaderMaterial=renderer._materials.get_material(soffit_kind)
+	for parameter in ["base_color","kind","has_atlas","atlas_cell","material_atlas","has_micro","micro_texture"]:
+		var value:Variant=soffit.get_shader_parameter(parameter)
+		if value!=null: material.set_shader_parameter("soffit_"+parameter,value)
 	return material
 
 func _point(value: Array) -> Vector2:
@@ -56,8 +82,7 @@ func _awning(renderer: Node, shelter: Dictionary) -> void:
 	var wood: Material=renderer._materials.get_material("wood")
 	var bamboo: Material=renderer._materials.get_material("bamboo")
 	var roof_kind:=str(shelter.get("material","thatch"))
-	var roof_material:=_panel_material(renderer,roof_kind)
-	var soffit_material:=_panel_material(renderer,"bamboo")
+	var roof_material:=_panel_material(renderer,roof_kind,"bamboo")
 	var elevation: float=float(shelter.elevation)*renderer.LEVEL_HEIGHT
 	var corners: Array[Vector3]=[]
 	for index in range(4):
@@ -66,13 +91,13 @@ func _awning(renderer: Node, shelter: Dictionary) -> void:
 	var id:=str(shelter.id)
 	var polygon:=PackedVector2Array()
 	for point in shelter.roof: polygon.append(_point(point))
-	_panels[id]={"materials":[roof_material,soffit_material],"polygon":polygon,"amount":0.0}
+	_panels[id]={"materials":[roof_material],"polygon":polygon,"amount":0.0}
 	roofs[id]=corners.duplicate()
-	renderer._face(id+"_Roof",corners,roof_material)
+	renderer._mesh(id+"_Roof",PackedVector3Array(corners),PackedInt32Array([0,1,2,0,2,3]),roof_material,null,PackedColorArray([Color.WHITE,Color.WHITE,Color.WHITE,Color.WHITE]))
 	var bottom: Array[Vector3]=[]
 	for point in corners: bottom.append(point-Vector3(0,0,5))
 	var soffit: Array[Vector3]=[bottom[3],bottom[2],bottom[1],bottom[0]]
-	renderer._face(id+"_Soffit",soffit,soffit_material)
+	renderer._mesh(id+"_Soffit",PackedVector3Array(soffit),PackedInt32Array([0,1,2,0,2,3]),roof_material,null,PackedColorArray([Color(0,0,0,1),Color(0,0,0,1),Color(0,0,0,1),Color(0,0,0,1)]))
 	for index in range(4):
 		var next:=(index+1)%4
 		var fascia: Array[Vector3]=[corners[index],corners[next],bottom[next],bottom[index]]
