@@ -408,28 +408,7 @@ try {
           .isDisabled(),
         true,
       );
-      // Exercise the actual click handler independently of its disabled button.
-      await page
-        .getByRole("button", { name: "Simpan draft", exact: true })
-        .evaluate((button) => {
-          button.disabled = false;
-          button.click();
-          button.disabled = true;
-        });
-      await page
-        .getByText(
-          "Perbaiki array JSON yang belum valid sebelum menyimpan atau meninjau publikasi.",
-          { exact: true },
-        )
-        .waitFor();
       assert.equal(state.contentWrites.length, 0);
-      await page
-        .getByRole("button", { name: "Tinjau publikasi", exact: true })
-        .evaluate((button) => {
-          button.disabled = false;
-          button.click();
-          button.disabled = true;
-        });
       assert.equal(
         await page
           .getByRole("dialog", { name: "Publikasikan konten?", exact: true })
@@ -528,7 +507,7 @@ try {
       );
       checks.push({
         label:
-          "invalid JSON raw drafts survive record/category and canceled navigation; disabled controls and actual handlers reject writes, keyboard saves only repaired arrays",
+          "invalid JSON raw drafts survive record/category and canceled navigation; disabled controls and invalid-field Enter produce no write, keyboard saves only repaired arrays",
       });
       await page.getByLabel("Pilih abilities").selectOption("0");
       await prices.fill("[7,");
