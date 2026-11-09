@@ -20,6 +20,15 @@ const houses = map.obstacles.filter(
   (entry) => entry.kind === "house" && entry.id !== "griya_sasmita",
 );
 const point = (p: readonly number[]): LandPosition => ({ x: p[0], y: p[1] });
+const changedCorners: Record<string, number> = {
+  kedai_waras: 78,
+  galangan_beno: 105,
+  pos_cakrawala: 54,
+  balai_lurah: 70,
+  rumah_ratih: 41,
+  rumah_sari: 41,
+  rumah_tedi: 27,
+};
 function groundElevation(layout: LandMap, at: LandPosition) {
   const surfaces = layout.surfaces.filter((s) =>
     landPointInPolygon(at, s.polygon),
@@ -48,14 +57,17 @@ test("layout10 removes house shear while retaining centres, real floors and exis
     const old = oldMap.obstacles.find((o) => o.id === house.id)!;
     assert.deepEqual(
       [
-        house.x,
-        house.y,
-        house.width,
-        house.height,
+        house.x + house.width / 2,
+        house.y + house.height / 2,
         house.height3d,
         house.elevation,
       ],
-      [old.x, old.y, old.width, old.height, old.height3d, old.elevation],
+      [
+        old.x + old.width / 2,
+        old.y + old.height / 2,
+        old.height3d,
+        old.elevation,
+      ],
     );
     const [a, b, c, d] = house.footprint;
     const along = [
@@ -63,6 +75,29 @@ test("layout10 removes house shear while retaining centres, real floors and exis
       -(b[1] - a[1]) / Math.cos((55 * Math.PI) / 180),
     ];
     const back = [a[0] - d[0], -(a[1] - d[1]) / Math.cos((55 * Math.PI) / 180)];
+    const [oa, ob, , od] = old.footprint;
+    const oldAlong = [
+      ob[0] - oa[0],
+      (ob[1] - oa[1]) / Math.cos((55 * Math.PI) / 180),
+    ];
+    const oldOut = [
+      od[0] - oa[0],
+      (od[1] - oa[1]) / Math.cos((55 * Math.PI) / 180),
+    ];
+    const oldArea = Math.abs(oldAlong[0] * oldOut[1] - oldAlong[1] * oldOut[0]);
+    assert.ok(
+      Math.abs(
+        (house.width * house.height) / Math.cos((55 * Math.PI) / 180) - oldArea,
+      ) < 1e-7,
+      `${house.id} must not grow while removing shear`,
+    );
+    assert.ok(
+      Math.abs(
+        house.width / (house.height / Math.cos((55 * Math.PI) / 180)) -
+          Math.hypot(...oldAlong) / Math.hypot(...oldOut),
+      ) < 1e-10,
+      `${house.id} preserves the old physical axis aspect`,
+    );
     assert.equal(along[0] * back[0] + along[1] * back[1], 0, house.id);
     assert.deepEqual(
       [(a[0] + c[0]) / 2, (a[1] + c[1]) / 2],
@@ -198,10 +233,11 @@ test(
     let samples = 0,
       maximumShift = 0;
     for (const house of houses) {
+      const old = oldMap.obstacles.find((entry) => entry.id === house.id)!;
       const reachesFront = localConnectivity(house);
       let localSamples = 0;
-      for (let y = house.y - 24; y <= house.y + house.height + 24; y += 8)
-        for (let x = house.x - 24; x <= house.x + house.width + 24; x += 8) {
+      for (let y = old.y - 24; y <= old.y + old.height + 24; y += 8)
+        for (let x = old.x - 24; x <= old.x + old.width + 24; x += 8) {
           const previous = { x, y };
           if (
             !isLandWalkable(oldMap, previous, 13) ||
@@ -224,15 +260,16 @@ test(
           );
           const distance = Math.hypot(safe.x - x, safe.y - y);
           assert.ok(
-            distance <= 176,
+            distance <= 32.001,
             `${house.id}: nearby correction must not reset to the world spawn`,
           );
           maximumShift = Math.max(maximumShift, distance);
           localSamples++;
           samples++;
         }
-      assert.ok(
-        localSamples >= 60,
+      assert.equal(
+        localSamples,
+        changedCorners[house.id],
         `${house.id} must exercise previously legal corners, not fabricated old blocked positions`,
       );
     }

@@ -133,6 +133,47 @@ const rectangularHouse = (
     elevation,
     rectangle(x, y, width, depth),
   );
+const alignedLegacyHouse = (
+  id: string,
+  x: number,
+  y: number,
+  width: number,
+  depth: number,
+  height3d: number,
+  variant: string,
+  elevation: number,
+): LandObstacle => {
+  const legacy = obstacle(
+    id,
+    "house",
+    x,
+    y,
+    width,
+    depth,
+    height3d,
+    variant,
+    elevation,
+  );
+  const [a, b, , d] = legacy.footprint;
+  // This is the persisted map embedding scale, not the current camera elevation.
+  const embeddingCos = Math.cos((55 * Math.PI) / 180);
+  const along = [b[0] - a[0], (b[1] - a[1]) / embeddingCos];
+  const outward = [d[0] - a[0], (d[1] - a[1]) / embeddingCos];
+  const area = Math.abs(along[0] * outward[1] - along[1] * outward[0]);
+  const aspect = Math.hypot(...along) / Math.hypot(...outward);
+  const alignedWidth = Math.sqrt(area * aspect);
+  const alignedDepth = Math.sqrt(area / aspect) * embeddingCos;
+  return rectangularHouse(
+    id,
+    x + (width - alignedWidth) / 2,
+    y + (depth - alignedDepth) / 2,
+    alignedWidth,
+    alignedDepth,
+    height3d,
+    variant,
+    elevation,
+  );
+};
 const floor = (
   id: string,
   polygon: LandPoint[],
@@ -503,9 +544,9 @@ for (const [routeIndex, route] of hubRoutes.slice(-4).entries()) {
   }
 }
 const hubObstacles: LandObstacle[] = [
-  rectangularHouse("kedai_waras", 360, 420, 400, 175, 155, "thatch", 2),
-  rectangularHouse("galangan_beno", 1090, 390, 420, 170, 125, "workshop", 2),
-  rectangularHouse("pos_cakrawala", 1840, 140, 300, 105, 135, "metal", 3),
+  alignedLegacyHouse("kedai_waras", 360, 420, 400, 175, 155, "thatch", 2),
+  alignedLegacyHouse("galangan_beno", 1090, 390, 420, 170, 125, "workshop", 2),
+  alignedLegacyHouse("pos_cakrawala", 1840, 140, 300, 105, 135, "metal", 3),
   rectangularHouse("griya_sasmita", 78, 420, 164, 145, 122, "sasmita", 2),
   obstacle("home_plot_1", "garden", 65, 760, 80, 70, 24, "home_plot", 2),
   obstacle("home_plot_2", "garden", 165, 760, 80, 70, 24, "home_plot", 2),
@@ -531,10 +572,10 @@ const hubObstacles: LandObstacle[] = [
     "bridge_rail",
     2,
   ),
-  rectangularHouse("balai_lurah", 750, 120, 380, 145, 165, "balai", 2),
-  rectangularHouse("rumah_ratih", 350, 150, 230, 125, 108, "home_pelana", 2),
-  rectangularHouse("rumah_sari", 1210, 120, 230, 125, 112, "home_limas", 2),
-  rectangularHouse("rumah_tedi", 920, 850, 170, 90, 100, "home_pelana", 1),
+  alignedLegacyHouse("balai_lurah", 750, 120, 380, 145, 165, "balai", 2),
+  alignedLegacyHouse("rumah_ratih", 350, 150, 230, 125, 108, "home_pelana", 2),
+  alignedLegacyHouse("rumah_sari", 1210, 120, 230, 125, 112, "home_limas", 2),
+  alignedLegacyHouse("rumah_tedi", 920, 850, 170, 90, 100, "home_pelana", 1),
   obstacle("kebun_darmi", "garden", 1810, 485, 330, 180, 34, "raised_beds", 2),
   obstacle("batu_pelataran", "rock", 760, 835, 105, 65, 70, "limestone", 1),
   obstacle("palm_lower", "tree", 1530, 1020, 34, 34, 190, "palm", 1),
@@ -913,7 +954,7 @@ export const LAND_MAPS: Record<"hub" | "forest", LandMap> = {
   },
 };
 const hubMarginTrees: readonly (readonly [number, number, number])[] = [
-  [330, 405, 2],
+  [340, 390, 2],
   [430, 380, 2],
   [990, 390, 2],
   [1585, 470, 2],

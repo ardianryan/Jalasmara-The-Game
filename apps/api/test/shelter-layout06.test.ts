@@ -72,50 +72,50 @@ const houseCornersV9 = [
   [
     "kedai_waras",
     [
-      [752, 428],
-      [368, 587],
+      [384, 436],
+      [736, 580],
     ],
   ],
   [
     "galangan_beno",
     [
-      [1502, 398],
-      [1098, 552],
+      [1114, 406],
+      [1482, 550],
     ],
   ],
   [
     "pos_cakrawala",
     [
-      [2132, 148],
-      [1848, 237],
+      [1856, 148],
+      [2120, 244],
     ],
   ],
   [
     "balai_lurah",
     [
-      [1122, 128],
-      [758, 257],
+      [774, 128],
+      [1110, 256],
     ],
   ],
   [
     "rumah_ratih",
     [
-      [572, 158],
-      [358, 267],
+      [358, 158],
+      [566, 270],
     ],
   ],
   [
     "rumah_sari",
     [
-      [1432, 128],
-      [1218, 237],
+      [1218, 128],
+      [1426, 240],
     ],
   ],
   [
     "rumah_tedi",
     [
-      [1082, 858],
-      [928, 932],
+      [928, 850],
+      [1080, 938],
     ],
   ],
 ] as const;
@@ -250,8 +250,8 @@ test("layout migration from each newly blocked support retains connected land", 
   }
   assert.equal(
     migrated,
-    45,
-    "Forty-five new support samples were legal in frozen layout8; five Ratih samples intersect its old tree/floor clearance",
+    50,
+    "All fifty new support-offset samples were legal in frozen layout8 and now require a connected recovery",
   );
 });
 
@@ -520,8 +520,8 @@ for (const legacyVersion of [8, 9])
         }
         assert.equal(
           migrated,
-          legacyVersion === 8 ? 13 : 14,
-          "Exercise nine legal layout8 support centres plus four Griya corners, or two layout9 corners per changed house",
+          14,
+          "Exercise ten legal layout8 support centres plus four Griya corners, or two layout9 corners per changed house",
         );
         for (const value of [[160, 400], ...deckAisles]) {
           const previous = point(value);
