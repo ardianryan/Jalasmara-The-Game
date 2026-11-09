@@ -23,3 +23,7 @@ test('missing RAF counters remain unknown and cannot become zero-millisecond del
 test('served network batches cannot be silently mixed with intercepted PCK controls',()=>{
  const original=batch('old',30),latest=batch('new',35);latest.method.assetDelivery='intercepted-local-pck';assert.throws(()=>compareCaptures(original,latest),/delivery modes differ/);
 });
+
+test('active and inactive forest points cannot be silently mixed',()=>{
+ const original=batch('old',30),latest=batch('new',35);latest.method.forestDayPoint=[350,1250];assert.throws(()=>compareCaptures(original,latest),/Forest fixture point mismatch/);
+});

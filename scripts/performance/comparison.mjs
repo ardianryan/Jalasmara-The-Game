@@ -4,6 +4,7 @@ export function compareCaptures(before,after) {
   assert.equal(after.method.assetDelivery??'served',before.method.assetDelivery??'served','PCK delivery modes differ');
   for(const field of ['device','diagnostics','sampleMs','warmupMs','motion','profileOrder'])assert.deepEqual(after.method[field],before.method[field],`Method mismatch: ${field}`);
   assert.deepEqual(after.method.viewport,before.method.viewport,'Viewport mismatch');
+  assert.deepEqual(after.method.forestDayPoint??[650,1050],before.method.forestDayPoint??[650,1050],'Forest fixture point mismatch');
   assert(before.cleanup&&after.cleanup,'Both batches must finish isolated cleanup');
   assert.equal(before.errors.length+after.errors.length,0,'Browser errors invalidate clean comparison');
   assert(before.pckSHA256&&after.pckSHA256&&before.pckSHA256!==after.pckSHA256,'Distinct verified PCKs required for before/after');

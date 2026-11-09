@@ -10,6 +10,8 @@ import assert from 'node:assert/strict';
 import {platform,arch,release,cpus,totalmem} from 'node:os';
 import {freshProgress,freshAbilities,freshCalendar,freshHomestead,calendarRain} from '../../packages/shared/src/index.ts';
 import {WORLD} from '../../packages/shared/src/world.ts';
+import {isLandWalkable} from '../../packages/shared/src/land.ts';
+import {parseForestPoint} from './forest-point.mjs';
 import {summarizeCapture,scalarMetrics} from './metrics.mjs';
 import {pckSource,isPckRequest} from './pck-source.mjs';
 
@@ -24,15 +26,18 @@ assert(duration>=1000&&duration<=120000&&warmup>=7000&&warmup<=60000);
 const pck={...pckSource({overridePath:process.env.PROFILE_OVERRIDE_PCK,servedPath:process.env.PROFILE_PCK_FILE,expectedHash:process.env.PROFILE_EXPECTED_PCK_SHA}),interceptedRequests:0};
 const directory=process.env.PROFILE_OUTPUT??'artifacts/performance/06p-baseline';mkdirSync(directory,{recursive:true});
 assert(!existsSync(`${directory}/results.json`),'Choose a new PROFILE_OUTPUT; existing captures are immutable');
+const forestPoint=parseForestPoint(process.env.PROFILE_FOREST_POINT,(point,margin)=>isLandWalkable(WORLD.landMaps.forest,point,margin));
+const expectActiveCanopy=process.env.PROFILE_EXPECT_ACTIVE_CANOPY==='1';
 const cases=[
  {id:'village-day',area:'hub',point:WORLD.surfaceSpawn,minute:600,rain:false},
- {id:'forest-day',area:'forest',point:{x:650,y:1050},minute:600,rain:false},
+ {id:'forest-day',area:'forest',point:forestPoint,minute:600,rain:false},
  {id:'ocean-reef',area:'ocean',point:WORLD.hub.divePoint,minute:600,rain:false},
  {id:'village-night',area:'hub',point:{x:595,y:650},minute:1200,rain:false},
  {id:'forest-rain',area:'forest',point:{x:1300,y:660},minute:600,rain:true},
 ].map((value,order)=>({...value,order})).filter(value=>!process.env.PROFILE_SCENARIOS||process.env.PROFILE_SCENARIOS.split(',').includes(value.id));
 assert(cases.length>0);
-const report={source:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),runtimeBaseline:process.env.PROFILE_RUNTIME_SHA??'UNVERIFIED',pckSHA256:pck.sha256,pckDelivery:pck,origin,createdAt:new Date().toISOString(),environment:{platform:platform(),arch:arch(),osRelease:release(),cpuModel:cpus()[0]?.model,cpuCount:cpus().length,totalMemoryBytes:totalmem(),browser:null},method:{assetDelivery:pck.mode,device:'Chromium SwiftShader software GPU; not Windows/S23 hardware',viewport:[844,390],diagnostics:true,motion:'Stationary player; actual NPC/fauna/water/weather remain active',sampleMs:duration,warmupMs:warmup,profileOrder:'Alternating low/balanced order per scene; warmup outside measurement',startup:pck.mode==='served'?'First scene cold context + same-context warm reload; others fresh contexts':'Excluded: local PCK intercept is not network/startup measurement',godotSampling:'Latest actual Godot counters sampled at most every100ms; separate from iframe RAF intervals'},results:[],startup:[],errors:[],cleanup:false};
+if(expectActiveCanopy)assert(cases.some(value=>value.id==='forest-day'),'Active canopy validation requires forest-day');
+const report={source:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),runtimeBaseline:process.env.PROFILE_RUNTIME_SHA??'UNVERIFIED',pckSHA256:pck.sha256,pckDelivery:pck,origin,createdAt:new Date().toISOString(),environment:{platform:platform(),arch:arch(),osRelease:release(),cpuModel:cpus()[0]?.model,cpuCount:cpus().length,totalMemoryBytes:totalmem(),browser:null},validation:{requiresActiveCanopy:expectActiveCanopy},method:{forestDayPoint:[forestPoint.x,forestPoint.y],assetDelivery:pck.mode,device:'Chromium SwiftShader software GPU; not Windows/S23 hardware',viewport:[844,390],diagnostics:true,motion:'Stationary player; actual NPC/fauna/water/weather remain active',sampleMs:duration,warmupMs:warmup,profileOrder:'Alternating low/balanced order per scene; warmup outside measurement',startup:pck.mode==='served'?'First scene cold context + same-context warm reload; others fresh contexts':'Excluded: local PCK intercept is not network/startup measurement',godotSampling:'Latest actual Godot counters sampled at most every100ms; separate from iframe RAF intervals'},results:[],startup:[],errors:[],cleanup:false};
 let browser,context,page,frame;const fixtures=[];const mongo=new MongoClient(mongoUrl),redis=new Redis(redisUrl);
 const save=()=>writeFileSync(`${directory}/results.json`,JSON.stringify(report,null,2));
 const snapshot=()=>frame.evaluate(()=>window.jalasmaraSnapshot);
@@ -75,9 +80,11 @@ try{
    await page.getByRole('button',{name:'Menu',exact:true}).click();await page.getByLabel('Kualitas dunia',{exact:true}).selectOption(profile);await page.getByRole('button',{name:'Lanjut bermain',exact:true}).click();await frame.locator('canvas').focus();
    await until(value=>value.performance?.quality?.effective===profile&&!value.weather.clockPaused&&value.weather.clockWriter);
    await page.waitForTimeout(warmup);const before=await snapshot();assert.equal(before.weather.night,scenario.minute>=1110);assert(scenario.rain?before.weather.rain>.5:before.weather.rain<.05);
+   if(scenario.id==='forest-day'){assert(before.land.actors.player>=1,'Actual Nala Sprite3D must be active');assert(Math.hypot(before.x-forestPoint.x,before.y-forestPoint.y)<3,'Forest fixture position changed');if(expectActiveCanopy)assert(before.land.readability?.revealed>0,'Expected active canopy reveal before sample');}
    const cdp=await context.newCDPSession(page);await cdp.send('Performance.enable');const memoryBefore=scalarMetrics(await cdp.send('Performance.getMetrics'));const heapBefore=await cdp.send('Runtime.getHeapUsage');
    const captured=await capture();const memoryAfter=scalarMetrics(await cdp.send('Performance.getMetrics'));const heapAfter=await cdp.send('Runtime.getHeapUsage');const after=await snapshot();assert.equal(captured.hiddenSamples,0,'Hidden-tab RAF cannot be a foreground benchmark');
-   const result={scenario:scenario.id,profile,conditions:{before:{position:[before.x,before.y],weather:before.weather,camera:(before.land?.active?before.land:before.hybrid)?.camera??before.hybrid?.camera_center},after:{position:[after.x,after.y],weather:after.weather}},renderer:before.land?.active?before.land:before.hybrid,summary:summarizeCapture(captured),browserMemory:{before:memoryBefore,after:memoryAfter,heapBefore,heapAfter,definition:'CDP DOM/JS heap counters; not Godot nodes, total process RSS, GPU VRAM, or total WASM memory'},raw:captured};report.results.push(result);save();await page.screenshot({path:`${directory}/${scenario.id}-${profile}.png`});
+   if(scenario.id==='forest-day'){assert(after.land.actors.player>=1,'Actual Nala must remain active');if(expectActiveCanopy)assert(after.land.readability?.revealed>0,'Expected active canopy reveal after sample');}
+   const result={scenario:scenario.id,profile,conditions:{before:{position:[before.x,before.y],weather:before.weather,camera:(before.land?.active?before.land:before.hybrid)?.camera??before.hybrid?.camera_center},after:{position:[after.x,after.y],weather:after.weather}},renderer:before.land?.active?before.land:before.hybrid,avatar:{appearance:before.appearance,renderedPlayers:before.land?.actors?.player??null},summary:summarizeCapture(captured),browserMemory:{before:memoryBefore,after:memoryAfter,heapBefore,heapAfter,definition:'CDP DOM/JS heap counters; not Godot nodes, total process RSS, GPU VRAM, or total WASM memory'},raw:captured};report.results.push(result);save();await page.screenshot({path:`${directory}/${scenario.id}-${profile}.png`});
    if(process.env.PROFILE_CPU==='1'&&scenario.id==='village-day'&&profile==='balanced'){
     await cdp.send('Profiler.enable');await cdp.send('Profiler.start');await page.waitForTimeout(5000);const trace=await cdp.send('Profiler.stop');writeFileSync(`${directory}/village-balanced.cpuprofile`,JSON.stringify(trace.profile));await cdp.send('Profiler.disable');
    }

@@ -92,3 +92,9 @@ Pembanding menolak viewport/metode berbeda, PCK sama, capture yang tidak bersih,
 `PROFILE_OVERRIDE_PCK=/path/to/verified.pck` hanya mengganti respons GET same-origin `/game/index.pck` melalui Playwright. WASM, JavaScript, API, shader yang dikemas dalam PCK, dan engine tetap nyata; serverpack tidak diganti. `PROFILE_EXPECTED_PCK_SHA` menolak file yang tidak cocok. Report mencatat hash file yang benar-benar dipilih, mode `intercepted-local-pck`, path lokal, dan jumlah request override; run gagal jika tidak ada request PCK yang benar-benar diintersep pada context baru.
 
 Mode ini bukan uji jaringan atau startup: entri startup ditandai excluded. Pembanding menolak pencampuran batch served dan intercepted. Gunakan kedua PCK terverifikasi pada origin/API/WASM sama, scene dan urutan profil sama, context baru setiap batch, lalu ulangi pasangan berdekatan jika hasil berubah besar. Jangan menjalankan sebelum root memberi kedua path artefak dan slot GPU. Mode ini tidak memperbaiki keterbatasan SwiftShader atau menggantikan uji perangkat fisik.
+
+## Titik canopy aktif
+
+`PROFILE_FOREST_POINT=350,1250` mengganti hanya titik `forest-day`. Parser memeriksa dua angka finite dan floor/obstacle clearance 13 px melalui `isLandWalkable` pada manifest dunia; posisi tidak diteleport setelah engine berjalan. Koordinat dicatat sebagai `method.forestDayPoint`, dan pembanding menolak titik berbeda (termasuk pencampuran titik default 650,1050 dengan titik aktif).
+
+Untuk pasangan aktif gunakan `PROFILE_SCENARIOS=forest-day` pada kedua PCK. Tambahkan `PROFILE_EXPECT_ACTIVE_CANOPY=1` hanya pada kandidat yang menyediakan diagnostik reveal: harness mewajibkan `land.readability.revealed>0` sebelum dan sesudah sampel. Paket lama tidak memiliki field itu dan tidak dianggap bernilai nol. Kedua paket harus melaporkan pemain 3D Nala aktif, posisi fixture sesuai, dan screenshot tetap diperiksa. Biaya reveal aktif tidak boleh disimpulkan dari hasil kontrol inactive sebelumnya.
