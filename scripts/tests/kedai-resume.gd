@@ -3,7 +3,17 @@ extends SceneTree
 func _initialize() -> void: run.call_deferred()
 func settle() -> void:
 	for frame in range(6): await process_frame
+func physics_ticks(player: CharacterBody2D,count: int) -> void:
+	player.set_physics_process(true)
+	for frame in range(count):
+		await physics_frame
+		await process_frame
+	player.set_physics_process(false)
 func run() -> void:
+	create_timer(10).timeout.connect(func():
+		push_error("KEDAI RESUME fixture did not finish within10s; inspect the preceding assertion")
+		quit(1)
+	)
 	root.get_node("CalendarSync").set_process(false)
 	var state:=root.get_node("GameState")
 	state.world=JSON.parse_string(FileAccess.get_file_as_string("res://../.runtime/world-map.json"))
@@ -43,9 +53,8 @@ func run() -> void:
 	scene._close()
 	assert(scene.nala.frozen and scene.nala.velocity==Vector2.ZERO and scene.nala.touch==Vector2.ZERO,"Closing the service panel must retain the shift's land lock and clear queued inputs")
 	assert(scene._action_label({"kind":"npc","name":"Mbah Wira"})=="Lanjutkan giliran kedai")
-	for frame in range(12):
-		scene.nala.touch=Vector2.RIGHT
-		scene.nala._physics_process(1.0/60)
+	scene.nala.touch=Vector2.RIGHT
+	await physics_ticks(scene.nala,12)
 	assert(scene.nala.position==wira and scene.nala.land_path.size()==0 and scene._can_resume_kedai("Mbah Wira"),"Actual Player physics must not create an unsavable path while the shift is active")
 	scene.set_interaction_modal(false)
 	assert(scene.nala.frozen and scene.nala.touch==Vector2.ZERO,"Interaction close must also preserve the active shift lock")
@@ -59,8 +68,8 @@ func run() -> void:
 	scene.set_interaction_modal(false)
 	assert(not scene.nala.frozen,"A settled or abandoned shift with refreshed empty state must release movement")
 	scene.nala.touch=Vector2.RIGHT
-	scene.nala._physics_process(1.0/60)
-	assert(scene.nala.velocity.x>0,"Actual Player physics must accept input again once the shift is cleared")
+	await physics_ticks(scene.nala,6)
+	assert(scene.nala.velocity.x>0 and scene.nala.position.distance_to(wira)>.5 and scene.nala.land_path.size()>0,"Scheduled Player physics must accept input, move and record a path once the shift is cleared")
 	scene.nala.position=wira
 	scene.nala.velocity=Vector2.ZERO
 	scene.nala.touch=Vector2.ZERO
