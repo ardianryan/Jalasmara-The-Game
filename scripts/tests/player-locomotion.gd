@@ -201,6 +201,9 @@ func _restart_checks() -> void:
 	print("NALA RESTART PILOT PASS: ",checked," pre-contact component samples; normal/reduced daily/explorer,850 acceleration at30/60Hz, true32 handover and four explicit fallbacks. Physical L/R is unassigned")
 
 func _controller_restart_check() -> void:
+	for action in ["left","right","up","down"]:
+		if not InputMap.has_action(action): InputMap.add_action(action)
+		Input.action_release(action)
 	var game:=root.get_node("GameState")
 	game.world=JSON.parse_string(FileAccess.get_file_as_string("res://../.runtime/world-map.json"))
 	game.player={"appearance":"male_nusantara","progress":{"day":1,"stage":"dive"}}
@@ -216,7 +219,10 @@ func _controller_restart_check() -> void:
 	player.land_mask=Callable(collision,"is_walkable")
 	var view:RefCounted=load("res://scripts/land/LandViewProjection.gd").new()
 	var camera_script:Script=load("res://scripts/land/LandCameraPose.gd")
-	view.configure(camera_script.pose(Vector3.ZERO,-45,55,2000,720,270),720,Vector2i(480,270))
+	var renderer:Node=load("res://scripts/land/LandWorld3D.gd").new()
+	view.configure(camera_script.pose(Vector3.ZERO,renderer.camera_azimuth,renderer.camera_elevation,2000,720,270),720,Vector2i(480,270))
+	assert(renderer.camera_azimuth==-45 and renderer.camera_elevation==35,"Restart fixture must use the current gameplay camera, with the unchanged55degree logical embedding")
+	renderer.free()
 	player.input_transform=func(input:Vector2,_at:Vector2)->Vector2: return view.input_motion(input)
 	player.visual_motion_transform=func(previous:Vector2,next:Vector2,delta:float)->Vector2: return view.logical_motion_to_view((next-previous)/delta)
 	root.add_child(player)
@@ -260,6 +266,30 @@ func _controller_restart_check() -> void:
 	player.free()
 	collision.free()
 	print("NALA CONTROLLER RESTART PASS: actual Player850 acceleration/deceleration on hub collision fixture, left-camera input inverse, low restart/real32 contact, matching root distance, owner pause; flat projection only")
+
+func _restart_window_checks() -> void:
+	var checks:=0
+	for outfit in ["daily","explorer"]:
+		for distance in [24.0,24.125,24.5,25.0,26.0,27.0,28.0,29.0,30.0,31.0,31.5,31.875]:
+			var visual:Sprite2D=load("res://scripts/CharacterVisual.gd").new()
+			root.add_child(visual)
+			visual.set_appearance("male_nusantara")
+			visual.set_outfit(outfit)
+			await _step(visual,Vector2(100,0),distance/100,"restart-window-prepare")
+			await _step(visual,Vector2.ZERO,.4,"restart-window-neutral")
+			var before:Dictionary=visual.locomotion_state()
+			assert(not before.poseWalking and floori(before.phase*8)==3)
+			visual.consume_foot_contacts()
+			var velocity:=Vector2(850.0/60,0)
+			var state:=await _step(visual,velocity,1.0/60,"restart-window-%0.3f"%distance)
+			assert(is_equal_approx(state.distance,distance+velocity.length()/60))
+			assert(visual.consume_foot_contacts().size()==(1 if state.distance>=32 else 0),"A late restart that reaches contact in its first sample must keep the actual contact and raw pose")
+			assert(state.frame==(2 if state.distance<32 else floori(state.phase*8)))
+			var gear:Dictionary=visual.get_equipment_state()
+			assert(gear.gaitPhase==state.posePhase and gear.facingDirection==state.artworkDirection)
+			visual.free()
+			checks+=1
+	print("NALA RESTART WINDOW PASS: ",checks," daily/explorer settled phases across raw3, including immediate actual32 handover; no fabricated travel/contact")
 
 func _run() -> void:
 	_capture=OS.get_environment("NALA_GAIT_CAPTURE")=="1"
@@ -334,6 +364,7 @@ func _run() -> void:
 	visual.free()
 	await _transition_checks()
 	await _restart_checks()
+	await _restart_window_checks()
 	await _controller_restart_check()
 	if _capture: FileAccess.open(OUTPUT+"/results.json",FileAccess.WRITE).store_string(JSON.stringify(_sequence,"  "))
 	print("PLAYER LOCOMOTION PASS:12 outfits x8 drawn directions,175 displacement phase, neutral idle, once-only contacts, water isolation, directional modular gear")
