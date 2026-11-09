@@ -11,13 +11,14 @@ var length_max:=0.0
 var previous:Dictionary={}
 var frames:Array=[]
 var capture:=false
+var trace:Array=[]
 const OUTPUT:="res://../artifacts/godot/overnight-nala-lower"
 
 func _initialize() -> void: call_deferred("run")
 func _check(valid:bool,message:String) -> bool:
 	if not valid:
 		if is_instance_valid(renderer):
-			var record:={"message":message,"checks":checks,"position":[player.position.x,player.position.y],"pose":renderer.actors_3d.counts.get("nalaLowerBody",{})}
+			var record:={"message":message,"checks":checks,"position":[player.position.x,player.position.y],"pose":renderer.actors_3d.counts.get("nalaLowerBody",{}),"recentTrace":trace}
 			FileAccess.open("res://../.runtime/nala-lower-failure.json",FileAccess.WRITE).store_string(JSON.stringify(record,"  "))
 		push_error(message)
 		quit(1)
@@ -44,6 +45,8 @@ func _on_mesh(sole:Vector3) -> bool:
 func _measure(label:String) -> void:
 	var rig:Node3D=renderer.actors_3d.get("_nala_lower")
 	var pose:Dictionary=renderer.actors_3d.counts.nalaLowerBody
+	trace.append({"case":label,"position":[player.position.x,player.position.y],"pose":pose.duplicate(true)})
+	if trace.size()>16: trace.pop_front()
 	if not _check(bool(pose.get("enabled",false)),"Nala lower-body pilot missing "+label): return
 	if not bool(pose.reachValid): rejected+=1
 	if not _check(bool(pose.reachValid),"Unreachable Nala leg "+label+" at "+str(player.position)+" drop="+str(pose.requestedDropPixels)): return
@@ -144,6 +147,8 @@ func run() -> void:
 				for index in range(24): await _tick(origin+direction*(index+1)*2,1.0/30,label+" walk")
 				for index in range(8): await _tick(player.position,1.0/30,label+" stop")
 				var stopped:=player.position
+				var settled_pose:Dictionary=renderer.actors_3d.counts.nalaLowerBody
+				if not _check(settled_pose.direction==settled_pose.desiredDirection,"Cutout facing failed to converge after walk+stop "+label): return
 				for index in range(12): await _tick(stopped-direction*(index+1)*2,1.0/30,label+" restart turn")
 	var stairs:Array=state.world.landMaps.hub.stairs
 	for stair in stairs:

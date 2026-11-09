@@ -10,6 +10,9 @@ var _parts:Dictionary={}
 var _frames:Dictionary={}
 var _planner:RefCounted
 var _last:Dictionary={}
+var _direction:=""
+var _facing_frame:=-1
+const DIRECTIONS:=["east","south_east","south","south_west","west","north_west","north","north_east"]
 
 func configure(owner_renderer:Node,person:Node2D) -> void:
 	renderer=owner_renderer
@@ -63,6 +66,29 @@ func _knee(a:Vector3,b:Vector3,first:float,second:float,hint:Vector3) -> Vector3
 	if bend.length()<.001: bend=Vector3.RIGHT-along*along.x
 	return a+along*offset+bend.normalized()*sqrt(maxf(0,first*first-offset*offset))
 
+func _anatomy(view:Dictionary,feet:Dictionary,at:Vector2,right:Vector3,vertical:float) -> Dictionary:
+	var root_hip:Vector3=renderer.ground_point(at)+Vector3(0,0,28.0/vertical)
+	var ankles:Dictionary={}
+	var lengths:Dictionary={}
+	var drop:=0.0
+	var horizontal_invalid:=false
+	for side in ["left","right"]:
+		var leg:Dictionary=view.legs[side]
+		var sole_pixel:=_vec(leg.solePixel)
+		var foot:Array=leg.parts.foot
+		var ankle_source:=_vec(leg.ankle)-Vector2(float(foot[0]),float(foot[1]))
+		var ankle:Vector3=Vector3(feet[side].sole)+right*(ankle_source.x-sole_pixel.x)+Vector3(0,0,(sole_pixel.y-ankle_source.y)/vertical)
+		ankles[side]=ankle
+		var first:=_vec(leg.hip).distance_to(_vec(leg.knee))/vertical
+		var second:=_vec(leg.knee).distance_to(_vec(leg.ankle))/vertical
+		lengths[side]=Vector2(first,second)
+		var hip:=root_hip+right*(float(leg.hip[0])-64.0)
+		var horizontal:=Vector2(hip.x-ankle.x,hip.y-ankle.y).length_squared()
+		var reach:=first+second-.1
+		if horizontal>=reach*reach: horizontal_invalid=true
+		drop=maxf(drop,hip.z-ankle.z-sqrt(maxf(.001,reach*reach-horizontal)))
+	return {"ankles":ankles,"lengths":lengths,"drop":drop,"horizontalInvalid":horizontal_invalid}
+
 func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 	if not supported(visual): visible=false; return {}
 	var outfit:=str(visual.get("outfit"))
@@ -76,7 +102,19 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 	var right:=basis.x
 	var vertical:=maxf(.1,up.dot(Vector3(0,0,1)))
 	var state:Dictionary=visual.locomotion_state()
-	var direction:=str(state.artworkDirection)
+	var desired:=str(state.artworkDirection)
+	if _direction=="": _direction=desired
+	var stored:Dictionary=_planner.snapshot()
+	if not bool(state.poseFrozen) and _direction!=desired and not stored.feet.is_empty() and _facing_frame!=Engine.get_process_frames():
+		var index:=DIRECTIONS.find(_direction)
+		var target:=DIRECTIONS.find(desired)
+		var forward:=posmod(target-index,8)
+		var adjacent:String=DIRECTIONS[posmod(index+(1 if forward<=4 else -1),8)]
+		var trial:=_anatomy(_data.views[adjacent],stored.feet,actor.position,right,vertical)
+		if not bool(trial.horizontalInvalid) and float(trial.drop)*vertical<=6.0:
+			_direction=adjacent
+			_facing_frame=Engine.get_process_frames()
+	var direction:=_direction
 	var view:Dictionary=_data.views[direction]
 	var hips:Dictionary={}
 	var sole_offsets:Dictionary={}
@@ -91,26 +129,12 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 		return _last.duplicate(true)
 	var ground:Vector3=renderer.ground_point(actor.position)
 	var root_hip:=ground+Vector3(0,0,28.0/vertical)
-	var ankles:Dictionary={}
-	var lengths:Dictionary={}
-	var drop:=0.0
+	var anatomy:=_anatomy(view,pose.feet,actor.position,right,vertical)
+	var ankles:Dictionary=anatomy.ankles
+	var lengths:Dictionary=anatomy.lengths
+	var drop:float=anatomy.drop
 	var max_length_error:=0.0
-	var unreachable:=false
-	for side in ["left","right"]:
-		var leg:Dictionary=view.legs[side]
-		var foot:Dictionary=leg.parts
-		var sole_pixel:=_vec(leg.solePixel)
-		var ankle_source:=_vec(leg.ankle)-Vector2(float(foot.foot[0]),float(foot.foot[1]))
-		var ankle:Vector3=Vector3(pose.feet[side].sole)+right*(ankle_source.x-sole_pixel.x)+Vector3(0,0,(sole_pixel.y-ankle_source.y)/vertical)
-		ankles[side]=ankle
-		var first:=_vec(leg.hip).distance_to(_vec(leg.knee))/vertical
-		var second:=_vec(leg.knee).distance_to(_vec(leg.ankle))/vertical
-		lengths[side]=Vector2(first,second)
-		var hip:=root_hip+right*float(hips[side])
-		var horizontal:=Vector2(hip.x-ankle.x,hip.y-ankle.y).length_squared()
-		var reach:=first+second-.1
-		if horizontal>=reach*reach: unreachable=true
-		drop=maxf(drop,hip.z-ankle.z-sqrt(maxf(.001,reach*reach-horizontal)))
+	var unreachable:bool=anatomy.horizontalInvalid
 	# Eight source pixels is an explicit rejection bound, never an IK stretch allowance.
 	var drop_limit:=8.0/vertical
 	if drop>drop_limit: unreachable=true
@@ -146,12 +170,12 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 		pose.feet[side]["ankleWorld"]=[ankle.x,ankle.y,ankle.z]
 		pose.feet[side]["lengths"]=[size.x,size.y]
 	var cell:=visual.texture.get_size()/Vector2(visual.hframes,visual.vframes)
-	var origin:=Vector2(visual.frame%visual.hframes,floori(float(visual.frame)/visual.hframes))*cell
+	var origin:=Vector2(int(state.frame)*128,DIRECTIONS.find(direction)*128) if bool(state.poseWalking) else Vector2(DIRECTIONS.find(direction)*128,0)
 	var upper:Sprite3D=_parts.upper
 	upper.texture=_texture(visual.texture,Rect2(origin,Vector2(128,76)))
 	upper.transform=Transform3D(basis,root_hip+up*38)
 	upper.modulate=proxy.modulate
 	visible=true
 	proxy.visible=false
-	_last={"enabled":true,"identity":"male_nusantara","outfit":outfit,"direction":direction,"contacts":pose,"calibration":1.0/vertical,"pelvisDropPixels":drop*vertical,"requestedDropPixels":requested_drop*vertical,"reachValid":not unreachable,"maxLengthError":max_length_error,"attachmentOffset":root_hip-ground-up*28-basis.z*8,"rootMotion":false,"status":"opt-in lower-body pilot, full natural gait unaccepted"}
+	_last={"enabled":true,"identity":"male_nusantara","outfit":outfit,"direction":direction,"desiredDirection":desired,"heldFacing":direction!=desired,"contacts":pose,"calibration":1.0/vertical,"pelvisDropPixels":drop*vertical,"requestedDropPixels":requested_drop*vertical,"reachValid":not unreachable,"maxLengthError":max_length_error,"attachmentOffset":root_hip-ground-up*28-basis.z*8,"rootMotion":false,"status":"opt-in lower-body pilot, full natural gait unaccepted"}
 	return _last.duplicate(true)
