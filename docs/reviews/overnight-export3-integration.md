@@ -35,7 +35,7 @@ PCK Linux CI `8c7e43e35e570a0767dd386750edbdbcbad3f453c069211c912c0bbff0b0b3e6`,
 
 ## Operasi aktual
 
-Backup pra-aktivasi `/var/backups/jalasmara/jalasmara-20261109T195656Z.archive.gz`, SHA `ff3f806acae7821c17a1c7ff5fbe08ecd924da539ba1dd9cd2c99d9b70172d17`, berhasil restore 42 dokumen/0 gagal pada database pemeriksaan terpisah; jumlah/isi diperiksa dan database sementara dibersihkan.
+Backup pra-aktivasi `/var/backups/jalasmara/jalasmara-20261109T195656Z.archive.gz`, SHA `ff3f806acae7821c17a1c7ff5fbe08ecd924da539ba1dd9cd2c99d9b70172d17`, berhasil restore 42 dokumen/0 gagal pada database pemeriksaan terpisah; jumlah dokumen diperiksa dan database sementara dibersihkan.
 
 Aktivasi hanya mengganti tag `jalasmara:current` dan service app melalui compose tanpa build/dependensi. Guard rollback otomatis mengembalikan image sebelumnya jika health/identitas gagal. Full PCK setelah pergantian cocok. Mongo `7b13e58eb0e6`, Redis `a67512d71c0d`, bind `10.1.0.8:3000`, `.env` SHA `627555330e24f0159d84ca5df860fdebe2c28812cd62edec433635565dd0f68e` tidak berubah. Tidak ada reseed, perubahan proxy, volume atau data pemain. Log `.runtime/overnight-release3-{backup,pre-activation,activation}.log`.
 

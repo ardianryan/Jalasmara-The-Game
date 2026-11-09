@@ -26,7 +26,7 @@ There is **no direct crop-sale action** in the current homestead authority. `sto
 
 Navigation budget15minutes, unchanged450input-attempt/20-stuck checks and25second scene predicates; each actual iframe startup/reload has a240second timeout. The pre-fixture pinned PCK download is bounded180seconds. No automatic rerun or budget widening is included. An actual run will print a sanitized phase/check heartbeat every30seconds, retain action/request/revision/calendar/seed/plot/produce ledgers and original screenshots. Failure capture is bounded3seconds for snapshot and5seconds for PNG. A potentially uncertain insert is marked attempted before awaiting acknowledgement. Browser shutdown exceptions cannot skip the UUID-scoped DB/Redis/auth cleanup; zero remaining players/receipts/shifts/owned keys is asserted.
 
-Two CPU tests passed: the current actual plot/bed/Wira routes are walkable without WORLD mutation; changed crop requirements and an unreachable authored bed reject setup. `node --check`, Prettier and `git diff --check` passed. The helper requires the actual four-day/three-yield definition instead of shortening it to fit the test. **No browser/Godot/fixture was started yet.** Root owns the next review and explicit grant.
+Two CPU tests passed: the current actual plot/bed/Wira routes are walkable without WORLD mutation; changed crop requirements and an unreachable authored bed reject setup. `node --check`, Prettier and `git diff --check` passed. The helper requires the actual four-day/three-yield definition instead of shortening it to fit the test. At that preparation checkpoint no browser/Godot/fixture had started; the actual granted run is recorded below.
 
 ```sh
 APP_TEST_ORIGIN=http://localhost:3111 \
