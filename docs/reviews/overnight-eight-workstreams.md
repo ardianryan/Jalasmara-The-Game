@@ -89,3 +89,6 @@ Pada source06fac42, keenam pemeriksaan terarah resident rig/integration, legacyU
 
 
 Root menutup geometri commute pada855748e:11.826pose actual6warga normal/reduced, ramp158/stairs0,576pose rig, productionselector dan Ujang1.242kontak lulus. Suite61 didaftarkan dan pengulangan penuh sedang berjalan. Active-shiftlock12c5687 lulus4focusedroot, termasuk realPlayer input12frame tanpa pendingpath dan unlock sesudah shiftkosong; browser belum. Profilingguard9114ece menolak alternatePCK yang tidak didukung pada segmentedexports sebelum fixture,7CPUtestsroot lulus. [Pembersihan cache](overnight-storage-cleanup.md) menghapus265.089.024allocatedbyte dari5output yang dilepas; preview sehat, source/data/buildaktif tetap.
+
+
+Root full61 pada9497fc2/08c737b berhenti:50kasus pertama lulus, kedai-resume gagal assertion actualPlayerunlock line63 lalu timeout60detik. Focused sebelumnya lulus; log penuh `.runtime/overnight-world-integrated-5.log` dan perkasus tetap. Lanewebsite meneliti timing manualphysics padafixture, tidak mengubahprodukagar assertionlulus. Belum ada ekspor2 atau browserbaru; full59 lama tetap hasil suite lengkap terakhir.
