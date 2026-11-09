@@ -194,7 +194,7 @@ func update_pose(tint:Color) -> void:
 		var foot_local:Vector3=to_local(_contacts.feet[side].sole)
 		_put("foot_"+side,_screen(_contacts.feet[side].sole)+(_center("foot_"+side)-_v(foot.sole))*_factor,0,foot_local.z)
 	for name in ["torso","head"]: _put(name,(_center(name)-_v(data.pivot))*_factor+Vector2(0,_drop),0,.02 if name=="torso" else .05)
-	var walking:bool=str(state.clip)=="walk" and actor.moved_velocity.length()>.1
+	var walking:bool=str(state.clip)=="walk" and (actor.moved_velocity.length()>.1 or paused)
 	var work:float=1.0 if str(state.clip)=="work_loop" else clampf(float(state.elapsed)/.8,0,1) if str(state.clip)=="start_work" else 1-clampf(float(state.elapsed)/.65,0,1) if str(state.clip)=="end_work" else 0.0
 	if state.has("workFacing"):
 		var target:Dictionary=state.workFacing

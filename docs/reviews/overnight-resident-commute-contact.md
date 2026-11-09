@@ -8,3 +8,6 @@ Bukti lama tetap terbatas:576pose di central court datar serta support pada work
 
 
 Run awal actual combined root: exit1 pada sampel669, Bagas work→rest di[900,644.8], turn di court datar, pelvis6.641307 > bound9×.68=6.12. Belum memasuki tangga, reset0. Log root `.runtime/resident-commute-before.log` dan failure JSON dipertahankan. Pause awal belum bermakna karena diambil persis fase0; fixture berikut menunggu sin fase swing >.2 agar benar-benar menguji pose lengan. Root mengarahkan scaling TURN_DISTANCE6 bersama stepScale, mempertahankan default6, sebelum mengubah stride atau anotasi hip.
+
+
+Candidate berikut hanya membatasi3perubahan: walking arm mempertahankan clip/phase ketika paused; handover distance6 ikut stepScale (default6 tetap); discontinuity physical threshold kembali STRIDE25/2 seperti legacy, bukan stride anak/2. Actual moved>50 guard tidak diubah, toleransi fixture tidak diubah, source hips/artwork/stride asli tidak diubah. Belum diterima sampai before meaningful pause dan after actual all6 commutes dijalankan.

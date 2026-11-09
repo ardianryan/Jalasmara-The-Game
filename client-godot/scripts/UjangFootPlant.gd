@@ -24,6 +24,7 @@ var _lateral:=Vector2.RIGHT
 var _turn:Dictionary={}
 var _turn_steps:=0
 const TURN_DISTANCE:=6.0
+var turn_distance:=TURN_DISTANCE
 
 func configure(renderer:Node,actor:Node2D,data:Dictionary) -> bool:
 	if not ("map" in renderer) or renderer.map.is_empty(): return false
@@ -31,6 +32,7 @@ func configure(renderer:Node,actor:Node2D,data:Dictionary) -> bool:
 	if not is_finite(step_scale): step_scale=1.0
 	stride_length=STRIDE*step_scale
 	lift_height=LIFT*step_scale
+	turn_distance=TURN_DISTANCE*step_scale
 	_renderer=renderer
 	_actor=actor
 	for surface in renderer.map.get("surfaces",[]):
@@ -119,14 +121,14 @@ func _begin_turn(at:Vector2) -> void:
 	for name in ["left","right"]:
 		if not bool(_feet[name].grounded): side=name; break
 	var entry:Dictionary=_feet[side]
-	var target:=_safe(_base(side,at)+_direction*TURN_DISTANCE/_ratio,at)
+	var target:=_safe(_base(side,at)+_direction*turn_distance/_ratio,at)
 	_turn={"side":side,"from":entry.logical,"target":target,"distance":0.0,"lift":maxf(0,(Vector3(entry.sole)-_ground(entry.logical)).dot(_up()))}
 	entry.grounded=false
 	_turn_steps+=1
 
 func _advance_turn(physical:float,at:Vector2) -> void:
 	_turn.distance=float(_turn.distance)+physical
-	var u:=clampf(float(_turn.distance)/TURN_DISTANCE,0,1)
+	var u:=clampf(float(_turn.distance)/turn_distance,0,1)
 	var smooth:=u*u*(3.0-2.0*u)
 	var side:String=_turn.side
 	var entry:Dictionary=_feet[side]
@@ -151,7 +153,7 @@ func update(at:Vector2,velocity:Vector2,time:float,_flip:float) -> Dictionary:
 	var physical:=body_ground.distance_to(_last_ground) if _ready else 0.0
 	var delta:=clampf(time-_last_time,0,.15) if _ready else 0.0
 	var walking:=velocity.length()>.1 and moved>.00001
-	if moved>50 or physical>stride_length*.5:
+	if moved>50 or physical>STRIDE*.5:
 		_resets+=1
 		_ready=false
 		walking=false
