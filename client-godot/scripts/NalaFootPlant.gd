@@ -163,6 +163,7 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 	if paused: return snapshot()
 	var logical_delta:=at-_last_at
 	var physical:=_world_motion(_last_at,logical_delta).length()
+	var body_advanced:=false
 	if logical_delta.length()>80 or physical>80:
 		_discontinuities+=1
 		_reset(at,hips,right)
@@ -193,6 +194,7 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 			entry.to=target
 			entry.toWorld=_ground(target)
 			_transfer_body(sample,chunk,_swing)
+			body_advanced=true
 			var u:=clampf(_distance/_landing_distance,0,1)
 			var smooth:=u*u*(3.0-2.0*u)
 			entry.logical=Vector2(entry.from).lerp(target,smooth)
@@ -214,6 +216,7 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 		var ground:=_ground(entry.logical)
 		entry.toWorld=ground
 		_transfer_body(at,maxf(0,delta)*24.0,_swing)
+		body_advanced=true
 		entry.sole=Vector3(entry.sole).move_toward(ground,maxf(0,delta)*24.0)
 		if Vector3(entry.sole).distance_to(ground)<.001:
 			entry.sole=ground
@@ -226,7 +229,7 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 	if _swing=="" and not _on_stairs(at):
 		var ordinary:=_ground(at).z
 		if _stair_transfer:
-			if not moving or physical<.00001: _body_height=move_toward(_body_height,ordinary,maxf(0,delta)*24.0*_body_rate)
+			if not body_advanced and (not moving or physical<.00001): _body_height=move_toward(_body_height,ordinary,maxf(0,delta)*24.0*_body_rate)
 			if absf(_body_height-ordinary)<.001: _stair_transfer=false
 		else: _body_height=ordinary
 	_last_at=at
