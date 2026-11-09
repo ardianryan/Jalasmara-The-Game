@@ -1,5 +1,22 @@
 extends RefCounted
 
+static func polygon_bounds(polygon:Array) -> Dictionary:
+	var min_x:=INF
+	var max_x:=-INF
+	var min_y:=INF
+	var max_y:=-INF
+	for point in polygon:
+		min_x=minf(min_x,float(point[0]))
+		max_x=maxf(max_x,float(point[0]))
+		min_y=minf(min_y,float(point[1]))
+		max_y=maxf(max_y,float(point[1]))
+	# Conservative scalar bounds retain the canonical distance<1e-7 boundary.
+	return {"minX":min_x-1e-7,"maxX":max_x+1e-7,"minY":min_y-1e-7,"maxY":max_y+1e-7}
+
+static func cached_point_in_polygon(point:Vector2,polygon:Array,bounds:Dictionary) -> bool:
+	if float(point.x)<float(bounds.minX) or float(point.x)>float(bounds.maxX) or float(point.y)<float(bounds.minY) or float(point.y)>float(bounds.maxY): return false
+	return point_in_polygon(point,polygon)
+
 # Scalar port of packages/shared/src/land.ts, including its strict boundary rule.
 # Keep manifest coordinates as Arrays: PackedVector2Array rounds them to float32.
 static func distance_to_segment(point: Vector2, a: Array, b: Array) -> float:

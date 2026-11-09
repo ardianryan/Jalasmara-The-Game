@@ -298,7 +298,8 @@ func _cache_ground_queries() -> void:
 	_surface_queries.clear()
 	_stair_queries.clear()
 	for surface in map.get("surfaces",[]):
-		_surface_queries.append({"polygon":_polygon(surface.get("polygon",[])),"canonicalPolygon":surface.get("polygon",[]).duplicate(true),"priority":int(surface.get("priority",0)),"height":float(surface.get("elevation",0))*LEVEL_HEIGHT})
+		var canonical:Array=surface.get("polygon",[]).duplicate(true)
+		_surface_queries.append({"polygon":_polygon(canonical),"canonicalPolygon":canonical,"bounds":GroundPolygon.polygon_bounds(canonical),"priority":int(surface.get("priority",0)),"height":float(surface.get("elevation",0))*LEVEL_HEIGHT})
 	for stair in map.get("stairs",[]):
 		var path: Array=stair.get("path",[])
 		if path.size()<2: continue
@@ -308,7 +309,7 @@ func ground_height(point: Vector2) -> float:
 	var elevation:=0.0
 	var priority:=-10000
 	for surface in _surface_queries:
-		if surface.priority>=priority and GroundPolygon.point_in_polygon(point,surface.canonicalPolygon):
+		if surface.priority>=priority and GroundPolygon.cached_point_in_polygon(point,surface.canonicalPolygon,surface.bounds):
 			priority=surface.priority
 			elevation=surface.height
 	for stair in _stair_queries:

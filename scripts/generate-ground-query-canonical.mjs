@@ -43,9 +43,10 @@ for (const area of ["hub", "forest"]) {
   metadata[area]={layoutVersion:map.layoutVersion,surfaceIds:map.surfaces.map(s=>s.id)};
 }
 const polygons = [
-  {polygon:[[0,0],[2,0],[2,2],[0,2]], points:[[1,1],[0,1],[-.00000005,1],[-.0000002,1],[2.000001,1],[2,2]]},
+  {polygon:[[0,0],[2,0],[2,2],[0,2]], points:[[1,1],[0,1],[-.00000005,1],[-.0000002,1],[2.000001,1],[2,2],[-.00000009999999,1],[-.0000001,1],[-.00000010000001,1],[1,-.00000009999999],[1,-.00000010000001]]},
   {polygon:[[0,0],[4,0],[4,1],[1,1],[1,4],[0,4]], points:[[.5,3],[3,3],[1,1],[3,.5]]},
   {polygon:[[1.00000001,0],[2,0],[2,2],[1.00000001,2]], points:[[1,1],[1.0000002,1]]},
+  {polygon:[[1.000000095,0],[2,0],[2,2],[1.000000095,2]], points:[[1,1],[.99999988,1],[1.00000024,1]]},
 ];
 const polygonCases=polygons.flatMap(({polygon,points})=>points.map(p=>{
   const point={x:Math.fround(p[0]),y:Math.fround(p[1])};
