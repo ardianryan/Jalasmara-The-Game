@@ -14,8 +14,10 @@ Run after the integrator grants the engine slot:
 
 ```sh
 python3 tools/player-gait/test_lower_body.py
-Godot --headless --path client-godot --script ../scripts/tests/nala-lower-body.gd
-NALA_LOWER_CAPTURE=1 Godot --path client-godot --script ../scripts/tests/nala-lower-body.gd
+Godot --headless --path client-godot --script res://../scripts/tests/nala-lower-body.gd
+NALA_LOWER_CAPTURE=1 Godot --path client-godot --script res://../scripts/tests/nala-lower-body.gd
 ```
 
 The fixture uses actual Player, LandWorld, sprite transforms and floor triangles. It covers eight movement headings, daily/explorer, normal/reduced motion, stop/restart/turn, each authored stair up/down and pause. It must exit nonzero on reach/mesh failures. Native captures still need visual review for knee direction, skirt/short seams, fingertip clipping at the upper-body cut and actual speed. Four original resident views and full-cast motion remain separate unfinished work.
+
+The initial annotation check rejected an assumed bottom row for the south-east left foot. The corrected manifest measures the real opaque bottom row and sole centroid from each original crop. Subsequent source review also corrected foot bases to those measured sole pixels, used the actual continuous stair XY embedding, and preserved the free-foot pose before a sharp turn. These changes still await engine validation.
