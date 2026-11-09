@@ -35,3 +35,17 @@ FishGen environment Python3.11 terisolasi dengan NumPy2.2.6/Pillow11.3.0 sedang 
 - Jalur1: proxyloopback PCK0,59detik tetapi browserpublik masih1,95MB/20detik saat Range0-. Range tidak memperbaiki browser; jangan memasangnya pada loader. Percobaan berikut membandingkan precompressedPCK yang terdekompresi menjadi SHA5f5baf identik, tanpa perubahan game/API/proxy. Hasil gagal tetap disimpan.
 
 Staging masih image d60aab21/PCK5f5baf. Candidate commit dan bukti lokal tidak berarti sudah dirilis. Root menjalankan tes gabungan setelah kontrak desa/HUD/rig dibekukan; native/browser tetap bergantian.
+
+## Checkpoint 547beb2: pemeriksaan gabungan berjalan
+
+Source desa layout11 sudah digabung (959ff3a), disusul guard tangkapan pingsan/Bintang2 (fad9e58), pen dekat permukaan (3b89485) dan UI kebun/keramba (85fbcba). Lane desa full111API lulus; skenario tambahan faint/quality8 lulus terpisah. Root typecheck/full112 sempat lulus pada gabungan yang masih memuat satu tes header eksperimen; tes/header itu kemudian ditarik karena A/B gagal. Jangan menyamakan angka112 tersebut dengan suite final produk yang belum diulang.
+
+Root fullworld pertama berhenti pada batas batch renderer:26pemeriksaan awal lulus, `land-renderer.gd` gagal dengan **60batch**, sementara batas tetap **kurang dari60**. Assertion semula membuat Godot menunggu hingga timeout60detik; fixture kini mencetak status lengkap dan keluar1 segera, tidak melonggarkan batas. Pengukuran ulang menunjukkan10rumah,11lentera,29pohon. Ekspektasi lentera disesuaikan dengan dua rumah nyata; pemilik desa sedang menggabungkan material roof/soffit agar biaya turun tanpa membuang geometri/cahaya. Log `.runtime/overnight-world-integrated-1.log`, `.runtime/world-check/` dan `overnight-batch-budget-numeric.log` menyimpan kegagalannya.
+
+UI fisik c3201e8 sudah ditinjau root melalui PNG desktopdialog dan buku potret. UI garden85fbcba fokus/payload lulus; fixture `homestead-options.gd` terdaftar runner, sehingga runner berikutnya54kasus. Night tray masih source terpisah: tes awal mengungkap contextpelanggan terscroll195logical saat fokus awal. Pemilik website mempertahankan assertion konteks dan belum mengirim kandidat malam sebagai selesai. Pemeriksaan animasi hutan/laut jalur7 menyusul setelah UI inti ini, belum diberi hasil baru.
+
+Native desa mengungkap pen tertutup dek/batu meskipun36transform sah. Anchor alternatif1030belum diterima; revisi berikut memakai transform dunia sebenarnya agar service dan keramba tetap dekat. Tampilan dan posisi pen masih menunggu native ulang.
+
+Atlas original enam warga e0a128b tersedia sebagai aset produksi,49.540byte, binaryalpha dan reproduksi PNG/JSON identik. Belum terpasang sebagai gait. Voxel8715ditolak visual. Pemilik desa akan membuat adapter art terpisah; karakter tetap memiliki Nala/LandActors/HubActor. Pilot Nala2463a48→192b4d1→5a067f7→5423e8e masih terisolasi/off default dan gagal reach diagonal pada pelvis10,74px>8; native juga menolak. Panjang tungkai/batas tidak dilonggarkan. Ini belum natural walking selesai.
+
+Source checkpoint berada pada branchGitHub `work/overnight-integration`; seluruh ekspor/browser/CI/rilis baru masih menunggu source dan tes gabungan diterima. Staging selalu kembali d60healthy setelah dua A/B, `.env`/volume/proxy tetap. Pengujian Windows/S23 pengguna tetap dijadwalkan setelah recorder dan build baru siap.
