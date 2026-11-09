@@ -90,3 +90,9 @@ Semua eksekusi build, pengujian, audit dependensi, dan CodeQL berada di `.gitlab
 Variabel `GITHUB_DEPLOY_KEY_B64` harus masked dan protected. Jangan memasukkan token pribadi `gh`/`glab` ke CI. Branch utama GitLab harus protected agar variabel tersedia. Pipeline merge request tidak menerima deploy key protected. Deploy key tidak memiliki hak GitHub Code Scanning; SARIF dikirim sebagai berkas laporan, bukan anotasi native GitHub.
 
 Cache dapat dibuang tanpa kehilangan data. Build output Godot, `.runtime`, screenshot lokal, `.env`, dan moodboard tidak boleh masuk Git. CI tidak otomatis mengubah VPS. Rilis ke staging dilakukan terpisah setelah hasil pemeriksaan ditinjau.
+
+## Retensi hasil build
+
+Sesudah kandidat digantikan atau rilis selesai, hapus arsip transfer dan direktori build sementara yang tidak lagi diperlukan. Simpan image aktif dan satu rollback yang terverifikasi; beberapa tag pada image yang sama tidak menggandakan ukuran layer. Cache compiler/editor worktree yang sedang tidak dipakai boleh dibuang sesudah pemilik melepas prosesnya. Pertahankan source, hasil review, log pengujian, dependency bersama, binary serta template export yang masih diperlukan.
+
+Pada VPS, periksa `docker ps`, image ID, dan build yang sedang berjalan sebelum `docker builder prune -a -f` serta `docker image prune -f`. Kedua perintah ini dijalankan setelah build selesai. Jangan memakai prune volume atau menghapus database, `.env`, backup, atau direktori aplikasi aktif untuk menghemat cache. Catat ruang bebas sebelum/sesudah dan verifikasi health aplikasi serta hash PCK. Ukuran images dan build cache dapat menunjuk layer bersama: jangan menjumlahkannya sebagai byte yang berhasil dibebaskan.

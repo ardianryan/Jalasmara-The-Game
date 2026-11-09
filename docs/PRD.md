@@ -23,6 +23,7 @@ Nala datang ke Kota Apung Bandar Hujung, menjelajah desa/hutan/gua daratan, meny
 | Waktu | 24 jam game = 36 menit aktif nyata; server memegang kalender | Transisi cuaca/waktu, pause, lease/reload, tidur dan tanaman diuji; cerita tidak dilompati oleh jam kosmetik. |
 | Performa | Windows/mobile tetap nyaman tanpa menghilangkan volume, atmosfer dan identitas piksel | Baseline/kandidat dengan perangkat dan profil sama; batas kualitas dan resource nyata. Target ringan S23: 30 FPS stabil/p95≤50 ms; belum hasil yang boleh diklaim tanpa perangkat. |
 | Persistensi | Progres, inventori, ekonomi dan posisi tidak rusak oleh perubahan visual/layout | Migrasi posisi lama ke lantai terhubung, API round-trip, reload dan retry/idempotency; fixture terpisah, tidak reset akun. |
+| Penyimpanan pengembangan | Cache/build tidak terpakai dibersihkan pada PC dan VPS; build aktif serta satu rollback dipertahankan | Manifest penghapusan dan ruang bebas aktual, health/hash aplikasi; source, bukti, konfigurasi, backup serta volume data tetap utuh. |
 
 ## Prioritas pengembangan
 

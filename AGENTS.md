@@ -29,6 +29,10 @@ Instruksi pengguna dalam sesi aktif mengatasi pedoman ini. Jangan mengulang perm
 - Bedakan bukti CPU, headless, native, browser, emulasi sentuh dan perangkat fisik. SwiftShader/RAF bukan FPS GPU Samsung S23 atau Windows. Jangan mengklaim natural walking lengkap dari still image.
 - Ikuti operasi repo untuk rilis. Catat SHA source, PCK dan image, CI, backup, rollback serta smoke aktual. Kandidat lokal tidak boleh disebut sudah tampil di staging. Pertahankan data, `.env`, dan upstream proxy.
 
+## Penyimpanan lokal dan VPS
+
+Pengguna meminta penghematan storage berkelanjutan. Setelah paket digantikan, hapus cache dan hasil build yang terbukti tidak dipakai; pertahankan build aktif serta satu image rollback terverifikasi. Periksa proses/pemilik sebelum menghapus output worktree lain. Jangan menghapus source kandidat, `.git`, bukti pengujian, database/volume, `.env`, atau backup sebagai bagian pembersihan cache. Jangan mengikuti symlink dependency atau menghitungnya berulang. Installer yang telah selesai dipakai boleh dihapus setelah hasil instalasinya diverifikasi. Jalankan prune build Docker hanya setelah build selesai; jangan memakai prune volume. Catat path, byte aktual, ruang bebas sebelum/sesudah, dan health/hash aplikasi di laporan pembersihan.
+
 ## Tool dan lisensi
 
 Gunakan aset library proyek dahulu. Raster baru boleh dibuat sesuai otorisasi pengguna, dengan source/prompt/provenance dan lisensi. Jangan memasukkan gambar moodboard sebagai aset distribusi. Tool bernama dalam chat belum tentu tersedia atau dipakai.
