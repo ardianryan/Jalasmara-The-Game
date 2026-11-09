@@ -29,7 +29,7 @@ func run() -> void:
 	presenter.advance_requested.connect(func(): advances.append(true))
 	var reports:Array=[]
 	if capture: DirAccess.make_dir_recursive_absolute(OUTPUT)
-	for physical in [Vector2i(667,375),Vector2i(844,390),Vector2i(390,844)]:
+	for physical in [Vector2i(667,375),Vector2i(844,390),Vector2i(390,844),Vector2i(1440,900)]:
 		root.size=physical
 		await settle()
 		for entry in [[SHORT,"neutral","short"],[LONG,"thinking","paragraph"],[LONG.repeat(8)+"CATATAN UTUH","shock","long"]]:
@@ -40,12 +40,12 @@ func run() -> void:
 			var before:Vector2=presenter.size
 			assert(logical.grow(1).encloses(presenter.get_global_rect()))
 			assert(presenter.text_view.get_theme_font_size("normal_font_size")*scale>=15.99)
+			assert(presenter.text_view.get_theme_font_size("normal_font_size")*scale<=24,"Body must remain readable without desktop inflation")
 			var action:Rect2=presenter.next_button.get_global_rect()
 			assert(action.size.y*scale>=47.99 and action.size.x*scale>=47.99)
 			assert(presenter.get_global_rect().grow(1).encloses(action),"Action hit target must stay inside the panel")
-			if physical.x>physical.y:
-				var cap:=.34 if entry[2]=="short" else .42
-				assert(presenter.size.y/logical.size.y<=cap+.003,"Dialogue must leave the world visible: "+str(presenter.size/logical.size))
+			var cap:=.38 if physical.x<physical.y else .32 if physical.y>480 else .34 if entry[2]=="short" else .42
+			assert(presenter.size.y/logical.size.y<=cap+.003,"Dialogue must leave the world visible: "+str(presenter.size/logical.size))
 			var key:=InputEventKey.new()
 			key.pressed=true
 			key.physical_keycode=KEY_SPACE

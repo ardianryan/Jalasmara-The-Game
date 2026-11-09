@@ -83,8 +83,8 @@ func _rebuild() -> void:
 	var touch := DisplayServer.is_touchscreen_available()
 	if OS.has_feature("web"): touch = bool(JavaScriptBridge.get_interface("window").matchMedia("(pointer:coarse)").matches)
 	_compact = touch or physical.x<900 or viewport.x<850
-	_font_size = maxi(24,ceili(16*ratio))
-	_target = maxf(84 if _compact else 56,ceilf(48*ratio))
+	_font_size = preload("res://scripts/UiMetrics.gd").body(self)
+	_target = ceilf(48*ratio)
 	var safe := Vector4.ZERO
 	var layout := get_node_or_null("/root/ViewportLayout")
 	if layout != null: safe = layout.insets()
@@ -110,10 +110,10 @@ func _rebuild() -> void:
 			_rebuild()
 		)
 		back.size_flags_horizontal=Control.SIZE_SHRINK_END
-		back.custom_minimum_size.x=120
+		back.custom_minimum_size.x=ceilf(88*ratio)
 	var close_button := _button(header,"Tutup",close)
 	if not _compact: HudArt.set_icon(close_button,"close",28)
-	close_button.custom_minimum_size.x = 120
+	close_button.custom_minimum_size.x = ceilf(88*ratio)
 	close_button.size_flags_horizontal = Control.SIZE_SHRINK_END
 	var tabs := HBoxContainer.new()
 	tabs.add_theme_constant_override("separation",6)

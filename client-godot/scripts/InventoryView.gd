@@ -61,8 +61,8 @@ func _build() -> void:
 	var ratio := viewport.x/maxf(1,Vector2(get_window().size).x)
 	var touch := DisplayServer.is_touchscreen_available()
 	if OS.has_feature("web"): touch = bool(JavaScriptBridge.get_interface("window").matchMedia("(pointer:coarse)").matches)
-	_body_size = maxi(24,ceili(16*ratio))
-	_target = maxf(84 if touch or get_window().size.x<900 else 64,ceilf(48*ratio))
+	_body_size = preload("res://scripts/UiMetrics.gd").body(self)
+	_target = ceilf(48*ratio)
 	var safe := Vector4.ZERO
 	var layout := get_node_or_null("/root/ViewportLayout")
 	if layout != null: safe = layout.insets()
@@ -84,7 +84,7 @@ func _build() -> void:
 	_text(header,"Tas Nala · %d koin" % int(_player.get("coins",0)),true)
 	var close_button := Button.new()
 	close_button.text = "Tutup"
-	close_button.custom_minimum_size = Vector2(160,_target)
+	close_button.custom_minimum_size = Vector2(ceilf(88*ratio),_target)
 	_button_style(close_button)
 	HudArt.set_icon(close_button,"close",28)
 	close_button.pressed.connect(close)

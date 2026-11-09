@@ -1,0 +1,30 @@
+[
+  {
+    "id": "klorofil",
+    "name": "Benih Hayati",
+    "subject": "Biologi",
+    "description": "Fragmen biologi tumbuhan: fotosintesis daun, respirasi seluler akar, asimilasi hara nitrogen, dan keseimbangan osmosis.",
+    "weight": 1
+  },
+  {
+    "id": "ekosistem",
+    "name": "Simpul Ekosistem",
+    "subject": "Lingkungan",
+    "description": "Ingatan tentang air, rantai makanan, dan keseimbangan pesisir.",
+    "weight": 1
+  },
+  {
+    "id": "rasio",
+    "name": "Pola Bilangan",
+    "subject": "Matematika",
+    "description": "Ingatan tentang ukuran, perbandingan, dan perhitungan sehari-hari.",
+    "weight": 1
+  },
+  {
+    "id": "netralisasi",
+    "name": "Inti Senyawa",
+    "subject": "Kimia",
+    "description": "Ingatan tentang larutan dan reaksi kimia yang perlu dipahami dengan hati-hati.",
+    "weight": 1
+  }
+]

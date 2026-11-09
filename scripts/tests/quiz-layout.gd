@@ -20,10 +20,10 @@ func run() -> void:
 	assert(buttons.size()==4)
 	for i in range(4):
 		var button:Button=buttons[i]
-		assert(button.custom_minimum_size.y>=82)
+		assert(button.custom_minimum_size.y*root.get_final_transform().x.length()>=56)
 		assert(button.shortcut.events[0].physical_keycode==KEY_1+i)
 		var label:Label=button.get_child(0)
-		assert(label.get_theme_font_size("font_size")>=24)
+		assert(label.get_theme_font_size("font_size")*root.get_final_transform().x.length()>=16)
 		assert(label.get_theme_font("font").resource_path.ends_with("nunito-sans-latin-400-normal.woff2"))
 		assert(label.mouse_filter==Control.MOUSE_FILTER_IGNORE and label.autowrap_mode==TextServer.AUTOWRAP_WORD_SMART)
 	var fired:Array[int]=[]
@@ -58,7 +58,7 @@ func run() -> void:
 	enter.pressed=false
 	root.push_input(enter)
 	assert(fired.back()==3 and fired.size()==5,"Enter must choose focused option once")
-	for size in [Vector2i(844,390),Vector2i(667,375),Vector2i(390,844)]:
+	for size in [Vector2i(844,390),Vector2i(667,375),Vector2i(390,844),Vector2i(1440,900)]:
 		root.size=size
 		for frame in range(4): await process_frame
 		scene._layout_modal()
@@ -70,10 +70,12 @@ func run() -> void:
 		for button in buttons:
 			assert(button.get_rect().size.x>=285)
 			var label:Label=button.get_child(0)
-			assert(label.size.x>200 and label.size.y>=24)
+			assert(label.size.x>200 and label.size.y>=label.get_theme_font("font").get_height(label.get_theme_font_size("font_size")),"Every answer retains at least one complete text line")
 			assert(label.get_theme_font_size("font_size")*transform.x.length()>=16.0)
+			assert(label.get_theme_font_size("font_size")*transform.x.length()<=24.0,"Quiz body must not inflate to40physical pixels on desktop")
 			assert(button.size.y*transform.x.length()>=56.0)
 		var scroll:ScrollContainer=scene.modal.get_child(0)
+		print("QUIZ FOCUS ",size," scroll ",scroll.get_global_rect()," answer ",buttons[3].get_global_rect()," y ",scroll.scroll_vertical," min ",buttons[3].get_combined_minimum_size())
 		assert(scroll.follow_focus and scroll.get_global_rect().grow(2).encloses(buttons[3].get_global_rect()),"Focused lower answer must scroll into view")
 		print("NARROW QUIZ ",size," logical ",visible.size," transform ",transform," firstAnswer ",buttons[0].get_global_rect()," focus ",root.gui_get_focus_owner().get_class())
 	assert(scene.nala.frozen and hud.get("_modal"))
@@ -96,10 +98,11 @@ func run() -> void:
 	assert(short_buttons.size()==4)
 	for button in short_buttons:
 		assert(button.size.y*scale>=56.0,"Even single-word answers need56physicalpx touch targets")
-	print("SHORT ANSWER TOUCH PASS minimum ",short_buttons[0].size.y*scale,"physicalpx at667x375")
+		assert(button.size.y*scale<=64.0,"Single-word answers should not retain oversized logical padding on desktop")
+	print("SHORT ANSWER TOUCH PASS minimum ",short_buttons[0].size.y*scale,"physicalpx at",root.size)
 	state.dive=saved
 	scene.nala.free()
 	hud.free()
 	scene.free()
-	print("QUIZ LAYOUT PASS: actual Main modal at844x390/667x375/390x844,56px short-answer targets,16px body,24px Nunito, wrapping, keyboard1..4/Tab/Enter, focused-row scrolling, pause; no network calls")
+	print("QUIZ LAYOUT PASS: actual Main modal at844x390/667x375/390x844,56px short-answer targets,16physicalpx Nunito, wrapping, keyboard1..4/Tab/Enter, focused-row scrolling, pause; no network calls")
 	quit()

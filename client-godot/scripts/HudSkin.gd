@@ -61,8 +61,16 @@ static func slot() -> StyleBox:
 
 static func apply_button(control: Button,kind := "dark") -> void:
 	control.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	control.set_meta("physical_skin",true)
+	var ratio:=preload("res://scripts/UiMetrics.gd").ratio(control)
 	for state in ["normal","hover","pressed","focus","disabled"]:
-		control.add_theme_stylebox_override(state,button("normal" if state=="disabled" else state,kind))
+		var style:=button("normal" if state=="disabled" else state,kind)
+		if state!="focus":
+			style.content_margin_left=ceilf(14*ratio)
+			style.content_margin_right=ceilf(14*ratio)
+			style.content_margin_top=ceilf(10*ratio)
+			style.content_margin_bottom=ceilf(10*ratio)
+		control.add_theme_stylebox_override(state,style)
 	for state in ["font_color","font_hover_color","font_pressed_color","font_focus_color","font_hover_pressed_color"]:
 		control.add_theme_color_override(state,CREAM)
 	control.add_theme_color_override("font_disabled_color",Color("b9ad99"))
@@ -76,8 +84,8 @@ static func icon(name: String) -> Texture2D:
 static func set_icon(control: Button,name: String,max_width := 32) -> void:
 	control.icon = icon(name)
 	control.expand_icon = true
-	control.add_theme_constant_override("icon_max_width",max_width)
-	control.add_theme_constant_override("h_separation",8)
+	control.add_theme_constant_override("icon_max_width",ceili(max_width*preload("res://scripts/UiMetrics.gd").ratio(control)) if control.get_meta("physical_skin",false) else max_width)
+	control.add_theme_constant_override("h_separation",ceili(8*preload("res://scripts/UiMetrics.gd").ratio(control)) if control.get_meta("physical_skin",false) else 8)
 
 static func assets_ready() -> bool:
 	for filename in ["panel-dark","panel-paper","button-normal","button-hover","button-pressed","button-selected","slot"]:

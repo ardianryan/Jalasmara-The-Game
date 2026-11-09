@@ -228,6 +228,7 @@ func _button(parent: Node,text: String,callback: Callable) -> Button:
 	b.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	b.add_theme_font_override("font",BODY_FONT)
 	b.add_theme_font_size_override("font_size",_ui_font())
+	preload("res://scripts/HudSkin.gd").apply_button(b)
 	b.pressed.connect(callback)
 	parent.add_child(b)
 	return b
@@ -237,7 +238,7 @@ func _label(parent: Node,text: String,size := 16) -> Label:
 	label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	label.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	label.set_meta("base_font_size",size)
-	label.add_theme_font_size_override("font_size",maxi(size,_ui_font()))
+	label.add_theme_font_size_override("font_size",maxi(ceili(size*preload("res://scripts/UiMetrics.gd").ratio(self,hud)),_ui_font()))
 	if size<=19: label.add_theme_font_override("font",BODY_FONT)
 	parent.add_child(label)
 	return label
@@ -288,15 +289,26 @@ func _layout_modal() -> void:
 		scroll.custom_minimum_size=Vector2.ZERO
 		if is_instance_valid(modal_box): modal_box.custom_minimum_size.x=0
 	for label in modal.find_children("*","Label",true,false):
-		if label.has_meta("base_font_size"): label.add_theme_font_size_override("font_size",maxi(int(label.get_meta("base_font_size")),_ui_font()))
+		if label.has_meta("base_font_size"): label.add_theme_font_size_override("font_size",maxi(ceili(int(label.get_meta("base_font_size"))*ratio),_ui_font()))
 	for button in modal.find_children("*","Button",true,false):
-		button.custom_minimum_size.y=maxf(button.custom_minimum_size.y,_ui_target())
+		button.custom_minimum_size.y=_ui_target()
+		preload("res://scripts/HudSkin.gd").apply_button(button)
 		button.add_theme_font_size_override("font_size",_ui_font())
 	for grid in modal.find_children("*","GridContainer",true,false):
 		if grid.get_meta("quiz_answers",false): _layout_quiz_answers(grid,dimensions.x-50)
 	if modal.get_meta("compact_result",false):
 		modal.set_meta("fit_max_height",dimensions.y)
 		_fit_compact_modal.call_deferred(modal)
+	_reveal_modal_focus.call_deferred(modal)
+func _reveal_modal_focus(target: PanelContainer) -> void:
+	if not is_instance_valid(target) or not target.is_inside_tree(): return
+	var tree:=target.get_tree()
+	await tree.process_frame
+	await tree.process_frame
+	if not is_instance_valid(target) or target!=modal or not target.is_inside_tree(): return
+	var focused:=target.get_viewport().gui_get_focus_owner()
+	if is_instance_valid(focused) and target.is_ancestor_of(focused):
+		(target.get_child(0) as ScrollContainer).ensure_control_visible(focused)
 func _fit_compact_modal(target: PanelContainer) -> void:
 	# Wrapped labels need the final container width before their height is meaningful.
 	if not is_instance_valid(target) or not target.is_inside_tree(): return
@@ -316,11 +328,17 @@ func _layout_quiz_answers(answers: GridContainer,width: float) -> void:
 	var view:=preload("res://scripts/UiMetrics.gd").viewport(self,hud).get_visible_rect().size
 	answers.columns=1 if view.x<800 else 2
 	var column_width:float=(width-12*(answers.columns-1))/answers.columns
+	var ratio:=preload("res://scripts/UiMetrics.gd").ratio(self,hud)
+	var padding:=Vector2(ceilf(14*ratio),ceilf(12*ratio))
 	for answer in answers.get_children():
 		var option_label:Label=answer.get_child(0)
 		option_label.add_theme_font_size_override("font_size",_ui_font())
-		var measured:=BODY_FONT.get_multiline_string_size(option_label.text,HORIZONTAL_ALIGNMENT_LEFT,maxf(80,column_width-28),_ui_font())
-		answer.custom_minimum_size=Vector2(0,maxf(_ui_target(),measured.y+28))
+		option_label.offset_left=padding.x
+		option_label.offset_right=-padding.x
+		option_label.offset_top=padding.y
+		option_label.offset_bottom=-padding.y
+		var measured:=BODY_FONT.get_multiline_string_size(option_label.text,HORIZONTAL_ALIGNMENT_LEFT,maxf(80,column_width-padding.x*2),_ui_font())
+		answer.custom_minimum_size=Vector2(0,maxf(_ui_target(),measured.y+padding.y*2))
 func _close() -> void:
 	if is_instance_valid(field_panel):
 		field_panel.queue_free()
