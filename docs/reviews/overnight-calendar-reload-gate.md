@@ -1,4 +1,6 @@
-# Post-reload clock acceptance — prepared, not executed
+# Post-reload clock acceptance
+
+The source-only gate below was subsequently executed in the [export3 public smoke](overnight-export3-public-smoke.md): full6/6 PASS, actual writer recovery plus5,285ms equivalent authoritative active advancement within8,898ms. The prepared-source notes are retained to distinguish the earlier instantaneous screenshot from the later actual proof.
 
 The actual export3 forest component passed touch/bridge/position reload, but its first reload PNG displayed “Jam aktif di sesi lain.” That instantaneous image does not prove a stuck clock. The existing server retains a different page's writer lease for20seconds; CalendarSync generates a page UUID and sends normal heartbeats every5seconds. No production calendar change is made from this observation.
 
