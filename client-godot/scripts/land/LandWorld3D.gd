@@ -4,6 +4,7 @@ const TILT := deg_to_rad(55.0)
 const DISTANCE := 3300.0
 const LEVEL_HEIGHT := 48.0
 const Materials = preload("res://scripts/land/LandMaterials.gd")
+const CameraPose = preload("res://scripts/land/LandCameraPose.gd")
 var source: Node2D
 var actor: Node2D
 var source_camera: Camera2D
@@ -1190,9 +1191,8 @@ func _process(delta: float) -> void:
 	if viewport_3d.size!=render_size: viewport_3d.size=render_size
 	_center=source_camera.get_screen_center_position()
 	var center:=map_point(_center,0)
-	camera_3d.position=center+Vector3(0,-sin(TILT)*DISTANCE,cos(TILT)*DISTANCE)
-	camera_3d.look_at(center,Vector3(0,0,1))
 	camera_3d.size=logical_size.y/maxf(.1,source_camera.zoom.y)
+	camera_3d.transform=CameraPose.pose(center,0.0,35.0,DISTANCE,camera_3d.size,viewport_3d.size.y)
 	actors_3d.update_actors(delta)
 	var conditions:=EnvironmentState.snapshot()
 	var sway:=0.0 if bool(conditions.get("reduced_motion",false)) else 1.2+absf(float(conditions.get("wind_x",0)))*.035

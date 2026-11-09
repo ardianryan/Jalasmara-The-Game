@@ -50,6 +50,7 @@ const scripts = [
   "scripts/tests/component-land.gd",
   "scripts/tests/land-water-3d.gd",
   "scripts/tests/land-renderer.gd",
+  "scripts/tests/land-camera-pose.gd",
   "scripts/tests/forest-readability.gd",
   "scripts/tests/shelter-architecture06.gd",
   "scripts/tests/map-grounding.gd",

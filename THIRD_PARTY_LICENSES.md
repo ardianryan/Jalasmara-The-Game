@@ -11,6 +11,7 @@ Semua hak cipta, merek dagang, dan lisensi di bawah ini tetap menjadi milik peme
 | Komponen / Pustaka | Pemegang Hak Cipta / Pengembang | Lisensi | Peran dalam Proyek |
 | :--- | :--- | :--- | :--- |
 | **Godot Engine** | Juan Linietsky, Ariel Manzur, Godot Engine contributors | **MIT** | Mesin inti permainan 2D/3D & runtime WebAssembly |
+| **Noxe Pixel Engine (adaptasi kamera)** | Daniel Jankulovski | **MIT** | Port pose ortografis dan pixel snapping ke helper Godot; pembanding kamera tiga perempat, tanpa runtime Three.js kedua |
 | **Ark Pixel Font** | TakWolf (https://takwolf.com) | **SIL OFL 1.1** | Fon piksel tema HUD, dialog, dan label peta |
 | **Lora Font** | Cyreal, Alexei Vanyashin | **SIL OFL 1.1** | Fon tipografi judul dan identitas web |
 | **Nunito Sans Font** | Vernon Adams, Jacques Le Bailly, Manvel Shmavonyan, Alexei Vanyashin | **SIL OFL 1.1** | Fon antarmuka pengguna web |
@@ -60,6 +61,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
+
+### Noxe Pixel Engine: port kamera terbatas
+
+- **Sumber:** https://github.com/danieljan-design/noxe-pixel-engine
+- **Revisi:** `d619d856398b44ad084003fac0a9fbfc9c8393e7`
+- **Berkas upstream:** `engine/pixel-engine.js`, perhitungan orbit kamera dan penguncian posisi pada grid piksel.
+- **Adaptasi Godot:** `client-godot/scripts/land/LandCameraPose.gd`, konversi Y-up ke Z-up dan helper proyeksi/ray untuk pilot. Pose rilis 0°/35° dipertahankan; kamera menyudut serta snap diuji pada fixture terpisah. Material, shader multipass, scene demo, exporter dan runtime Three.js Noxe tidak disalin.
+- **Lisensi:** MIT; teks lengkap dan pemberitahuan hak cipta disertakan pada `client-godot/resources/licenses/noxe-MIT.txt`, ikut paket resource `.txt`.
 
 ---
 

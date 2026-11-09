@@ -22,7 +22,7 @@ Noxe pin `d619d856398b44ad084003fac0a9fbfc9c8393e7` memisahkan azimut/elevasi ka
 
 Pembanding native pertama memakai bangunan/mesh sebenarnya pada kamera rilis dan kamera menyudut. Pisahkan perubahan geometri dari perubahan proyeksi agar penyebab hasil dapat dinilai.
 
-- Pandangan tiga perempat menyudut: bandingkan azimut sekitar 45° dan elevasi 30°/35° terhadap acuan comfy. Isometrik geometris murni mempunyai elevasi sekitar 35,264° pada azimut 45°; keputusan seni tidak harus memaksakan persamaan panjang ketiga sumbu.
+- Arahan facing terbaru: kamera dari kiri menghadap serong kanan, dengan kandidat azimut **−45°** dan elevasi 30°/35°. Isometrik geometris murni mempunyai elevasi sekitar 35,264° pada azimut −45°; keputusan seni tidak harus memaksakan persamaan panjang ketiga sumbu. Peta dan karakter tidak dicerminkan. Perjalanan kiri ke kanan tetap dapat terlihat dari kedua sisi kamera; pilihan sisi ini menentukan fasad, serambi dan kolong yang perlu terbaca.
 - Perubahan kamera seluruh dunia harus memakai transform yang sama bagi lantai, bangunan, aktor, titik kaki, input joystick/keyboard, reticle/interaksi dan penanda. Uji invers proyeksi serta arah visual karakter. Jangan mengompensasi tanah kembali ke tampilan lama lalu menyebut hasilnya isometrik global.
 - Pertahankan koordinat gameplay server sebagai sumber kebenaran. Perubahan sudut pandang bukan izin berjalan melalui kolong/atap, memindahkan portal, atau mengganti koordinat save secara kosmetik.
 - `facing` bangunan tetap transform lokal. Empat facing diperiksa bersama pintu/tangga/coverage atap. Mengubah facing satu rumah tidak memutar input seluruh peta.
