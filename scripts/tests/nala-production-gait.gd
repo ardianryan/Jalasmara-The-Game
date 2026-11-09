@@ -69,7 +69,7 @@ func _origin() -> Vector2:
 			var valid:=true
 			for heading in range(16):
 				for radius in [35.0,70.0,105.0]:
-					var probe:=point+Vector2.from_angle(heading*TAU/16.0)*radius
+					var probe:Vector2=point+Vector2.from_angle(heading*TAU/16.0)*float(radius)
 					if not collision.is_walkable(probe) or absf(renderer.ground_point(probe).z-height)>.01:
 						valid=false
 						break
@@ -152,7 +152,8 @@ func run() -> void:
 	clock.set_process(false)
 	clock.clock_paused=false
 	for action in ["left","right","up","down","interact","journal","inventory","map","character"]:
-		if InputMap.has_action(action): Input.action_release(action)
+		if not InputMap.has_action(action): InputMap.add_action(action)
+		Input.action_release(action)
 	for outfit in ["daily","explorer"]:
 		var outfit_base:=0 if outfit=="daily" else 16
 		if first_case>=outfit_base+16 or first_case+case_limit<=outfit_base: continue
@@ -164,14 +165,23 @@ func run() -> void:
 			for heading in range(8):
 				var scheduled:=outfit_base+(8 if reduced else 0)+heading
 				if scheduled<first_case or scheduled>=first_case+case_limit: continue
-				var label:=outfit+"/"+str(reduced)+"/"+str(heading)
+				var label:String=str(outfit)+"/"+str(reduced)+"/"+str(heading)
 				_reset_case(origin,outfit)
+				_input(Vector2.ZERO)
+				_controller_enabled(true)
+				await physics_frame
+				await process_frame
+				_controller_enabled(false)
 				player.get("swim_sprite").call("consume_foot_contacts")
 				renderer.call("_process",0.0)
 				last_delta=0.0
 				var before_idle:=checks
 				_measure(label+" idle")
 				if checks==before_idle: return
+				_controller_enabled(true)
+				await physics_frame
+				await process_frame
+				_controller_enabled(false)
 				var path:RefCounted=controller.get("land_path") if outfit=="explorer" else player.get("land_path")
 				path.call("reset",origin)
 				_input(Vector2.ZERO)
