@@ -18,6 +18,9 @@ var physical_pilot:=false
 var delivered_input:=Vector2.ZERO
 var input_driver:Node
 var analog_probe:=false
+var joystick_probe:=false
+var raw_joystick_radius:Variant=null
+const Joystick=preload("res://scripts/AnalogJoystick.gd")
 const PhysicalMotion=preload("res://scripts/NalaPhysicalMotion.gd")
 
 class PhysicalInputDriver extends Node:
@@ -101,7 +104,7 @@ func _physical_inputs(at:Vector2) -> bool:
 			var wrapped:Vector2=renderer.input_motion(PhysicalMotion.screen_input(renderer,input,at),at)
 			if not _check(wrapped.distance_to(logical)<.00001,"Fixture screen-amplitude wrapper differs from intended renderer hook"): return false
 			var actual:Vector3=renderer.ground_point(at+logical)-renderer.ground_point(at)
-			var in_deadzone:=input.length()+.000001<PhysicalMotion.INNER_DEADZONE
+			var in_deadzone:=input.is_zero_approx()
 			var expected:=0.0 if in_deadzone else input.length()*PhysicalMotion.WORLD_XY_SPEED/float(PhysicalMotion.LOGICAL_CAP)
 			if not _check(absf(Vector2(actual.x,actual.y).length()-expected)<.0003,"Actual flat ground metric fails physical-speed input contract"): return false
 			var screen:Vector2=renderer.view_projection.logical_motion_to_view(logical)
@@ -157,8 +160,8 @@ func _production_tick(value:Vector2,label:String) -> bool:
 	if physical_pilot:
 		if not _check(bool(pose.contacts.get("physicalContract",false)),"Physical input pilot did not select its explicit gait contract"): return false
 		if not _check(float(pose.contacts.acceptedDistance)-prior_distance>=world_motion.length()-.003,"Accepted controller displacement froze physical-pilot feet"): return false
-		if label.contains("analog ") and value.length()+.000001<PhysicalMotion.INNER_DEADZONE:
-			if not _check(player.position.distance_to(before)<.0001,"Physical-pilot deadzone moved actor from rest"): return false
+		if label.contains("joystick ") and value.is_zero_approx():
+			if not _check(player.position.distance_to(before)<.0001,"Original joystick neutral zone moved actor from rest"): return false
 	var phase:=label.split(" ",true,1)[1]
 	if not windows.has(phase): windows[phase]={"seconds":0.0,"plannerContacts":0,"legacyContacts":0,"logicalDistance":0.0,"physicalDistance":0.0}
 	windows[phase].seconds+=last_delta
@@ -174,7 +177,7 @@ func _production_tick(value:Vector2,label:String) -> bool:
 	var swing:=str(pose.contacts.swingSide)
 	var planner_phase:Variant=null
 	if swing!="": planner_phase=(0.0 if swing=="right" else .5)+float(pose.contacts.swingDistance)/maxf(.001,float(pose.contacts.landingDistance))*.5
-	var record:={"case":label,"physicsFrame":now,"physicsDelta":last_delta,"elapsedPhysics":elapsed_physics,"elapsedWall":float(Time.get_ticks_usec()-began_usec)/1000000.0,"input":[value.x,value.y],"deliveredInput":[delivered_input.x,delivered_input.y],"physicalPilot":physical_pilot,"position":[player.position.x,player.position.y],"acceptedLogical":logical_travel,"acceptedPhysical":physical_travel,"source":source,"upperAtlasRegion":[region.position.x,region.position.y,region.size.x,region.size.y],"actualEquipmentState":equipment.get("state").duplicate(true),"plannerCyclePhase":planner_phase,"legacyContacts":legacy_contacts,"pose":pose.duplicate(true)}
+	var record:={"case":label,"physicsFrame":now,"physicsDelta":last_delta,"elapsedPhysics":elapsed_physics,"elapsedWall":float(Time.get_ticks_usec()-began_usec)/1000000.0,"input":[value.x,value.y],"rawJoystickRadius":raw_joystick_radius,"deliveredInput":[delivered_input.x,delivered_input.y],"physicalPilot":physical_pilot,"position":[player.position.x,player.position.y],"acceptedLogical":logical_travel,"acceptedPhysical":physical_travel,"source":source,"upperAtlasRegion":[region.position.x,region.position.y,region.size.x,region.size.y],"actualEquipmentState":equipment.get("state").duplicate(true),"plannerCyclePhase":planner_phase,"legacyContacts":legacy_contacts,"pose":pose.duplicate(true)}
 	sample_log.store_line(JSON.stringify(record))
 	sample_log.flush()
 	if capture and checks%capture_stride==0:
@@ -191,6 +194,7 @@ func run() -> void:
 	root.size=Vector2i(1440,810)
 	physical_pilot=OS.get_environment("NALA_PHYSICAL_WALK")=="1"
 	analog_probe=OS.get_environment("NALA_PRODUCTION_ANALOG")=="1"
+	joystick_probe=OS.get_environment("NALA_PRODUCTION_JOYSTICK")=="1"
 	first_case=clampi(int(OS.get_environment("NALA_PRODUCTION_FIRST")) if OS.has_environment("NALA_PRODUCTION_FIRST") else 0,0,31)
 	case_limit=clampi(int(OS.get_environment("NALA_PRODUCTION_CASES")) if OS.has_environment("NALA_PRODUCTION_CASES") else 32,1,32-first_case)
 	capture=OS.get_environment("NALA_LOWER_CAPTURE")=="1"
@@ -201,8 +205,8 @@ func run() -> void:
 	sample_log=FileAccess.open(output+"/samples.jsonl",FileAccess.WRITE)
 	capture_log=FileAccess.open(output+"/frames.jsonl",FileAccess.WRITE)
 	var hashes:Dictionary={}
-	for path in ["res://scripts/Player.gd","res://scripts/Forest.gd","res://scripts/CharacterVisual.gd","res://scripts/NalaFootPlant.gd","res://scripts/NalaLowerBody3D.gd","res://scripts/NalaPhysicalMotion.gd","res://scripts/land/LandActors3D.gd","res://../scripts/tests/nala-production-gait.gd","res://../scripts/tests/nala-lower-body.gd"]: hashes[path]=FileAccess.get_sha256(path)
-	FileAccess.open(output+"/source.json",FileAccess.WRITE).store_string(JSON.stringify({"files":hashes,"firstCase":first_case,"requestedCases":case_limit,"physicalPilot":physical_pilot,"analogProbe":analog_probe,"physicsHz":Engine.physics_ticks_per_second,"captureStride":capture_stride,"acceptance":"Geometry diagnostic; cadence and arm opposition require sequence review. No default adoption."},"  "))
+	for path in ["res://scripts/Player.gd","res://scripts/Forest.gd","res://scripts/CharacterVisual.gd","res://scripts/NalaFootPlant.gd","res://scripts/NalaLowerBody3D.gd","res://scripts/NalaPhysicalMotion.gd","res://scripts/AnalogJoystick.gd","res://scripts/land/LandActors3D.gd","res://../scripts/tests/nala-production-gait.gd","res://../scripts/tests/nala-lower-body.gd"]: hashes[path]=FileAccess.get_sha256(path)
+	FileAccess.open(output+"/source.json",FileAccess.WRITE).store_string(JSON.stringify({"files":hashes,"firstCase":first_case,"requestedCases":case_limit,"physicalPilot":physical_pilot,"analogProbe":analog_probe,"joystickProbe":joystick_probe,"additionalPhysicalDeadzone":false,"physicsHz":Engine.physics_ticks_per_second,"captureStride":capture_stride,"acceptance":"Geometry diagnostic; cadence and arm opposition require sequence review. No default adoption."},"  "))
 	var state:=root.get_node("GameState")
 	if not _check(float(load("res://scripts/Player.gd").LAND_WALK_SPEED)==PhysicalMotion.LOGICAL_CAP,"Physical input contract differs from actual controller authority cap"): return
 	state.world=JSON.parse_string(FileAccess.get_file_as_string("res://../.runtime/world-map.json"))
@@ -258,11 +262,16 @@ func run() -> void:
 				_controller_enabled(true)
 				var direction:=Vector2.from_angle(heading*PI*.25)
 				var phases:Array=[]
+				if joystick_probe:
+					for radius in [.10,.14,.15,.16,.18,.20,.25,.30]:
+						phases.append({"name":"joystick "+str(radius),"input":Joystick.analog(direction*float(radius)*100.0,100.0),"rawRadius":radius,"frames":12})
+					phases.append({"name":"joystick-release","input":Vector2.ZERO,"frames":12})
 				if analog_probe:
 					for magnitude in [.10,.12,.15,.17,.18]: phases.append({"name":"analog "+str(magnitude),"input":direction*float(magnitude),"frames":12})
 					phases.append({"name":"analog-release","input":Vector2.ZERO,"frames":12})
 				phases.append_array([{"name":"walk","input":direction,"frames":48},{"name":"stop","input":Vector2.ZERO,"frames":18},{"name":"restart turn","input":-direction,"frames":30}])
 				for phase in phases:
+					raw_joystick_radius=phase.get("rawRadius",null)
 					for frame in range(int(phase.frames)):
 						if not await _production_tick(phase.input,label+" "+str(phase.name)): return
 				_controller_enabled(false)

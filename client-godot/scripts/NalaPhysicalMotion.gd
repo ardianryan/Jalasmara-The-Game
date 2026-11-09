@@ -2,11 +2,9 @@ extends RefCounted
 
 const WORLD_XY_SPEED:=100.0
 const LOGICAL_CAP:=100.0
-const INNER_DEADZONE:=.18
 
 static func _bounded(input:Vector2) -> Vector2:
-	var bounded:=input.limit_length()
-	return Vector2.ZERO if bounded.length()+.000001<INNER_DEADZONE else bounded
+	return input.limit_length()
 
 static func screen_scale(renderer:Node,input:Vector2,at:Vector2) -> float:
 	var bounded:=_bounded(input)
