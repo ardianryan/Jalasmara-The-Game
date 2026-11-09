@@ -201,3 +201,20 @@ test(
     );
   },
 );
+
+test("rest and rain stations keep sixty-pixel body spacing for all thirteen schedules", () => {
+  const profiles = [
+    ...WORLD.surface_hub.residents,
+    { name: "Bu Darmi", ...WORLD.surface_hub.districtActivities["Bu Darmi"] },
+  ];
+  for (const key of ["rest", "shelter"] as const)
+    for (let a = 0; a < profiles.length; a++)
+      for (let b = a + 1; b < profiles.length; b++) {
+        const first = profiles[a].activity[key],
+          second = profiles[b].activity[key];
+        assert.ok(
+          Math.hypot(first[0] - second[0], first[1] - second[1]) >= 60,
+          `${profiles[a].name}/${profiles[b].name}/${key}`,
+        );
+      }
+});
