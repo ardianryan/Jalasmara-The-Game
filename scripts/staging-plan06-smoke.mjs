@@ -38,7 +38,15 @@ mkdirSync(directory, { recursive: true });
 const checks = [],
   errors = [],
   failures = [],
-  observations = [];
+  observations = [],
+  startupObservations = [],
+  assetTransfers = [];
+const startupTrace = process.env.STAGING_STARTUP_TRACE === "1";
+const http1Diagnostic = process.env.STAGING_HTTP1_DIAGNOSTIC === "1";
+assert(
+  !http1Diagnostic || startupTrace,
+  "HTTP1 diagnostic requires startup trace.",
+);
 let browser,
   context,
   page,
@@ -46,7 +54,10 @@ let browser,
   fixtureAttempted = false,
   cleanup,
   publicPck,
-  routeStarted;
+  routeStarted,
+  completed = false,
+  failureSummary = null,
+  stage = "release-preflight";
 const navigation = { matrixPulses: 0 };
 function budget() {
   assert(
@@ -201,11 +212,59 @@ async function waitState(predicate, timeout = 30000) {
 async function attach() {
   await page.locator("iframe").waitFor();
   frame = await (await page.locator("iframe").elementHandle()).contentFrame();
-  await frame.waitForFunction(
-    () => window.jalasmaraReady && window.jalasmaraSnapshot?.hud,
-    null,
-    { polling: 200, timeout: 240000 },
-  );
+  if (startupTrace) {
+    const deadline = Date.now() + 120000;
+    let nextReport = 0,
+      ready = false;
+    while (!ready && Date.now() < deadline) {
+      const status = await frame.evaluate(() => ({
+        ready: Boolean(window.jalasmaraReady),
+        hud: Boolean(window.jalasmaraSnapshot?.hud),
+        snapshot: Boolean(window.jalasmaraSnapshot),
+        isolated: window.crossOriginIsolated,
+        sharedBuffer: typeof SharedArrayBuffer !== "undefined",
+        engine: typeof Engine,
+        canvas: [...document.querySelectorAll("canvas")].map((value) => ({
+          width: value.width,
+          height: value.height,
+        })),
+      }));
+      ready = status.ready && status.hud;
+      if (Date.now() >= nextReport || ready) {
+        const loader = await page
+          .locator(".game-loading")
+          .evaluateAll((elements) =>
+            elements.map((value) => ({
+              percent: value.querySelector("progress")?.value,
+              status: value.querySelector('[role="status"]')?.textContent,
+              detail: value.querySelector(".harbor-loading-detail")
+                ?.textContent,
+            })),
+          );
+        const sample = {
+          at: Date.now(),
+          ...status,
+          loader,
+          assets: assetTransfers.map((value) => ({ ...value })),
+        };
+        startupObservations.push(sample);
+        console.log(
+          JSON.stringify({ phase: "public-startup-trace", ...sample }),
+        );
+        nextReport = Date.now() + 10000;
+      }
+      if (!ready) await page.waitForTimeout(1000);
+    }
+    assert(
+      ready,
+      "Public startup trace reached its bounded120-second deadline.",
+    );
+  } else
+    await frame.waitForFunction(
+      () => window.jalasmaraReady && window.jalasmaraSnapshot?.hud,
+      null,
+      { polling: 200, timeout: 240000 },
+    );
   await page.locator(".game-loading").waitFor({ state: "detached" });
   await frame.locator("canvas").focus();
   routeStarted ??= Date.now();
@@ -312,13 +371,16 @@ try {
   publicPck = { sha256: expectedPck, decodedBytes: expectedPckBytes };
   checks.push("public-health-and-downloaded-pck-match-release");
   fixtureAttempted = true;
+  stage = "fixture-create";
   await remote("create");
+  stage = "browser-startup";
   browser = await chromium.launch({
     args: [
       "--enable-webgl",
       "--use-gl=angle",
       "--use-angle=swiftshader",
       "--enable-unsafe-swiftshader",
+      ...(http1Diagnostic ? ["--disable-http2"] : []),
     ],
   });
   context = await browser.newContext({
@@ -329,6 +391,61 @@ try {
   });
   page = await context.newPage();
   page.setDefaultTimeout(60000);
+  if (startupTrace) {
+    const network = await context.newCDPSession(page),
+      tracked = new Map();
+    await network.send("Network.enable");
+    network.on("Network.requestWillBeSent", (event) => {
+      const url = new URL(event.request.url);
+      if (url.origin !== origin || !url.pathname.startsWith("/game/")) return;
+      const transfer = {
+        path: url.pathname,
+        startedAt: Date.now(),
+        reportedDataLength: 0,
+        reportedEncodedDataLength: 0,
+      };
+      tracked.set(event.requestId, transfer);
+      assetTransfers.push(transfer);
+    });
+    network.on("Network.responseReceived", (event) => {
+      const transfer = tracked.get(event.requestId);
+      if (transfer)
+        Object.assign(transfer, {
+          responseAt: Date.now(),
+          status: event.response.status,
+          protocol: event.response.protocol,
+          remoteIPAddress: event.response.remoteIPAddress,
+          remotePort: event.response.remotePort,
+          mimeType: event.response.mimeType,
+          fromDiskCache: event.response.fromDiskCache,
+          fromServiceWorker: event.response.fromServiceWorker,
+        });
+    });
+    network.on("Network.dataReceived", (event) => {
+      const transfer = tracked.get(event.requestId);
+      if (transfer) {
+        transfer.reportedDataLength += event.dataLength;
+        transfer.reportedEncodedDataLength += event.encodedDataLength;
+      }
+    });
+    network.on("Network.loadingFinished", (event) => {
+      const transfer = tracked.get(event.requestId);
+      if (transfer)
+        Object.assign(transfer, {
+          finishedAt: Date.now(),
+          finishedEncodedDataLength: event.encodedDataLength,
+        });
+    });
+    network.on("Network.loadingFailed", (event) => {
+      const transfer = tracked.get(event.requestId);
+      if (transfer)
+        Object.assign(transfer, {
+          failedAt: Date.now(),
+          failure: event.errorText,
+          cancelled: event.canceled,
+        });
+    });
+  }
   await page.addInitScript(() => {
     window.jalasmaraDiagnostics = true;
   });
@@ -342,7 +459,9 @@ try {
   await page.getByLabel("Password", { exact: true }).fill(password);
   await page.getByRole("button", { name: "Masuk ke Jalasmara" }).click();
   await page.waitForURL("**/play");
+  stage = "game-startup";
   await attach();
+  stage = "login-and-ready";
   const auth = (await context.cookies()).find(
     (cookie) => cookie.name === "__Host-jalasmara",
   );
@@ -350,6 +469,7 @@ try {
   assert.equal((await snapshot()).land.actors.player, 1);
   await shot("01-public-ready-hub");
   checks.push("public-form-login-secure-cookie-and-real-game-ready");
+  stage = "physical-forest-route";
   const world = await fetchWorld(context.request, origin);
   for (const [x, y] of physicalRoute(
     world,
@@ -377,6 +497,7 @@ try {
     await walkTo(x, y);
   await page.waitForTimeout(800);
   const canopy = await snapshot();
+  stage = "settled-canopy-reveal";
   assert.equal(canopy.land.elevationDegrees, 35);
   assert(
     canopy.land.readability.revealed > 0 &&
@@ -388,6 +509,7 @@ try {
   await page.waitForTimeout(1300);
   await shot("02-public-physical-canopy-667x375");
   checks.push("public-physical-gate-and-settled-local-canopy-reveal");
+  stage = "touch-journal";
   const hud = (await snapshot()).hud,
     box = await frame.locator("canvas").boundingBox(),
     cdp = await context.newCDPSession(page);
@@ -420,6 +542,7 @@ try {
   await waitState((value) => !value.modal && !value.weather.clockPaused);
   await cdp.detach();
   checks.push("public-touch-journal-opens-pauses-and-closes");
+  stage = "save-and-reload";
   const savedDeadline = Date.now() + 15000;
   let saved;
   while (Date.now() < savedDeadline) {
@@ -450,7 +573,18 @@ try {
   assert.deepEqual(errors, []);
   assert.deepEqual(failures, []);
   checks.push("public-server-position-reloads-without-story-or-reward-change");
+  completed = true;
 } catch (error) {
+  failureSummary = {
+    stage,
+    name:
+      error instanceof assert.AssertionError
+        ? "AssertionError"
+        : error?.name === "TimeoutError"
+          ? "TimeoutError"
+          : "Error",
+    ...(error?.code === "ERR_ASSERTION" ? { code: "ERR_ASSERTION" } : {}),
+  };
   if (frame) await shot("failure").catch(() => {});
   throw error;
 } finally {
@@ -469,11 +603,15 @@ try {
           ),
       );
   } finally {
+    const outcome = completed && cleanup?.ok === true ? "completed" : "failed";
     writeFileSync(
       `${directory}/results.json`,
       JSON.stringify(
         {
           origin,
+          outcome,
+          completed: outcome === "completed",
+          failureSummary,
           expectedPck,
           publicPck,
           navigation,
@@ -482,6 +620,10 @@ try {
           errors,
           failures,
           observations,
+          startupObservations,
+          assetTransfers,
+          startupTrace,
+          http1Diagnostic,
           cleanup,
         },
         null,
@@ -489,7 +631,19 @@ try {
       ),
     );
     console.log(
-      JSON.stringify({ directory, checks, errors, failures, cleanup }, null, 2),
+      JSON.stringify(
+        {
+          directory,
+          outcome,
+          failureSummary,
+          checks,
+          errors,
+          failures,
+          cleanup,
+        },
+        null,
+        2,
+      ),
     );
   }
 }
