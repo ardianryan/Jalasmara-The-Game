@@ -20,6 +20,41 @@ var capture_stride:=4
 var trace:Array=[]
 var output:=""
 var capture_log:FileAccess
+var forward_checks:=0
+
+func _sampled_world_arc(from:Vector2,to:Vector2) -> float:
+	var previous_point:Vector3=renderer.ground_point(from)
+	var total:=0.0
+	for index in range(1,129):
+		var point:Vector3=renderer.ground_point(from.lerp(to,float(index)/128.0))
+		total+=Vector2(point.x-previous_point.x,point.y-previous_point.y).length()
+		previous_point=point
+	return total
+
+func _forward_units() -> bool:
+	var planner:=preload("res://scripts/NalaFootPlant.gd").new()
+	planner.configure(renderer)
+	var wrong_metric_cases:=0
+	for profile in renderer.get("_stair_queries"):
+		if str(profile.type)!="stairs": continue
+		var tangent:Vector2=(Vector2(profile.end)-Vector2(profile.start)).normalized()
+		for progress in [.08,.55,.92]:
+			var at:Vector2=Vector2(profile.start).lerp(profile.end,float(progress))
+			for sign in [-1.0,1.0]:
+				for angle in [0.0,.27]:
+					var heading:=tangent.rotated(float(angle))*float(sign)
+					planner.set("_heading",heading)
+					for distance in [6.0,24.0]:
+						var target:Vector2=planner.call("_forward_point",at,float(distance))
+						var actual:=_sampled_world_arc(at,target)
+						if not _check(absf(actual-float(distance))<.03,"Forward shoe target changed world-distance units "+str(profile.id)+" at="+str(at)+" requested="+str(distance)+" actual="+str(actual)): return false
+						var local:Vector3=renderer.ground_point(at+heading)-renderer.ground_point(at)
+						var old_target:=at+heading*float(distance)/maxf(.001,Vector2(local.x,local.y).length())
+						if absf(_sampled_world_arc(at,old_target)-float(distance))>.03: wrong_metric_cases+=1
+						forward_checks+=1
+	if not _check(wrong_metric_cases>0,"Forward-distance fixture did not cross a real connector metric boundary"): return false
+	print("NALA FORWARD WORLD-ARC PASS ",forward_checks," actual-ground probes; old local metric rejects ",wrong_metric_cases)
+	return true
 
 func _initialize() -> void: call_deferred("run")
 func _check(valid:bool,message:String) -> bool:
@@ -199,6 +234,7 @@ func run() -> void:
 	renderer.set_process(false)
 	renderer.call("_process",0)
 	_index_meshes()
+	if not _forward_units(): return
 	for outfit in ["daily","explorer"]:
 		for reduced in [false,true]:
 			clock.reduced_motion=reduced

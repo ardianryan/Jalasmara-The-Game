@@ -101,11 +101,11 @@ func _logical_offset(at:Vector2,world:Vector3) -> Vector2:
 	var determinant:=x.x*y.y-y.x*x.y
 	return Vector2((world.x*y.y-y.x*world.y)/determinant,(x.x*world.y-world.x*x.y)/determinant)
 
-func _stair_path_point(from:Vector2,to:Vector2,progress:float) -> Vector2:
+func _path_metrics(from:Vector2,to:Vector2) -> Dictionary:
 	var delta:=to-from
-	if delta.length_squared()<.000001: return to
 	var fractions:Array[float]=[0.0,1.0]
 	for profile in _stairs:
+		if delta.length_squared()<.000001: break
 		var start:Vector2=profile.start
 		var end:Vector2=profile.end
 		var tangent:=(end-start).normalized()
@@ -125,15 +125,36 @@ func _stair_path_point(from:Vector2,to:Vector2,progress:float) -> Vector2:
 		var span:=Vector2(second.x-first.x,second.y-first.y).length()
 		lengths.append(span)
 		total+=span
+	return {"fractions":fractions,"lengths":lengths,"total":total}
+
+func _path_distance_point(from:Vector2,to:Vector2,metrics:Dictionary,distance:float) -> Vector2:
+	var fractions:Array=metrics.fractions
+	var lengths:Array=metrics.lengths
 	# The connector and its adjoining floor have different XY scales. Interpolate
 	# accepted world arc length so leaving a tread does not accelerate the shoe.
-	var remaining:=clampf(progress,0,1)*total
+	var remaining:=clampf(distance,0,float(metrics.total))
 	for index in range(lengths.size()):
-		if remaining<=lengths[index] or index==lengths.size()-1:
-			var fraction:=lerpf(fractions[index],fractions[index+1],remaining/maxf(.00001,lengths[index]))
+		if remaining<=float(lengths[index]) or index==lengths.size()-1:
+			var fraction:=lerpf(float(fractions[index]),float(fractions[index+1]),remaining/maxf(.00001,float(lengths[index])))
 			return from.lerp(to,fraction)
-		remaining-=lengths[index]
+		remaining-=float(lengths[index])
 	return to
+
+func _stair_path_point(from:Vector2,to:Vector2,progress:float) -> Vector2:
+	var metrics:=_path_metrics(from,to)
+	return _path_distance_point(from,to,metrics,clampf(progress,0,1)*float(metrics.total))
+
+func _forward_point(at:Vector2,distance:float) -> Vector2:
+	var offset:=_heading*distance/maxf(.001,_world_motion(at,_heading).length())
+	var target:=at+offset
+	var metrics:=_path_metrics(at,target)
+	if absf(float(metrics.total)-distance)<.001: return target
+	for attempt in range(8):
+		if float(metrics.total)>=distance: break
+		offset*=2.0
+		target=at+offset
+		metrics=_path_metrics(at,target)
+	return _path_distance_point(at,target,metrics,distance)
 
 func _base(at:Vector2,hip_x:float,right:Vector3) -> Vector2:
 	return at+_logical_offset(at,right*hip_x)
@@ -182,7 +203,7 @@ func _begin(side:String,at:Vector2,hips:Dictionary,right:Vector3) -> void:
 	var entry:Dictionary=_feet[side]
 	entry.from=entry.logical
 	entry.lateralOffset=float(hips[side])
-	entry.to=_safe(_base(at,float(hips[side]),right)+_heading*(_landing_distance+LANDING_LEAD)/maxf(.001,_world_motion(at,_heading).length()),at,side)
+	entry.to=_safe(_forward_point(_base(at,float(hips[side]),right),_landing_distance+LANDING_LEAD),at,side)
 	entry.fromWorld=entry.sole
 	entry.toWorld=_ground(entry.to)
 	entry.landingHeight=Vector3(entry.toWorld).z
@@ -237,7 +258,7 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 			var entry:Dictionary=_feet[_swing]
 			entry.lateralOffset=move_toward(float(entry.lateralOffset),float(hips[_swing]),chunk)
 			# Retarget only the free foot; an already planted sole never follows the torso.
-			var target:=_safe(_base(sample,float(entry.lateralOffset),right)+_heading*(_landing_distance-_distance+LANDING_LEAD)/maxf(.001,_world_motion(sample,_heading).length()),sample,_swing,float(entry.landingHeight))
+			var target:=_safe(_forward_point(_base(sample,float(entry.lateralOffset),right),_landing_distance-_distance+LANDING_LEAD),sample,_swing,float(entry.landingHeight))
 			entry.to=target
 			entry.toWorld=_ground(target)
 			_transfer_body(sample,chunk,_swing)
