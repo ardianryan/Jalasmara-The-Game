@@ -33,7 +33,24 @@ Sesudah browser ditutup, cleanup menghapus hanya akun UUID pengujian beserta rec
 
 Pengujian `VERIFY_QUALITY=1` pada PCK yang sama lulus **15 pemeriksaan**, tanpa error. Cakupannya mencakup rotasi layar, tas/jurnal/peta/misi, joystick dua jari, kalender server yang tetap saat menu terbuka, penolakan pesan host palsu, profil kualitas yang benar-benar diterapkan Godot, dan fullscreen browser.
 
-Putaran ini selesai sebelum pembaruan web terakhir untuk tautan kegagalan loading diterapkan. Karena itu, hasilnya membuktikan integrasi engine/HUD pada PCK tersebut, bukan tautan web terakhir. Root kemudian menyatakan **WEBFINAL/API READY**, bundle `index-BDELBY0B.js`; pemeriksaan final terhadap bundle ini dicatat sesudah putaran berikutnya selesai.
+Putaran ini selesai sebelum pembaruan web terakhir untuk tautan kegagalan loading diterapkan. Karena itu, hasilnya membuktikan integrasi engine/HUD pada PCK tersebut, bukan tautan web terakhir. Root kemudian menyatakan **WEBFINAL/API READY**, bundle `index-BDELBY0B.js`; pemeriksaan final terhadap bundle ini selesai dengan hasil di bawah.
+
+
+## Putaran web final dan sentuhan
+
+Sesudah pemberitahuan **WEBFINAL/API READY**, pemeriksaan Plan04 diulang pada bundle `index-BDELBY0B.js` dan PCK yang sama. Hasil final: **15 pemeriksaan lulus, tanpa error browser**. Kalender server tetap pada menit yang sama selama menu terbuka melewati heartbeat berikutnya; jam visual juga berhenti. Pesan dari sumber/origin/versi yang salah tidak dapat mengubah kualitas atau melepas jeda. Dropdown host benar-benar mengubah profil Godot menjadi low, balanced, dan auto; pada emulasi coarse pointer, auto memilih low. Fullscreen, rotasi dengan atlas terbuka, dialog/panel, serta joystick dua jari tetap bekerja.
+
+Setelah browser tersebut ditutup, `scripts/godot-touch.mjs` dijalankan terhadap akun uji lokal yang sama, tanpa reset posisi atau perubahan progres melalui API bypass. Hasil: **7 pemeriksaan lulus, tanpa error browser**:
+
+- Navigasi joystick horizontal dan vertikal melalui rute desa yang sebenarnya.
+- Dead zone dan pelepasan joystick.
+- Memulai penyelaman melalui tombol aksi.
+- Berenang dan menjala target biasa tanpa membuka kuis.
+- Rotasi ke potret tetap mempertahankan sesi penyelaman.
+
+Bukti final: `artifacts/godot/plan04/results.json`, screenshot panel/menu/atlas di folder tersebut, serta `artifacts/godot/touch-results.json` dan `touch.png`. Tangkapan layar sentuh diperiksa: fauna dan terrain asli tampil; indikator O2, aksi, dan joystick terlihat. Baris maksimum O2/bobot berada dekat bingkai bawah instrumen, dicatat sebagai pemolesan kecil, bukan kegagalan gameplay.
+
+Jumlah putaran yang dilaporkan: **7 malam + 15 Plan04 + 7 sentuhan = 29 pemeriksaan**. Browser terakhir sudah ditutup. Akun khusus sentuhan, receipt/shift/sesi miliknya, dan berkas fixture privat dihapus secara terarah; akun owner tidak diubah.
 
 ## Batas bukti
 
