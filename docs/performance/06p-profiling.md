@@ -86,3 +86,9 @@ node scripts/performance/compare-report.mjs \
 ```
 
 Pembanding menolak viewport/metode berbeda, PCK sama, capture yang tidak bersih, kombinasi hilang/duplikat, dan p95 tidak tersedia. Kenaikan RAF p95 di atas 1,5 kali sekaligus lebih dari 10 ms hanya menandai kebutuhan investigasi/rerun, bukan regresi terkonfirmasi. Gunakan `PROFILE_SCENARIOS=nama-adegan` dan output terpisah untuk rerun; jangan menggabungkan subset menjadi batch penuh atau mengubah sampel baseline.
+
+## Kontrol berpasangan dengan PCK lokal
+
+`PROFILE_OVERRIDE_PCK=/path/to/verified.pck` hanya mengganti respons GET same-origin `/game/index.pck` melalui Playwright. WASM, JavaScript, API, shader yang dikemas dalam PCK, dan engine tetap nyata; serverpack tidak diganti. `PROFILE_EXPECTED_PCK_SHA` menolak file yang tidak cocok. Report mencatat hash file yang benar-benar dipilih, mode `intercepted-local-pck`, path lokal, dan jumlah request override; run gagal jika tidak ada request PCK yang benar-benar diintersep pada context baru.
+
+Mode ini bukan uji jaringan atau startup: entri startup ditandai excluded. Pembanding menolak pencampuran batch served dan intercepted. Gunakan kedua PCK terverifikasi pada origin/API/WASM sama, scene dan urutan profil sama, context baru setiap batch, lalu ulangi pasangan berdekatan jika hasil berubah besar. Jangan menjalankan sebelum root memberi kedua path artefak dan slot GPU. Mode ini tidak memperbaiki keterbatasan SwiftShader atau menggantikan uji perangkat fisik.

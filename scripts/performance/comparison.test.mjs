@@ -19,3 +19,7 @@ test('missing or duplicate combinations are rejected instead of silently compare
 test('missing RAF counters remain unknown and cannot become zero-millisecond deltas',()=>{
  const original=batch('old',30),latest=batch('new',null);assert.throws(()=>compareCaptures(original,latest),/Missing RAF/);
 });
+
+test('served network batches cannot be silently mixed with intercepted PCK controls',()=>{
+ const original=batch('old',30),latest=batch('new',35);latest.method.assetDelivery='intercepted-local-pck';assert.throws(()=>compareCaptures(original,latest),/delivery modes differ/);
+});

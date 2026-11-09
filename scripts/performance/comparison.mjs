@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 const key=row=>`${row.scenario}/${row.profile}`;
 export function compareCaptures(before,after) {
+  assert.equal(after.method.assetDelivery??'served',before.method.assetDelivery??'served','PCK delivery modes differ');
   for(const field of ['device','diagnostics','sampleMs','warmupMs','motion','profileOrder'])assert.deepEqual(after.method[field],before.method[field],`Method mismatch: ${field}`);
   assert.deepEqual(after.method.viewport,before.method.viewport,'Viewport mismatch');
   assert(before.cleanup&&after.cleanup,'Both batches must finish isolated cleanup');

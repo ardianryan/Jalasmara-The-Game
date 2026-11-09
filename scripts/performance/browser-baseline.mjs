@@ -4,13 +4,14 @@ import {MongoClient} from 'mongodb';
 import Redis from 'ioredis';
 import argon2 from 'argon2';
 import {randomUUID,randomBytes,createHash} from 'node:crypto';
-import {mkdirSync,writeFileSync,readFileSync,existsSync} from 'node:fs';
+import {mkdirSync,writeFileSync,existsSync} from 'node:fs';
 import {execFileSync} from 'node:child_process';
 import assert from 'node:assert/strict';
 import {platform,arch,release,cpus,totalmem} from 'node:os';
 import {freshProgress,freshAbilities,freshCalendar,freshHomestead,calendarRain} from '../../packages/shared/src/index.ts';
 import {WORLD} from '../../packages/shared/src/world.ts';
 import {summarizeCapture,scalarMetrics} from './metrics.mjs';
+import {pckSource,isPckRequest} from './pck-source.mjs';
 
 const origin=process.env.APP_TEST_ORIGIN??'http://localhost:3100';
 const mongoUrl=process.env.MONGO_URL??'mongodb://127.0.0.1:27018/jalasmara?replicaSet=rs0';
@@ -20,6 +21,7 @@ assert(/^mongodb:\/\/(127\.0\.0\.1|localhost)(:|\/)/.test(mongoUrl));
 assert(['localhost','127.0.0.1'].includes(new URL(redisUrl).hostname));
 const duration=Number(process.env.PROFILE_SAMPLE_MS??15000),warmup=Number(process.env.PROFILE_WARMUP_MS??8000);
 assert(duration>=1000&&duration<=120000&&warmup>=7000&&warmup<=60000);
+const pck={...pckSource({overridePath:process.env.PROFILE_OVERRIDE_PCK,servedPath:process.env.PROFILE_PCK_FILE,expectedHash:process.env.PROFILE_EXPECTED_PCK_SHA}),interceptedRequests:0};
 const directory=process.env.PROFILE_OUTPUT??'artifacts/performance/06p-baseline';mkdirSync(directory,{recursive:true});
 assert(!existsSync(`${directory}/results.json`),'Choose a new PROFILE_OUTPUT; existing captures are immutable');
 const cases=[
@@ -30,13 +32,14 @@ const cases=[
  {id:'forest-rain',area:'forest',point:{x:1300,y:660},minute:600,rain:true},
 ].map((value,order)=>({...value,order})).filter(value=>!process.env.PROFILE_SCENARIOS||process.env.PROFILE_SCENARIOS.split(',').includes(value.id));
 assert(cases.length>0);
-const report={source:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),runtimeBaseline:process.env.PROFILE_RUNTIME_SHA??'UNVERIFIED',pckSHA256:process.env.PROFILE_PCK_FILE&&existsSync(process.env.PROFILE_PCK_FILE)?createHash('sha256').update(readFileSync(process.env.PROFILE_PCK_FILE)).digest('hex'):null,origin,createdAt:new Date().toISOString(),environment:{platform:platform(),arch:arch(),osRelease:release(),cpuModel:cpus()[0]?.model,cpuCount:cpus().length,totalMemoryBytes:totalmem(),browser:null},method:{device:'Chromium SwiftShader software GPU; not Windows/S23 hardware',viewport:[844,390],diagnostics:true,motion:'Stationary player; actual NPC/fauna/water/weather remain active',sampleMs:duration,warmupMs:warmup,profileOrder:'Alternating low/balanced order per scene; warmup outside measurement',startup:'First scene cold context + same-context warm reload; others fresh contexts',godotSampling:'Latest actual Godot counters sampled at most every100ms; separate from iframe RAF intervals'},results:[],startup:[],errors:[],cleanup:false};
+const report={source:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),runtimeBaseline:process.env.PROFILE_RUNTIME_SHA??'UNVERIFIED',pckSHA256:pck.sha256,pckDelivery:pck,origin,createdAt:new Date().toISOString(),environment:{platform:platform(),arch:arch(),osRelease:release(),cpuModel:cpus()[0]?.model,cpuCount:cpus().length,totalMemoryBytes:totalmem(),browser:null},method:{assetDelivery:pck.mode,device:'Chromium SwiftShader software GPU; not Windows/S23 hardware',viewport:[844,390],diagnostics:true,motion:'Stationary player; actual NPC/fauna/water/weather remain active',sampleMs:duration,warmupMs:warmup,profileOrder:'Alternating low/balanced order per scene; warmup outside measurement',startup:pck.mode==='served'?'First scene cold context + same-context warm reload; others fresh contexts':'Excluded: local PCK intercept is not network/startup measurement',godotSampling:'Latest actual Godot counters sampled at most every100ms; separate from iframe RAF intervals'},results:[],startup:[],errors:[],cleanup:false};
 let browser,context,page,frame;const fixtures=[];const mongo=new MongoClient(mongoUrl),redis=new Redis(redisUrl);
 const save=()=>writeFileSync(`${directory}/results.json`,JSON.stringify(report,null,2));
 const snapshot=()=>frame.evaluate(()=>window.jalasmaraSnapshot);
 async function until(predicate,timeout=45000){const started=Date.now();while(Date.now()-started<timeout){const value=await snapshot();if(predicate(value))return value;await page.waitForTimeout(250);}throw Error('Expected scene condition not reached');}
 async function attach(){frame=await(await page.locator('iframe').elementHandle()).contentFrame();await frame.waitForFunction(()=>window.jalasmaraReady&&window.jalasmaraSnapshot?.performance,null,{polling:200,timeout:180000});await frame.locator('canvas').focus();}
 async function startup(kind){
+ if(pck.mode==='intercepted-local-pck'){report.startup.push({kind,excluded:true,reason:'Local PCK intercepted: not a network/startup benchmark',pckSHA256:pck.sha256});save();return;}
  const observed=await page.evaluate(()=>window.profileLoading);
  const timing=await frame.evaluate(()=>performance.getEntriesByType('resource').filter(value=>/\/game\/index\.(wasm|pck)$/.test(new URL(value.name).pathname)).map(value=>({path:new URL(value.name).pathname,durationMs:value.duration,transferSize:value.transferSize,encodedBodySize:value.encodedBodySize,decodedBodySize:value.decodedBodySize})));
  report.startup.push({kind,hostReadyMs:observed.readyMs,decodedProgressBytes:Math.max(0,...observed.events.map(value=>value.downloadedBytes??0)),resources:timing,notes:'ResourceTiming transferSize includes protocol/cache effects; decoded progress is not network transfer'});save();
@@ -55,12 +58,14 @@ try{
   await mongo.db().collection('players').insertOne({id,email,name:'Nala Uji Profil06',role:'player',status:'active',appearance:'male_default',coins:0,inventory:[],abilities:freshAbilities(),progress:{...freshProgress(),tutorial:true},adventure:{discoveries:[],puzzles:[],keyItems:[]},calendar:{...freshCalendar(),minuteOfDay:scenario.minute},homestead:freshHomestead(),version:0,authVersion:0,passwordHash:await argon2.hash(password,{type:argon2.argon2id}),createdAt:now,updatedAt:now});
   const area=scenario.area==='forest'?'forest':'hub';await redis.set(`surface:${id}`,JSON.stringify({area,...scenario.point,layoutVersion:WORLD.landMaps[area].layoutVersion,playerVersion:0,positionAt:Date.now()}),'EX',1800);
   context=await browser.newContext({viewport:{width:844,height:390},hasTouch:true,isMobile:true,deviceScaleFactor:1,serviceWorkers:'block'});page=await context.newPage();page.setDefaultTimeout(60000);
+  if(pck.mode==='intercepted-local-pck')await context.route('**/game/index.pck*',async route=>{const request=route.request();if(!isPckRequest(request.url(),request.method(),origin))return route.continue();pck.interceptedRequests++;await route.fulfill({path:pck.path,contentType:'application/octet-stream',headers:{'Cache-Control':'no-store','Content-Length':String(pck.bytes)}});});
   page.on('pageerror',error=>report.errors.push({scene:scenario.id,type:'pageerror',message:error.message}));page.on('console',message=>{if(message.type()==='error')report.errors.push({scene:scenario.id,type:'console',message:message.text()});});
   const profiles=scenario.order%2?['balanced','low']:['low','balanced'];
   await page.addInitScript(initial=>{window.jalasmaraDiagnostics=true;localStorage.setItem('jalasmara.graphicsQuality',initial);if(window!==window.top)return;window.profileLoading={events:[],readyMs:null};addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==document.querySelector('iframe')?.contentWindow)return;if(event.data?.type==='jalasmara:loading')window.profileLoading.events.push({at:performance.now(),phase:event.data.phase,downloadedBytes:event.data.downloadedBytes,totalBytes:event.data.totalBytes});if(event.data?.type==='jalasmara:ready')window.profileLoading.readyMs=performance.now();});},profiles[0]);
   const guest=await(await context.request.get(`${origin}/api/auth/session`)).json();const login=await context.request.post(`${origin}/api/auth/login`,{data:{email,password},headers:{Origin:origin,'X-CSRF-Token':guest.csrf}});assert(login.ok(),`Local fixture login status${login.status()}`);const auth=await login.json();
   if(scenario.area==='ocean'){const dive=await context.request.post(`${origin}/api/dive/start`,{data:{mode:'dive'},headers:{Origin:origin,'X-CSRF-Token':auth.csrf,'Idempotency-Key':randomUUID()}});assert(dive.ok(),`Start ordinary dive status${dive.status()}`);}
-  await page.goto(`${origin}/play`);await attach();
+  const deliveredBefore=pck.interceptedRequests;await page.goto(`${origin}/play`);await attach();
+  if(pck.mode==='intercepted-local-pck')assert(pck.interceptedRequests>deliveredBefore,'Expected real PCK override request was not delivered');
   if(index===0)await startup('cold-context');
   await until(value=>scenario.area==='ocean'?value.diving:value.land?.active&&value.land.area===area);
   if(scenario.area==='ocean'){
