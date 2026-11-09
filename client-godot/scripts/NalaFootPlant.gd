@@ -31,6 +31,7 @@ var _turn_distance:=STEP_DISTANCE*.5
 var _turn_cosine:=.5
 var _physical_contract:=false
 var _transition_next:=true
+var _body_facing_transitions:=0
 const Traversal=preload("res://scripts/SurfaceTraversal.gd")
 
 func configure(owner_renderer: Node,contract:Dictionary={}) -> void:
@@ -49,6 +50,11 @@ func configure(owner_renderer: Node,contract:Dictionary={}) -> void:
 	for surface in renderer.map.get("surfaces",[]):
 		if bool(surface.get("walkable",true)): _floors.append(_polygon(surface.polygon))
 	for obstacle in renderer.map.get("obstacles",[]): _obstacles.append(_polygon(obstacle.footprint))
+
+func note_body_facing_transition() -> void:
+	if _physical_contract:
+		_transition_next=true
+		_body_facing_transitions+=1
 
 func _polygon(points:Array) -> PackedVector2Array:
 	var result:=PackedVector2Array()
@@ -352,4 +358,4 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 	return snapshot()
 
 func snapshot() -> Dictionary:
-	return {"bodyHeight":_body_height,"bodyTransferRate":_body_rate,"feet":_feet.duplicate(true),"swingSide":_swing,"swingDistance":_distance,"acceptedDistance":_accepted_distance,"stepDistance":_steady_distance,"landingLead":_landing_lead,"physicalContract":_physical_contract,"landingDistance":_landing_distance,"contacts":_contact_count,"discontinuityResets":_discontinuities,"actorRootMotion":false,"legacyFoleyChanged":false}
+	return {"bodyHeight":_body_height,"bodyTransferRate":_body_rate,"feet":_feet.duplicate(true),"swingSide":_swing,"swingDistance":_distance,"acceptedDistance":_accepted_distance,"stepDistance":_steady_distance,"landingLead":_landing_lead,"physicalContract":_physical_contract,"bodyFacingTransitions":_body_facing_transitions,"shortHandoverPending":_transition_next,"landingDistance":_landing_distance,"contacts":_contact_count,"discontinuityResets":_discontinuities,"actorRootMotion":false,"legacyFoleyChanged":false}

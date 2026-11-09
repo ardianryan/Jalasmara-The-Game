@@ -156,6 +156,7 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 		var future:=_anatomy(_data.views[adjacent],stored.feet,look_ahead,right,vertical,float(stored.bodyHeight))
 		if not bool(trial.horizontalInvalid) and not bool(future.horizontalInvalid) and maxf(float(trial.drop),float(future.drop))*vertical<=6.0:
 			_direction=adjacent
+			_planner.note_body_facing_transition()
 			_facing_frame=Engine.get_process_frames()
 	var direction:=_direction
 	var view:Dictionary=_data.views[direction]
