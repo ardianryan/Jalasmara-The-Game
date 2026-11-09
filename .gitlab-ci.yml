@@ -35,7 +35,7 @@ verify:
     - npm ci
     - node ci/init-mongo.mjs
     - npm run typecheck
-    - node --test scripts/game-loading-bridge.test.mjs
+    - node --test scripts/game-loading-bridge.test.mjs scripts/godot-preloader-stream.test.mjs
     - node --test scripts/land-view-navigation.test.mjs
     - node --test scripts/gameplay-api-failure.test.mjs
     - node --test scripts/performance/*.test.mjs
