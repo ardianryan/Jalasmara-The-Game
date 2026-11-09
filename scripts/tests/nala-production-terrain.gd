@@ -28,6 +28,15 @@ func _measure(label:String) -> void:
 			expected=maxf(1.0,absf(last.z-first.z)/Vector2(last.x-first.x,last.y-first.y).length())
 	var contact:Dictionary=renderer.actors_3d.counts.get("nalaLowerBody",{}).get("contacts",{})
 	for entry in contact.get("feet",{}).values():
+		var tread:Dictionary=entry.get("treadPlan",{})
+		if str(tread.get("curveType",""))=="stair_swept_support":
+			var arc:=0.0
+			for index in range(tread.knots.size()-1): arc+=Vector3(tread.knots[index]).distance_to(tread.knots[index+1])
+			if not _check(absf(arc-float(tread.arcXYZ))<.003,"Swept stair arc disagrees with actual frozen knots "+label): return
+			var bound:float=(1.5*arc+3.0*PI)/float(tread.distance)
+			if not _check(bound<=4.9 and absf(bound-float(tread.curveSpeedBound))<.00001,"Swept stair base certificate changed "+label): return
+			if not _check(not bool(tread.intermediateWaypointsAreContacts) and str(tread.actorPhaseUnits)=="accepted continuous world XY","Swept stair changed contact/actor-distance semantics "+label): return
+			if not entry.has("settlingTarget") and not _check(Vector3(tread.toWorld).distance_to(Vector3(entry.toWorld))<.003,"Swept stair moved frozen landing "+label): return
 		var plan:Dictionary=entry.get("rampCurvePlan",{})
 		if not plan.has("bodyDurationPreview"): continue
 		var preview:Dictionary=plan.bodyDurationPreview
@@ -131,7 +140,7 @@ func run() -> void:
 		if not InputMap.has_action(action): InputMap.add_action(action)
 		Input.action_release(action)
 	var hashes:Dictionary={}
-	for path in ["res://scripts/Player.gd","res://scripts/NalaPhysicalMotion.gd","res://scripts/NalaFootPlant.gd","res://scripts/NalaFootPlane.gd","res://scripts/NalaRestartBodyBudget.gd","res://scripts/SurfaceTraversal.gd","res://scripts/WorldFoley.gd","res://scripts/land/LandSurfaceQueryCache.gd","res://scripts/NalaLowerBody3D.gd","res://scripts/CharacterVisual.gd","res://scripts/land/LandWorld3D.gd","res://scripts/land/LandGeometry.gd","res://../scripts/tests/nala-production-gait.gd","res://../scripts/tests/nala-production-terrain.gd","res://../scripts/tests/nala-lower-body.gd"]: hashes[path]=FileAccess.get_sha256(path)
+	for path in ["res://scripts/Player.gd","res://scripts/NalaPhysicalMotion.gd","res://scripts/NalaFootPlant.gd","res://scripts/NalaFootPlane.gd","res://scripts/NalaRestartBodyBudget.gd","res://scripts/NalaStairSupportCurve.gd","res://scripts/SurfaceTraversal.gd","res://scripts/WorldFoley.gd","res://scripts/land/LandSurfaceQueryCache.gd","res://scripts/NalaLowerBody3D.gd","res://scripts/CharacterVisual.gd","res://scripts/land/LandWorld3D.gd","res://scripts/land/LandGeometry.gd","res://../scripts/tests/nala-production-gait.gd","res://../scripts/tests/nala-production-terrain.gd","res://../scripts/tests/nala-lower-body.gd"]: hashes[path]=FileAccess.get_sha256(path)
 	var filter:=OS.get_environment("NALA_TERRAIN_PROFILE")
 	var first:=maxi(0,int(OS.get_environment("NALA_TERRAIN_FIRST")))
 	var limit:=maxi(1,int(OS.get_environment("NALA_TERRAIN_CASES"))) if OS.has_environment("NALA_TERRAIN_CASES") else 16

@@ -1,0 +1,52 @@
+{
+  "capture": "artifacts/godot/nala-terrain-first3-remaining-stair-resume-7e14c09/rejected.json",
+  "captureSha256": "f54fe4bd530822c4ab75591d4383273f6c54b8df2a89969d0703f5b0ad508648",
+  "fixtureWorldSha256": "28455e6f7ec053d8e090457cae6e747d848aa3fd994e797e32608a0710dd5743",
+  "dataSha256": "f46253f21b32fc5e4ff027c4dce5e36c9be317ade6feffb1a7174fd1774b8d48",
+  "connectorId": "central_stone_steps",
+  "footDirection": "north_west",
+  "side": "right",
+  "fromLogical": [
+    1374.95,
+    785.0
+  ],
+  "toLogical": [
+    1373.889,
+    745.0
+  ],
+  "fromWorld": [
+    1374.95,
+    -1462.864,
+    72.0
+  ],
+  "toWorld": [
+    1373.889,
+    -1427.401,
+    96.0
+  ],
+  "expectedKnots": [
+    [
+      1374.95,
+      -1462.864,
+      72.0
+    ],
+    [
+      1374.8016942735244,
+      -1457.9070103883093,
+      84.0
+    ],
+    [
+      1374.2712044508573,
+      -1440.1758505567927,
+      96.0
+    ],
+    [
+      1373.889,
+      -1427.401,
+      96.0
+    ]
+  ],
+  "expectedDistance": 16.5,
+  "expectedArcXYZ": 47.181641568819714,
+  "scope": "Independent CPU original-foot swept-riser model, not actual moving acceptance"
+}

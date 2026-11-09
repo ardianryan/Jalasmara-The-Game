@@ -39,6 +39,7 @@ var _body_facing_transitions:=0
 const Traversal=preload("res://scripts/SurfaceTraversal.gd")
 const FootPlane=preload("res://scripts/NalaFootPlane.gd")
 const RestartBodyBudget=preload("res://scripts/NalaRestartBodyBudget.gd")
+const StairSupportCurve=preload("res://scripts/NalaStairSupportCurve.gd")
 
 func configure(owner_renderer: Node,contract:Dictionary={}) -> void:
 	renderer=owner_renderer
@@ -421,7 +422,12 @@ func _begin(side:String,at:Vector2,hips:Dictionary,right:Vector3,resuming:bool=f
 			entry.fixedTreadTarget=true
 			var path:=_path_metrics(entry.from,entry.to)
 			var minimum:=_start_distance if resuming else float(tread.treadDistance)
-			var budget:=_terrain_duration(entry.fromWorld,entry.toWorld,minimum,float(path.total))
+			var swept:Dictionary={"supported":false,"reason":"unfinished resume retains its actual remaining legacy curve"}
+			if not resuming and _landing_geometry.has(side):
+				for profile in _stairs:
+					if str(profile.id)==str(tread.connectorId): swept=StairSupportCurve.build(renderer,profile,entry.from,entry.to,entry.fromWorld,entry.toWorld,_landing_geometry[side],_start_distance)
+			var budget:Dictionary=swept if bool(swept.supported) else _terrain_duration(entry.fromWorld,entry.toWorld,minimum,float(path.total))
+			budget["sweptSupportMode"]={"supported":swept.supported,"reason":str(swept.get("reason","original per-riser path"))}
 			budget["fixedPathWorldXY"]=float(path.total)
 			_landing_distance=float(budget.distance)
 			entry.treadPlan.merge(budget,true)
@@ -495,7 +501,9 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 				var path:=_path_metrics(entry.from,entry.to)
 				var budget:Dictionary=_ramp_duration(entry.from,entry.to,entry.fromWorld,_turn_distance,_swing) if bool(entry.get("fixedRampTarget",false)) else _terrain_duration(entry.fromWorld,entry.toWorld,_turn_distance,float(path.total))
 				_landing_distance=float(budget.distance)
-				if bool(entry.get("fixedTreadTarget",false)): entry.treadPlan.merge(budget,true)
+				if bool(entry.get("fixedTreadTarget",false)):
+					entry.treadPlan.merge(budget,true)
+					entry.treadPlan["sweptSupportMode"]={"supported":false,"reason":"sharp turn reanchors to labelled legacy terrain curve"}
 				else: entry.rampCurvePlan=budget
 		elif not resuming and _physical_contract and _swing!="":
 			var old_world:=_world_motion(at,_heading)
@@ -528,27 +536,38 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 			_transfer_body(sample,chunk,_swing)
 			body_advanced=true
 			var u:=clampf(_distance/_landing_distance,0,1)
-			var advance:=u
-			var elevation:=u
-			var rise:=Vector3(entry.toWorld).z-Vector3(entry.fromWorld).z
-			if absf(rise)>.01 and not bool(entry.get("fixedRampTarget",false)):
-				var window:=clampf(absf(rise)/(_landing_distance*3.0),.25,.65)
-				var delay:=window*.5
-				if rise>0:
-					advance=clampf((u-delay)/(1.0-delay),0,1)
-					elevation=clampf(u/window,0,1)
-				else:
-					advance=clampf(u/(1.0-delay),0,1)
-					elevation=clampf((u-(1.0-window))/window,0,1)
-			var smooth:=advance*advance*(3.0-2.0*advance)
-			var rise_smooth:=elevation*elevation*(3.0-2.0*elevation)
-			entry.logical=_stair_path_point(entry.from,target,smooth) if absf(rise)>.01 or bool(entry.get("fixedRampTarget",false)) else Vector2(entry.from).lerp(target,smooth)
-			var floor_world:=_ground(entry.logical)
-			var world:=Vector3(entry.fromWorld).lerp(entry.toWorld,rise_smooth)
-			if bool(entry.get("fixedRampTarget",false)):
-				world.z=floor_world.z+float(entry.rampCurvePlan.fromGroundOffset)*(1.0-smooth)+sin(u*PI)*TOE_CLEARANCE
-			else: world.z=maxf(world.z+sin(u*PI)*TOE_CLEARANCE,floor_world.z+.02)
-			entry.sole=Vector3(floor_world.x,floor_world.y,world.z)
+			if bool(entry.get("fixedTreadTarget",false)) and str(entry.treadPlan.get("curveType",""))=="stair_swept_support":
+				var swept:=StairSupportCurve.sample(renderer,entry.treadPlan,u)
+				if not bool(swept.valid):
+					entry.treadPlan.valid=false
+					entry.landingGeometryValid=false
+					return snapshot()
+				entry.logical=swept.logical
+				var point:Vector3=swept.world
+				point.z=maxf(point.z+sin(u*PI)*TOE_CLEARANCE,_ground(entry.logical).z+.02)
+				entry.sole=point
+			else:
+				var advance:=u
+				var elevation:=u
+				var rise:=Vector3(entry.toWorld).z-Vector3(entry.fromWorld).z
+				if absf(rise)>.01 and not bool(entry.get("fixedRampTarget",false)):
+					var window:=clampf(absf(rise)/(_landing_distance*3.0),.25,.65)
+					var delay:=window*.5
+					if rise>0:
+						advance=clampf((u-delay)/(1.0-delay),0,1)
+						elevation=clampf(u/window,0,1)
+					else:
+						advance=clampf(u/(1.0-delay),0,1)
+						elevation=clampf((u-(1.0-window))/window,0,1)
+				var smooth:=advance*advance*(3.0-2.0*advance)
+				var rise_smooth:=elevation*elevation*(3.0-2.0*elevation)
+				entry.logical=_stair_path_point(entry.from,target,smooth) if absf(rise)>.01 or bool(entry.get("fixedRampTarget",false)) else Vector2(entry.from).lerp(target,smooth)
+				var floor_world:=_ground(entry.logical)
+				var world:=Vector3(entry.fromWorld).lerp(entry.toWorld,rise_smooth)
+				if bool(entry.get("fixedRampTarget",false)):
+					world.z=floor_world.z+float(entry.rampCurvePlan.fromGroundOffset)*(1.0-smooth)+sin(u*PI)*TOE_CLEARANCE
+				else: world.z=maxf(world.z+sin(u*PI)*TOE_CLEARANCE,floor_world.z+.02)
+				entry.sole=Vector3(floor_world.x,floor_world.y,world.z)
 			if u>=1:
 				entry.logical=target
 				entry.sole=entry.toWorld
