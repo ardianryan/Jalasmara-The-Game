@@ -153,6 +153,20 @@ async function shot(name) {
   );
 }
 async function walkTo(x, y) {
+  const from = await snapshot();
+  const onLand = !from.diving && from.area !== "home" && from.land?.active;
+  const steps = onLand
+    ? Math.max(1, Math.ceil(Math.hypot(x - from.x, y - from.y) / 24))
+    : 1;
+  // Absolute corridor targets prevent eight-key heading error accumulating along a long segment.
+  for (let index = 1; index <= steps; index++) {
+    await walkDirect(
+      from.x + ((x - from.x) * index) / steps,
+      from.y + ((y - from.y) * index) / steps,
+    );
+  }
+}
+async function walkDirect(x, y) {
   await frame.locator("canvas").focus();
   let previous,
     stuck = 0;
