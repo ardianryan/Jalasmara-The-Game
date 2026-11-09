@@ -1,6 +1,6 @@
 # Daratan modular: Bandar Hujung dan Wringin
 
-## Status layout 5
+## Status layout hub 6 dan hutan 5
 
 Hub dan hutan kini dibangun dari komponen 3D, bukan bitmap peta yang disamarkan dengan mask. `WORLD.landMaps` menjadi sumber tunggal untuk poligon lantai, footprint bangunan/tanaman/batu, material, elevasi dan konektor. `LandWorld3D` merender floor/prop tersebut dengan kamera ortografis pada elevasi pandang 35°. Karakter tetap berupa billboard sprite pada koordinat gerak dua sumbu; proyeksi kakinya dikalibrasi ke physics/server.
 

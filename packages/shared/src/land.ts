@@ -373,6 +373,8 @@ const hubObstacles: LandObstacle[] = [
   obstacle("palm_garden", "tree", 1640, 600, 34, 34, 180, "palm", 2),
   obstacle("market_crates", "crate", 470, 915, 65, 48, 38, "woven", 1),
   obstacle("dock_crates", "crate", 920, 1190, 80, 55, 48, "wood", 0),
+  obstacle("changing_post_north", "fence", 1425, 1195, 10, 10, 120, "changing_booth", 0),
+  obstacle("changing_post_south", "fence", 1425, 1375, 10, 10, 120, "changing_booth", 0),
   obstacle("forest_gate_west", "fence", 2240, 80, 25, 110, 80, "bamboo", 3),
   obstacle("forest_gate_east", "fence", 2325, 80, 25, 110, 80, "bamboo", 3),
 ];
@@ -571,7 +573,7 @@ for (const [i, x, y] of [
 export const LAND_MAPS: Record<"hub" | "forest", LandMap> = {
   hub: {
     id: "hub",
-    layoutVersion: 5,
+    layoutVersion: 6,
     landmass: [
       [240, 300],
       [680, 280],

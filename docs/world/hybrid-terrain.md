@@ -1,6 +1,6 @@
 # Pilot lingkungan hybrid 2.5D
 
-Pilot mengganti tampilan laut dengan geometri 3D yang dirender melalui Godot Compatibility. Daratan Bandar Hujung dan hutan kini memakai renderer komponen `LandWorld3D` terpisah dengan elevasi pandang 35°, footprint bersama layout 5 dan billboard karakter. Rincian terbaru ada pada [daratan modular](land-layering.md). Kontrol penyelam tetap pada bidang dua sumbu, seperti permainan petualangan laut tampak samping; tidak ada gerakan bebas ke arah kamera.
+Pilot mengganti tampilan laut dengan geometri 3D yang dirender melalui Godot Compatibility. Daratan Bandar Hujung dan hutan kini memakai renderer komponen `LandWorld3D` terpisah dengan elevasi pandang 35°, footprint bersama (hub versi 6, hutan versi 5) dan billboard karakter. Rincian terbaru ada pada [daratan modular](land-layering.md). Kontrol penyelam tetap pada bidang dua sumbu, seperti permainan petualangan laut tampak samping; tidak ada gerakan bebas ke arah kamera.
 
 `HybridOcean.gd` membuat SubViewport 480 × 270, kamera ortografis miring 12 derajat, pencahayaan lingkungan, lampu arah, dan senter SpotLight3D. Hasil diperbesar dengan nearest filtering. HUD dan teks tetap pada resolusi antarmuka. Parallax hanya menggeser dekorasi jauh, sedangkan batu dan bidang gerak tetap mengikuti koordinat dunia.
 

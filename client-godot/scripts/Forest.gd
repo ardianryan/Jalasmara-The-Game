@@ -129,6 +129,8 @@ class ForestAvatar extends CharacterBody2D:
 	var clock := 0.0
 	var sheet: Texture2D
 	var variant := "male_default"
+	var outfit := "explorer"
+	var equipment: Dictionary = {"tank":false,"net":false,"satchel":true}
 	func _draw() -> void:
 		draw_set_transform(Vector2(0,-1),0,Vector2(1,0.35))
 		draw_circle(Vector2.ZERO,21,Color(0.015,0.055,0.04,0.35))
@@ -136,7 +138,7 @@ class ForestAvatar extends CharacterBody2D:
 		if sheet != null:
 			var cell := sheet.get_size() / 3.0
 			var frame := 1+int(clock * 8.0) % 2 if walking else 0
-			var source := Rect2(Vector2(frame * cell.x,0),cell)
+			var source := Rect2(Vector2(frame * cell.x,cell.y),cell)
 			var destination := Rect2(-50,-100,100,100)
 			if facing.x < -0.1:
 				destination.position.x = 50
@@ -201,7 +203,7 @@ func _ready() -> void:
 	var appearance_id := str(appearance.get("id","male_default")) if appearance is Dictionary else str(appearance)
 	var paths := {"male_default":"male-default","male_nusantara":"male-nusantara","female_default":"female-default","female_nusantara":"female-nusantara"}
 	if paths.has(appearance_id):
-		atlas_path = "res://resources/art/%s.png" % paths[appearance_id]
+		atlas_path = "res://resources/art/%s-outfits-v1.png" % paths[appearance_id]
 		if ResourceLoader.exists(atlas_path):
 			avatar.sheet = load(atlas_path)
 	avatar.variant = appearance_id
@@ -648,6 +650,8 @@ func _build_ui() -> void:
 	dialog_title.add_theme_font_size_override("font_size",20)
 	box.add_child(dialog_title)
 	dialog_text = RichTextLabel.new()
+	dialog_text.add_theme_font_override("normal_font",preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2"))
+	dialog_text.add_theme_font_size_override("normal_font_size",18)
 	dialog_text.custom_minimum_size = Vector2(540,175)
 	dialog_text.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	dialog_text.bbcode_enabled = false
@@ -738,7 +742,7 @@ func _show_characters() -> void:
 	_show_dialog("Penampilan Nala","Pilih penampilan. Kemampuan dan progres tetap mengikuti pemain.")
 	dialog.position.y = 45
 	dialog_text.custom_minimum_size.y = 65
-	for option in [["male_default","Nala — pakaian selam"],["male_nusantara","Nala — kain pesisir"],["female_default","Nala perempuan — pakaian selam"],["female_nusantara","Nala perempuan — kain pesisir"]]:
+	for option in [["male_default","Nala laki-laki"],["male_nusantara","Nala laki-laki · kain pesisir"],["female_default","Nala perempuan"],["female_nusantara","Nala perempuan · kain pesisir"]]:
 		var button := Button.new()
 		button.text = option[1]
 		button.custom_minimum_size.y = 36
@@ -760,12 +764,14 @@ func _select_character(id: String) -> void:
 		GameState.player = result.player
 	avatar.variant = id
 	var paths := {"male_default":"male-default","male_nusantara":"male-nusantara","female_default":"female-default","female_nusantara":"female-nusantara"}
-	var path := "res://resources/art/%s.png" % paths.get(id,"male-default")
+	var path := "res://resources/art/%s-outfits-v1.png" % paths.get(id,"male-default")
 	avatar.sheet = load(path) if ResourceLoader.exists(path) else null
 	_close_dialog()
 
 func _publish_snapshot() -> void:
 	var snapshot := {"area":"forest","x":avatar.position.x,"y":avatar.position.y,"modal":modal_open,"nearby":str(nearest.get("id","")),"appearance":avatar.variant,"diving":false}
+	snapshot["outfit"] = avatar.outfit
+	snapshot["equipment"] = avatar.equipment
 	var trees: Array[Dictionary] = []
 	for canopy in forest_canopies:
 		trees.append(canopy.debug_status())

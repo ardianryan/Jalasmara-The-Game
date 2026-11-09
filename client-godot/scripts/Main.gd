@@ -2,6 +2,7 @@ extends Node2D
 const PlayerScript = preload("res://scripts/Player.gd")
 const WorldScript = preload("res://scripts/World.gd")
 const EntitiesScript = preload("res://scripts/Entities.gd")
+const BODY_FONT = preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2")
 var land_renderer: Node2D
 var nala: CharacterBody2D
 var terrain: Node2D
@@ -43,6 +44,7 @@ var snapshot_at := 0
 var surface_actors: Array[Node2D] = []
 var hybrid: Node2D
 var world_foley: Node
+var previous_outfit := "daily"
 func _ready() -> void:
 	y_sort_enabled = true
 	_setup_input()
@@ -94,6 +96,8 @@ func _ready() -> void:
 		actor.player = nala
 		add_child(actor)
 		surface_actors.append(actor)
+	_ensure_residents()
+	GameState.changed.connect(_ensure_residents)
 	nala.position = _surface_point()
 	nala.frozen = false
 	if GameState.dive.is_empty() and is_instance_valid(terrain.scenery) and terrain.scenery.has_method("nearest_walkable"):
@@ -123,6 +127,32 @@ func _ready() -> void:
 		var window = JavaScriptBridge.get_interface("window")
 		window.jalasmaraReady = true
 		window.parent.postMessage(JavaScriptBridge.get_interface("JSON").parse('{"type":"jalasmara:ready"}'),str(window.location.origin))
+func _ensure_residents() -> void:
+	var cycle := int(GameState.player.get("progress",{}).get("day",1))
+	for resident in GameState.world.get("surface_hub",{}).get("residents",[]):
+		var existing: Node2D = null
+		for actor in surface_actors:
+			if actor.actor_name==resident.name: existing = actor
+		if int(resident.cycle)>cycle:
+			if existing!=null:
+				surface_actors.erase(existing)
+				existing.queue_free()
+			continue
+		if existing!=null: continue
+		var actor = preload("res://scripts/HubActor.gd").new()
+		actor.actor_name = resident.name
+		actor.appearance_index = resident.appearance
+		actor.custom_sheet = load("res://resources/art/village-residents-v1.png")
+		actor.custom_grid = Vector2i(3,2)
+		for point in resident.route: actor.route.append(Vector2(float(point[0]),float(point[1])))
+		actor.position = actor.route[0]
+		actor.player = nala
+		actor.walkable = Callable(terrain,"is_walkable")
+		actor.set_meta("conversation",resident.line)
+		actor.set_meta("evening_conversation",resident.evening)
+		add_child(actor)
+		surface_actors.append(actor)
+
 func _setup_input() -> void:
 	var bindings = {"left":[KEY_A,KEY_LEFT],"right":[KEY_D,KEY_RIGHT],"up":[KEY_W,KEY_UP],"down":[KEY_S,KEY_DOWN],"interact":[KEY_E],"net":[KEY_SPACE],"map":[KEY_M],"journal":[KEY_J],"inventory":[KEY_I],"character":[KEY_C]}
 	for action in bindings:
@@ -162,6 +192,9 @@ func _label(parent: Node, text: String, size := 16) -> Label:
 	label.text = text
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	label.add_theme_font_size_override("font_size",size)
+	if size<=19:
+		label.add_theme_font_override("font",BODY_FONT)
+		label.add_theme_font_size_override("font_size",maxi(18,size))
 	parent.add_child(label)
 	return label
 func _open(title: String, pause_reading := true) -> VBoxContainer:
@@ -283,6 +316,10 @@ func _process(delta: float) -> void:
 	queue_redraw()
 	if GameState.player.is_empty():
 		return
+	if nala.outfit!=previous_outfit:
+		previous_outfit = nala.outfit
+		if not submerged:
+			hud.message("Bilik Beno · Baju selam, tabung, dan jala terpasang." if nala.outfit=="diving" else "Bilik Beno · Kembali mengenakan baju harian.")
 	_find_nearby()
 	if Engine.get_process_frames()%10==0:
 		_update_hud()
@@ -299,6 +336,8 @@ func _process(delta: float) -> void:
 	if OS.has_feature("web") and Time.get_ticks_msec()-snapshot_at>=100:
 		snapshot_at = Time.get_ticks_msec()
 		var snapshot := {"x":nala.position.x,"y":nala.position.y,"stage":GameState.player.get("progress",{}).get("stage",""),"modal":modal_open,"nearby":str(nearby.get("id","")),"diving":not GameState.dive.is_empty()}
+		snapshot["outfit"] = nala.outfit
+		snapshot["equipment"] = nala.equipment
 		snapshot["audio"] = AudioManager.debug_status()
 		snapshot["flashlight2d"] = _flashlight_status_2d()
 		snapshot["weather"] = EnvironmentState.snapshot()
@@ -382,6 +421,10 @@ func _find_nearby() -> void:
 	var best := 140.0
 	var objects: Array = []
 	if GameState.dive.is_empty():
+		for actor in surface_actors:
+			if actor.has_meta("conversation"):
+				var text: String = actor.get_meta("evening_conversation") if float(EnvironmentState.snapshot().daylight)<.45 else actor.get_meta("conversation")
+				objects.append({"id":actor.actor_name,"x":actor.position.x,"y":actor.position.y,"name":actor.actor_name,"kind":"resident","radius":80.0,"text":text})
 		for district in GameState.world.get("surface_hub",{}).get("districts",[]):
 			objects.append({"id":district.id,"x":district.x,"y":district.y,"name":district.npc,"kind":"npc","radius":140.0})
 		for landmark in GameState.world.get("surface_hub",{}).get("landmarks",[]):
@@ -438,7 +481,7 @@ func _action_label(obj: Dictionary) -> String:
 	var label_name := str(obj.get("name",""))
 	var found: Array = GameState.adventure.get("discoveries",[])
 	match kind:
-		"npc":
+		"npc", "resident":
 			return "Bicara: " + label_name
 		"surface_landmark":
 			return ("Periksa Ulang: " if found.has(str(obj.get("id",""))) else "Amati Kebun: ") + label_name
@@ -534,6 +577,8 @@ func _sync_position() -> bool:
 	_update_hud()
 	if OS.has_feature("web"):
 		var snapshot := {"x":nala.position.x,"y":nala.position.y,"stage":GameState.player.get("progress",{}).get("stage",""),"modal":modal_open,"nearby":str(nearby.get("id","")),"diving":not GameState.dive.is_empty()}
+		snapshot["outfit"] = nala.outfit
+		snapshot["equipment"] = nala.equipment
 		snapshot["audio"] = AudioManager.debug_status()
 		snapshot["flashlight2d"] = _flashlight_status_2d()
 		snapshot["weather"] = EnvironmentState.snapshot()
@@ -566,6 +611,8 @@ func _interact() -> void:
 		return
 	var obj: Dictionary = nearby.duplicate()
 	match str(obj.kind):
+		"resident":
+			_talk([{"name":str(obj.name),"text":str(obj.text)}])
 		"npc":
 			_npc_interact(str(obj.name))
 		"surface_landmark":
@@ -777,9 +824,14 @@ func _show_quiz() -> void:
 					_extract()
 		)
 	else:
+		var answers := GridContainer.new()
+		answers.columns = 2
+		answers.add_theme_constant_override("h_separation",12)
+		answers.add_theme_constant_override("v_separation",12)
+		box.add_child(answers)
 		for i in range(challenge.question.options.size()):
 			var selected := i
-			_button(box,str(challenge.question.options[i]),func():
+			var answer := _button(answers,"",func():
 				if network_busy:
 					return
 				network_busy = true
@@ -789,6 +841,26 @@ func _show_quiz() -> void:
 					GameState.dive = r.dive
 					_show_quiz()
 			)
+			var option_text := "%s. %s" % [String.chr(65+i),str(challenge.question.options[i])]
+			var measured := BODY_FONT.get_multiline_string_size(option_text,HORIZONTAL_ALIGNMENT_LEFT,250,18)
+			answer.custom_minimum_size = Vector2(285,maxf(56,measured.y+28))
+			var option_label := Label.new()
+			option_label.text = option_text
+			option_label.add_theme_font_override("font",BODY_FONT)
+			option_label.add_theme_font_size_override("font_size",18)
+			option_label.add_theme_color_override("font_color",Color("f4ebd9"))
+			option_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			option_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			answer.add_child(option_label)
+			option_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+			option_label.offset_left = 14
+			option_label.offset_right = -14
+			option_label.offset_top = 12
+			option_label.offset_bottom = -12
+			var key := InputEventKey.new()
+			key.physical_keycode = KEY_1+i
+			answer.shortcut = Shortcut.new()
+			answer.shortcut.events = [key]
 		_label(box,"Serangan berhenti selama resonansi. Jawab dengan pemahaman, lalu lanjutkan menghindari serangan.",13)
 func _npc_interact(name_text: String) -> void:
 	network_busy = true
@@ -1088,7 +1160,7 @@ func _show_character(first: bool) -> void:
 	grid.add_theme_constant_override("h_separation",12)
 	grid.add_theme_constant_override("v_separation",12)
 	box.add_child(grid)
-	var choices := [["male_default","Laki-laki · Penyelam","Rompi oranye dan peralatan rakitan"],["male_nusantara","Laki-laki · Pesisir Nusantara","Sawo matang, lurik modern"],["female_default","Perempuan · Penyelam","Rompi oranye dan perlengkapan ringan"],["female_nusantara","Perempuan · Pesisir Nusantara","Kemben modern, perlengkapan pesisir"]]
+	var choices := [["male_default","Laki-laki · Nala","Kaos harian, perlengkapan sesuai medan"],["male_nusantara","Laki-laki · Pesisir Nusantara","Sawo matang, aksen kain pesisir"],["female_default","Perempuan · Nala","Kaos harian, perlengkapan sesuai medan"],["female_nusantara","Perempuan · Pesisir Nusantara","Busana modern dengan aksen tenun"]]
 	for index in range(choices.size()):
 		var choice: Array = choices[index]
 		var id := str(choice[0])
@@ -1112,7 +1184,7 @@ func _show_character(first: bool) -> void:
 		)
 		button.custom_minimum_size = Vector2(280,144)
 		button.add_theme_font_size_override("font_size",12)
-		var path := "res://resources/art/"+id.replace("_","-")+".png"
+		var path := "res://resources/art/"+id.replace("_","-")+"-base-v1.png"
 		if ResourceLoader.exists(path):
 			var texture: Texture2D = load(path)
 			var atlas := AtlasTexture.new()

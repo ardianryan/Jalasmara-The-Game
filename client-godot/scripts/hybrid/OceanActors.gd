@@ -8,6 +8,7 @@ var atlas_frames: Dictionary = {}
 var _active: Dictionary = {}
 var _session := ""
 var debug_counts: Dictionary = {}
+var _equipment: Node3D
 
 func configure(main: Node) -> void:
 	source = main
@@ -87,6 +88,11 @@ func _mirror_player(nala: Node2D) -> void:
 	var sprite := _sprite("player",_frame(visual.texture,rectangle),nala.position+visual.position,cell*visual.scale.abs(),12)
 	sprite.flip_h = visual.flip_h
 	sprite.flip_v = visual.flip_v
+	if not is_instance_valid(_equipment):
+		_equipment=preload("res://scripts/CharacterEquipment3D.gd").new()
+		add_child(_equipment)
+	var gear: Dictionary=visual.get_equipment_state() if visual.has_method("get_equipment_state") else {}
+	_equipment.update_attachment(sprite,gear,true,visual.flip_h)
 	debug_counts.player = 1
 
 func _mirror_targets(entities: Node, origin: Vector2) -> void:

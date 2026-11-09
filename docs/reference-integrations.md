@@ -62,6 +62,10 @@ Daratan layout 5 dibangun dari lantai dan prop 3D dengan kamera elevasi 35°, bu
 
 ## Pemeriksaan referensi tambahan
 
+### Sprite AI
+
+Referensi tambahan pengguna, 9 November 2026: [MCP Sprite AI](https://www.sprite-ai.art/mcp). Konfigurasi lokal Codex memakai endpoint `https://www.sprite-ai.art/api/mcp` dan nama environment variable `SPRITE_AI_API_KEY`; kredensial tidak disimpan dalam proyek. Pada pemeriksaan ini tool belum tersedia di sesi aktif dan environment variable belum diwariskan, sehingga autentikasi belum terverifikasi dan belum ada aset Sprite AI yang diimpor. Kandidat penggunaan: prop transparan, variasi sprite, dan normal map. Hasil tetap harus cocok dengan kamera, pivot, palet, serta skala dunia; sprite bangunan tidak menggantikan terrain 3D atau footprint fisik. Periksa lisensi per aset, khususnya galeri yang dapat dibatasi untuk penggunaan nonkomersial.
+
 Pemeriksaan 8 November 2026 memakai sumber primer: [README Crawl](https://github.com/crawl/crawl/blob/acc896bb7366d6be8ae9b2f7d7ce85749d4398bf/README.md), [lisensi engine Crawl](https://github.com/crawl/crawl/blob/acc896bb7366d6be8ae9b2f7d7ce85749d4398bf/LICENSE), [deklarasi koleksi CC0](https://github.com/crawl/tiles/blob/a6ea1655db5c044829d9eea19a232fa6fcac87b0/README.md), [README Kiln](https://github.com/elithril/blender-kiln/blob/e9a421467dd95d0de71d45b3d331f8efa4b80f26/README.md), dan [lisensi MIT Kiln](https://github.com/elithril/blender-kiln/blob/e9a421467dd95d0de71d45b3d331f8efa4b80f26/LICENSE). Crawl adalah game roguelike lengkap; referensi vault bukan generator Godot yang terpasang. Status CC0 koleksi tiles tidak mengubah lisensi GPL kode engine. Kiln adalah workflow produksi di atas Blender MCP; pemakaian checker standar pustakanya di sini merupakan integrasi alat offline, bukan klaim bahwa seluruh model telah dibuat atau dianimasikan oleh Blender.
 
 Reproduksi pemeriksa Kiln dan batasnya ada pada [tools/blender-kiln](../tools/blender-kiln/README.md). SFX pengguna dan pemilihan material foley dijelaskan pada [suara eksplorasi](audio/exploration-sfx.md).

@@ -65,12 +65,17 @@ class HudIcon extends Control:
 class DiveInstrument extends Control:
 	var ratio := 1.0
 	var phase := 0.0
+	var reduced_motion := false
+	var loss_feedback := 0.0
 	func _draw() -> void:
 		var edge := Color("af8759")
 		var fill := Color("6faba2")
-		if ratio<=0.2:
-			edge = Color("e6a080")
-			fill = Color("e6a080")
+		if ratio<=0.35:
+			edge = Color("e6bd76")
+			fill = Color("e6bd76")
+		if ratio<=0.15:
+			edge = Color("f0a080")
+			fill = Color("f0a080")
 		var shape := PackedVector2Array([Vector2(8,0),Vector2(size.x-8,0),Vector2(size.x,8),Vector2(size.x,size.y-8),Vector2(size.x-8,size.y),Vector2(8,size.y),Vector2(0,size.y-8),Vector2(0,8)])
 		draw_colored_polygon(shape,Color("202d3a"))
 		draw_polyline(PackedVector2Array([Vector2(8,1),Vector2(size.x-8,1),Vector2(size.x-1,8),Vector2(size.x-1,size.y-8),Vector2(size.x-8,size.y-1),Vector2(8,size.y-1),Vector2(1,size.y-8),Vector2(1,8),Vector2(8,1)]),edge,2)
@@ -82,9 +87,11 @@ class DiveInstrument extends Control:
 			var lit := ratio>float(index)/10.0
 			draw_rect(Rect2(16,73-index*5,18,3),fill if lit else Color("3d5055"))
 		draw_line(Vector2(150,14),Vector2(150,size.y-14),Color("654733"),1)
-		if ratio<=0.2:
-			var alpha := 0.16+0.1*sin(phase*4)
-			draw_rect(Rect2(3,3,size.x-6,size.y-6),Color(0.9,0.4,0.25,alpha),false,2)
+		if ratio<=0.15:
+			var alpha := 0.18 if reduced_motion else 0.18+0.035*sin(phase*2)
+			draw_rect(Rect2(3,3,size.x-6,size.y-6),Color(0.94,0.63,0.5,alpha),false,2)
+		if loss_feedback>0.0:
+			draw_line(Vector2(49,65),Vector2(138,65),Color(1.0,0.81,0.67,minf(1.0,loss_feedback*2)),2)
 
 var _sound_button: Button
 var _navigation: GeoMap
@@ -97,6 +104,11 @@ var _resources: Label
 var _weather: Label
 var _oxygen_text: Label
 var _oxygen_max: Label
+var _oxygen_loss: Label
+var _previous_oxygen := -1.0
+var _previous_maximum := -1.0
+var _was_diving := false
+var _loss_seconds := 0.0
 var _warning: Label
 var _bag: Label
 var _objective: Label
@@ -225,6 +237,10 @@ func _build_instrument() -> void:
 	_label(_instrument,"OKSIGEN",Vector2(49,10),Vector2(90,18),10)
 	_oxygen_text = _label(_instrument,"100",Vector2(47,27),Vector2(98,38),32)
 	_oxygen_max = _label(_instrument,"/ 100 O2",Vector2(50,71),Vector2(93,20),11)
+	_oxygen_loss = _label(_instrument,"",Vector2(99,10),Vector2(47,18),10)
+	_oxygen_loss.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_oxygen_loss.add_theme_color_override("font_color",Color("ffd0aa"))
+	_oxygen_loss.hide()
 	_label(_instrument,"KEDALAMAN",Vector2(164,10),Vector2(119,17),9)
 	_depth = _label(_instrument,"0 m",Vector2(162,28),Vector2(120,28),24)
 	_bag = _label(_instrument,"",Vector2(164,65),Vector2(120,27),11)
@@ -323,14 +339,28 @@ func update_state(state: Dictionary) -> void:
 	_instrument.visible = diving and not _modal
 	var maximum := maxf(1.0,float(state.get("maxOxygen",100)))
 	var oxygen := clampf(float(state.get("oxygen",maximum)),0.0,maximum)
+	var loss := _previous_oxygen-oxygen
+	if diving and _was_diving and is_equal_approx(maximum,_previous_maximum) and loss>=4.0:
+		_loss_seconds = 1.1
+		_oxygen_loss.text = "-%d O2" % ceili(loss)
+		_oxygen_loss.show()
+	if not diving:
+		_loss_seconds = 0.0
+		_oxygen_loss.hide()
+	_previous_oxygen = oxygen
+	_previous_maximum = maximum
+	_was_diving = diving
 	_instrument.ratio = oxygen/maximum
+	_instrument.reduced_motion = bool(state.get("reducedMotion",EnvironmentState.reduced_motion))
 	_instrument.queue_redraw()
 	_oxygen_text.text = "%d" % ceili(oxygen)
 	_oxygen_max.text = "/ %d O2" % int(maximum)
-	_oxygen_text.add_theme_color_override("font_color",Color("ffd0aa") if oxygen/maximum<=0.2 else CREAM)
+	_oxygen_text.add_theme_color_override("font_color",Color("f0a080") if oxygen/maximum<=0.15 else (Color("e6bd76") if oxygen/maximum<=0.35 else CREAM))
 	_depth.text = "%d m" % int(state.get("depth",0))
 	_bag.text = "TAS\n%.1f / %.1f kg" % [float(state.get("weight",0)),float(state.get("capacity",0))]
-	_warning.visible = diving and oxygen/maximum<=0.2 and not _modal
+	_warning.text = "O2 KRITIS - NAIK SEKARANG" if oxygen/maximum<=0.15 else "O2 MENIPIS - CARI TANGGA"
+	_warning.add_theme_color_override("font_color",Color("f0a080") if oxygen/maximum<=0.15 else Color("e6bd76"))
+	_warning.visible = diving and oxygen/maximum<=0.35 and not _modal
 	_objective.text = str(state.get("objective",""))
 	_objective.tooltip_text = _objective.text
 	_objective.visible = not _modal
@@ -379,7 +409,13 @@ func _process(delta: float) -> void:
 		_status_panel.hide()
 	if is_instance_valid(_instrument):
 		_instrument.phase += delta
-		if _instrument.ratio<=0.2: _instrument.queue_redraw()
+		if _loss_seconds>0.0:
+			_loss_seconds = maxf(0.0,_loss_seconds-delta)
+			_oxygen_loss.visible = _loss_seconds>0.0
+			_oxygen_loss.modulate.a = 1.0 if _instrument.reduced_motion else minf(1.0,_loss_seconds*3)
+			_instrument.queue_redraw()
+		_instrument.loss_feedback = 0.0 if _instrument.reduced_motion else _loss_seconds
+		if (_instrument.ratio<=0.15 and not _instrument.reduced_motion) or _loss_seconds>0.0: _instrument.queue_redraw()
 	if _net_held: _held_seconds += delta
 	if is_instance_valid(_net_charge):
 		var charging := bool(_state.get("netCharging",_net_held))
@@ -398,7 +434,7 @@ func set_navigation(data: Dictionary,area: String,point: Vector2) -> void:
 	_navigation.visible = not _modal
 
 func debug_layout() -> Dictionary:
-	var layout := {"touch":touch_enabled,"oxygen":{"position":[_instrument.position.x,_instrument.position.y],"size":[_instrument.size.x,_instrument.size.y],"visible":_instrument.visible,"value":float(_state.get("oxygen",100)),"maximum":float(_state.get("maxOxygen",100)),"warning":_warning.visible},"logicalSize":[960,540]}
+	var layout := {"touch":touch_enabled,"oxygen":{"position":[_instrument.position.x,_instrument.position.y],"size":[_instrument.size.x,_instrument.size.y],"visible":_instrument.visible,"value":float(_state.get("oxygen",100)),"maximum":float(_state.get("maxOxygen",100)),"warning":_warning.visible,"warningText":_warning.text,"status":"critical" if _instrument.ratio<=.15 else ("low" if _instrument.ratio<=.35 else "normal"),"lossText":_oxygen_loss.text if _loss_seconds>0 else "","reducedMotion":_instrument.reduced_motion},"logicalSize":[960,540]}
 	for item in [["sound",_sound_button],["net",_net],["action",_action]]:
 		var center: Vector2 = item[1].get_global_rect().get_center()
 		layout[item[0]] = [center.x,center.y]

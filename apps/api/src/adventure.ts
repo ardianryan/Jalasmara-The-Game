@@ -304,7 +304,7 @@ export async function adventureRoutes(
           b.destination === "forest" ? WORLD.forest.entry : WORLD.forest.gate;
         const next: SurfacePosition = {
           area: b.destination,
-          layoutVersion: WORLD.hub.layoutVersion,
+          layoutVersion: WORLD.landMaps[b.destination].layoutVersion,
           ...arrival,
           positionAt: Date.now(),
           playerVersion: p.version,

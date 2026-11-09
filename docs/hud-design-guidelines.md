@@ -182,3 +182,16 @@ Agar performa di peramban (Web/WASM) tetap lancar dan tidak terpengaruh shader p
 3. **Responsivitas Rasio Layar (*Responsive Anchors*):**
    * Gunakan Preset Anchor Godot (`Top Left`, `Top Right`, `Bottom Center`) dengan margin dinamis agar UI otomatis menyesuaikan tata letak pada layar HP (rasio 20:9), tablet (4:3), maupun desktop (16:9) tanpa terpotong.
 
+# Pembaruan implementasi, 9 November 2026
+
+Referensi tactile hybrid diterapkan pada CanvasLayer Godot, terpisah dari viewport dunia 3D. Tidak ada pemindahan game ke Phaser maupun HUD kedua dalam React.
+
+Arah visual mengikuti moodboard pengguna: ENERGY 2, RHYTHM 2, MOTION 1. Oksigen menjadi fokus saat menyelam; ruang kosong menjaga medan terlihat. Kayu dan kuningan mengikat panel dengan perlengkapan Beno, Ark Pixel mempertahankan identitas game, dan Nunito dipilih untuk bacaan panjang. Warna amber/merah menyatakan risiko, bukan hiasan; gerak indikator dibatasi dan menghormati pengurangan animasi.
+
+- Ark Pixel tetap digunakan untuk judul, tombol pendek, dan angka HUD. Teks dialog, penjelasan, serta pilihan kuis memakai Nunito Sans lokal berlisensi OFL; tidak memuat Google Fonts saat bermain.
+- Oksigen memberi peringatan amber pada ≤35% dan kritis pada ≤15%, lengkap dengan teks tindakan. Penurunan server ≥4 unit mendapat indikator sementara; pembacaan ulang snapshot dan perubahan kapasitas tidak memutar ulang efek. Reduced motion meniadakan denyut.
+- Kuis boss menggunakan pilihan 2×2 dengan ukuran tombol mengikuti panjang teks, minimum 56 piksel logis, serta shortcut 1–4. Validasi jawaban, timer, dan hadiah tetap milik server. Hasil biasa menjala mengikuti mekanik eksplorasi yang sudah ada, tidak dikembalikan menjadi kuis untuk setiap ikan.
+- Grade warna dunia dipasang pada output SubViewport, sehingga HUD dan soal tidak ikut diberi tint atau blur.
+
+Dialog cut-in dengan emosi, typewriter, tab buku yang lengkap, aksi membuang item dengan hold, antrean kesabaran, dan katalis kedai tetap merupakan referensi pengembangan. Jangan menggunakan data contoh `SAMPLE_ENTRIES`, angka oksigen bawaan, atau tombol ekonomi tanpa endpoint nyata. Jadwal pause membaca yang sudah diakui server harus tetap dipertahankan.
+

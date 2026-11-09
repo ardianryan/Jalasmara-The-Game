@@ -12,6 +12,7 @@ var projected_bounds: Array[Rect2] = []
 var _uv_rect := Rect2(0,0,512,512)
 var model_instances := 0
 var backing_instances := 0
+var geology: Node3D
 var _atlas: Texture2D
 var _materials: Array[Material] = []
 
@@ -42,6 +43,9 @@ func configure(data: Dictionary) -> void:
 			_build_reef(rect, terrain_count)
 		projected_bounds.append(rect)
 		terrain_count += 1
+	geology=preload("res://scripts/hybrid/OceanGeology.gd").new()
+	add_child(geology)
+	geology.configure(world,_materials)
 	_build_cave_backwall()
 	_build_model_rocks()
 	_build_memory_backing()
@@ -82,18 +86,21 @@ func _build_reef(rect: Rect2, index: int) -> void:
 		front.append(inset_point if Geometry2D.is_point_in_polygon(inset_point,outline) else point.lerp(rect.get_center(),0.025))
 	var tool := SurfaceTool.new()
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var triangles := Geometry2D.triangulate_polygon(front)
-	for offset in range(0,triangles.size(),3):
-		var a := front[triangles[offset]]
-		var b := front[triangles[offset+1]]
-		var c := front[triangles[offset+2]]
-		var center := (a+b+c)/3.0
-		var peak := FRONT_DEPTH + float(profile.peak) * (0.75 + 0.50 * sin(offset * 1.71 + index * 2.13))
-		var raised := _point(center,peak)
-		var tint := Color(1.12,1.13,1.02) if center.y < rect.get_center().y else Color(0.95,1.05,1.02)
-		_triangle(tool,_point(a,FRONT_DEPTH),_point(b,FRONT_DEPTH),raised,column,tint)
-		_triangle(tool,_point(b,FRONT_DEPTH),_point(c,FRONT_DEPTH),raised,column,tint)
-		_triangle(tool,_point(c,FRONT_DEPTH),_point(a,FRONT_DEPTH),raised,column,tint)
+	var band_height:=float(profile.get("bandHeight",52.0))
+	var band_count:=maxi(1,ceili(rect.size.y/band_height))
+	for band in range(band_count):
+		var y0:=rect.position.y+band*band_height
+		var strip:=PackedVector2Array([Vector2(rect.position.x-1,y0),Vector2(rect.end.x+1,y0),Vector2(rect.end.x+1,y0+band_height),Vector2(rect.position.x-1,y0+band_height)])
+		for section in Geometry2D.intersect_polygons(front,strip):
+			var triangles:=Geometry2D.triangulate_polygon(section)
+			for offset in range(0,triangles.size(),3):
+				var points: Array[Vector3]=[]
+				for corner in range(3):
+					var at: Vector2=section[triangles[offset+corner]]
+					var relief:=FRONT_DEPTH+float(profile.peak)*(.5+.3*sin(at.x*.008+index)+.2*sin(band*1.9))
+					points.append(_point(at,relief))
+				var shade:=Color(profile.top).lerp(Color(profile.side),.18+.12*float(band%3))
+				_triangle(tool,points[0],points[1],points[2],column,shade)
 	var terrace_count := int(profile.terraces)
 	for segment in range(outline.size()):
 		var next := (segment + 1) % outline.size()
@@ -231,5 +238,8 @@ func _build_growth() -> void:
 		plant.flip_h = bool(entry.flip)
 		add_child(plant)
 
+func update_camera(center: Vector2) -> void:
+	if is_instance_valid(geology): geology.update_camera(center)
+
 func debug_status() -> Dictionary:
-	return {"terrainVolumes":terrain_count,"layeredBands":layered_band_count,"modelInstances":model_instances,"memoryBackingInstances":backing_instances,"triangles":triangle_count,"depthRange":volume_depth_range,"bounds":projected_bounds,"units":"world pixels; x,-y,z; front26/backnegative"}
+	return {"geology":geology.debug_status() if is_instance_valid(geology) else {},"terrainVolumes":terrain_count,"layeredBands":layered_band_count,"modelInstances":model_instances,"memoryBackingInstances":backing_instances,"triangles":triangle_count,"depthRange":volume_depth_range,"bounds":projected_bounds,"units":"world pixels; x,-y,z; front26/backnegative"}

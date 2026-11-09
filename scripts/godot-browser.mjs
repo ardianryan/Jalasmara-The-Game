@@ -350,6 +350,9 @@ try {
       await page.keyboard.up("d");
       await page.waitForTimeout(350);
       const shore = await capture("01-dock-shore", "hub");
+      assert.equal(shore.outfit, "diving", "Crossing the changing booth must equip dive clothing before entry");
+      assert.equal(shore.equipment?.tank, true);
+      assert.equal(shore.equipment?.net, true);
       assert(
         shore.x <= shoreX - 11.5 && shore.x > shoreX - 55,
         "Actual keyboard input must reach and stop at the dock/water boundary",
@@ -367,6 +370,8 @@ try {
       await page.keyboard.up("w");
       await page.waitForTimeout(350);
       const architecture = await capture("02-kedai-roof-boundary", "hub");
+      assert.equal(architecture.outfit, "daily", "Returning to the village removes dive equipment");
+      assert.equal(architecture.equipment?.tank, false);
       assert(
         architecture.y < beforeHouse.y - 25,
         "Building collision test must really approach the wall",
@@ -374,8 +379,11 @@ try {
       assert(!inside([architecture.x, architecture.y], house.footprint));
       assert(
         architecture.land.houses >= 3 &&
-          architecture.land.components?.LimasRoof >= 3,
-        "Actual modular house roofs must be emitted, not only listed as obstacles",
+          architecture.land.components?.LimasRoof === 2 &&
+          architecture.land.components?.ContainerFlatRoof === 1 &&
+          architecture.land.components?.ContainerOfficeBody === 1 &&
+          architecture.land.components?.CorporateServiceWindow === 1,
+        "Kedai/Beno roofs and the distinct corporate container must actually be emitted",
       );
       const garden = maps.hub.obstacles.find((item) => item.kind === "garden");
       assert(garden);
@@ -437,6 +445,9 @@ try {
       };
       await go(maps.forest, bridgeCenter);
       const forest = await capture("04-forest-bridge", "forest");
+      assert.equal(forest.outfit, "explorer");
+      assert.equal(forest.equipment?.tank, false);
+      assert.equal(forest.equipment?.satchel, true);
       assert(
         inside([forest.x, forest.y], bridge.polygon),
         "Forest exploration must really cross onto the bridge component",

@@ -13,6 +13,7 @@ var _alpha_bottom: Dictionary={}
 var _shadows: Dictionary={}
 var _shadow_material: ShaderMaterial
 var max_foot_error:=0.0
+var _equipment: Node3D
 
 func configure(owner_renderer: Node, scene: Node2D, player: Node2D) -> void:
 	renderer=owner_renderer
@@ -24,11 +25,21 @@ func _scan() -> void:
 	_npcs.clear()
 	_creatures.clear()
 	for child in source.find_children("*","Node2D",true,false):
+		if child.is_queued_for_deletion(): continue
 		var script: Script=child.get_script()
 		if script!=null and script.resource_path.ends_with("HubActor.gd"):
 			_npcs.append(child)
 		elif "species" in child and "elapsed" in child and "width" in child:
 			_creatures.append(child)
+	var live_keys: Dictionary={}
+	for npc in _npcs: live_keys["NPC_"+str(npc.actor_name)]=true
+	for key in sprites.keys():
+		if str(key).begins_with("NPC_") and not live_keys.has(key):
+			if is_instance_valid(sprites[key]): sprites[key].queue_free()
+			sprites.erase(key)
+			if _shadows.has(key):
+				if is_instance_valid(_shadows[key]): _shadows[key].queue_free()
+				_shadows.erase(key)
 
 func _frame(texture: Texture2D, rect: Rect2) -> AtlasTexture:
 	var key:=str(texture.get_instance_id())+str(rect)
@@ -120,7 +131,9 @@ func update_actors(delta: float) -> void:
 		if visual!=null and visual.texture!=null:
 			var cell:=visual.texture.get_size()/Vector2(visual.hframes,visual.vframes)
 			var rect:=Rect2(Vector2(visual.frame%visual.hframes,floori(float(visual.frame)/visual.hframes))*cell,cell)
-			_sprite("Nala",_frame(visual.texture,rect),actor.position,cell*visual.scale.abs(),-visual.position.y,visual.flip_h)
+			var nala := _sprite("Nala",_frame(visual.texture,rect),actor.position,cell*visual.scale.abs(),-visual.position.y,visual.flip_h)
+			var gear: Dictionary=visual.get_equipment_state() if visual.has_method("get_equipment_state") else {}
+			_update_equipment(nala,gear,false,visual.flip_h)
 			counts.player=1
 	elif "sheet" in actor:
 		var sheet: Texture2D=actor.get("sheet")
@@ -128,9 +141,17 @@ func update_actors(delta: float) -> void:
 			var moving: bool=actor.get("walking")
 			var clock: float=actor.get("clock")
 			var frame:=1+int(clock*8)%2 if moving else 0
+			var outfit: String=str(actor.get("outfit")) if "outfit" in actor else "explorer"
+			var clothing: bool=sheet.resource_path.ends_with("-outfits-v1.png")
+			if clothing: frame+=int({"daily":0,"explorer":1,"diving":2}.get(outfit,1))*3
 			var cell:=sheet.get_size()/3.0
 			var facing: Vector2=actor.get("facing")
-			_sprite("Nala",_frame(sheet,Rect2(Vector2(frame*cell.x,0),cell)),actor.position,Vector2(100,100),50,facing.x<0)
+			var nala := _sprite("Nala",_frame(sheet,Rect2(Vector2((frame%3)*cell.x,floori(float(frame)/3)*cell.y),cell)),actor.position,Vector2(100,100),50,facing.x<0)
+			var equipment: Dictionary=actor.get("equipment") if "equipment" in actor else {}
+			var modular:=ResourceLoader.exists("res://resources/art/"+str(actor.get("variant")).replace("_","-")+"-base-v1.png") if "variant" in actor else false
+			var gear: Dictionary=preload("res://scripts/CharacterVisual.gd").equipment_state(outfit,equipment,modular)
+			if clothing: gear.vest=false
+			_update_equipment(nala,gear,false,facing.x<0)
 			counts.player=1
 	for npc in _npcs:
 		if not is_instance_valid(npc): continue
@@ -141,11 +162,17 @@ func update_actors(delta: float) -> void:
 			frame=preload("res://scripts/ItemIcons.gd").texture("cache")
 		else:
 			sheet=preload("res://resources/art/npc-atlas.png")
+			var grid:=Vector2i(2,2)
+			if "custom_sheet" in npc and npc.get("custom_sheet")!=null:
+				sheet=npc.get("custom_sheet")
+				if "custom_grid" in npc: grid=npc.get("custom_grid")
 			var index: int={"Mbah Wira":0,"Beno":1,"Bu Darmi":2,"Inspektur Raka":3}.get(key,0)
-			var cell:=sheet.get_size()/2.0
-			frame=_frame(sheet,Rect2(Vector2(index%2,index/2)*cell,cell))
+			if "appearance_index" in npc and int(npc.get("appearance_index"))>=0: index=int(npc.get("appearance_index"))
+			var cell:=sheet.get_size()/Vector2(grid)
+			frame=_frame(sheet,Rect2(Vector2(index%grid.x,floori(float(index)/grid.x))*cell,cell))
 		var flip_npc := false if bool(npc.crate) else float(npc.get("_facing")) < 0.0
-		_sprite("NPC_"+key,frame,npc.position,Vector2(70,70) if bool(npc.crate) else Vector2(100,100),30 if bool(npc.crate) else 36,flip_npc)
+		var npc_sprite:=_sprite("NPC_"+key,frame,npc.position,Vector2(70,70) if bool(npc.crate) else Vector2(100,100),30 if bool(npc.crate) else 36,flip_npc)
+		if "custom_tint" in npc: npc_sprite.modulate*=npc.get("custom_tint")
 		counts.npcs=int(counts.npcs)+1
 
 	for creature in _creatures:
@@ -170,3 +197,9 @@ func _readable_tint(feet: Vector2,height: float) -> Color:
 		var proximity:=clampf(1.0-at.distance_to(lamp.global_position)/reach,0,1)
 		warmth=maxf(warmth,proximity*proximity*(1-daylight)*.42)
 	return tint.lerp(Color(1,.89,.73),warmth)
+
+func _update_equipment(sprite: Sprite3D,gear: Dictionary,in_water: bool,flip: bool) -> void:
+	if not is_instance_valid(_equipment):
+		_equipment=preload("res://scripts/CharacterEquipment3D.gd").new()
+		add_child(_equipment)
+	_equipment.update_attachment(sprite,gear,in_water,flip)

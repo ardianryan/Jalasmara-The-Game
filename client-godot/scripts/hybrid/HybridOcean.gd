@@ -37,8 +37,9 @@ func setup(source: Node2D) -> void:
 	display.size = Vector2(960, 540)
 	display.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	display.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	var presentation := CanvasItemMaterial.new()
-	presentation.light_mode = CanvasItemMaterial.LIGHT_MODE_UNSHADED
+	var presentation := ShaderMaterial.new()
+	presentation.shader = preload("res://shaders/ComfyGrade.gdshader")
+	presentation.set_shader_parameter("strength",0.4)
 	display.material = presentation
 	display.visible = false
 	screen_layer.add_child(display)
@@ -194,6 +195,7 @@ func _process(delta: float) -> void:
 	camera_3d.position = center + Vector3(0, sin(TILT) * CAMERA_DISTANCE, cos(TILT) * CAMERA_DISTANCE)
 	camera_3d.look_at(center, Vector3.UP)
 	camera_3d.size = 540.0 / maxf(0.1, main.camera.zoom.y)
+	if is_instance_valid(terrain_geometry): terrain_geometry.update_camera(_camera_center)
 	var at: Vector2 = main.nala.position
 	var facing := float(main.nala.direction)
 	_update_headlamp(at, facing)
@@ -228,6 +230,8 @@ func _flashlight_status() -> Dictionary:
 func _update_lighting() -> void:
 	var state := EnvironmentState.snapshot()
 	var daylight := float(state.get("daylight", 0.8))
+	if display.material is ShaderMaterial:
+		display.material.set_shader_parameter("daylight",daylight)
 	var cloud := float(state.get("clouds", 0.0))
 	var deep := clampf(_depth / 110.0, 0, 1)
 	environment.ambient_light_energy = lerpf(0.92, 0.62, deep) * lerpf(0.85, 1.0, daylight)
@@ -255,6 +259,7 @@ func debug_status() -> Dictionary:
 		"camera_center": [_camera_center.x, _camera_center.y], "depth_m": _depth,
 		"spot_shadow": is_instance_valid(headlamp) and headlamp.shadow_enabled,
 		"flashlight": _flashlight_status(),
+		"geology": terrain_geometry.debug_status() if is_instance_valid(terrain_geometry) else {},
 		"backdrop": backdrop.debug_status() if is_instance_valid(backdrop) else {},
 		"water": living_water.debug_status() if is_instance_valid(living_water) else {},
 	}

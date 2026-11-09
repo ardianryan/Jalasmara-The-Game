@@ -16,6 +16,8 @@ var wet_remaining := 0.0
 var effect_clock := 0.0
 var bubbles: Array[Dictionary] = []
 var wet_marks: Array[Dictionary] = []
+var outfit := "daily"
+var equipment: Dictionary = {}
 func _ready() -> void:
 	var collision := CollisionShape2D.new()
 	var shape := CapsuleShape2D.new()
@@ -96,7 +98,18 @@ func _physics_process(delta: float) -> void:
 	else:
 		traversal_state = {}
 	if swim_sprite:
+		# The dock's changing arch separates the village from the dive ladder.
+		# Hysteresis prevents swapping repeatedly while standing in the curtain.
+		if in_water:
+			outfit = "diving"
+		elif position.x>1450 and position.y>1230:
+			outfit = "diving"
+		elif position.x<1390 or position.y<1200:
+			outfit = "daily"
+		equipment = {"tank":outfit=="diving","net":outfit=="diving","satchel":outfit=="explorer"}
 		swim_sprite.set_appearance(str(GameState.player.get("appearance","male_default")))
+		swim_sprite.set_outfit(outfit)
+		swim_sprite.set_equipment(equipment)
 		swim_sprite.animate(moved_velocity.length()>10,in_water,direction,walk_time)
 		if not in_water: swim_sprite.position.y += float(traversal_state.get("footBob",0.0))
 		swim_sprite.visible = not hybrid_visual

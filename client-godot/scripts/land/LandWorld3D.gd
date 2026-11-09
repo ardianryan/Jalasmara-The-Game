@@ -34,10 +34,12 @@ var _center := Vector2.ZERO
 var _leaves: Array[Dictionary] = []
 var _lanterns: Array[OmniLight3D] = []
 var _glow_material: StandardMaterial3D
+var _grade_material: ShaderMaterial
 var _components: Dictionary={}
 var _bridges: Dictionary={}
 var _garden_state := 0
 var _stream_cleared := false
+var _cloth: Array[Dictionary] = []
 
 func _compute_garden_state() -> int:
 	var progress: Dictionary = GameState.player.get("progress",{})
@@ -65,9 +67,10 @@ func setup(scene: Node2D, player: Node2D, camera: Camera2D, place: String) -> vo
 	display=TextureRect.new()
 	display.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	display.texture_filter=CanvasItem.TEXTURE_FILTER_NEAREST
-	var presentation:=CanvasItemMaterial.new()
-	presentation.light_mode=CanvasItemMaterial.LIGHT_MODE_UNSHADED
-	display.material=presentation
+	_grade_material=ShaderMaterial.new()
+	_grade_material.shader=load("res://shaders/ComfyGrade.gdshader")
+	_grade_material.set_shader_parameter("strength",.6)
+	display.material=_grade_material
 	screen_layer.add_child(display)
 	viewport_3d=SubViewport.new()
 	viewport_3d.size=Vector2i(480,270)
@@ -131,6 +134,7 @@ func set_area(place: String) -> void:
 	_bridges.clear()
 	_leaves.clear()
 	_lanterns.clear()
+	_cloth.clear()
 	_garden_state=_compute_garden_state()
 	_stream_cleared=_compute_stream_cleared()
 	if ResourceLoader.exists("res://scripts/land/LandWater3D.gd"):
@@ -431,6 +435,9 @@ func _house_parts(entry: Dictionary, rect: Rect2, center: Vector3) -> void:
 	var width:=rect.size.x
 	var depth:=rect.size.y/cos(TILT)
 	var height:=float(entry.get("height3d",145))
+	if str(entry.get("variant",""))=="metal":
+		_corporate_office(center,width,depth,height)
+		return
 	var wall:=height*.70
 	var floor_height:=12.0
 	var wood: Material=_materials.get_material("wood")
@@ -485,6 +492,88 @@ func _house_parts(entry: Dictionary, rect: Rect2, center: Vector3) -> void:
 	for i in range(3):
 		var p:=center+Vector3(-width*.34+i*width*.14,depth*.22,wall*.12+18)
 		_column(p,p+Vector3(0,0,22),9,_materials.get_material("stone"))
+
+
+	if area=="hub": _house_trade_details(str(entry.get("variant","")),center,width,depth,wall)
+
+func _cloth_panel(at: Vector3, width: float, length: float, material: Material) -> void:
+	var pivot:=Node3D.new()
+	pivot.position=at
+	_geometry.add_child(pivot)
+	var vertices:=PackedVector3Array()
+	var triangles:=PackedInt32Array()
+	for strip in range(5):
+		var x: float=-width*.5+width*strip/4.0
+		var fold: float=sin(strip*PI*.75)*2.2
+		vertices.append(Vector3(x,fold,0))
+		vertices.append(Vector3(x,fold,-length+(strip%2)*2))
+	for strip in range(4):
+		var k:=strip*2
+		triangles.append_array(PackedInt32Array([k,k+1,k+3,k,k+3,k+2]))
+	var cloth:=_mesh("HangingWorkCloth",vertices,triangles,material,pivot)
+	cloth.set_meta("animated_cloth",true)
+	_cloth.append({"node":pivot,"phase":at.x*.021})
+
+func _house_trade_details(variant: String, center: Vector3, width: float, depth: float, wall: float) -> void:
+	var wood: Material=_materials.get_material("wood")
+	var clay: Material=_materials.get_material("terracotta")
+	var cream: Material=_materials.get_material("cloth_cream")
+	var teal: Material=_materials.get_material("cloth_teal")
+	var counter:=center+Vector3(0,-depth*.5+6,40)
+	if variant=="workshop":
+		for i in range(3):
+			var cylinder:=center+Vector3(width*.34,-depth*.12+i*18,18)
+			_column(cylinder,cylinder+Vector3(0,0,38),7,_materials.get_material("metal"))
+			_box("DiveTankValve",cylinder+Vector3(0,0,42),Vector3(12,5,5),_materials.get_material("bamboo"))
+		for i in range(4):
+			var tool:=center+Vector3(-width*.28+i*15,-depth*.5+7,wall*.66)
+			_column(tool,tool-Vector3(0,0,20+i%2*7),2,_materials.get_material("metal"))
+		_box("WorkshopPartsTray",counter,Vector3(52,17,5),wood)
+		_cloth_panel(center+Vector3(width*.23,-depth*.5+4,wall*.83),width*.17,24,teal)
+	else:
+		_box("JamuServingLedge",counter-Vector3(0,0,5),Vector3(width*.56,14,7),wood)
+		for i in range(6):
+			var jar:=counter+Vector3(-width*.23+i*width*.085,0,1)
+			_column(jar,jar+Vector3(0,0,12+i%3*3),5,clay if i%2==0 else cream)
+			_box("JamuJarLid",jar+Vector3(0,0,14+i%3*3),Vector3(11,10,3),wood)
+		for i in range(3):
+			var cup:=counter+Vector3(-24+i*22,-11,2)
+			_column(cup,cup+Vector3(0,0,6),4,cream)
+		_cloth_panel(center+Vector3(0,-depth*.5+1,wall*.93),width*.27,25,teal)
+		for side in [-1.0,1.0]:
+			var basket:=center+Vector3(side*width*.43,-depth*.5+21,14)
+			_column(basket,basket+Vector3(0,0,17),11,_materials.get_material("bamboo"))
+			_box("HerbBasketLeaves",basket+Vector3(0,0,18),Vector3(19,15,5),_materials.get_material("leaves"))
+
+func _corporate_office(center: Vector3, width: float, depth: float, height: float) -> void:
+	var shell: Material=_materials.get_material("office_shell")
+	var frame: Material=_materials.get_material("metal")
+	var glass: Material=_materials.get_material("office_glass")
+	var warning: Material=_materials.get_material("corporate_copper")
+	var wall:=height*.70
+	_box("CorporateChassis",center+Vector3(0,0,8),Vector3(width,depth,16),frame)
+	_box("ContainerOfficeBody",center+Vector3(0,0,wall*.5+16),Vector3(width-6,depth-6,wall),shell)
+	_box("ContainerFlatRoof",center+Vector3(0,0,wall+20),Vector3(width+2,depth+2,8),shell)
+	for i in range(11):
+		var x: float=-width*.45+i*width*.09
+		_box("ContainerRoofSeam",center+Vector3(x,0,wall+26),Vector3(3,depth-4,3),frame)
+		_box("ContainerPanelRib",center+Vector3(x,-depth*.5+1,wall*.47+16),Vector3(2,3,wall*.8),shell)
+	var front: float=-depth*.5-1
+	_box("CorporateServiceWindowFrame",center+Vector3(-width*.16,front,wall*.59+16),Vector3(width*.42,5,wall*.46),frame)
+	_box("CorporateServiceWindow",center+Vector3(-width*.16,front-3,wall*.59+16),Vector3(width*.38,2,wall*.38),glass)
+	for i in range(3):
+		_box("CorporateWindowBlind",center+Vector3(-width*.16,front-5,wall*.49+i*9+16),Vector3(width*.38,2,2),shell)
+	_box("CorporateDoor",center+Vector3(width*.32,front-2,wall*.43+16),Vector3(width*.17,4,wall*.84),frame)
+	_box("CorporateDoorGlass",center+Vector3(width*.32,front-5,wall*.64+16),Vector3(width*.12,2,wall*.25),glass)
+	_box("CorporateAccessLamp",center+Vector3(width*.22,front-5,wall*.43+16),Vector3(4,3,9),warning)
+	_box("CorporateIdentityStripe",center+Vector3(0,front-4,wall*.16+16),Vector3(width-12,3,7),warning)
+	_box("ContainerSideVent",center+Vector3(width*.5-1,depth*.12,wall*.48+16),Vector3(4,depth*.36,wall*.34),frame)
+	for i in range(4):
+		_box("ContainerVentLouver",center+Vector3(width*.5+2,depth*.12,wall*.38+16+i*6),Vector3(3,depth*.32,2),shell)
+	var aerial:=center+Vector3(width*.32,depth*.28,wall+26)
+	_column(aerial,aerial+Vector3(0,0,31),1.5,frame)
+	_column(aerial+Vector3(-9,0,25),aerial+Vector3(9,0,25),1,frame)
+	_lantern(center+Vector3(width*.43,front-4,wall*.87))
 
 func _lantern(at: Vector3) -> void:
 	if _glow_material==null:
@@ -702,6 +791,7 @@ func _garden(_entry: Dictionary,rect: Rect2,center: Vector3) -> void:
 		_column(channel_marker+Vector3(-14,0,14),channel_marker+Vector3(14,0,14),2.4,bamboo)
 
 func _fence(_entry: Dictionary,rect: Rect2,center: Vector3) -> void:
+	if str(_entry.get("variant",""))=="changing_booth": return
 	if str(_entry.get("variant",""))=="bridge_rail":
 		_bridge_rail(_entry)
 		return
@@ -819,7 +909,7 @@ func _batch_static_geometry() -> void:
 	var originals: Array[MeshInstance3D]=[]
 	for child in _geometry.find_children("*","MeshInstance3D",true,false):
 		var mesh:=child as MeshInstance3D
-		if mesh.name=="TreeCrown" or (is_instance_valid(water_node) and water_node.is_ancestor_of(mesh)): continue
+		if mesh.has_meta("animated_cloth") or mesh.name=="TreeCrown" or (is_instance_valid(water_node) and water_node.is_ancestor_of(mesh)): continue
 		if mesh==water_mesh: continue
 		var material:=mesh.material_override
 		if material==null: continue
@@ -866,12 +956,16 @@ func _process(delta: float) -> void:
 		var node: Node3D=leaf.node
 		var home: Vector3=leaf.home
 		node.position=home+Vector3(sin(float(Time.get_ticks_msec())*.0009+float(leaf.phase))*sway,0,0)
+	for cloth in _cloth:
+		var panel: Node3D=cloth.node
+		panel.rotation.y=sin(float(Time.get_ticks_msec())*.0014+float(cloth.phase))*.035*sway
 	_weather_clock+=delta
 	if _weather_clock>.25:
 		_weather_clock=0
 		var weather:=EnvironmentState.snapshot()
 		var daylight:=clampf((float(weather.get("daylight",.8))-.24)/.76,0,1)
 		var clouds:=float(weather.get("clouds",0))
+		_grade_material.set_shader_parameter("daylight",daylight)
 		sunlight.light_energy=lerpf(.035,.55,daylight)*(1-clouds*.25)
 		sunlight.light_color=Color("a5c2c0").lerp(Color("fff0d7"),daylight)
 		sunlight.shadow_enabled=daylight>.15
@@ -1088,6 +1182,17 @@ func _build_corridor_landmarks() -> void:
 	var bamboo: Material=_materials.get_material("bamboo")
 	var stone: Material=_materials.get_material("stone")
 	if area=="hub":
+		var booth_a:=map_point(Vector2(1430,1200),0)
+		var booth_b:=map_point(Vector2(1430,1380),0)
+		for post_at in [booth_a,booth_b]:
+			_box("ChangingBoothPost",post_at+Vector3(0,0,60),Vector3(10,10/cos(TILT),120),wood)
+			_box("ChangingBoothPostCap",post_at+Vector3(0,0,123),Vector3(13,13/cos(TILT),6),bamboo)
+		_column(booth_a+Vector3(0,0,120),booth_b+Vector3(0,0,120),4,bamboo)
+		var booth_mid:=(booth_a+booth_b)*.5+Vector3(0,0,118)
+		var canopy_half:=booth_a.distance_to(booth_b)*.5
+		_face("ChangingBoothShade",[booth_mid+Vector3(-38,-canopy_half,2),booth_mid+Vector3(38,-canopy_half,2),booth_mid+Vector3(38,canopy_half,2),booth_mid+Vector3(-38,canopy_half,2)],_materials.get_material("cloth_teal"))
+		for sign_y in [-1.0,1.0]:
+			_cloth_panel(booth_mid+Vector3(0,sign_y*(canopy_half-4),0),76,45,_materials.get_material("cloth_cream"))
 		var ridge_z:=3.0*LEVEL_HEIGHT
 		_gateway_arch("HubForestGate",Vector2(2248,108),Vector2(2326,108),ridge_z)
 		for side_x in [1720.0,1840.0]:

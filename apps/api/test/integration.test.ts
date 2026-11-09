@@ -1004,7 +1004,7 @@ async function fixtureSurface(
       ...point,
       positionAt: Date.now() - agoMs,
       playerVersion: current.version,
-      layoutVersion: WORLD.hub.layoutVersion,
+      layoutVersion: WORLD.landMaps[area].layoutVersion,
     }),
     "EX",
     1800,
@@ -1761,7 +1761,7 @@ test("batang pohon desa menghalangi kaki tanpa menutup seluruh tajuk", async () 
   });
   assert.equal(rockMound.status, 409, JSON.stringify(rockMound.data));
   assert.equal(rockMound.data.code, "PATH_BLOCKED");
-  assert.equal(WORLD.hub.layoutVersion, 5);
+  assert.equal(WORLD.hub.layoutVersion, WORLD.landMaps.hub.layoutVersion);
   assert.equal((await s.users.findOne({ id: u.id }))!.version, u.version);
 });
 
@@ -1796,7 +1796,7 @@ test("pelataran desa dapat dijelajahi di luar koridor tanpa menembus batang, ban
     assert.equal(blocked.status, 409, JSON.stringify(blocked.data));
     assert.equal(blocked.data.code, "PATH_BLOCKED");
   }
-  assert.equal(WORLD.hub.layoutVersion, 5);
+  assert.equal(WORLD.hub.layoutVersion, WORLD.landMaps.hub.layoutVersion);
   assert.equal((await s.users.findOne({ id: u.id }))!.version, u.version);
 });
 
@@ -1816,7 +1816,7 @@ test("migrasi layout mempertahankan posisi aman dan memindahkan posisi air lama 
   assert.equal(kept.data.surface.y, safe.y);
   await fixtureSurface(u, "forest", { x: 1450, y: 450 });
   const invalid = JSON.parse((await s.redis.get(`surface:${u.id}`))!);
-  invalid.layoutVersion = WORLD.hub.layoutVersion - 1;
+  invalid.layoutVersion = WORLD.landMaps.forest.layoutVersion - 1;
   await s.redis.set(`surface:${u.id}`, JSON.stringify(invalid), "EX", 1800);
   const moved = await b.request("/adventure/state");
   assert.equal(moved.status, 200);
@@ -2136,4 +2136,108 @@ test("misi Bu Darmi: pengamatan gejala kebun di hub, sebab-akibat hutan, umpan b
   assert.equal(served.status, 200, JSON.stringify(served.data));
   assert.ok(served.data.player.progress.missions.includes("akar"));
   assert.match(served.data.solution, /respirasi|aerasi|oksigen/i);
+});
+
+test("perjalanan menyimpan versi layout wilayah tujuan tanpa migrasi ulang", async () => {
+  const u = await account(),
+    b = await new Browser().login(u);
+  await fixtureSurface(u, "hub", WORLD.forest.gate);
+  for (const destination of ["forest", "hub"] as const) {
+    const travel = await b.request("/adventure/travel", { destination });
+    assert.equal(travel.status, 200, JSON.stringify(travel.data));
+    const position = travel.data.surface;
+    assert.equal(
+      position.layoutVersion,
+      WORLD.landMaps[destination].layoutVersion,
+    );
+    assert.equal(
+      JSON.parse((await s.redis.get(`surface:${u.id}`))!).layoutVersion,
+      position.layoutVersion,
+    );
+    const resumed = await b.request("/adventure/state");
+    assert.equal(resumed.data.surface.layoutVersion, position.layoutVersion);
+    assert.equal(
+      resumed.data.surface.positionAt,
+      position.positionAt,
+      "Travel must not produce a stale version that resets the movement clock",
+    );
+  }
+});
+
+test("tiang bilik ganti memblokir badan dan migrasi save mempertahankan akun serta lorong masuk", async () => {
+  const u = await account(),
+    b = await new Browser().login(u);
+  const posts = WORLD.landMaps.hub.obstacles.filter(
+    (o) => o.variant === "changing_booth",
+  );
+  assert.equal(posts.length, 2);
+  const before = await s.users.findOne({ id: u.id });
+  for (const post of posts) {
+    const center = { x: post.x + post.width / 2, y: post.y + post.height / 2 };
+    assert.equal(isLandWalkable(WORLD.landMaps.hub, center), false);
+    await fixtureSurface(u, "hub", { x: center.x - 40, y: center.y });
+    const blocked = await b.request("/adventure/surface-position", {
+      area: "hub",
+      ...center,
+    });
+    assert.equal(blocked.status, 409, JSON.stringify(blocked.data));
+    assert.equal(blocked.data.code, "PATH_BLOCKED");
+  }
+  const entrance = {
+    x: posts[0].x + posts[0].width / 2,
+    y: (posts[0].y + posts[1].y + posts[0].height) / 2,
+  };
+  assert.ok(isLandWalkable(WORLD.landMaps.hub, entrance));
+  await fixtureSurface(u, "hub", { x: entrance.x - 40, y: entrance.y });
+  const pass = await b.request("/adventure/surface-position", {
+    area: "hub",
+    ...entrance,
+  });
+  assert.equal(pass.status, 200, JSON.stringify(pass.data));
+  const old = JSON.parse((await s.redis.get(`surface:${u.id}`))!);
+  old.x = posts[0].x + posts[0].width / 2;
+  old.y = posts[0].y + posts[0].height / 2;
+  old.layoutVersion = WORLD.landMaps.hub.layoutVersion - 1;
+  await s.redis.set(`surface:${u.id}`, JSON.stringify(old), "EX", 1800);
+  const resumed = await b.request("/adventure/state");
+  assert.equal(
+    resumed.data.surface.layoutVersion,
+    WORLD.landMaps.hub.layoutVersion,
+  );
+  assert.ok(isLandWalkable(WORLD.landMaps.hub, resumed.data.surface));
+  assert.notDeepEqual(
+    [resumed.data.surface.x, resumed.data.surface.y],
+    [old.x, old.y],
+  );
+  assert.deepEqual(await s.users.findOne({ id: u.id }), before);
+});
+
+test("rute enam warga desa berada pada lantai bersama dan tidak memotong prop atau tebing", () => {
+  const residents = WORLD.surface_hub.residents;
+  assert.equal(residents.length, 6);
+  assert.equal(
+    new Set(residents.map((resident) => resident.id)).size,
+    residents.length,
+  );
+  const saras = residents.find((resident) => resident.id === "npc_saras");
+  assert.equal(saras?.cycle, 2);
+  for (const resident of residents) {
+    assert.ok(resident.route.length >= 2);
+    for (let index = 1; index < resident.route.length; index++) {
+      const [ax, ay] = resident.route[index - 1],
+        [bx, by] = resident.route[index];
+      const steps = Math.ceil(Math.hypot(bx - ax, by - ay) / 6);
+      for (let step = 0; step <= steps; step++) {
+        const t = step / steps;
+        assert.ok(
+          isLandWalkable(
+            WORLD.landMaps.hub,
+            { x: ax + (bx - ax) * t, y: ay + (by - ay) * t },
+            13,
+          ),
+          `${resident.name} crosses a building, trunk, water or cliff at route sample ${step}`,
+        );
+      }
+    }
+  }
 });

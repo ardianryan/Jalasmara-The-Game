@@ -1,4 +1,5 @@
 import { LAND_MAPS } from "./land.ts";
+import { VILLAGE_RESIDENTS } from "./village.ts";
 
 const TERRAIN = [
   [-100, -100, 100, 3800],
@@ -106,6 +107,7 @@ export const WORLD = {
     { id: "leak_cave", kind: "leak", x: 4200, y: 2470, radius: 90, damage: 12 },
   ],
   surface_hub: {
+    residents: VILLAGE_RESIDENTS,
     city_id: "city_bandar_hujung",
     name: "Kota Apung Bandar Hujung",
     lore: "Bekas pelabuhan muara yang kini menjadi permukiman rakit di atas Palung Smara.",

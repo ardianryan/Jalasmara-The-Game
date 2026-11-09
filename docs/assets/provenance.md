@@ -31,3 +31,9 @@ Gambar yang dihasilkan belum merupakan bukti keaslian historis ornamen atau busa
 [Resep dan build FX Pixelbolt](../../tools/pixelbolt/README.md) mencatat versi alat, lisensi alat, resep proyek, serta uji determinisme. Lisensi MIT Pixelbolt tidak menentukan lisensi berkas audio pengguna.
 
 Berkas lisensi proyek utama tersedia pada [LICENSE](../../LICENSE) dan [THIRD_PARTY_LICENSES.md](../../THIRD_PARTY_LICENSES.md). Berkas lisensi runtime dalam game: `resources/art/procedural/LICENSE.upstream.txt` (MIT), `resources/art/polyfork/ATTRIBUTION.txt` (kredit serta tautan CC BY 4.0), dan `resources/fonts/OFL.txt` (Ark Pixel). Preset ekspor menyertakan `*.json` dan `*.txt`, sehingga metadata sumber dan pemberitahuan tersebut ikut dalam distribusi game. Lisensi Lora dan Nunito Sans tersedia pada `docs/assets/LICENSE-*.txt`.
+
+## Warga dan pakaian modular, 9 November 2026
+
+`village-residents-v1.png` adalah atlas enam warga orisinal Jalasmara, dibuat dengan imagegen berdasarkan profil pengguna dan gaya atlas NPC proyek. Tokoh: Ki Lurah Wirabhumi, Mbok Ratih, Mang Ujang, Kang Tedi, Yu Sari, dan Saras. Susunan 3×2, alpha transparan diperiksa sebelum impor. Referensi Dave the Diver hanya digunakan untuk mempelajari pembagian fungsi perlengkapan dan komposisi; tidak ada sprite wiki yang dipaketkan.
+
+Atlas tubuh/pakaian empat identitas dan perlengkapan 3D terpisah didokumentasikan di [modular-character-outfits.md](modular-character-outfits.md). Moodboard tetap privat dan diabaikan Git.
