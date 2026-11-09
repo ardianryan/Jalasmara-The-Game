@@ -65,3 +65,18 @@ Load satu menit teramati 5,39 pada awal kontrol, 11,69, 9,29, lalu 9,91. Ini buk
 Pada titik uji (650,1050), counter guard mencatat 47 crown dan `revealed:0`: kontrol ini menguji canopy tidak aktif, bukan biaya reveal ketika pemain berada di balik tajuk.
 
 Keputusan tahap ini: tidak mengklaim paket lebih cepat atau target hardware lulus; delta historis yang dipengaruhi kondisi mesin tidak cukup untuk menyimpulkan regresi guard. Lanjutkan regresi visual/gameplay kandidat dan pengujian perangkat fisik. Timer GPU, total WASM/VRAM/RSS dan node Godot tetap belum diukur.
+
+## Pasangan tambahan: canopy aktif
+
+Pada 13.49–13.51 WIB, pengukuran fitur inti diulang pada titik floor-valid (350,1250), clearance 13 px, dengan satu pasangan OLD → guard. Titik ini dicatat di method; pembanding menolak pencampuran dengan titik inactive (650,1050). PCK, API/WASM, metode intercept, viewport, pemanasan, durasi dan urutan kualitas sama seperti kontrol sebelumnya. Guard tambahan `PROFILE_EXPECT_ACTIVE_CANOPY=1` mewajibkan reveal aktif sebelum serta sesudah setiap sampel. Paket lama tidak memiliki field reveal, sehingga tidak dianggap bernilai nol.
+
+| Profil | Lama RAF p50/p95 ms | Guard RAF p50/p95 ms | Draw calls p50 lama/guard | Guard crown terungkap |
+|---|---|---|---|---:|
+| Seimbang | 66,6 / 83,3 | 66,7 / 83,4 | 374 / 376 | 3 |
+| Ringan | 50,0 / 83,3 | 50,0 / 66,6 | 333 / 334 | 3 |
+
+Guard melaporkan tiga crown aktif (indeks 9, 35, 36; amount 1), 47 crown total, dan satu pemain 3D Nala aktif pada kedua profil. Assertion reveal sebelum/sesudah lulus. Pemain 3D juga aktif pada paket lama. Screenshot aktual diperiksa: Nala tertutup tajuk pada OLD dan terlihat melalui cutout pada guard. Ini melengkapi kontrol inactive, bukan mengganti bukti tersebut.
+
+Median hampir sama dan p95 Seimbang hampir sama; penurunan p95 Ringan pada satu pasangan tidak cukup untuk klaim optimasi. Spike tunggal tetap ada: interval RAF maksimum guard Seimbang 366,7 ms, dibanding 100 ms pada OLD. Tidak ada interval melebihi satu detik. Pengukuran input latency, gerak lintas tajuk, GPU time dan hardware fisik belum dilakukan oleh kontrol stasioner ini. Load satu menit teramati 11,82 saat batch OLD, sehingga kondisi mesin tetap perlu dicatat sebagai keterbatasan.
+
+Seluruh empat capture selesai tanpa error browser, kemudian dua akun khusus dibersihkan dan browser ditutup. Tidak ada paket server yang diganti oleh harness. Data ringkas termasuk validasi aktif, avatar, request override terverifikasi, kondisi, hitches, counter CPU, dan memori tersedia di [06p-active-canopy-controls.json](06p-active-canopy-controls.json). Raw interval serta screenshot berada di `artifacts/performance/06p-active-1-{old,guard}` pada worktree profiling, tidak dimasukkan ke repositori.
