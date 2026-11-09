@@ -6,11 +6,25 @@ export async function startLoaderBodyFault({
   origin,
   totalBytes,
   prefix,
+  packBytes,
   chunkBytes = 65536,
   chunkDelayMs = 60,
   abortDelayMs = 250,
 }) {
-  assert(/^\/game\/index\.(pck|wasm)$/.test(path));
+  const part = path.match(/^\/game\/pck\/([a-f0-9]{64})\/(0|[1-9][0-9]{0,2})$/);
+  assert(/^\/game\/index\.(pck|wasm)$/.test(path) || part);
+  if (part) {
+    assert(
+      Number.isSafeInteger(packBytes) &&
+        packBytes > 0 &&
+        packBytes <= 512 * 1024 * 1024,
+    );
+    const offset = Number(part[2]) * 1024 * 1024;
+    assert(
+      offset < packBytes &&
+        totalBytes === Math.min(1024 * 1024, packBytes - offset),
+    );
+  } else assert(packBytes === undefined);
   assert(["localhost", "127.0.0.1"].includes(new URL(origin).hostname));
   assert(
     Number.isSafeInteger(totalBytes) &&
@@ -47,6 +61,7 @@ export async function startLoaderBodyFault({
       declaredBytes: totalBytes,
       writtenBytes: 0,
       destroyedAt: null,
+      ...(part ? { offset: Number(part[2]) * 1024 * 1024, packBytes } : {}),
     };
     requests.push(record);
     response.writeHead(200, {
@@ -58,6 +73,14 @@ export async function startLoaderBodyFault({
       "access-control-allow-origin": origin,
       "access-control-allow-credentials": "true",
       "cross-origin-resource-policy": "cross-origin",
+      ...(part
+        ? {
+            "x-pck-offset": String(Number(part[2]) * 1024 * 1024),
+            "x-pck-length": String(packBytes),
+            "access-control-expose-headers":
+              "Content-Length, X-Pck-Offset, X-Pck-Length",
+          }
+        : {}),
     });
     response.flushHeaders();
     const send = () => {

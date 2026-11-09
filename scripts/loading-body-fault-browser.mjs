@@ -61,7 +61,11 @@ let browser,
   phase = "preflight",
   failureSummary = null,
   manifest;
-const path = `/game/index.${mode}`;
+let path = `/game/index.${mode}`;
+const isAssetPath = (pathname) =>
+  /^\/game\/(?:index\.(?:pck|wasm)|pck\/[a-f0-9]{64}\/(?:0|[1-9][0-9]{0,2}))$/.test(
+    pathname,
+  );
 async function asset(extension, size) {
   const response = await fetch(`${origin}/game/index.${extension}`, {
     signal: AbortSignal.timeout(120000),
@@ -121,10 +125,71 @@ try {
   const pck = await asset("pck", expectedPckBytes);
   assert.equal(pck.sha256, expectedPck);
   const wasm = await asset("wasm", wasmBytes);
+  const manifestResponse = await fetch(`${origin}/game/pck-manifest.json`, {
+    signal: AbortSignal.timeout(10000),
+  });
+  let parts = null,
+    faultPrefix = mode === "pck" ? pck.prefix : wasm.prefix,
+    faultBytes = mode === "pck" ? expectedPckBytes : wasmBytes;
+  if (manifestResponse.status !== 404) {
+    assert(manifestResponse.ok);
+    parts = await manifestResponse.json();
+    assert.equal(parts.version, 1);
+    assert.equal(parts.sha256, expectedPck);
+    assert.equal(parts.bytes, expectedPckBytes);
+    assert.equal(parts.partSize, 1024 * 1024);
+    assert(
+      Array.isArray(parts.hashes) &&
+        parts.hashes.length === Math.ceil(expectedPckBytes / parts.partSize),
+    );
+    assert(parts.hashes.every((value) => /^[a-f0-9]{64}$/.test(value)));
+    if (mode === "pck") {
+      assert(
+        parts.hashes.length > 2,
+        "Segmented fault requires an actual full part2",
+      );
+      path = `/game/pck/${expectedPck}/2`;
+      const response = await fetch(`${origin}${path}`, {
+        signal: AbortSignal.timeout(10000),
+      });
+      assert.equal(response.status, 200);
+      faultBytes = Math.min(
+        parts.partSize,
+        expectedPckBytes - 2 * parts.partSize,
+      );
+      assert(faultBytes > 262144);
+      assert.equal(response.headers.get("content-length"), String(faultBytes));
+      assert.equal(
+        response.headers.get("x-pck-offset"),
+        String(2 * parts.partSize),
+      );
+      assert.equal(
+        response.headers.get("x-pck-length"),
+        String(expectedPckBytes),
+      );
+      const bytes = Buffer.from(await response.arrayBuffer());
+      assert.equal(bytes.length, faultBytes);
+      assert.equal(
+        createHash("sha256").update(bytes).digest("hex"),
+        parts.hashes[2],
+      );
+      faultPrefix = bytes.subarray(0, 262144);
+    }
+  }
   manifest = {
     pck: { sha256: expectedPck, decodedBytes: expectedPckBytes },
     wasm: { sha256: wasm.sha256, decodedBytes: wasmBytes },
     loaderSha256: createHash("sha256").update(loader).digest("hex"),
+    segmented: parts
+      ? {
+          version: parts.version,
+          sha256: parts.sha256,
+          bytes: parts.bytes,
+          partSize: parts.partSize,
+          partCount: parts.hashes.length,
+        }
+      : null,
+    faultPath: path,
   };
   checks.push(
     "local-served-package-and-patched-loader-verified-before-fixture",
@@ -132,8 +197,9 @@ try {
   fault = await startLoaderBodyFault({
     path,
     origin,
-    totalBytes: mode === "pck" ? expectedPckBytes : wasmBytes,
-    prefix: mode === "pck" ? pck.prefix : wasm.prefix,
+    totalBytes: faultBytes,
+    prefix: faultPrefix,
+    ...(parts && mode === "pck" ? { packBytes: expectedPckBytes } : {}),
   });
   await mongo.connect();
   assert(
@@ -186,7 +252,7 @@ try {
   const network = new Map();
   cdp.on("Network.requestWillBeSent", (event) => {
     const pathname = new URL(event.request.url).pathname;
-    if (!/\/game\/index\.(wasm|pck)$/.test(pathname)) return;
+    if (!isAssetPath(pathname)) return;
     const record = { path: pathname, phase, at: Date.now(), dataBytes: 0 };
     network.set(event.requestId, record);
     transfers.push(record);
@@ -267,12 +333,12 @@ try {
   });
   page.on("request", (request) => {
     const pathname = new URL(request.url()).pathname;
-    if (/\/game\/index\.(wasm|pck)$/.test(pathname))
+    if (isAssetPath(pathname))
       assetRequests.push({ phase, path: pathname, at: Date.now() });
   });
   page.on("requestfailed", (request) => {
     const pathname = new URL(request.url()).pathname;
-    if (/\/game\/index\.(wasm|pck)$/.test(pathname))
+    if (isAssetPath(pathname))
       assetFailures.push({
         phase,
         path: pathname,
@@ -362,6 +428,27 @@ try {
       (event) => event.totalBytes === expectedPckBytes + wasmBytes,
     ),
   );
+  if (parts && mode === "pck") {
+    assert(
+      downloads.some(
+        (event) =>
+          event.downloadedBytes >= wasmBytes + 2 * parts.partSize &&
+          event.downloadedBytes < event.totalBytes,
+      ),
+      "Progress must include actual verified earlier PCK parts before part2's body failure",
+    );
+    assert(
+      fault.requests.every(
+        (record) =>
+          record.offset === 2 * parts.partSize &&
+          record.packBytes === expectedPckBytes &&
+          record.declaredBytes === faultBytes,
+      ),
+    );
+    checks.push(
+      "versioned-part2-metadata-and-real-prefix-validated-before-fault-with-earlier-verified-PCK-byte-progress",
+    );
+  }
   const percentages = new Set(
     downloads
       .filter((event) => event.totalBytes > 0)
