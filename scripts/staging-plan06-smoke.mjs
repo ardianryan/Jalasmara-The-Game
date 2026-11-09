@@ -604,6 +604,7 @@ try {
       );
   } finally {
     const outcome = completed && cleanup?.ok === true ? "completed" : "failed";
+    const defaultPublicAccepted = outcome === "completed" && !http1Diagnostic;
     writeFileSync(
       `${directory}/results.json`,
       JSON.stringify(
@@ -611,6 +612,7 @@ try {
           origin,
           outcome,
           completed: outcome === "completed",
+          defaultPublicAccepted,
           failureSummary,
           expectedPck,
           publicPck,
@@ -635,6 +637,8 @@ try {
         {
           directory,
           outcome,
+          defaultPublicAccepted,
+          http1Diagnostic,
           failureSummary,
           checks,
           errors,
