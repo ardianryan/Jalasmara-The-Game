@@ -7,10 +7,10 @@ Status 10 November 2026: pengguna bersedia menjalankan pengujian pada perangkat 
 | Data | Nilai sebelum pengujian |
 |---|---|
 | URL kandidat | https://staging-jalasmara.ardianryan.com |
-| Commit sumber runtime | `0bc6479c9c7fe5dfbc693128493cd6f6aec1e18b` (image/API/host), ekspor Godot `28a3c6d03908581e47843c7ceaa453d83550b5df` |
-| SHA-256 PCK dan ukuran | `b34d95211a61354eebf9cd218455d1c2f4e4b99723b57e4cfbe2b0a113f0ba26`, 64.495.984 byte/62 bagian |
-| Tanggal dan jam aktivasi | 10 November 2026, 04.45.14 WIB |
-| Hasil startup browser publik | Image898/PCKb34d lulus6/6 pemeriksaan baru pada HTTP/2 default: login/READY, rute desa–hutan, jurnal, save/reload dan pemulihan jam server; [laporan publik](../reviews/overnight-b34d-public-smoke.md) |
+| Commit sumber runtime | `bf55342d82b439119f48aee3a5a7189a33b26357` (image/API/host), ekspor Godot `72b173c5f04d986e365fa34fd19daea62fb65125` |
+| SHA-256 PCK dan ukuran | `9a1ca274b88cf65e819f1c117da2ede7992420e2128b454ef6bc3cf7f19cbb1a`, 64.500.848 byte/62 bagian |
+| Tanggal dan jam aktivasi | 10 November 2026, 05.48.23 WIB |
+| Hasil startup browser publik | Image559/PCK9a1 lulus6/6 pemeriksaan baru pada HTTP/2 default: login/READY, rute desa–hutan, jurnal, save/reload dan pemulihan jam server; [laporan publik](../reviews/overnight-export5-integration.md) |
 
 Integrator telah memverifikasi pin dan startup publik. Recorder pada kandidat ini menyertakan identitas PCK dari loader di awal/akhir rekaman; hasil lama tanpa identitas tetap ditandai tidak tersedia, bukan diisi dengan kandidat saat ini. Hasil recorder lokal pada PCK `1d3c94a5…` memakai SwiftShader dan tidak menjadi pengukuran Windows atau S23.
 

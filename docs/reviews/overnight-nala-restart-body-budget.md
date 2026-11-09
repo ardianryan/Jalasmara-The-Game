@@ -1,0 +1,27 @@
+> Root archive of a character-branch CPU report. The NumPy/model_ramp_sole replay tool and its9tests remain on the experimental branch, not installed in root or CI. Source [8f79f63](https://github.com/ardianryan/Jalasmara-The-Game/tree/8f79f639cee6a22a9b600dd37bad36805ad31d5e) is preserved; runtimeced9a6d remains OFF/unmerged. Root independently ran9intervaltests in the character worktree using the existing fishgen venv and verified unchanged tool/test bytes; PASS. This is not allterrain, Web, natural-gait or rootCI evidence.
+
+# Retained restart landing: conditional body-duration preview
+
+The lower-body pilot remains OFF. Runtime source `b05a211` completed the dock ascent and passed the earlier reversal blockage, then rejected a later downhill stop/resume at requested pelvis drop 8.56817853 source pixels. The combined fixture retained its real facing and original contact history. No native or full16 acceptance follows from this investigation.
+
+The rejected run is `artifacts/godot/nala-terrain-dock-up-down-current-foot-body-b05a211`; its log and literal command are under `.runtime/overnight-nala-*b05a211*`. World SHA is `28455e6f7ec053d8e090457cae6e747d848aa3fd994e797e32608a0710dd5743`. The right foot was still free when resume replaced its near settling destination with the frozen lower-flat landing; the opposite foot remained planted at height 27.43576. At the later failure, the body already descended at the complete allowed geometry rate toward actual current ground zero. Its remaining height deficit was approximately 0.6936 world units. Actual ankle motion was below the existing five-times-distance guard. Lowering the support target or relaxing the pelvis limit would not repair this state.
+
+`model_restart_body_budget.py` reconstructs the retained target with the original shoe alpha corners and sole markers, plane rotation, pivot decay, H envelope, unchanged three-unit lift, current body-rate update and both original leg annuli. It reproduces the failed drop as 8.56775262. Independent peer review found a worst recorded-row ankle discrepancy of 0.005185 world units, consistent with the renderer inverse tolerance; this is a frozen replay, not an exact coupled simulation.
+
+The dense offline comparison checks 30/60/120/2000 Hz and a recorded-prefix schedule. Duration 10 fails. Duration 11 passes those five frozen schedules with maximum drop 7.785918 and ankle ratio 2.670748; 11.25 has additional margin. These comparisons do not establish a universal minimum duration or unchanged future source-view/body admission.
+
+The inexpensive preview caches 32 normalized foot poses using only the two original sole markers, then searches 65 quarter-unit duration candidates without additional terrain queries. Marker H never exceeds full-mask H in this replay; their largest ankle-height difference is 0.379036 world units. Each candidate intersects a **shared variable hip-height interval** with both original outer spheres and removes each inner forbidden interval. Horizontal tangency follows the runtime's strict rejection. The preview retains durations 11.25 through 18.75 and selects 11.25.
+
+A prior fixed-eight-pixel-drop sphere estimate wrongly rejected feasible longer steps when the high planted ankle lay above the lowered hip. The explicit duration-17.5/common-two-pixel-drop counterexample is preserved. The old estimate remains labelled superseded diagnostic output; it is not a necessary bound. Nine CPU unit tests cover common and disjoint leg heights, inner bands, tangency and this distinction.
+
+Reproduce the offline checks:
+
+```sh
+python3 -m unittest discover -s tools/player-gait -p test_body_budget_intervals.py
+python3 tools/player-gait/model_restart_body_budget.py --run artifacts/godot/nala-terrain-dock-up-down-current-foot-body-b05a211 --world .runtime/world-map.json --output .runtime/restart-body-budget-common-hip-b05a211.json
+```
+
+The cached preview remains conditional on its original view, Q/C trajectory and optimistic body baseline. It does not prove continuous feasibility between its 32 samples, real body-target following, a future view switch, or full-mask clearance. It is suitable for proposing a bounded duration candidate only. The renderer must retain its full original-mask, ankle, pelvis, inner/outer reach, frozen-landing and contact guards. No runtime duration change, engine run, speed change or fixture reset was made in this CPU checkpoint. A cheap isolated runtime proposal and peer review precede the next combined ascent/descent run; full16, current32flat/raw, facing recovery, moving native sequences, arm/contact phase and actual module cost remain open.
+
+
+Later actual runtimeced9a6d completed73samples/two normaldock cases, but selectedD10 unchanged because the paused body baseline was12.96251 rather than capturedb05's14.78883. Thus that pass does not establish that retiming fixed the old failure. Fresh full16 then failed on centralnormalUP at8.588555px, after only2cases completed;14remain unaccepted. The exact frozenb05 realhelper fixture, prepared in experimental2c2e3c6 and executed on7e14c09, passed: selected11.25,64markerqueries/32phases/6tested,7,755µs,2.0609s and0errors. This is helper-input proof, not full gait. Subsequent FIRST3 preserved inherited facing, completed2dock cases, then failed later centralUP at9.047956px after left84 landed. The fresh right72→96 remained free at duration20.73096; no full16/freshflat32/native acceptance. Both engine runs released. No experimental GDScript or physicalrig is in activeimage559/PCK9a1.

@@ -2,13 +2,13 @@
 
 Sixteen original evidence images, copied without cropping, recoloring, recompression or new image generation. This is a small review gallery, not an asset kit or a complete acceptance report. Total PNG payload: **3,544,076 bytes**. Released-world images, local browser evidence and uninstalled authoring proposals are labelled separately.
 
-## Export5 local candidate: visible compact location overflow
+## Export5 local browser evidence: visible compact location overflow
 
 ![Actual667×375 touch browser with three visible dots after the long forest name; the badge remains compact.](/docs/visual/export5-hud-region-mobile.png)
 
 Local Godot export72b173c, PCK `9a1ca274b88cf65e819f1c117da2ede7992420e2128b454ef6bc3cf7f19cbb1a`/64,500,848bytes. The separate forest fixture used real touch input, crossed the upper bridge and saved/reloaded;5/5PASS. The image was captured at667×375 with declared safe-area emulation, then restored844×390. Root reviewed the actual three dots after the unsuccessfulU+2026 attempt. It is software-rendered browser evidence, not physical S23 performance, new natural gait or a public-release acceptance.
 
-Original `plan06-layout-8a5cf9af-9b88-4622-b13d-fa294d504287/left-forest-location-badge-667x375.png`, copied byte-for-byte after image/privacy/empty-metadata review:250,518bytes, SHA256 `e008a03f439e437c38fbd485538c0f2a1f7019233efe4ce17ac4a626700f150d`. [Candidate report](/docs/reviews/overnight-export5-local-candidate.md). Staging remains export4/b34d until a later explicit activation and public gate.
+Original `plan06-layout-8a5cf9af-9b88-4622-b13d-fa294d504287/left-forest-location-badge-667x375.png`, copied byte-for-byte after image/privacy/empty-metadata review:250,518bytes, SHA256 `e008a03f439e437c38fbd485538c0f2a1f7019233efe4ce17ac4a626700f150d`. [Integration report](../reviews/overnight-export5-integration.md). Image559/export5/9a1 is active; a separate fresh default-public route completed6/6PASS. These images remain local browser evidence.
 
 ## Export4: actual modular equipment in local browser
 
