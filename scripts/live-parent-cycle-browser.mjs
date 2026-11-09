@@ -57,17 +57,22 @@ const mongo = new MongoClient(mongoUrl),
   failures = [],
   trace = [],
   ledger = [];
+const requestTimes = new WeakMap();
 let browser,
   context,
   page,
   frame,
   world,
   created = false,
+  fixtureAttempted = false,
   cleaned = false,
   completed = false,
   phase = "setup",
   routeStarted,
-  heartbeat;
+  heartbeat,
+  failureSnapshot = null,
+  failureScreenshot = false,
+  browserClosed = false;
 const snapshot = () => frame.evaluate(() => window.jalasmaraSnapshot);
 function budget() {
   assert(
@@ -278,6 +283,65 @@ async function shot(name) {
   await page.screenshot({ path: `${artifacts}/${name}.png` });
   console.log(JSON.stringify({ phase: name }));
 }
+async function captureFailure() {
+  if (frame && !frame.isDetached()) {
+    let timer;
+    try {
+      failureSnapshot = await Promise.race([
+        frame
+          .evaluate(() => {
+            const s = window.jalasmaraSnapshot;
+            if (!s) return { unavailable: "snapshot missing" };
+            return {
+              x: s.x,
+              y: s.y,
+              area: s.area,
+              stage: s.stage,
+              diving: s.diving,
+              modal: s.modal,
+              homePanel: s.homePanel,
+              nearby: s.nearby,
+              outfit: s.outfit,
+              clock: s.weather?.clock,
+              land: {
+                active: s.land?.active,
+                area: s.land?.area,
+                azimuth: s.land?.view?.azimuth,
+              },
+              homestead: s.homestead
+                ? {
+                    inside: s.homestead.inside,
+                    revision: s.homestead.revision,
+                    liveCatch: s.homestead.liveCatch,
+                    fishPen: s.homestead.fishPen,
+                    produce: s.homestead.produce,
+                  }
+                : null,
+            };
+          })
+          .catch(() => ({ unavailable: "frame evaluation failed" })),
+        new Promise((resolve) => {
+          timer = setTimeout(
+            () => resolve({ unavailable: "snapshot timeout3seconds" }),
+            3000,
+          );
+        }),
+      ]);
+    } finally {
+      clearTimeout(timer);
+    }
+    writeFileSync(
+      `${artifacts}/failure-snapshot.json`,
+      JSON.stringify({ phase, state: failureSnapshot }, null, 2),
+    );
+  }
+  if (page && !page.isClosed()) {
+    failureScreenshot = await page
+      .screenshot({ path: `${artifacts}/failure.png`, timeout: 5000 })
+      .then(() => true)
+      .catch(() => false);
+  }
+}
 
 try {
   const release = await fetch(`${origin}/game/index.pck`, {
@@ -300,6 +364,7 @@ try {
   assert.equal(home.fishPen.breeders, 0);
   assert.equal(home.fishPen.offspring, 0);
   const now = new Date().toISOString();
+  fixtureAttempted = true;
   await mongo
     .db()
     .collection("players")
@@ -362,12 +427,14 @@ try {
   });
   page = await context.newPage();
   page.setDefaultTimeout(60000);
+  page.on("request", (request) => requestTimes.set(request, performance.now()));
   page.on("pageerror", (e) => errors.push(e.message));
   page.on("console", (m) => {
     if (m.type() === "error") errors.push(m.text());
   });
   page.on("response", async (r) => {
     if (!r.url().includes("/api/")) return;
+    const responseMonotonicMs = performance.now();
     const path = new URL(r.url()).pathname,
       body = await r.json().catch(() => ({}));
     let sent = {};
@@ -377,6 +444,8 @@ try {
     const expected = false;
     trace.push({
       phase,
+      requestMonotonicMs: requestTimes.get(r.request()),
+      responseMonotonicMs,
       path,
       status: r.status(),
       action: sent.action,
@@ -465,16 +534,44 @@ try {
         r.url().endsWith("/api/dive/collect") &&
         r.request().postDataJSON()?.targetId === target.id,
     );
+    void collect.catch(() => {});
     await page.keyboard.down("Space");
+    let netAckMonotonicMs;
     try {
       const ack = await netStart;
       assert(ack.ok());
+      netAckMonotonicMs = performance.now();
+      operations.push({
+        action: "net_start_ack",
+        targetId: target.id,
+        netAckMonotonicMs,
+        requestMonotonicMs: requestTimes.get(ack.request()),
+      });
       await page.waitForTimeout(800);
     } finally {
       await page.keyboard.up("Space");
     }
     const captureResponse = await collect;
     const captured = await captureResponse.json();
+    const collectRequestMonotonicMs = requestTimes.get(
+      captureResponse.request(),
+    );
+    operations.push({
+      action: "actual_collect",
+      targetId: target.id,
+      fragmentId: target.fragmentId,
+      status: captureResponse.status(),
+      stars: captured.stars,
+      oxygen: captured.dive?.oxygen,
+      liveCatch: captured.dive?.liveCatch?.reef_seruni,
+      netAckMonotonicMs,
+      collectRequestMonotonicMs,
+      ackToCollectRequestMs: collectRequestMonotonicMs - netAckMonotonicMs,
+    });
+    assert(
+      Number.isFinite(collectRequestMonotonicMs),
+      "Capture request must retain its actual monotonic timestamp",
+    );
     assert(captureResponse.ok(), JSON.stringify(captured));
     assert.equal(
       captured.stars,
@@ -483,14 +580,6 @@ try {
     );
     assert.equal(captured.dive.liveCatch.reef_seruni, index + 1);
     assert(captured.dive.oxygen > 0);
-    operations.push({
-      action: "actual_collect",
-      targetId: target.id,
-      fragmentId: target.fragmentId,
-      stars: captured.stars,
-      oxygen: captured.dive.oxygen,
-      liveCatch: captured.dive.liveCatch.reef_seruni,
-    });
     assert(
       !captured.dive.challenge,
       "Ordinary biota capture must not require a quiz",
@@ -648,13 +737,21 @@ try {
   console.error(error);
   errors.push(String(error));
   process.exitCode = 1;
+  await captureFailure();
 } finally {
   clearInterval(heartbeat);
   const cookies = context ? await context.cookies().catch(() => []) : [];
-  await browser?.close();
-  const cache = created ? new Redis(redisUrl) : null;
   try {
-    if (created) {
+    await browser?.close();
+    browserClosed = true;
+  } catch (error) {
+    completed = false;
+    process.exitCode = 1;
+    errors.push("Browser shutdown failed: " + String(error));
+  }
+  const cache = fixtureAttempted ? new Redis(redisUrl) : null;
+  try {
+    if (fixtureAttempted) {
       await mongo.db().collection("players").deleteOne({
         id,
         email,
@@ -694,6 +791,10 @@ try {
           .countDocuments({ _id: { $regex: `^${id}:` } }),
         0,
       );
+      assert.equal(
+        await mongo.db().collection("shifts").countDocuments({ userId: id }),
+        0,
+      );
       assert((await cache.mget(...keys)).every((v) => v === null));
       cleaned = true;
     }
@@ -709,6 +810,11 @@ try {
           phase,
           outcome: completed && cleaned ? "passed" : "failed",
           completed,
+          fixtureAttempted,
+          fixtureInsertAcknowledged: created,
+          browserClosed,
+          failureScreenshot,
+          failureSnapshot,
           ownTemporaryPlayerRemoved: cleaned,
           candidatePck: { sha256: expectedPck, bytes: expectedBytes },
           fixture: {
