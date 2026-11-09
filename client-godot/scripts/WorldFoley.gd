@@ -25,6 +25,97 @@ var _emitter_phases: Dictionary = {}
 var _water_fields: Dictionary = {}
 var _map_signatures: Dictionary = {}
 var _surface_polygons: Dictionary = {}
+var _foot_contact_source := Callable()
+var _foot_source_configured := false
+var _contact_epoch := ""
+var _contact_mode := ""
+var _contact_sequence := 0
+var _retired_contact_epochs: Dictionary = {}
+var _contact_audio := {"played":0,"discarded":0,"duplicates":0,"invalidBatches":0,"lastId":"","lastReason":"unwired"}
+
+func set_foot_contact_source(source: Callable) -> void:
+	_foot_contact_source = source
+	_foot_source_configured = not source.is_null()
+	if not _contact_epoch.is_empty(): _retired_contact_epochs[_contact_epoch] = true
+	_contact_epoch = ""
+	_contact_mode = ""
+	_contact_sequence = 0
+	_drain_legacy_contacts()
+	_distance = 0.0
+	_cadence = 0.0
+
+func _drain_legacy_contacts() -> void:
+	if is_instance_valid(actor) and "swim_sprite" in actor and is_instance_valid(actor.get("swim_sprite")) and actor.get("swim_sprite").has_method("consume_foot_contacts"):
+		actor.get("swim_sprite").consume_foot_contacts()
+
+func _contact_paused() -> bool:
+	return ViewportLayout.host_paused or EnvironmentState.clock_paused or ("frozen" in actor and bool(actor.get("frozen")))
+
+func _poll_foot_contacts(underwater: bool, relocated: bool) -> Dictionary:
+	var raw: Variant = _foot_contact_source.call() if _foot_contact_source.is_valid() else {"mode":"legacy"}
+	if not raw is Dictionary: raw = {}
+	var batch: Dictionary = raw
+	var mode := str(batch.get("mode","suppressed"))
+	if mode not in ["pilot","legacy","suppressed"]: mode = "suppressed"
+	var epoch := str(batch.get("epoch",""))
+	var latest := maxi(0,int(batch.get("latestSequence",0)))
+	var events: Array = batch.get("contacts",[]) if batch.get("contacts",[]) is Array else []
+	var retired: bool = not epoch.is_empty() and _retired_contact_epochs.has(epoch)
+	var barrier := mode!=_contact_mode or epoch!=_contact_epoch
+	var handled := mode!="legacy" or barrier or retired
+	if handled: _drain_legacy_contacts()
+	if retired:
+		_contact_audio.discarded += events.size()
+		_contact_audio.lastReason = "retired_epoch"
+		return {"handled":true,"contacts":[]}
+	if barrier:
+		if not _contact_epoch.is_empty() and epoch!=_contact_epoch: _retired_contact_epochs[_contact_epoch] = true
+		_contact_epoch = epoch
+		_contact_mode = mode
+		_contact_sequence = latest
+		_contact_audio.discarded += events.size()
+		_contact_audio.lastReason = "source_barrier"
+		return {"handled":true,"contacts":[]}
+	if mode=="legacy": return {"handled":false,"contacts":[]}
+	var suppressed := mode!="pilot" or epoch.is_empty() or not bool(batch.get("validated",false)) or bool(batch.get("paused",false)) or _contact_paused() or underwater or relocated or not AudioManager.can_play_environment()
+	if suppressed:
+		_contact_sequence = maxi(_contact_sequence,latest)
+		_contact_audio.discarded += events.size()
+		_contact_audio.lastReason = "suppressed"
+		return {"handled":true,"contacts":[]}
+	var accepted: Array[Dictionary] = []
+	var seen := _contact_sequence
+	var invalid := latest<_contact_sequence
+	for value in events:
+		if not value is Dictionary:
+			invalid = true
+			continue
+		var event: Dictionary = value
+		var sequence := int(event.get("sequence",-1))
+		if sequence<=_contact_sequence:
+			_contact_audio.duplicates += 1
+			continue
+		if sequence==seen:
+			_contact_audio.duplicates += 1
+			continue
+		var logical: Variant = event.get("logical")
+		var plant: Variant = event.get("worldPlant")
+		if sequence<seen or sequence>latest or str(event.get("side","")) not in ["left","right"] or str(event.get("kind","")) not in ["landing","stop_settlement"] or not FOOTSTEPS.has(str(event.get("material",""))) or str(event.get("supportId","")).is_empty() or not logical is Vector2 or not plant is Vector3:
+			invalid = true
+			continue
+		if not logical.is_finite() or not plant.is_finite():
+			invalid = true
+			continue
+		seen = sequence
+		accepted.append(event)
+	_contact_sequence = maxi(_contact_sequence,latest)
+	if invalid:
+		_contact_audio.invalidBatches += 1
+		_contact_audio.discarded += events.size()
+		_contact_audio.lastReason = "invalid_batch"
+		return {"handled":true,"contacts":[]}
+	_contact_audio.lastReason = "validated"
+	return {"handled":true,"contacts":accepted}
 
 const FOOTSTEPS := {
 	"dock":"footstep_dock", "bridge":"footstep_bridge", "sand":"footstep_sand",
@@ -41,6 +132,11 @@ func configure(player: Node2D, place := "hub") -> void:
 	_wave_cooldown = 0.0
 	_emitter_phases.clear()
 	_surface_polygons.clear()
+	if _foot_source_configured:
+		if not _contact_epoch.is_empty(): _retired_contact_epochs[_contact_epoch] = true
+		_contact_epoch = ""
+		_contact_mode = ""
+		_contact_sequence = 0
 	_has_traversal = false
 	for property in actor.get_property_list():
 		if str(property.name) == "traversal_state": _has_traversal = true
@@ -115,6 +211,8 @@ func _process(delta: float) -> void:
 		_was_underwater = underwater
 	var travelled := actor.position.distance_to(_previous)
 	_previous = actor.position
+	var pilot_contacts := {"handled":false,"contacts":[]}
+	if _foot_source_configured: pilot_contacts = _poll_foot_contacts(underwater,travelled>80)
 	if travelled>80:
 		_distance = 0
 		return
@@ -149,17 +247,27 @@ func _process(delta: float) -> void:
 			AudioManager.play_sfx("water_drip",0.88+float(_step%4)*0.04,-22)
 	else:
 		_distance += travelled
-		var contact := false
-		var has_gait: bool = "swim_sprite" in actor and is_instance_valid(actor.get("swim_sprite")) and actor.get("swim_sprite").has_method("consume_foot_contacts")
-		if has_gait:
-			contact = not actor.get("swim_sprite").consume_foot_contacts().is_empty()
-		if (contact if has_gait else _distance>38 and _cadence>0.24):
-			_distance = fmod(_distance,38)
-			_cadence = 0
-			if FOOTSTEPS.has(_material):
-				_last_step = FOOTSTEPS[_material]
+		if bool(pilot_contacts.handled):
+			_distance = 0.0
+			_cadence = 0.0
+			for event in pilot_contacts.contacts:
+				_last_step = FOOTSTEPS[str(event.material)]
 				AudioManager.play_sfx(_last_step,0.94+float(_step%4)*0.035,-17)
 				_step += 1
+				_contact_audio.played += 1
+				_contact_audio.lastId = _contact_epoch+":"+str(event.sequence)
+		else:
+			var contact := false
+			var has_gait: bool = "swim_sprite" in actor and is_instance_valid(actor.get("swim_sprite")) and actor.get("swim_sprite").has_method("consume_foot_contacts")
+			if has_gait:
+				contact = not actor.get("swim_sprite").consume_foot_contacts().is_empty()
+			if (contact if has_gait else _distance>38 and _cadence>0.24):
+				_distance = fmod(_distance,38)
+				_cadence = 0
+				if FOOTSTEPS.has(_material):
+					_last_step = FOOTSTEPS[_material]
+					AudioManager.play_sfx(_last_step,0.94+float(_step%4)*0.035,-17)
+					_step += 1
 		if _material in ["dock","bridge"] and _ambience>13:
 			_ambience = 0
 			AudioManager.play_sfx("rope_creak",0.94,-25)
@@ -256,7 +364,7 @@ func _exit_tree() -> void:
 		AudioManager.update_coastal_ambience(-60.0, false, 60.0)
 
 func debug_status() -> Dictionary:
-	return {
+	var status := {
 		"steps":_step,
 		"area":area,
 		"underwater":_was_underwater,
@@ -266,3 +374,6 @@ func debug_status() -> Dictionary:
 		"waterSfxSteps":_water_steps,
 		"lastWaterSfx":_last_water_sfx,
 	}
+	if _foot_source_configured:
+		status["contactSource"] = {"epoch":_contact_epoch,"mode":_contact_mode,"sequence":_contact_sequence,"audio":_contact_audio.duplicate()}
+	return status
