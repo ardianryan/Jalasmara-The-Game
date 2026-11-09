@@ -43,4 +43,25 @@ Read-only `uptime` pada 13.26 WIB menunjukkan load average 11,82 pada mesin dela
 
 Cold context sesudah siap 5,833 detik dan reload context yang sama 3,548 detik, dibanding 4,949/2,951 detik sebelumnya. Progress decoded sesudah 103.764.566 byte, bertambah 7.232 byte. Startup localhost tunggal ini bukan tolok ukur jaringan pengguna atau klaim regresi loading yang terisolasi. Heap JavaScript akhir capture berkisar 21,03–97,80 MiB; bukan total WASM/VRAM/RSS. Tidak ada klaim kebocoran atau stabilitas sesi panjang.
 
-Root menyiapkan kandidat guard shader canopy yang melewati perhitungan reveal ketika tidak aktif. Belum ada hasil kandidat guard dalam dokumen ini. Kontrol berikutnya akan menjalankan paket lama dan kandidat secara berdekatan melalui `PROFILE_OVERRIDE_PCK` pada API/WASM yang sama, tanpa mengganti serverpack. Report mode intercepted akan mengecualikan network/startup. Pengukuran hardware Windows/S23, GPU timing, node Godot dan total memori masih belum tersedia.
+Sesudah batch awal, root menyiapkan kandidat guard shader canopy yang melewati perhitungan reveal ketika tidak aktif. Hasil kontrol kandidat tersebut ada pada bagian berikutnya: paket lama dan kandidat dijalankan berdekatan melalui `PROFILE_OVERRIDE_PCK` pada API/WASM yang sama, tanpa mengganti serverpack. Report mode intercepted mengecualikan network/startup. Pengukuran hardware Windows/S23, GPU timing, node Godot dan total memori masih belum tersedia.
+
+## Kontrol paket lama dan guard canopy
+
+Kontrol dilanjutkan dengan dua pasangan pada 13.35–13.43 WIB, memakai `PROFILE_OVERRIDE_PCK` hanya untuk file PCK. API, WASM/JavaScript yang dilayani, viewport, scene `forest-day`, urutan Seimbang → Ringan, pemanasan delapan detik, dan sampel 15 detik sama. Setiap batch memakai browser/context dan akun lokal baru. Pasangan pertama lama → guard; pasangan kedua guard → lama. Tidak ada render/encoder Godot lain selama kontrol, tetapi aktivitas host umum tetap ada.
+
+Paket lama benar-benar diintersep dari file SHA `818c599af11a25105b71ff77a46d132a4679d39ad197b213f0d46eabef5b98da`. Kandidat guard ialah source `2f7f55129c4bafacbf49449d703f3e7913917de3`, PCK `a9378a52c9fbb64ec96ae579bcef1ced1ab7920962823025e238a453eb8a716b`. Hash diverifikasi sebelum browser dimulai dan request PCK benar-benar diintersep pada setiap context; serverpack tidak diganti. Entri startup seluruh kontrol ditandai excluded dan tidak digunakan sebagai hasil jaringan/loading.
+
+| Pasangan | Profil | Lama RAF p50/p95 ms | Guard RAF p50/p95 ms | Draw calls p50 lama/guard |
+|---|---|---|---|---|
+| 1, lama dahulu | Seimbang | 66,7 / 83,4 | 66,7 / 116,6 | 399 / 399 |
+| 1, lama dahulu | Ringan | 50,0 / 83,4 | 50,0 / 66,8 | 355 / 355 |
+| 2, guard dahulu | Seimbang | 66,7 / 100,0 | 66,7 / 83,4 | 399 / 399 |
+| 2, guard dahulu | Ringan | 50,0 / 66,7 | 50,0 / 66,7 | 355 / 355 |
+
+Paket lama sendiri kini lebih lambat daripada baseline historis: median Seimbang 66,7 dibanding 50 ms, Ringan 50 dibanding 33,3 ms. Pada kontrol berdekatan, median lama/guard sama untuk kedua profil di kedua pasangan. Arah perubahan p95 Seimbang berbalik pada pasangan kedua, sehingga perlambatan source besar dari perbandingan historis tidak terkonfirmasi dalam kontrol ini. Tidak ada speedup guard yang terbukti; dua pasangan singkat juga tidak menjamin kesetaraan pada semua rute/cuaca/perangkat.
+
+Load satu menit teramati 5,39 pada awal kontrol, 11,69, 9,29, lalu 9,91. Ini bukan rekaman kontinu dan tidak mengisolasi suhu/frekuensi GPU. Seluruh delapan capture kontrol selesai tanpa error browser dan empat akun sementara dibersihkan. Ringkasan counter, kondisi, provenance file yang diintersep, serta pengecualian startup ada di [06p-paired-controls.json](06p-paired-controls.json). Raw interval dan screenshot tetap di artefak lokal yang diabaikan Git.
+
+Pada titik uji (650,1050), counter guard mencatat 47 crown dan `revealed:0`: kontrol ini menguji canopy tidak aktif, bukan biaya reveal ketika pemain berada di balik tajuk.
+
+Keputusan tahap ini: tidak mengklaim paket lebih cepat atau target hardware lulus; delta historis yang dipengaruhi kondisi mesin tidak cukup untuk menyimpulkan regresi guard. Lanjutkan regresi visual/gameplay kandidat dan pengujian perangkat fisik. Timer GPU, total WASM/VRAM/RSS dan node Godot tetap belum diukur.

@@ -1,0 +1,1729 @@
+{
+  "sequence": [
+    "06p-paired-1-old",
+    "06p-paired-1-guard",
+    "06p-paired-2-guard",
+    "06p-paired-2-old"
+  ],
+  "scope": "Forest-day only; matched intercepted PCK mode; no network/startup conclusion",
+  "hostLoadObservations": [
+    {
+      "timeWIB": "13:35",
+      "load1m": 5.39
+    },
+    {
+      "timeWIB": "13:38",
+      "load1m": 11.69
+    },
+    {
+      "timeWIB": "13:40",
+      "load1m": 9.29
+    },
+    {
+      "timeWIB": "13:42",
+      "load1m": 9.91
+    }
+  ],
+  "batches": [
+    {
+      "id": "06p-paired-1-old",
+      "source": "f27f25821a442d00f9f55a2d813c3f4a99680758",
+      "runtimeBaseline": "efdacba0e402f5acc3df174e2c27582381628f53",
+      "pckSHA256": "818c599af11a25105b71ff77a46d132a4679d39ad197b213f0d46eabef5b98da",
+      "pckDelivery": {
+        "mode": "intercepted-local-pck",
+        "path": "/Users/ardianryan/Documents/Jalasmara/.runtime/performance-packs/apps/web/public/game/index.pck",
+        "sha256": "818c599af11a25105b71ff77a46d132a4679d39ad197b213f0d46eabef5b98da",
+        "bytes": 64242580,
+        "interceptedRequests": 2
+      },
+      "createdAt": "2026-11-09T06:35:14.192Z",
+      "method": {
+        "assetDelivery": "intercepted-local-pck",
+        "device": "Chromium SwiftShader software GPU; not Windows/S23 hardware",
+        "viewport": [
+          844,
+          390
+        ],
+        "diagnostics": true,
+        "motion": "Stationary player; actual NPC/fauna/water/weather remain active",
+        "sampleMs": 15000,
+        "warmupMs": 8000,
+        "profileOrder": "Alternating low/balanced order per scene; warmup outside measurement",
+        "startup": "Excluded: local PCK intercept is not network/startup measurement",
+        "godotSampling": "Latest actual Godot counters sampled at most every100ms; separate from iframe RAF intervals"
+      },
+      "environment": {
+        "platform": "darwin",
+        "arch": "arm64",
+        "osRelease": "27.0.0",
+        "cpuModel": "Apple M2",
+        "cpuCount": 8,
+        "totalMemoryBytes": 8589934592,
+        "browser": "158.0.8127.18"
+      },
+      "startup": [
+        {
+          "kind": "cold-context",
+          "excluded": true,
+          "reason": "Local PCK intercepted: not a network/startup benchmark",
+          "pckSHA256": "818c599af11a25105b71ff77a46d132a4679d39ad197b213f0d46eabef5b98da"
+        },
+        {
+          "kind": "warm-reload-same-context",
+          "excluded": true,
+          "reason": "Local PCK intercepted: not a network/startup benchmark",
+          "pckSHA256": "818c599af11a25105b71ff77a46d132a4679d39ad197b213f0d46eabef5b98da"
+        }
+      ],
+      "results": [
+        {
+          "scenario": "forest-day",
+          "profile": "balanced",
+          "conditions": {
+            "before": {
+              "position": [
+                650,
+                1050
+              ],
+              "weather": {
+                "authoritative": true,
+                "calendarDay": 1,
+                "clock": "10:05",
+                "clockConnected": true,
+                "clockPaused": false,
+                "clockWriter": true,
+                "clouds": 0.12,
+                "current_x": 11.319431805765,
+                "current_y": 1.7954665494609,
+                "day": 1,
+                "dayLengthMinutes": 36,
+                "daylight": 1,
+                "night": false,
+                "phase": "siang",
+                "rain": 0,
+                "reduced_motion": false,
+                "sea_state": 0.272,
+                "weather": "Cerah",
+                "wind_x": 10.2144175199127,
+                "wind_y": 2.36
+              },
+              "camera": [
+                650,
+                1050
+              ]
+            },
+            "after": {
+              "position": [
+                650,
+                1050
+              ],
+              "weather": {
+                "authoritative": true,
+                "calendarDay": 1,
+                "clock": "10:15",
+                "clockConnected": true,
+                "clockPaused": false,
+                "clockWriter": true,
+                "clouds": 0.12,
+                "current_x": 7.10182093281285,
+                "current_y": 1.79077898649688,
+                "day": 1,
+                "dayLengthMinutes": 36,
+                "daylight": 1,
+                "night": false,
+                "phase": "siang",
+                "rain": 0,
+                "reduced_motion": false,
+                "sea_state": 0.272,
+                "weather": "Cerah",
+                "wind_x": 13.4413704416411,
+                "wind_y": 2.36
+              }
+            }
+          },
+          "renderer": {
+            "active": true,
+            "area": "forest",
+            "viewport": [
+              529,
+              244
+            ],
+            "camera": [
+              650,
+              1050
+            ],
+            "meshes": 20,
+            "trees": 47
+          },
+          "summary": {
+            "intervalDefinition": "Visible iframe requestAnimationFrame callback intervals; scheduling proxy, not GPU frame duration",
+            "durationMs": 15045.70000002384,
+            "rafIntervalsMs": {
+              "count": 215,
+              "p50": 66.70000000000073,
+              "p95": 83.40000000000146,
+              "max": 116.59999999999854
+            },
+            "hitches": {
+              "over50Ms": 204,
+              "over100Ms": 2,
+              "over250Ms": 0,
+              "over1000Ms": 0
+            },
+            "hiddenSamples": 0,
+            "sampledGodot": {
+              "fps": {
+                "count": 109,
+                "p50": 15,
+                "p95": 16,
+                "max": 16
+              },
+              "processMs": {
+                "count": 109,
+                "p50": 36.6,
+                "p95": 56.6,
+                "max": 63.6
+              },
+              "physicsMs": {
+                "count": 109,
+                "p50": 17.6,
+                "p95": 43.7,
+                "max": 43.7
+              },
+              "drawCalls": {
+                "count": 109,
+                "p50": 399,
+                "p95": 399,
+                "max": 399
+              },
+              "renderObjects": {
+                "count": 109,
+                "p50": 531,
+                "p95": 531,
+                "max": 531
+              },
+              "renderPrimitives": {
+                "count": 109,
+                "p50": 107235,
+                "p95": 107235,
+                "max": 107235
+              },
+              "pathQueue": {
+                "count": 0,
+                "p50": null,
+                "p95": null,
+                "max": null
+              }
+            },
+            "unknown": {
+              "godotNodes": "Not exposed by the served baseline diagnostic bridge",
+              "wasmLinearMemory": "Not exposed by public engine bridge",
+              "gpuTime": "No GPU timer-query instrumentation",
+              "gpuMemory": "Not exposed by the served baseline",
+              "physicalWindowsS23": "No physical device measured"
+            }
+          },
+          "browserMemory": {
+            "before": {
+              "JSHeapUsedSize": 45839636,
+              "JSHeapTotalSize": 57819136,
+              "Nodes": 96,
+              "Documents": 3,
+              "LayoutCount": 0,
+              "TaskDuration": 0.001351,
+              "ScriptDuration": 0.001323
+            },
+            "after": {
+              "JSHeapUsedSize": 63539076,
+              "JSHeapTotalSize": 87048192,
+              "Nodes": 89,
+              "Documents": 2,
+              "LayoutCount": 0,
+              "TaskDuration": 15.261851,
+              "ScriptDuration": 15.178675
+            },
+            "heapBefore": {
+              "usedSize": 45961560,
+              "totalSize": 58081280,
+              "embedderHeapUsedSize": 36336584,
+              "backingStorageSize": 65198079
+            },
+            "heapAfter": {
+              "usedSize": 63623072,
+              "totalSize": 87048192,
+              "embedderHeapUsedSize": 50583760,
+              "backingStorageSize": 65325985
+            },
+            "definition": "CDP DOM/JS heap counters; not Godot nodes, total process RSS, GPU VRAM, or total WASM memory"
+          }
+        },
+        {
+          "scenario": "forest-day",
+          "profile": "low",
+          "conditions": {
+            "before": {
+              "position": [
+                650,
+                1050
+              ],
+              "weather": {
+                "authoritative": true,
+                "calendarDay": 1,
+                "clock": "10:22",
+                "clockConnected": true,
+                "clockPaused": false,
+                "clockWriter": true,
+                "clouds": 0.12,
+                "current_x": 5.45928965333865,
+                "current_y": 0.117428957865237,
+                "day": 1,
+                "dayLengthMinutes": 36,
+                "daylight": 1,
+                "night": false,
+                "phase": "siang",
+                "rain": 0,
+                "reduced_motion": false,
+                "sea_state": 0.272,
+                "weather": "Cerah",
+                "wind_x": 12.8917258975369,
+                "wind_y": 2.36
+              },
+              "camera": [
+                650,
+                1050
+              ]
+            },
+            "after": {
+              "position": [
+                650,
+                1050
+              ],
+              "weather": {
+                "authoritative": true,
+                "calendarDay": 1,
+                "clock": "10:32",
+                "clockConnected": true,
+                "clockPaused": false,
+                "clockWriter": true,
+                "clouds": 0.12,
+                "current_x": 10.3367015984178,
+                "current_y": -2.03300676447824,
+                "day": 1,
+                "dayLengthMinutes": 36,
+                "daylight": 1,
+                "night": false,
+                "phase": "siang",
+                "rain": 0,
+                "reduced_motion": false,
+                "sea_state": 0.272,
+                "weather": "Cerah",
+                "wind_x": 10.7447961691919,
+                "wind_y": 2.36
+              }
+            }
+          },
+          "renderer": {
+            "active": true,
+            "area": "forest",
+            "viewport": [
+              529,
+              244
+            ],
+            "camera": [
+              650,
+              1050
+            ],
+            "meshes": 20,
+            "trees": 47
+          },
+          "summary": {
+            "intervalDefinition": "Visible iframe requestAnimationFrame callback intervals; scheduling proxy, not GPU frame duration",
+            "durationMs": 15034.900000000001,
+            "rafIntervalsMs": {
+              "count": 265,
+              "p50": 50,
+              "p95": 83.40000000000146,
+              "max": 150
+            },
+            "hitches": {
+              "over50Ms": 98,
+              "over100Ms": 6,
+              "over250Ms": 0,
+              "over1000Ms": 0
+            },
+            "hiddenSamples": 0,
+            "sampledGodot": {
+              "fps": {
+                "count": 126,
+                "p50": 20,
+                "p95": 22,
+                "max": 22
+              },
+              "processMs": {
+                "count": 126,
+                "p50": 30.5,
+                "p95": 55.4,
+                "max": 55.4
+              },
+              "physicsMs": {
+                "count": 126,
+                "p50": 16.9,
+                "p95": 48.5,
+                "max": 48.5
+              },
+              "drawCalls": {
+                "count": 126,
+                "p50": 355,
+                "p95": 355,
+                "max": 355
+              },
+              "renderObjects": {
+                "count": 126,
+                "p50": 487,
+                "p95": 487,
+                "max": 487
+              },
+              "renderPrimitives": {
+                "count": 126,
+                "p50": 57212,
+                "p95": 57212,
+                "max": 57212
+              },
+              "pathQueue": {
+                "count": 0,
+                "p50": null,
+                "p95": null,
+                "max": null
+              }
+            },
+            "unknown": {
+              "godotNodes": "Not exposed by the served baseline diagnostic bridge",
+              "wasmLinearMemory": "Not exposed by public engine bridge",
+              "gpuTime": "No GPU timer-query instrumentation",
+              "gpuMemory": "Not exposed by the served baseline",
+              "physicalWindowsS23": "No physical device measured"
+            }
+          },
+          "browserMemory": {
+            "before": {
+              "JSHeapUsedSize": 74765152,
+              "JSHeapTotalSize": 107413504,
+              "Nodes": 134,
+              "Documents": 2,
+              "LayoutCount": 0,
+              "TaskDuration": 0.001661,
+              "ScriptDuration": 0.00164
+            },
+            "after": {
+              "JSHeapUsedSize": 72194608,
+              "JSHeapTotalSize": 131760128,
+              "Nodes": 89,
+              "Documents": 2,
+              "LayoutCount": 0,
+              "TaskDuration": 15.204844,
+              "ScriptDuration": 15.105586
+            },
+            "heapBefore": {
+              "usedSize": 74862368,
+              "totalSize": 107413504,
+              "embedderHeapUsedSize": 44513440,
+              "backingStorageSize": 65296569
+            },
+            "heapAfter": {
+              "usedSize": 72256792,
+              "totalSize": 131760128,
+              "embedderHeapUsedSize": 23465672,
+              "backingStorageSize": 65075606
+            },
+            "definition": "CDP DOM/JS heap counters; not Godot nodes, total process RSS, GPU VRAM, or total WASM memory"
+          }
+        }
+      ],
+      "cleanup": true,
+      "errors": []
+    },
+    {
+      "id": "06p-paired-1-guard",
+      "source": "f27f25821a442d00f9f55a2d813c3f4a99680758",
+      "runtimeBaseline": "2f7f55129c4bafacbf49449d703f3e7913917de3",
+      "pckSHA256": "a9378a52c9fbb64ec96ae579bcef1ced1ab7920962823025e238a453eb8a716b",
+      "pckDelivery": {
+        "mode": "intercepted-local-pck",
+        "path": "/Users/ardianryan/Documents/Jalasmara/.runtime/performance-packs/guard-2f7f551.pck",
+        "sha256": "a9378a52c9fbb64ec96ae579bcef1ced1ab7920962823025e238a453eb8a716b",
+        "bytes": 64249828,
+        "interceptedRequests": 2
+      },
+      "createdAt": "2026-11-09T06:37:19.657Z",
+      "method": {
+        "assetDelivery": "intercepted-local-pck",
+        "device": "Chromium SwiftShader software GPU; not Windows/S23 hardware",
+        "viewport": [
+          844,
+          390
+        ],
+        "diagnostics": true,
+        "motion": "Stationary player; actual NPC/fauna/water/weather remain active",
+        "sampleMs": 15000,
+        "warmupMs": 8000,
+        "profileOrder": "Alternating low/balanced order per scene; warmup outside measurement",
+        "startup": "Excluded: local PCK intercept is not network/startup measurement",
+        "godotSampling": "Latest actual Godot counters sampled at most every100ms; separate from iframe RAF intervals"
+      },
+      "environment": {
+        "platform": "darwin",
+        "arch": "arm64",
+        "osRelease": "27.0.0",
+        "cpuModel": "Apple M2",
+        "cpuCount": 8,
+        "totalMemoryBytes": 8589934592,
+        "browser": "158.0.8127.18"
+      },
+      "startup": [
+        {
+          "kind": "cold-context",
+          "excluded": true,
+          "reason": "Local PCK intercepted: not a network/startup benchmark",
+          "pckSHA256": "a9378a52c9fbb64ec96ae579bcef1ced1ab7920962823025e238a453eb8a716b"
+        },
+        {
+          "kind": "warm-reload-same-context",
+          "excluded": true,
+          "reason": "Local PCK intercepted: not a network/startup benchmark",
+          "pckSHA256": "a9378a52c9fbb64ec96ae579bcef1ced1ab7920962823025e238a453eb8a716b"
+        }
+      ],
+      "results": [
+        {
+          "scenario": "forest-day",
+          "profile": "balanced",
+          "conditions": {
+            "before": {
+              "position": [
+                650,
+                1050
+              ],
+              "weather": {
+                "authoritative": true,
+                "calendarDay": 1,
+                "clock": "10:05",
+                "clockConnected": true,
+                "clockPaused": false,
+                "clockWriter": true,
+                "clouds": 0.12,
+                "current_x": 11.3196967070093,
+                "current_y": 1.79955937909822,
+                "day": 1,
+                "dayLengthMinutes": 36,
+                "daylight": 1,
+                "night": false,
+                "phase": "siang",
+                "rain": 0,
+                "reduced_motion": false,
+                "sea_state": 0.272,
+                "weather": "Cerah",
+                "wind_x": 10.1828137596953,
+                "wind_y": 2.36
+              },
+              "camera": [
+                650,
+                1050
+              ]
+            },
+            "after": {
+              "position": [
+                650,
+                1050
+              ],
+              "weather": {
+                "authoritative": true,
+                "calendarDay": 1,
+                "clock": "10:15",
+                "clockConnected": true,
+                "clockPaused": false,
+                "clockWriter": true,
+                "clouds": 0.12,
+                "current_x": 7.13728012514269,
+                "current_y": 1.80086528156516,
+                "day": 1,
+                "dayLengthMinutes": 36,
+                "daylight": 1,
+                "night": false,
+                "phase": "siang",
+                "rain": 0,
+                "reduced_motion": false,
+                "sea_state": 0.272,
+                "weather": "Cerah",
+                "wind_x": 13.3665766548606,
+                "wind_y": 2.36
+              }
+            }
+          },
+          "renderer": {
+            "active": true,
+            "area": "forest",
+            "viewport": [
+              529,
+              244
+            ],
+            "camera": [
+              650,
+              1050
+            ],
+            "meshes": 21,
+            "trees": 47,
+            "readability": {
+              "active": [],
+              "cachedMasks": 1,
+              "crowns": 47,
+              "revealed": 0,
+              "trunksUntouched": true
+            }
+          },
+          "summary": {
+            "intervalDefinition": "Visible iframe requestAnimationFrame callback intervals; scheduling proxy, not GPU frame duration",
+            "durationMs": 15072.300000071526,
+            "rafIntervalsMs": {
+              "count": 199,
+              "p50": 66.70000000000073,
+              "p95": 116.59999999999854,
+              "max": 333.3000000000029
+            },
+            "hitches": {
+              "over50Ms": 192,
+              "over100Ms": 12,
+              "over250Ms": 1,
+              "over1000Ms": 0
+            },
+            "hiddenSamples": 0,
+            "sampledGodot": {
+              "fps": {
+                "count": 110,
+                "p50": 14,
+                "p95": 15,
+                "max": 15
+              },
+              "processMs": {
+                "count": 110,
+                "p50": 35.2,
+                "p95": 305.9,
+                "max": 305.9
+              },
+              "physicsMs": {
+                "count": 110,
+                "p50": 16.9,
+                "p95": 23.4,
+                "max": 23.4
+              },
+              "drawCalls": {
+                "count": 110,
+                "p50": 399,
+                "p95": 399,
+                "max": 399
+              },
+              "renderObjects": {
+                "count": 110,
+                "p50": 531,
+                "p95": 531,
+                "max": 531
+              },
+              "renderPrimitives": {
+                "count": 110,
+                "p50": 111325,
+                "p95": 111325,
+                "max": 111325
+              },
+              "pathQueue": {
+                "count": 0,
+                "p50": null,
+                "p95": null,
+                "max": null
+              }
+            },
+            "unknown": {
+              "godotNodes": "Not exposed by the served baseline diagnostic bridge",
+              "wasmLinearMemory": "Not exposed by public engine bridge",
+              "gpuTime": "No GPU timer-query instrumentation",
+              "gpuMemory": "Not exposed by the served baseline",
+              "physicalWindowsS23": "No physical device measured"
+            }
+          },
+          "browserMemory": {
+            "before": {
+              "JSHeapUsedSize": 49529856,
+              "JSHeapTotalSize": 60112896,
+              "Nodes": 96,
+              "Documents": 3,
+              "LayoutCount": 0,
+              "TaskDuration": 0.00111,
+              "ScriptDuration": 0.001083
+            },
+            "after": {
+              "JSHeapUsedSize": 67844584,
+              "JSHeapTotalSize": 87834624,
+              "Nodes": 89,
+              "Documents": 2,
+              "LayoutCount": 0,
+              "TaskDuration": 15.31702,
+              "ScriptDuration": 15.245508
+            },
+            "heapBefore": {
+              "usedSize": 49659200,
+              "totalSize": 60375040,
+              "embedderHeapUsedSize": 39374864,
+              "backingStorageSize": 65252852
+            },
+            "heapAfter": {
+              "usedSize": 67913988,
+              "totalSize": 88096768,
+              "embedderHeapUsedSize": 61271928,
+              "backingStorageSize": 65472956
+            },
+            "definition": "CDP DOM/JS heap counters; not Godot nodes, total process RSS, GPU VRAM, or total WASM memory"
+          }
+        },
+        {
+          "scenario": "forest-day",
+          "profile": "low",
+          "conditions": {
+            "before": {
+              "position": [
+                650,
+                1050
+              ],
+              "weather": {
+                "authoritative": true,
+                "calendarDay": 1,
+                "clock": "10:22",
+                "clockConnected": true,
+                "clockPaused": false,
+                "clockWriter": true,
+                "clouds": 0.12,
+                "current_x": 5.44622879214124,
+                "current_y": 0.137436331050732,
+                "day": 1,
+                "dayLengthMinutes": 36,
+                "daylight": 1,
+                "night": false,
+                "phase": "siang",
+                "rain": 0,
+                "reduced_motion": false,
+                "sea_state": 0.272,
+                "weather": "Cerah",
+                "wind_x": 12.9822060581924,
+                "wind_y": 2.36
+              },
+              "camera": [
+                650,
+                1050
+              ]
+            },
+            "after": {
+              "position": [
+                650,
+                1050
+              ],
+              "weather": {
+                "authoritative": true,
+                "calendarDay": 1,
+                "clock": "10:32",
+                "clockConnected": true,
+                "clockPaused": false,
+                "clockWriter": true,
+                "clouds": 0.12,
+                "current_x": 10.2871875491862,
+                "current_y": -2.02139861499365,
+                "day": 1,
+                "dayLengthMinutes": 36,
+                "daylight": 1,
+                "night": false,
+                "phase": "siang",
+                "rain": 0,
+                "reduced_motion": false,
+                "sea_state": 0.272,
+                "weather": "Cerah",
+                "wind_x": 10.6063805680623,
+                "wind_y": 2.36
+              }
+            }
+          },
+          "renderer": {
+            "active": true,
+            "area": "forest",
+            "viewport": [
+              529,
+              244
+            ],
+            "camera": [
+              650,
+              1050
+            ],
+            "meshes": 21,
+            "trees": 47,
+            "readability": {
+              "active": [],
+              "cachedMasks": 1,
+              "crowns": 47,
+              "revealed": 0,
+              "trunksUntouched": true
+            }
+          },
+          "summary": {
+            "intervalDefinition": "Visible iframe requestAnimationFrame callback intervals; scheduling proxy, not GPU frame duration",
+            "durationMs": 15047.400000071531,
+            "rafIntervalsMs": {
+              "count": 267,
+              "p50": 50,
+              "p95": 66.79999999999563,
+              "max": 100.10000000000582
+            },
+            "hitches": {
+              "over50Ms": 112,
+              "over100Ms": 1,
+              "over250Ms": 0,
+              "over1000Ms": 0
+            },
+            "hiddenSamples": 0,
+            "sampledGodot": {
+              "fps": {
+                "count": 127,
+                "p50": 18,
+                "p95": 21,
+                "max": 21
+              },
+              "processMs": {
+                "count": 127,
+                "p50": 36.2,
+                "p95": 61.7,
+                "max": 61.7
+              },
+              "physicsMs": {
+                "count": 127,
+                "p50": 16.7,
+                "p95": 46.6,
+                "max": 46.6
+              },
+              "drawCalls": {
+                "count": 127,
+                "p50": 355,
+                "p95": 355,
+                "max": 355
+              },
+              "renderObjects": {
+                "count": 127,
+                "p50": 487,
+                "p95": 487,
+                "max": 487
+              },
+              "renderPrimitives": {
+                "count": 127,
+                "p50": 59257,
+                "p95": 59257,
+                "max": 59257
+              },
+              "pathQueue": {
+                "count": 0,
+                "p50": null,
+                "p95": null,
+                "max": null
+              }
+            },
+            "unknown": {
+              "godotNodes": "Not exposed by the served baseline diagnostic bridge",
+              "wasmLinearMemory": "Not exposed by public engine bridge",
+              "gpuTime": "No GPU timer-query instrumentation",
+              "gpuMemory": "Not exposed by the served baseline",
+              "physicalWindowsS23": "No physical device measured"
+            }
+          },
+          "browserMemory": {
+            "before": {
+              "JSHeapUsedSize": 94989528,
+              "JSHeapTotalSize": 132988928,
+              "Nodes": 134,
+              "Documents": 2,
+              "LayoutCount": 0,
+              "TaskDuration": 0.001034,
+              "ScriptDuration": 0.001013
+            },
+            "after": {
+              "JSHeapUsedSize": 82012396,
+              "JSHeapTotalSize": 123895808,
+              "Nodes": 89,
+              "Documents": 2,
+              "LayoutCount": 0,
+              "TaskDuration": 15.205013,
+              "ScriptDuration": 15.114993
+            },
+            "heapBefore": {
+              "usedSize": 95084516,
+              "totalSize": 132988928,
+              "embedderHeapUsedSize": 46094144,
+              "backingStorageSize": 66446046
+            },
+            "heapAfter": {
+              "usedSize": 82081688,
+              "totalSize": 123895808,
+              "embedderHeapUsedSize": 49021672,
+              "backingStorageSize": 65333133
+            },
+            "definition": "CDP DOM/JS heap counters; not Godot nodes, total process RSS, GPU VRAM, or total WASM memory"
+          }
+        }
+      ],
+      "cleanup": true,
+      "errors": []
+    },
+    {
+      "id": "06p-paired-2-guard",
+      "source": "f27f25821a442d00f9f55a2d813c3f4a99680758",
+      "runtimeBaseline": "2f7f55129c4bafacbf49449d703f3e7913917de3",
+      "pckSHA256": "a9378a52c9fbb64ec96ae579bcef1ced1ab7920962823025e238a453eb8a716b",
+      "pckDelivery": {
+        "mode": "intercepted-local-pck",
+        "path": "/Users/ardianryan/Documents/Jalasmara/.runtime/performance-packs/guard-2f7f551.pck",
+        "sha256": "a9378a52c9fbb64ec96ae579bcef1ced1ab7920962823025e238a453eb8a716b",
+        "bytes": 64249828,
+        "interceptedRequests": 2
+      },
+      "createdAt": "2026-11-09T06:39:26.295Z",
+      "method": {
+        "assetDelivery": "intercepted-local-pck",
+        "device": "Chromium SwiftShader software GPU; not Windows/S23 hardware",
+        "viewport": [
+          844,
+          390
+        ],
+        "diagnostics": true,
+        "motion": "Stationary player; actual NPC/fauna/water/weather remain active",
+        "sampleMs": 15000,
+        "warmupMs": 8000,
+        "profileOrder": "Alternating low/balanced order per scene; warmup outside measurement",
+        "startup": "Excluded: local PCK intercept is not network/startup measurement",
+        "godotSampling": "Latest actual Godot counters sampled at most every100ms; separate from iframe RAF intervals"
+      },
+      "environment": {
+        "platform": "darwin",
+        "arch": "arm64",
+        "osRelease": "27.0.0",
+        "cpuModel": "Apple M2",
+        "cpuCount": 8,
+        "totalMemoryBytes": 8589934592,
+        "browser": "158.0.8127.18"
+      },
+      "startup": [
+        {
+          "kind": "cold-context",
+          "excluded": true,
+          "reason": "Local PCK intercepted: not a network/startup benchmark",
+          "pckSHA256": "a9378a52c9fbb64ec96ae579bcef1ced1ab7920962823025e238a453eb8a716b"
+        },
+        {
+          "kind": "warm-reload-same-context",
+          "excluded": true,
+          "reason": "Local PCK intercepted: not a network/startup benchmark",
+          "pckSHA256": "a9378a52c9fbb64ec96ae579bcef1ced1ab7920962823025e238a453eb8a716b"
+        }
+      ],
+      "results": [
+        {
+          "scenario": "forest-day",
+          "profile": "balanced",
+          "conditions": {
+            "before": {
+              "position": [
+                650,
+                1050
+              ],
+              "weather": {
+                "authoritative": true,
+                "calendarDay": 1,
+                "clock": "10:05",
+                "clockConnected": true,
+                "clockPaused": false,
+                "clockWriter": true,
+                "clouds": 0.12,
+                "current_x": 11.3199994040322,
+                "current_y": 1.81007960190769,
+                "day": 1,
+                "dayLengthMinutes": 36,
+                "daylight": 1,
+                "night": false,
+                "phase": "siang",
+                "rain": 0,
+                "reduced_motion": false,
+                "sea_state": 0.272,
+                "weather": "Cerah",
+                "wind_x": 10.1013973178855,
+                "wind_y": 2.36
+              },
+              "camera": [
+                650,
+                1050
+              ]
+            },
+            "after": {
+              "position": [
+                650,
+                1050
+              ],
+              "weather": {
+                "authoritative": true,
+                "calendarDay": 1,
+                "clock": "10:15",
+                "clockConnected": true,
+                "clockPaused": false,
+                "clockWriter": true,
+                "clouds": 0.12,
+                "current_x": 7.19400150895633,
+                "current_y": 1.8166517834882,
+                "day": 1,
+                "dayLengthMinutes": 36,
+                "daylight": 1,
+                "night": false,
+                "phase": "siang",
+                "rain": 0,
+                "reduced_motion": false,
+                "sea_state": 0.272,
+                "weather": "Cerah",
+                "wind_x": 13.2462554028871,
+                "wind_y": 2.36
+              }
+            }
+          },
+          "renderer": {
+            "active": true,
+            "area": "forest",
+            "viewport": [
+              529,
+              244
+            ],
+            "camera": [
+              650,
+              1050
+            ],
+            "meshes": 21,
+            "trees": 47,
+            "readability": {
+              "active": [],
+              "cachedMasks": 1,
+              "crowns": 47,
+              "revealed": 0,
+              "trunksUntouched": true
+            }
+          },
+          "summary": {
+            "intervalDefinition": "Visible iframe requestAnimationFrame callback intervals; scheduling proxy, not GPU frame duration",
+            "durationMs": 15004.199999999997,
+            "rafIntervalsMs": {
+              "count": 203,
+              "p50": 66.70000000000073,
+              "p95": 83.40000000000146,
+              "max": 449.90000000000146
+            },
+            "hitches": {
+              "over50Ms": 198,
+              "over100Ms": 3,
+              "over250Ms": 1,
+              "over1000Ms": 0
+            },
+            "hiddenSamples": 0,
+            "sampledGodot": {
+              "fps": {
+                "count": 104,
+                "p50": 14,
+                "p95": 15,
+                "max": 15
+              },
+              "processMs": {
+                "count": 104,
+                "p50": 41.3,
+                "p95": 388,
+                "max": 388
+              },
+              "physicsMs": {
+                "count": 104,
+                "p50": 17.7,
+                "p95": 31,
+                "max": 31
+              },
+              "drawCalls": {
+                "count": 104,
+                "p50": 399,
+                "p95": 399,
+                "max": 399
+              },
+              "renderObjects": {
+                "count": 104,
+                "p50": 531,
+                "p95": 531,
+                "max": 531
+              },
+              "renderPrimitives": {
+                "count": 104,
+                "p50": 111325,
+                "p95": 111325,
+                "max": 111325
+              },
+              "pathQueue": {
+                "count": 0,
+                "p50": null,
+                "p95": null,
+                "max": null
+              }
+            },
+            "unknown": {
+              "godotNodes": "Not exposed by the served baseline diagnostic bridge",
+              "wasmLinearMemory": "Not exposed by public engine bridge",
+              "gpuTime": "No GPU timer-query instrumentation",
+              "gpuMemory": "Not exposed by the served baseline",
+              "physicalWindowsS23": "No physical device measured"
+            }
+          },
+          "browserMemory": {
+            "before": {
+              "JSHeapUsedSize": 49865748,
+              "JSHeapTotalSize": 60735488,
+              "Nodes": 96,
+              "Documents": 3,
+              "LayoutCount": 0,
+              "TaskDuration": 0.001291,
+              "ScriptDuration": 0.00126
+            },
+            "after": {
+              "JSHeapUsedSize": 67311768,
+              "JSHeapTotalSize": 87048192,
+              "Nodes": 89,
+              "Documents": 2,
+              "LayoutCount": 0,
+              "TaskDuration": 15.227522,
+              "ScriptDuration": 15.151433
+            },
+            "heapBefore": {
+              "usedSize": 49990336,
+              "totalSize": 60997632,
+              "embedderHeapUsedSize": 38387432,
+              "backingStorageSize": 65230922
+            },
+            "heapAfter": {
+              "usedSize": 67412064,
+              "totalSize": 87048192,
+              "embedderHeapUsedSize": 59712552,
+              "backingStorageSize": 65439715
+            },
+            "definition": "CDP DOM/JS heap counters; not Godot nodes, total process RSS, GPU VRAM, or total WASM memory"
+          }
+        },
+        {
+          "scenario": "forest-day",
+          "profile": "low",
+          "conditions": {
+            "before": {
+              "position": [
+                650,
+                1050
+              ],
+              "weather": {
+                "authoritative": true,
+                "calendarDay": 1,
+                "clock": "10:18",
+                "clockConnected": true,
+                "clockPaused": false,
+                "clockWriter": true,
+                "clouds": 0.12,
+                "current_x": 5.39303683095388,
+                "current_y": 0.231872387946262,
+                "day": 1,
+                "dayLengthMinutes": 36,
+                "daylight": 1,
+                "night": false,
+                "phase": "siang",
+                "rain": 0,
+                "reduced_motion": false,
+                "sea_state": 0.272,
+                "weather": "Cerah",
+                "wind_x": 13.3988479126089,
+                "wind_y": 2.36
+              },
+              "camera": [
+                650,
+                1050
+              ]
+            },
+            "after": {
+              "position": [
+                650,
+                1050
+              ],
+              "weather": {
+                "authoritative": true,
+                "calendarDay": 1,
+                "clock": "10:29",
+                "clockConnected": true,
+                "clockPaused": false,
+                "clockWriter": true,
+                "clouds": 0.12,
+                "current_x": 10.1130963802925,
+                "current_y": -1.97946827172298,
+                "day": 1,
+                "dayLengthMinutes": 36,
+                "daylight": 1,
+                "night": false,
+                "phase": "siang",
+                "rain": 0,
+                "reduced_motion": false,
+                "sea_state": 0.272,
+                "weather": "Cerah",
+                "wind_x": 10.1498211766248,
+                "wind_y": 2.36
+              }
+            }
+          },
+          "renderer": {
+            "active": true,
+            "area": "forest",
+            "viewport": [
+              529,
+              244
+            ],
+            "camera": [
+              650,
+              1050
+            ],
+            "meshes": 21,
+            "trees": 47,
+            "readability": {
+              "active": [],
+              "cachedMasks": 1,
+              "crowns": 47,
+              "revealed": 0,
+              "trunksUntouched": true
+            }
+          },
+          "summary": {
+            "intervalDefinition": "Visible iframe requestAnimationFrame callback intervals; scheduling proxy, not GPU frame duration",
+            "durationMs": 15004.600000023842,
+            "rafIntervalsMs": {
+              "count": 280,
+              "p50": 50,
+              "p95": 66.70000000000437,
+              "max": 83.40000000000146
+            },
+            "hitches": {
+              "over50Ms": 94,
+              "over100Ms": 0,
+              "over250Ms": 0,
+              "over1000Ms": 0
+            },
+            "hiddenSamples": 0,
+            "sampledGodot": {
+              "fps": {
+                "count": 131,
+                "p50": 19,
+                "p95": 20,
+                "max": 20
+              },
+              "processMs": {
+                "count": 131,
+                "p50": 32,
+                "p95": 47.6,
+                "max": 47.6
+              },
+              "physicsMs": {
+                "count": 131,
+                "p50": 16.9,
+                "p95": 49.2,
+                "max": 49.2
+              },
+              "drawCalls": {
+                "count": 131,
+                "p50": 355,
+                "p95": 355,
+                "max": 355
+              },
+              "renderObjects": {
+                "count": 131,
+                "p50": 487,
+                "p95": 487,
+                "max": 487
+              },
+              "renderPrimitives": {
+                "count": 131,
+                "p50": 59257,
+                "p95": 59257,
+                "max": 59257
+              },
+              "pathQueue": {
+                "count": 0,
+                "p50": null,
+                "p95": null,
+                "max": null
+              }
+            },
+            "unknown": {
+              "godotNodes": "Not exposed by the served baseline diagnostic bridge",
+              "wasmLinearMemory": "Not exposed by public engine bridge",
+              "gpuTime": "No GPU timer-query instrumentation",
+              "gpuMemory": "Not exposed by the served baseline",
+              "physicalWindowsS23": "No physical device measured"
+            }
+          },
+          "browserMemory": {
+            "before": {
+              "JSHeapUsedSize": 94258876,
+              "JSHeapTotalSize": 131252224,
+              "Nodes": 134,
+              "Documents": 2,
+              "LayoutCount": 0,
+              "TaskDuration": 0.001549,
+              "ScriptDuration": 0.001527
+            },
+            "after": {
+              "JSHeapUsedSize": 104651220,
+              "JSHeapTotalSize": 146866176,
+              "Nodes": 89,
+              "Documents": 2,
+              "LayoutCount": 0,
+              "TaskDuration": 15.190677,
+              "ScriptDuration": 15.099327
+            },
+            "heapBefore": {
+              "usedSize": 94358840,
+              "totalSize": 131252224,
+              "embedderHeapUsedSize": 45989688,
+              "backingStorageSize": 66462430
+            },
+            "heapAfter": {
+              "usedSize": 104691308,
+              "totalSize": 146866176,
+              "embedderHeapUsedSize": 45147112,
+              "backingStorageSize": 65305562
+            },
+            "definition": "CDP DOM/JS heap counters; not Godot nodes, total process RSS, GPU VRAM, or total WASM memory"
+          }
+        }
+      ],
+      "cleanup": true,
+      "errors": []
+    },
+    {
+      "id": "06p-paired-2-old",
+      "source": "f27f25821a442d00f9f55a2d813c3f4a99680758",
+      "runtimeBaseline": "efdacba0e402f5acc3df174e2c27582381628f53",
+      "pckSHA256": "818c599af11a25105b71ff77a46d132a4679d39ad197b213f0d46eabef5b98da",
+      "pckDelivery": {
+        "mode": "intercepted-local-pck",
+        "path": "/Users/ardianryan/Documents/Jalasmara/.runtime/performance-packs/apps/web/public/game/index.pck",
+        "sha256": "818c599af11a25105b71ff77a46d132a4679d39ad197b213f0d46eabef5b98da",
+        "bytes": 64242580,
+        "interceptedRequests": 2
+      },
+      "createdAt": "2026-11-09T06:41:36.216Z",
+      "method": {
+        "assetDelivery": "intercepted-local-pck",
+        "device": "Chromium SwiftShader software GPU; not Windows/S23 hardware",
+        "viewport": [
+          844,
+          390
+        ],
+        "diagnostics": true,
+        "motion": "Stationary player; actual NPC/fauna/water/weather remain active",
+        "sampleMs": 15000,
+        "warmupMs": 8000,
+        "profileOrder": "Alternating low/balanced order per scene; warmup outside measurement",
+        "startup": "Excluded: local PCK intercept is not network/startup measurement",
+        "godotSampling": "Latest actual Godot counters sampled at most every100ms; separate from iframe RAF intervals"
+      },
+      "environment": {
+        "platform": "darwin",
+        "arch": "arm64",
+        "osRelease": "27.0.0",
+        "cpuModel": "Apple M2",
+        "cpuCount": 8,
+        "totalMemoryBytes": 8589934592,
+        "browser": "158.0.8127.18"
+      },
+      "startup": [
+        {
+          "kind": "cold-context",
+          "excluded": true,
+          "reason": "Local PCK intercepted: not a network/startup benchmark",
+          "pckSHA256": "818c599af11a25105b71ff77a46d132a4679d39ad197b213f0d46eabef5b98da"
+        },
+        {
+          "kind": "warm-reload-same-context",
+          "excluded": true,
+          "reason": "Local PCK intercepted: not a network/startup benchmark",
+          "pckSHA256": "818c599af11a25105b71ff77a46d132a4679d39ad197b213f0d46eabef5b98da"
+        }
+      ],
+      "results": [
+        {
+          "scenario": "forest-day",
+          "profile": "balanced",
+          "conditions": {
+            "before": {
+              "position": [
+                650,
+                1050
+              ],
+              "weather": {
+                "authoritative": true,
+                "calendarDay": 1,
+                "clock": "10:05",
+                "clockConnected": true,
+                "clockPaused": false,
+                "clockWriter": true,
+                "clouds": 0.12,
+                "current_x": 11.3198546743929,
+                "current_y": 1.80296136320615,
+                "day": 1,
+                "dayLengthMinutes": 36,
+                "daylight": 1,
+                "night": false,
+                "phase": "siang",
+                "rain": 0,
+                "reduced_motion": false,
+                "sea_state": 0.272,
+                "weather": "Cerah",
+                "wind_x": 10.1565137145118,
+                "wind_y": 2.36
+              },
+              "camera": [
+                650,
+                1050
+              ]
+            },
+            "after": {
+              "position": [
+                650,
+                1050
+              ],
+              "weather": {
+                "authoritative": true,
+                "calendarDay": 1,
+                "clock": "10:15",
+                "clockConnected": true,
+                "clockPaused": false,
+                "clockWriter": true,
+                "clouds": 0.12,
+                "current_x": 7.14325644557263,
+                "current_y": 1.80254858543127,
+                "day": 1,
+                "dayLengthMinutes": 36,
+                "daylight": 1,
+                "night": false,
+                "phase": "siang",
+                "rain": 0,
+                "reduced_motion": false,
+                "sea_state": 0.272,
+                "weather": "Cerah",
+                "wind_x": 13.3539374898539,
+                "wind_y": 2.36
+              }
+            }
+          },
+          "renderer": {
+            "active": true,
+            "area": "forest",
+            "viewport": [
+              529,
+              244
+            ],
+            "camera": [
+              650,
+              1050
+            ],
+            "meshes": 20,
+            "trees": 47
+          },
+          "summary": {
+            "intervalDefinition": "Visible iframe requestAnimationFrame callback intervals; scheduling proxy, not GPU frame duration",
+            "durationMs": 15048.099999999999,
+            "rafIntervalsMs": {
+              "count": 211,
+              "p50": 66.70000000000073,
+              "p95": 100,
+              "max": 316.6000000000022
+            },
+            "hitches": {
+              "over50Ms": 199,
+              "over100Ms": 6,
+              "over250Ms": 1,
+              "over1000Ms": 0
+            },
+            "hiddenSamples": 0,
+            "sampledGodot": {
+              "fps": {
+                "count": 110,
+                "p50": 14,
+                "p95": 15,
+                "max": 16
+              },
+              "processMs": {
+                "count": 110,
+                "p50": 41.5,
+                "p95": 284.9,
+                "max": 284.9
+              },
+              "physicsMs": {
+                "count": 110,
+                "p50": 16.1,
+                "p95": 27.4,
+                "max": 27.4
+              },
+              "drawCalls": {
+                "count": 110,
+                "p50": 399,
+                "p95": 399,
+                "max": 399
+              },
+              "renderObjects": {
+                "count": 110,
+                "p50": 531,
+                "p95": 531,
+                "max": 531
+              },
+              "renderPrimitives": {
+                "count": 110,
+                "p50": 107235,
+                "p95": 107235,
+                "max": 107235
+              },
+              "pathQueue": {
+                "count": 0,
+                "p50": null,
+                "p95": null,
+                "max": null
+              }
+            },
+            "unknown": {
+              "godotNodes": "Not exposed by the served baseline diagnostic bridge",
+              "wasmLinearMemory": "Not exposed by public engine bridge",
+              "gpuTime": "No GPU timer-query instrumentation",
+              "gpuMemory": "Not exposed by the served baseline",
+              "physicalWindowsS23": "No physical device measured"
+            }
+          },
+          "browserMemory": {
+            "before": {
+              "JSHeapUsedSize": 49342860,
+              "JSHeapTotalSize": 61259776,
+              "Nodes": 96,
+              "Documents": 3,
+              "LayoutCount": 0,
+              "TaskDuration": 0.000947,
+              "ScriptDuration": 0.000921
+            },
+            "after": {
+              "JSHeapUsedSize": 67514740,
+              "JSHeapTotalSize": 86786048,
+              "Nodes": 89,
+              "Documents": 2,
+              "LayoutCount": 0,
+              "TaskDuration": 15.300314,
+              "ScriptDuration": 15.218132
+            },
+            "heapBefore": {
+              "usedSize": 49499548,
+              "totalSize": 61259776,
+              "embedderHeapUsedSize": 37946304,
+              "backingStorageSize": 65219647
+            },
+            "heapAfter": {
+              "usedSize": 67557140,
+              "totalSize": 86786048,
+              "embedderHeapUsedSize": 60393136,
+              "backingStorageSize": 65406854
+            },
+            "definition": "CDP DOM/JS heap counters; not Godot nodes, total process RSS, GPU VRAM, or total WASM memory"
+          }
+        },
+        {
+          "scenario": "forest-day",
+          "profile": "low",
+          "conditions": {
+            "before": {
+              "position": [
+                650,
+                1050
+              ],
+              "weather": {
+                "authoritative": true,
+                "calendarDay": 1,
+                "clock": "10:18",
+                "clockConnected": true,
+                "clockPaused": false,
+                "clockWriter": true,
+                "clouds": 0.12,
+                "current_x": 5.40409600701578,
+                "current_y": 0.210018732291007,
+                "day": 1,
+                "dayLengthMinutes": 36,
+                "daylight": 1,
+                "night": false,
+                "phase": "siang",
+                "rain": 0,
+                "reduced_motion": false,
+                "sea_state": 0.272,
+                "weather": "Cerah",
+                "wind_x": 13.3041009938145,
+                "wind_y": 2.36
+              },
+              "camera": [
+                650,
+                1050
+              ]
+            },
+            "after": {
+              "position": [
+                650,
+                1050
+              ],
+              "weather": {
+                "authoritative": true,
+                "calendarDay": 1,
+                "clock": "10:28",
+                "clockConnected": true,
+                "clockPaused": false,
+                "clockWriter": true,
+                "clouds": 0.12,
+                "current_x": 10.1400594951336,
+                "current_y": -1.98607197442236,
+                "day": 1,
+                "dayLengthMinutes": 36,
+                "daylight": 1,
+                "night": false,
+                "phase": "siang",
+                "rain": 0,
+                "reduced_motion": false,
+                "sea_state": 0.272,
+                "weather": "Cerah",
+                "wind_x": 10.217571340994,
+                "wind_y": 2.36
+              }
+            }
+          },
+          "renderer": {
+            "active": true,
+            "area": "forest",
+            "viewport": [
+              529,
+              244
+            ],
+            "camera": [
+              650,
+              1050
+            ],
+            "meshes": 20,
+            "trees": 47
+          },
+          "summary": {
+            "intervalDefinition": "Visible iframe requestAnimationFrame callback intervals; scheduling proxy, not GPU frame duration",
+            "durationMs": 15019.400000071524,
+            "rafIntervalsMs": {
+              "count": 306,
+              "p50": 50,
+              "p95": 66.69999999999709,
+              "max": 83.40000000000146
+            },
+            "hitches": {
+              "over50Ms": 56,
+              "over100Ms": 0,
+              "over250Ms": 0,
+              "over1000Ms": 0
+            },
+            "hiddenSamples": 0,
+            "sampledGodot": {
+              "fps": {
+                "count": 128,
+                "p50": 21,
+                "p95": 22,
+                "max": 22
+              },
+              "processMs": {
+                "count": 128,
+                "p50": 29.3,
+                "p95": 37,
+                "max": 37
+              },
+              "physicsMs": {
+                "count": 128,
+                "p50": 16.9,
+                "p95": 42.6,
+                "max": 42.6
+              },
+              "drawCalls": {
+                "count": 128,
+                "p50": 355,
+                "p95": 355,
+                "max": 355
+              },
+              "renderObjects": {
+                "count": 128,
+                "p50": 487,
+                "p95": 487,
+                "max": 487
+              },
+              "renderPrimitives": {
+                "count": 128,
+                "p50": 57212,
+                "p95": 57212,
+                "max": 57212
+              },
+              "pathQueue": {
+                "count": 0,
+                "p50": null,
+                "p95": null,
+                "max": null
+              }
+            },
+            "unknown": {
+              "godotNodes": "Not exposed by the served baseline diagnostic bridge",
+              "wasmLinearMemory": "Not exposed by public engine bridge",
+              "gpuTime": "No GPU timer-query instrumentation",
+              "gpuMemory": "Not exposed by the served baseline",
+              "physicalWindowsS23": "No physical device measured"
+            }
+          },
+          "browserMemory": {
+            "before": {
+              "JSHeapUsedSize": 93938728,
+              "JSHeapTotalSize": 130727936,
+              "Nodes": 134,
+              "Documents": 2,
+              "LayoutCount": 0,
+              "TaskDuration": 0.001037,
+              "ScriptDuration": 0.00099
+            },
+            "after": {
+              "JSHeapUsedSize": 104418324,
+              "JSHeapTotalSize": 147914752,
+              "Nodes": 89,
+              "Documents": 2,
+              "LayoutCount": 0,
+              "TaskDuration": 15.183808,
+              "ScriptDuration": 15.083989
+            },
+            "heapBefore": {
+              "usedSize": 94043016,
+              "totalSize": 130727936,
+              "embedderHeapUsedSize": 45003296,
+              "backingStorageSize": 66307238
+            },
+            "heapAfter": {
+              "usedSize": 104461568,
+              "totalSize": 147914752,
+              "embedderHeapUsedSize": 45068920,
+              "backingStorageSize": 65297717
+            },
+            "definition": "CDP DOM/JS heap counters; not Godot nodes, total process RSS, GPU VRAM, or total WASM memory"
+          }
+        }
+      ],
+      "cleanup": true,
+      "errors": []
+    }
+  ]
+}
