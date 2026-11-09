@@ -9,6 +9,7 @@ var _last_at := Vector2.ZERO
 var _ready := false
 var _swing := ""
 var _distance := 0.0
+var _landing_distance := STEP_DISTANCE
 var _heading := Vector2.RIGHT
 var _contact_count := 0
 var _next_side := "right"
@@ -80,6 +81,7 @@ func _reset(at:Vector2,hips:Dictionary,right:Vector3) -> void:
 		_feet[side]={"logical":point,"sole":world,"plant":world,"grounded":true,"from":point,"to":point}
 	_swing=""
 	_distance=0.0
+	_landing_distance=STEP_DISTANCE
 	_last_at=at
 	_ready=true
 
@@ -93,21 +95,28 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 		_reset(at,hips,right)
 		return snapshot()
 	if moving and physical>.00001:
-		_heading=logical_delta.normalized()
+		var next_heading:=logical_delta.normalized()
+		if _swing!="" and _heading.dot(next_heading)<.5:
+			# Re-anchor the airborne path at its actual pose before changing heading.
+			_feet[_swing].from=_feet[_swing].logical
+			_feet[_swing].fromWorld=_feet[_swing].sole
+			_distance=0.0
+			_landing_distance=STEP_DISTANCE*.5
+		_heading=next_heading
 		var origin:=_last_at
 		var consumed:=0.0
 		while consumed<physical-.00001:
 			if _swing=="": _begin(_next_side,origin.lerp(at,consumed/physical),hips,right)
-			var chunk:=minf(2.0,minf(physical-consumed,STEP_DISTANCE-_distance))
+			var chunk:=minf(2.0,minf(physical-consumed,_landing_distance-_distance))
 			consumed+=chunk
 			var sample:=origin.lerp(at,consumed/physical)
 			_distance+=chunk
 			var entry:Dictionary=_feet[_swing]
 			# Retarget only the free foot; an already planted sole never follows the torso.
-			var target:=_safe(_base(sample,float(hips[_swing]),right)+_heading*(STEP_DISTANCE-_distance)/maxf(.001,_world_motion(sample,_heading).length()),sample)
+			var target:=_safe(_base(sample,float(hips[_swing]),right)+_heading*(_landing_distance-_distance)/maxf(.001,_world_motion(sample,_heading).length()),sample)
 			entry.to=target
 			entry.toWorld=_ground(target)
-			var u:=clampf(_distance/STEP_DISTANCE,0,1)
+			var u:=clampf(_distance/_landing_distance,0,1)
 			var smooth:=u*u*(3.0-2.0*u)
 			entry.logical=Vector2(entry.from).lerp(target,smooth)
 			var floor_world:=_ground(entry.logical)
@@ -121,6 +130,7 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 				entry.grounded=true
 				_contact_count+=1
 				_next_side="left" if _swing=="right" else "right"
+				_landing_distance=STEP_DISTANCE
 				_swing=""
 	elif _swing!="":
 		var entry:Dictionary=_feet[_swing]
@@ -132,9 +142,10 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 			entry.grounded=true
 			_contact_count+=1
 			_next_side="left" if _swing=="right" else "right"
+			_landing_distance=STEP_DISTANCE
 			_swing=""
 	_last_at=at
 	return snapshot()
 
 func snapshot() -> Dictionary:
-	return {"feet":_feet.duplicate(true),"swingSide":_swing,"swingDistance":_distance,"stepDistance":STEP_DISTANCE,"contacts":_contact_count,"discontinuityResets":_discontinuities,"actorRootMotion":false,"legacyFoleyChanged":false}
+	return {"feet":_feet.duplicate(true),"swingSide":_swing,"swingDistance":_distance,"stepDistance":STEP_DISTANCE,"landingDistance":_landing_distance,"contacts":_contact_count,"discontinuityResets":_discontinuities,"actorRootMotion":false,"legacyFoleyChanged":false}
