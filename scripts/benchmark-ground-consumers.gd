@@ -3,51 +3,6 @@ extends SceneTree
 class Walker extends Node2D:
 	var traversal_state: Dictionary = {}
 
-class LegacyTraversal extends "res://scripts/SurfaceTraversal.gd":
-	func _surface_at(point: Vector2) -> Dictionary:
-		var selected: Dictionary = {}
-		for surface in _hub.get("surfaces",[]):
-			var polygon := PackedVector2Array()
-			for vertex in surface.get("polygon",[]): polygon.append(Vector2(float(vertex[0]),float(vertex[1])))
-			if Geometry2D.is_point_in_polygon(point,polygon) and (selected.is_empty() or int(surface.get("priority",0))>=int(selected.get("priority",0))): selected = surface
-		return selected
-
-class LegacyFoley extends "res://scripts/WorldFoley.gd":
-	var baseline_state: Node
-	func material_at(point: Vector2) -> String:
-		var maps: Dictionary = baseline_state.world.get("landMaps",{})
-		var map: Dictionary = maps.get(area,{})
-		if _has_traversal:
-			var traversal: Dictionary = actor.get("traversal_state")
-			if bool(traversal.get("onConnector",false)):
-				var surface := str(traversal.get("footstepMaterial",""))
-				if FOOTSTEPS.has(surface): return surface
-		for stair in map.get("stairs",[]):
-			var path: Array = stair.get("path",[])
-			if path.size()<2: continue
-			for index in range(path.size()-1):
-				var a := Vector2(float(path[index][0]),float(path[index][1]))
-				var b := Vector2(float(path[index+1][0]),float(path[index+1][1]))
-				var progress := (point-a).dot(b-a)/maxf(1,(b-a).length_squared())
-				if progress>=0 and progress<=1 and point.distance_to(Geometry2D.get_closest_point_to_segment(point,a,b)) <= float(stair.get("width",90))/2:
-					var surface := str(stair.get("material","stone"))
-					if FOOTSTEPS.has(surface): return surface
-		var selected := ""
-		var priority := -INF
-		var elevation := -INF
-		for surface in map.get("surfaces",[]):
-			var polygon := PackedVector2Array()
-			for vertex in surface.get("polygon",[]): polygon.append(Vector2(float(vertex[0]),float(vertex[1])))
-			if polygon.size()<3 or not Geometry2D.is_point_in_polygon(point,polygon): continue
-			var candidate := str(surface.get("material",""))
-			var candidate_priority := float(surface.get("priority",0))
-			var candidate_elevation := float(surface.get("elevation",0))
-			if FOOTSTEPS.has(candidate) and (candidate_priority>priority or (candidate_priority==priority and candidate_elevation>elevation)):
-				selected = candidate
-				priority = candidate_priority
-				elevation = candidate_elevation
-		return selected
-
 const BASELINE_COMMIT := "4795d28"
 const BASELINE_SURFACE_BODY_SHA256 := "a66cdae37d9cc5c8591973483c8abb6cb42b05623ab3d948b963a36167e31dee"
 const BASELINE_FOLEY_BODY_SHA256 := "23fd12f66bd37c707641ce2f04290f28d256186766c251771a641769b2f1cd56"
@@ -112,10 +67,15 @@ func _run() -> void:
 	_original_world = state.world
 	state.world = world
 	var metadata := {"baselineCommit":BASELINE_COMMIT,"baselineSurfaceBodySHA256":BASELINE_SURFACE_BODY_SHA256,"baselineFoleyBodySHA256":BASELINE_FOLEY_BODY_SHA256,"baselineFoleyWorldAccess":"Same GameState Node captured before timing; standalone baseline replaces only global alias with cached reference","corpusSHA256":FileAccess.get_sha256(corpus_path),"manifestSHA256":FileAccess.get_sha256(world_path),"engine":Engine.get_version_info(),"os":OS.get_name(),"cacheBuildIncluded":false,"points":corpus.cases.size(),"rounds":ROUNDS,"repeats":REPEATS,"sourceSHA256":{}}
-	for path in ["res://scripts/SurfaceTraversal.gd","res://scripts/WorldFoley.gd","res://scripts/land/LandSurfaceQueryCache.gd","res://scripts/land/LandGeometry.gd","res://../scripts/benchmark-ground-consumers.gd"]:
+	for path in ["res://scripts/SurfaceTraversal.gd","res://scripts/WorldFoley.gd","res://scripts/land/LandSurfaceQueryCache.gd","res://scripts/land/LandGeometry.gd","res://../scripts/benchmark-ground-consumers.gd","res://../scripts/tests/fixtures/ground-consumer-legacy-surface.gd","res://../scripts/tests/fixtures/ground-consumer-legacy-foley.gd"]:
 		metadata.sourceSHA256[path]=FileAccess.get_sha256(path)
 	if corpus.cases.size()!=324:
 		_finish(false,"Expected frozen324 points",start,metadata)
+		return
+	var legacy_surface_script: Script = load(ProjectSettings.globalize_path("res://../scripts/tests/fixtures/ground-consumer-legacy-surface.gd"))
+	var legacy_foley_script: Script = load(ProjectSettings.globalize_path("res://../scripts/tests/fixtures/ground-consumer-legacy-foley.gd"))
+	if legacy_surface_script==null or not legacy_surface_script.can_instantiate() or legacy_foley_script==null or not legacy_foley_script.can_instantiate():
+		_finish(false,"Deferred baseline script cannot instantiate",start,metadata)
 		return
 	for area in ["hub","forest"]:
 		var map: Dictionary = world.landMaps[area]
@@ -126,9 +86,9 @@ func _run() -> void:
 			return
 		var actor := Walker.new()
 		var canonical_traversal = load("res://scripts/SurfaceTraversal.gd").new()
-		var legacy_traversal := LegacyTraversal.new()
+		var legacy_traversal = legacy_surface_script.new()
 		var canonical_foley = load("res://scripts/WorldFoley.gd").new()
-		var legacy_foley := LegacyFoley.new()
+		var legacy_foley = legacy_foley_script.new()
 		legacy_foley.baseline_state = state
 		_instances.append_array([actor,canonical_traversal,legacy_traversal,canonical_foley,legacy_foley])
 		canonical_traversal.configure(map)
