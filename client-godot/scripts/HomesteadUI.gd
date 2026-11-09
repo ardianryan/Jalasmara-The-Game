@@ -359,6 +359,13 @@ func _market() -> void:
 
 func _balai() -> void:
 	_page("Balai Wirabhumi · Izin Kebun")
+	if is_instance_valid(host) and host.has_method("service_resident"):
+		var resident: Dictionary=host.service_resident("balai")
+		if not resident.is_empty():
+			_button("Bicara dengan Ki Lurah",func():
+				close()
+				host._talk([{"name":resident.name,"text":resident.text}])
+			)
 	if GameState.homestead.get("permit",false):
 		_text("Izin rakit kebun Griya Sasmita sudah tercatat. Rawat petak di samping rumah Nala dan bawa hasilnya ke Kedai Waras.")
 	elif GameState.player.get("progress",{}).get("missions",[]).has("akar"):
