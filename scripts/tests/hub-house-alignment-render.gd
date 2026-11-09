@@ -34,9 +34,9 @@ func run() -> void:
 		player.swim_sprite.set_outfit("daily")
 		player.swim_sprite.animate(false,false,1,0)
 		var camera:=Camera2D.new()
-		camera.zoom=Vector2.ONE
+		camera.zoom=Vector2(.5,.5)
 		stage.add_child(camera)
-		var renderer: Node2D=load("res://scripts/land/LandWorld3D.gd").new()
+		var renderer: Node2D=load("res://../scripts/tests/fixtures/house-framing-renderer.gd").new()
 		stage.add_child(renderer)
 		renderer.setup(stage,player,camera,"hub",layout.map)
 		renderer.set_process(false)
@@ -59,6 +59,14 @@ func run() -> void:
 				await RenderingServer.frame_post_draw
 				var status: Dictionary=renderer.debug_status()
 				assert(status.view.azimuth==-45 and status.view.elevation==35 and status.actors.player==1 and status.maxFootError<.01)
+				var framing:=Rect2(Vector2(8,8),Vector2(renderer.viewport_3d.size)-Vector2(16,16))
+				var points: Array=renderer.house_bounds[house.id].duplicate()
+				for shelter in layout.map.shelters:
+					if str(shelter.get("buildingId",""))==str(house.id) and not bool(shelter.get("existing",false)):
+						points.append_array(renderer._shelter_architecture.roofs[shelter.id])
+				assert(not points.is_empty())
+				for at: Vector3 in points:
+					assert(framing.has_point(renderer.camera_3d.unproject_position(at)),str(house.id)+" actual house/roof geometry must fit inside the comparison frame")
 				var id: String=str(layout.id)+"-"+str(house.id)+"-"+str(setting.id)
 				root.get_texture().get_image().save_png(output+"/"+id+".png")
 				reports.append({"id":id,"marker":[player.position.x,player.position.y],"status":status})
