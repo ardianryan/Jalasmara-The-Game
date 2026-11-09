@@ -166,7 +166,9 @@ async function walkTo(x, y) {
       !value.modal && !value.homePanel,
       "A modal cannot be bypassed while navigating.",
     );
-    if (distance < 15) return value;
+    const arrival =
+      !value.diving && value.area !== "home" && value.land?.active ? 5 : 15;
+    if (distance < arrival) return value;
     stuck =
       previous && Math.hypot(value.x - previous.x, value.y - previous.y) < 0.5
         ? stuck + 1

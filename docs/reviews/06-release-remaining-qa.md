@@ -37,3 +37,9 @@ Status saat persiapan dicatat: **pengujian lokal baru belum dijalankan**. Setela
 ## Batas
 
 Playwright Chromium/SwiftShader dan CDP sentuh merupakan emulasi, bukan Windows/S23 fisik atau pengukuran FPS perangkat. Membuka percakapan tidak sendiri membuktikan seluruh tubuh/alat di bawah atap benar secara visual; capture sebelum dialog dan bukti native tetap ditinjau. Semua hasil gagal, cleanup serta pin/source berikutnya ditambahkan sebagai riwayat. Tidak menambah tool gambar, dependensi engine, atau atribusi upstream baru dalam paket QA ini.
+
+## Night pertama: rute harness gagal sebelum transaksi
+
+Run lokal pertama pada PCK5f membuat UUID `33c89b96-4262-4fae-bef2-d30afdeaf311`. Ia attach dan bergerak dengan 67 pulse matriks, lalu berhenti di `[1037.33,1031.84]` pada post serambi Tedi saat menuju waypoint `[600,950]`. Belum ada transaksi/check selesai; error JavaScript dan API gagal sama-sama nol. Cleanup assertion lulus. Bukti `artifacts/browser/night-home-33c89b96-4262-4fae-bef2-d30afdeaf311/failure.png` diperiksa; log `/tmp/jalasmara-06-release-night.log` dan results dipertahankan.
+
+Pemeriksaan geometri actual-vs-authored: segmen ideal `[1120,1000]→[600,950]` sah, tetapi segmen dari posisi aktual yang berhenti terlalu dini tidak sah. Arrival15unit dapat memotong sudut dekat support saat melanjutkan segmen panjang; post runtime memang menahan pemain. Toleransi arrival pada daratan aktual diperketat menjadi5unit di ketiga harness, sedangkan interior/selam mempertahankan15. Produk/collider tidak diubah. Night juga menyimpan diagnostics tiap capture agar kegagalan berikutnya dapat diperiksa. Pengulangan belum dianggap lulus sampai dijalankan.

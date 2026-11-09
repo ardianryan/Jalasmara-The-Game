@@ -46,7 +46,8 @@ const mongo = new MongoClient(mongoUrl);
 const checks = [],
   operations = [],
   errors = [],
-  failures = [];
+  failures = [],
+  observations = [];
 let browser,
   context,
   page,
@@ -109,7 +110,8 @@ async function walkTo(x, y) {
       dy = y - s.y,
       distance = Math.hypot(dx, dy);
     assert(!s.modal && !s.homePanel, "Close panels before walking.");
-    if (distance < 15) return;
+    const arrival = s.land?.active && s.area !== "home" && !s.diving ? 5 : 15;
+    if (distance < arrival) return;
     stuck =
       previous && Math.hypot(s.x - previous.x, s.y - previous.y) < 0.5
         ? stuck + 1
@@ -187,6 +189,18 @@ async function firstButton() {
 }
 async function shot(name) {
   await page.screenshot({ path: `${artifacts}/${name}.png` });
+  const value = await snapshot();
+  observations.push({
+    name,
+    x: value.x,
+    y: value.y,
+    area: value.area ?? value.land?.area,
+    land: value.land,
+    renderer: value.renderer,
+    weather: value.weather,
+    hud: value.hud,
+    dialogue: value.dialogue,
+  });
   console.log(JSON.stringify({ phase: name }));
 }
 
@@ -584,6 +598,7 @@ try {
           errors,
           failures,
           navigation,
+          observations,
           ownTemporaryPlayerRemoved: cleaned,
           routeElapsedMs: routeStarted ? Date.now() - routeStarted : null,
         },

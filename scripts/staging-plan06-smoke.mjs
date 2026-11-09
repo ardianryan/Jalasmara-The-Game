@@ -231,7 +231,7 @@ async function walkTo(x, y) {
       dy = y - value.y,
       distance = Math.hypot(dx, dy);
     assert(!value.modal && !value.homePanel);
-    if (distance < 15) return value;
+    if (distance < 5) return value;
     stuck =
       previous && Math.hypot(value.x - previous.x, value.y - previous.y) < 0.5
         ? stuck + 1
