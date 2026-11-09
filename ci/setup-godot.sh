@@ -18,6 +18,7 @@ fi
 cp "$cache_dir/web_nothreads_release.zip" "$HOME/.local/share/godot/export_templates/$godot_version.stable/"
 python3 tools/player-gait/test.py
 python3 tools/player-gait/test_eightway.py
+python3 tools/hud-bahari/test.py
 GODOT_BIN="$cache_dir/godot" node scripts/export-game.mjs
 GODOT_BIN="$cache_dir/godot" WORLD_REPORT_DIR=reports/world node scripts/verify-living-world.mjs
 

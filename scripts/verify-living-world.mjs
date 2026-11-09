@@ -30,6 +30,7 @@ const scripts = [
   "scripts/godot-creature-animation.gd",
   "scripts/godot-wildlife-check.gd",
   "scripts/tests/living-water.gd",
+  "scripts/tests/ocean-current.gd",
   "scripts/tests/world-foley.gd",
   "scripts/tests/terrain-layers.gd",
   "scripts/tests/ocean-geology.gd",
@@ -55,6 +56,7 @@ const scripts = [
   "scripts/tests/homestead-world.gd",
   "scripts/tests/homestead-ui.gd",
   "scripts/tests/kedai-focus.gd",
+  "scripts/tests/kedai-result-layout.gd",
   "scripts/tests/village-activities.gd",
   "scripts/tests/npc-body-animation.gd",
 ];
