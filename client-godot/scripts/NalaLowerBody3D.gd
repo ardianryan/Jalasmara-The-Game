@@ -342,7 +342,7 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 		entry["heldFootViewDistance"]=float(prior_foot.get("heldFootViewDistance",0.0))+moved_distance if view_held else 0.0
 	var ramp_plan:=false
 	for entry in pose.feet.values(): ramp_plan=ramp_plan or bool(entry.get("fixedRampTarget",false))
-	if physical_plane and ramp_plan and not stored.feet.is_empty() and int(pose.discontinuityResets)==int(stored.get("discontinuityResets",0)):
+	if physical_plane and ramp_plan and (moved_distance>.00001 or settling) and not stored.feet.is_empty() and int(pose.discontinuityResets)==int(stored.get("discontinuityResets",0)):
 		var footprint_height:=INF
 		var current_ramp:=false
 		var footprints:Dictionary={}
