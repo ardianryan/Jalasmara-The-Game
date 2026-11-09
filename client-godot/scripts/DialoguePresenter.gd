@@ -15,6 +15,10 @@ var _scroll: ScrollContainer
 var _layout_pending := false
 var _emotion := "neutral"
 var _emote: Emote
+var _row:HBoxContainer
+var _column:VBoxContainer
+var _panel_style:StyleBox
+var _compact_layout:=false
 
 class Emote extends Control:
 	var mood := "neutral"
@@ -36,9 +40,11 @@ class Emote extends Control:
 
 func _ready() -> void:
 	set_meta("dialogue",true)
-	add_theme_stylebox_override("panel",HudArt.panel("dialogue"))
+	_panel_style=HudArt.panel("dialogue")
+	add_theme_stylebox_override("panel",_panel_style)
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	var row := HBoxContainer.new()
+	_row=row
 	row.add_theme_constant_override("separation",18)
 	add_child(row)
 	portrait = TextureRect.new()
@@ -62,6 +68,7 @@ func _ready() -> void:
 	portrait.add_child(_emote)
 	_emote.hide()
 	var column := VBoxContainer.new()
+	_column=column
 	column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	column.add_theme_constant_override("separation",10)
 	row.add_child(column)
@@ -78,11 +85,13 @@ func _ready() -> void:
 	text_view = RichTextLabel.new()
 	text_view.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	text_view.fit_content = true
+	text_view.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	text_view.bbcode_enabled = true
 	text_view.scroll_active = false
 	text_view.add_theme_font_override("normal_font",BODY)
 	text_view.add_theme_font_override("bold_font",BODY)
 	text_view.add_theme_color_override("default_color",Color("302d2a"))
+	text_view.add_theme_constant_override("line_separation",0)
 	_scroll.add_child(text_view)
 	next_button = Button.new()
 	next_button.text = "Lanjut"
@@ -124,6 +133,7 @@ func present(speaker: String,text: String,emotion := "neutral") -> void:
 	portrait.visible = portrait.texture != null
 	_scroll.scroll_vertical = 0
 	_layout()
+	_schedule_layout()
 	next_button.grab_focus()
 
 func _portrait(speaker: String) -> Texture2D:
@@ -154,20 +164,47 @@ func _portrait(speaker: String) -> Texture2D:
 
 func _layout() -> void:
 	var view := get_viewport().get_visible_rect().size
-	var portrait_screen := view.x<800
-	var ratio := view.x/maxf(1,Vector2(get_window().size).x)
-	var available := view.y-ceilf(60*ratio)-24-ViewportLayout.insets().y-ViewportLayout.insets().w
+	var physical:=Vector2(get_window().size)
+	var portrait_screen := physical.x<physical.y
+	var compact:=not portrait_screen and physical.y<=480
+	var ratio := view.x/maxf(1,physical.x)
+	var insets:=ViewportLayout.insets()
+	var available := view.y-ceilf(60*ratio)-24-insets.y-insets.w
 	var h := minf(available,500 if portrait_screen else 340)
-	var font_size := maxi(24,ceili(16*ratio))
+	var font_size := ceili(16*ratio) if compact else maxi(24,ceili(16*ratio))
+	if compact!=_compact_layout:
+		_compact_layout=compact
+		_panel_style.content_margin_left=28 if compact else 32
+		_panel_style.content_margin_right=28 if compact else 32
+		_panel_style.content_margin_top=18 if compact else 28
+		_panel_style.content_margin_bottom=18 if compact else 28
+	_row.add_theme_constant_override("separation",14 if compact else 18)
+	_column.add_theme_constant_override("separation",4 if compact else 10)
 	nameplate.add_theme_font_size_override("font_size",font_size)
-	next_button.custom_minimum_size.y=maxf(84 if get_window().size.x<900 else 56,ceilf(48*ratio))
+	next_button.custom_minimum_size=Vector2(ceilf(104*ratio),ceilf(48*ratio)) if compact else Vector2(0,maxf(84 if physical.x<900 else 56,ceilf(48*ratio)))
+	next_button.size_flags_horizontal=Control.SIZE_SHRINK_END if compact else Control.SIZE_FILL
 	next_button.add_theme_font_size_override("font_size",font_size)
 	_scroll.custom_minimum_size.y=0
-	size = Vector2(minf(1040,view.x-32),h)
-	position = Vector2((view.x-size.x)/2,view.y-h-20-ViewportLayout.insets().w)
+	_scroll.size_flags_vertical=Control.SIZE_FILL if compact else Control.SIZE_EXPAND_FILL
+	var width:=minf(1040,view.x-32-insets.x-insets.z)
 	text_view.add_theme_font_size_override("normal_font_size",font_size)
-	portrait.custom_minimum_size = Vector2(84,112) if portrait_screen else Vector2(132,164)
+	portrait.custom_minimum_size = Vector2(72,92) if compact else Vector2(84,112) if portrait_screen else Vector2(132,164)
 	portrait.size_flags_vertical=Control.SIZE_SHRINK_CENTER
+	_emote.position=Vector2(50,-12) if compact else Vector2(68,-8)
+	if compact:
+		# Measure the complete authored line, so typewriter reveal never resizes the tray.
+		var text_width:=maxf(80,width-56-(86 if portrait.visible else 0))
+		var title_height:=nameplate.get_theme_font("font").get_multiline_string_size(nameplate.text,HORIZONTAL_ALIGNMENT_LEFT,text_width,font_size).y
+		var body_height:=maxf(BODY.get_height(font_size)+2,BODY.get_multiline_string_size(text_view.get_parsed_text(),HORIZONTAL_ALIGNMENT_LEFT,text_width,font_size).y+2)
+		var column_height:=title_height+body_height+8+next_button.custom_minimum_size.y
+		h=minf(minf(available,view.y*.42),maxf(92 if portrait.visible else 0,column_height)+36)
+		var line_height:=ceilf(BODY.get_height(font_size))
+		var body_space:=maxf(line_height,h-36-title_height-8-next_button.custom_minimum_size.y)
+		var visible_body:=maxf(line_height,floorf(body_space/line_height)*line_height)
+		_scroll.custom_minimum_size.y=visible_body
+		h=minf(h,maxf(92 if portrait.visible else 0,title_height+visible_body+8+next_button.custom_minimum_size.y)+36)
+	size = Vector2(width,h)
+	position = Vector2(insets.x+(view.x-insets.x-insets.z-size.x)/2,view.y-h-(ceilf(8*ratio) if compact else 20)-insets.w)
 
 func _schedule_layout() -> void:
 	if _layout_pending: return
@@ -203,4 +240,4 @@ func _process(delta: float) -> void:
 	if count>=_total: text_view.visible_characters = -1
 
 func debug_state() -> Dictionary:
-	return {"speaker":_speaker,"emotion":_emotion,"visibleCharacters":text_view.visible_characters,"total":text_view.get_total_character_count(),"portrait":portrait.texture!=null,"position":[position.x,position.y],"size":[size.x,size.y]}
+	return {"speaker":_speaker,"emotion":_emotion,"visibleCharacters":text_view.visible_characters,"total":text_view.get_total_character_count(),"portrait":portrait.texture!=null,"position":[position.x,position.y],"size":[size.x,size.y],"compact":_compact_layout}
