@@ -49,7 +49,9 @@ func _ground(at: Vector2) -> Vector3:
 	return renderer.ground_point(at)
 
 func _world_motion(at:Vector2,offset:Vector2) -> Vector3:
-	return renderer.map_point(at+offset,0)-renderer.map_point(at,0)
+	var movement:Vector3=_ground(at+offset)-_ground(at)
+	movement.z=0
+	return movement
 
 func _logical_offset(at:Vector2,world:Vector3) -> Vector2:
 	var x:=_world_motion(at,Vector2.RIGHT)
@@ -86,7 +88,7 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 	if paused: return snapshot()
 	var logical_delta:=at-_last_at
 	var physical:=_world_motion(_last_at,logical_delta).length()
-	if logical_delta.length()>80:
+	if logical_delta.length()>80 or physical>80:
 		_discontinuities+=1
 		_reset(at,hips,right)
 		return snapshot()

@@ -79,10 +79,13 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 	var direction:=str(state.artworkDirection)
 	var view:Dictionary=_data.views[direction]
 	var hips:Dictionary={}
-	for side in ["left","right"]: hips[side]=float(view.legs[side].hip[0])-64.0
+	var sole_offsets:Dictionary={}
+	for side in ["left","right"]:
+		hips[side]=float(view.legs[side].hip[0])-64.0
+		sole_offsets[side]=float(view.legs[side].parts.foot[0])+float(view.legs[side].solePixel[0])-64.0
 	var frozen:=bool(state.poseFrozen)
 	var moved:=bool(state.poseWalking) and float(state.speed)>.1
-	var pose:Dictionary=_planner.update(actor.position,moved,frozen,hips,right,delta)
+	var pose:Dictionary=_planner.update(actor.position,moved,frozen,sole_offsets,right,delta)
 	if frozen and not _last.is_empty():
 		proxy.visible=false
 		return _last.duplicate(true)
