@@ -10,7 +10,7 @@ export const VILLAGE_RESIDENTS = [
   {
     id: "npc_mbok_ratih", name: "Mbok Ratih", title: "Pedagang Pasar Tambakbaya", appearance: 1, cycle: 1,
     route: [[620, 1030], [710, 1040]],
-    activity: { kind: "trading", startMinute: 420, endMinute: 1080, work: [620, 1030], rest: [465, 320], shelter: [465, 320], commute: [[620, 1030], [600, 950], [600, 815], [600, 735], [595, 650], [900, 650], [900, 350], [940, 310], [760, 350], [640, 350], [640, 320], [465, 320]] },
+    activity: { kind: "trading", startMinute: 420, endMinute: 1080, work: [620, 1030], rest: [465, 320], shelter: [465, 320], commute: [[620, 1030], [600, 950], [600, 815], [600, 735], [595, 650], [900, 650], [900, 350], [940, 310], [760, 325], [640, 350], [640, 320], [465, 320]] },
     line: "Berat barang bersama wadah disebut bruto. Kurangi berat wadah, atau tara, untuk mendapatkan netto. Timbangan dacin ini bisa diperiksa bersama pembeli.",
     evening: "Bahan dapur untuk Mbah Wira sudah kutimbang. Catat berat bersihnya supaya racikan malam ini tidak meleset.",
   },

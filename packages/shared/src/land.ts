@@ -111,6 +111,28 @@ const obstacle = (
   variant,
   elevation,
 });
+const rectangularHouse = (
+  id: string,
+  x: number,
+  y: number,
+  width: number,
+  depth: number,
+  height3d: number,
+  variant: string,
+  elevation: number,
+): LandObstacle =>
+  obstacle(
+    id,
+    "house",
+    x,
+    y,
+    width,
+    depth,
+    height3d,
+    variant,
+    elevation,
+    rectangle(x, y, width, depth),
+  );
 const floor = (
   id: string,
   polygon: LandPoint[],
@@ -447,7 +469,7 @@ hubRoutes.push(
   ],
   [
     [940, 310],
-    [760, 350],
+    [760, 325],
     [640, 350],
     [640, 320],
     [465, 320],
@@ -481,21 +503,10 @@ for (const [routeIndex, route] of hubRoutes.slice(-4).entries()) {
   }
 }
 const hubObstacles: LandObstacle[] = [
-  obstacle("kedai_waras", "house", 360, 420, 400, 175, 155, "thatch", 2),
-  obstacle("galangan_beno", "house", 1090, 390, 420, 170, 125, "workshop", 2),
-  obstacle("pos_cakrawala", "house", 1840, 140, 300, 105, 135, "metal", 3),
-  obstacle(
-    "griya_sasmita",
-    "house",
-    78,
-    420,
-    164,
-    145,
-    122,
-    "sasmita",
-    2,
-    rectangle(78, 420, 164, 145),
-  ),
+  rectangularHouse("kedai_waras", 360, 420, 400, 175, 155, "thatch", 2),
+  rectangularHouse("galangan_beno", 1090, 390, 420, 170, 125, "workshop", 2),
+  rectangularHouse("pos_cakrawala", 1840, 140, 300, 105, 135, "metal", 3),
+  rectangularHouse("griya_sasmita", 78, 420, 164, 145, 122, "sasmita", 2),
   obstacle("home_plot_1", "garden", 65, 760, 80, 70, 24, "home_plot", 2),
   obstacle("home_plot_2", "garden", 165, 760, 80, 70, 24, "home_plot", 2),
   obstacle(
@@ -520,10 +531,10 @@ const hubObstacles: LandObstacle[] = [
     "bridge_rail",
     2,
   ),
-  obstacle("balai_lurah", "house", 750, 120, 380, 145, 165, "balai", 2),
-  obstacle("rumah_ratih", "house", 350, 150, 230, 125, 108, "home_pelana", 2),
-  obstacle("rumah_sari", "house", 1210, 120, 230, 125, 112, "home_limas", 2),
-  obstacle("rumah_tedi", "house", 920, 850, 170, 90, 100, "home_pelana", 1),
+  rectangularHouse("balai_lurah", 750, 120, 380, 145, 165, "balai", 2),
+  rectangularHouse("rumah_ratih", 350, 150, 230, 125, 108, "home_pelana", 2),
+  rectangularHouse("rumah_sari", 1210, 120, 230, 125, 112, "home_limas", 2),
+  rectangularHouse("rumah_tedi", 920, 850, 170, 90, 100, "home_pelana", 1),
   obstacle("kebun_darmi", "garden", 1810, 485, 330, 180, 34, "raised_beds", 2),
   obstacle("batu_pelataran", "rock", 760, 835, 105, 65, 70, "limestone", 1),
   obstacle("palm_lower", "tree", 1530, 1020, 34, 34, 190, "palm", 1),
@@ -836,7 +847,7 @@ for (const [i, x, y] of [
 export const LAND_MAPS: Record<"hub" | "forest", LandMap> = {
   hub: {
     id: "hub",
-    layoutVersion: 9,
+    layoutVersion: 10,
     landmass: [
       [240, 80],
       [680, 60],
@@ -902,7 +913,7 @@ export const LAND_MAPS: Record<"hub" | "forest", LandMap> = {
   },
 };
 const hubMarginTrees: readonly (readonly [number, number, number])[] = [
-  [340, 390, 2],
+  [330, 405, 2],
   [430, 380, 2],
   [990, 390, 2],
   [1585, 470, 2],
@@ -1231,14 +1242,17 @@ export function nearestSafeLandPoint(
   map: LandMap,
   point: LandPosition,
 ): LandPosition {
-  if (isLandWalkable(map, point)) return { x: point.x, y: point.y };
+  // Recovery must also clear LandCollision.WALK_CLEARANCE, not only the API's 12px body.
+  const recoveryClearance = 13;
+  if (isLandWalkable(map, point, recoveryClearance))
+    return { x: point.x, y: point.y };
   for (let radius = 16; radius <= 2600; radius += 16)
     for (let i = 0; i < 32; i++) {
       const candidate = {
         x: point.x + Math.cos((i * Math.PI) / 16) * radius,
         y: point.y + Math.sin((i * Math.PI) / 16) * radius,
       };
-      if (isLandWalkable(map, candidate)) return candidate;
+      if (isLandWalkable(map, candidate, recoveryClearance)) return candidate;
     }
   return { ...map.spawn };
 }

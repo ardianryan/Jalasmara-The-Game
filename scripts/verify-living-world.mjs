@@ -56,6 +56,7 @@ const scripts = [
   "scripts/tests/land-left-gameplay.gd",
   "scripts/tests/forest-readability.gd",
   "scripts/tests/shelter-architecture06.gd",
+  "scripts/tests/hub-house-alignment.gd",
   "scripts/tests/map-grounding.gd",
   "scripts/tests/surface-traversal.gd",
   "scripts/tests/land-path.gd",

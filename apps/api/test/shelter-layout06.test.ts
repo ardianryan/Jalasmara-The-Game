@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { randomUUID } from "node:crypto";
+import { readFileSync } from "node:fs";
 import argon2 from "argon2";
 import {
   connect,
@@ -22,18 +23,22 @@ import {
   isLandSegmentWalkable,
   landPointInPolygon,
   nearestSafeLandPoint,
+  type LandMap,
 } from "../../../packages/shared/src/land.ts";
 
 const map = WORLD.landMaps.hub;
+const oldMapV9: LandMap = JSON.parse(
+  readFileSync(new URL("./fixtures/hub-layout9.json", import.meta.url), "utf8"),
+);
 const profiles = [
   ...WORLD.surface_hub.residents,
   { name: "Bu Darmi", ...WORLD.surface_hub.districtActivities["Bu Darmi"] },
 ];
 const point = (value: readonly number[]) => ({ x: value[0], y: value[1] });
 const oldMapV8 = {
-  ...map,
+  ...oldMapV9,
   layoutVersion: 8,
-  obstacles: map.obstacles
+  obstacles: oldMapV9.obstacles
     .filter((entry) => entry.variant !== "shelter_post")
     .map((entry) =>
       entry.id === "griya_sasmita"
@@ -63,6 +68,57 @@ const deckAisles = [
   [59, 600],
   [261, 600],
 ] as const;
+const houseCornersV9 = [
+  [
+    "kedai_waras",
+    [
+      [752, 428],
+      [368, 587],
+    ],
+  ],
+  [
+    "galangan_beno",
+    [
+      [1502, 398],
+      [1098, 552],
+    ],
+  ],
+  [
+    "pos_cakrawala",
+    [
+      [2132, 148],
+      [1848, 237],
+    ],
+  ],
+  [
+    "balai_lurah",
+    [
+      [1122, 128],
+      [758, 257],
+    ],
+  ],
+  [
+    "rumah_ratih",
+    [
+      [572, 158],
+      [358, 267],
+    ],
+  ],
+  [
+    "rumah_sari",
+    [
+      [1432, 128],
+      [1218, 237],
+    ],
+  ],
+  [
+    "rumah_tedi",
+    [
+      [1082, 858],
+      [928, 932],
+    ],
+  ],
+] as const;
 
 test("seven rain stations have body clearance under physical roofs in legacy and left views", () => {
   for (const profile of profiles) {
@@ -75,10 +131,19 @@ test("seven rain stations have body clearance under physical roofs in legacy and
         for (const height of [0, 35, 70]) {
           for (let index = 0; index < 16; index++) {
             const angle = (index * Math.PI) / 8;
-            if (!landPointInPolygon({
-              x: station.x + Math.cos(angle) * 13 + upX * height,
-              y: station.y + Math.sin(angle) * 13 - upY * height * Math.cos((55 * Math.PI) / 180),
-            }, shelter.roof)) return false;
+            if (
+              !landPointInPolygon(
+                {
+                  x: station.x + Math.cos(angle) * 13 + upX * height,
+                  y:
+                    station.y +
+                    Math.sin(angle) * 13 -
+                    upY * height * Math.cos((55 * Math.PI) / 180),
+                },
+                shelter.roof,
+              )
+            )
+              return false;
           }
         }
       }
@@ -156,7 +221,7 @@ test("stations, bridge, changing booth and forest portal stay connected", () => 
 });
 
 test("layout migration from each newly blocked support retains connected land", () => {
-  assert.equal(map.layoutVersion, 9);
+  assert.equal(map.layoutVersion, 10);
   let migrated = 0;
   for (const post of map.obstacles.filter(
     (entry) => entry.variant === "shelter_post",
@@ -185,8 +250,8 @@ test("layout migration from each newly blocked support retains connected land", 
   }
   assert.equal(
     migrated,
-    49,
-    "Forty-nine old support/clearance samples were valid; the southern Ratih sample was already outside floor clearance",
+    45,
+    "Forty-five new support samples were legal in frozen layout8; five Ratih samples intersect its old tree/floor clearance",
   );
 });
 
@@ -227,269 +292,294 @@ test("Griya follows both deck axes and keeps body-sized access around its change
   }
 });
 
-test(
-  "layout 9 API migrates old support saves and persists legal movement without touching player state",
-  { timeout: 30000 },
-  async (t) => {
-    const runId = randomUUID().replaceAll("-", "");
-    const database = `jalasmara_shelter_${runId}`;
-    const mongoUrl = new URL(
-      process.env.TEST_MONGO_URL ??
-        "mongodb://127.0.0.1:27018/unused?replicaSet=rs0",
-    );
-    mongoUrl.pathname = `/${database}`;
-    const previousEnv = Object.fromEntries(
-      ["NODE_ENV", "APP_ORIGIN", "MONGO_URL", "REDIS_URL"].map((key) => [
-        key,
-        process.env[key],
-      ]),
-    );
-    process.env.NODE_ENV = "test";
-    process.env.APP_ORIGIN = "http://localhost:5173";
-    process.env.MONGO_URL = mongoUrl.toString();
-    process.env.REDIS_URL =
-      process.env.TEST_REDIS_URL ?? "redis://127.0.0.1:6380/14";
-    const id = randomUUID();
-    const remoteAddress = `fd00:${runId.match(/.{4}/g)!.slice(0, 5).join(":")}::1`;
-    const cookies: Record<string, string> = {};
-    const authKeys = new Set<string>();
-    let csrf = "",
-      store: Store | undefined,
-      app: Awaited<ReturnType<typeof buildApp>> | undefined;
-    try {
-      store = await connect();
-      assert.equal(store.db.databaseName, database);
-      await seed(store);
-      app = await buildApp(store, false);
-      await app.ready();
-      const request = async (
-        path: string,
-        payload?: Record<string, unknown>,
-      ) => {
-        const response = await app!.inject({
-          method: payload === undefined ? "GET" : "POST",
-          url: `/api${path}`,
-          remoteAddress,
-          headers: {
-            cookie: Object.entries(cookies)
-              .map(([key, value]) => `${key}=${value}`)
-              .join("; "),
-            origin: store!.cfg.origin,
-            "x-csrf-token": csrf,
-          },
-          payload,
-        });
-        for (const cookie of response.cookies) {
-          cookies[cookie.name] = cookie.value;
-          if (cookie.name === "jalasmara")
-            authKeys.add(`auth:${digest(cookie.value)}`);
-        }
-        const data = response.json();
-        if (data.csrf) csrf = data.csrf;
-        return { status: response.statusCode, data };
-      };
-      const now = new Date().toISOString(),
-        password = opaque();
-      const user: User = {
-        id,
-        email: `${id}@shelter.test.invalid`,
-        name: "Penguji Serambi",
-        role: "player",
-        status: "active",
-        coins: 1234,
-        inventory: [{ fragmentId: "klorofil", stars: 3, quantity: 2 }],
-        abilities: freshAbilities(),
-        progress: {
-          ...freshProgress(),
-          tutorial: true,
-          day: 2,
-          missions: ["malam_1"],
-        },
-        version: 7,
-        authVersion: 0,
-        passwordHash: await argon2.hash(password, { type: argon2.argon2id }),
-        createdAt: now,
-        updatedAt: now,
-      };
-      await store.users.insertOne(user);
-      assert.equal((await request("/auth/session")).status, 200);
-      assert.equal(
-        (await request("/auth/login", { email: user.email, password })).status,
-        200,
+for (const legacyVersion of [8, 9])
+  test(
+    `layout 10 API migrates layout${legacyVersion} saves and persists legal movement without touching player state`,
+    { timeout: 30000 },
+    async (t) => {
+      const runId = randomUUID().replaceAll("-", "");
+      const database = `jalasmara_shelter_${runId}`;
+      const mongoUrl = new URL(
+        process.env.TEST_MONGO_URL ??
+          "mongodb://127.0.0.1:27018/unused?replicaSet=rs0",
       );
-      assert.equal((await request("/adventure/state")).status, 200);
-      const before = await store.users.findOne({ id });
-      let migrated = 0;
-      const samples = [
-        ...map.obstacles.filter((entry) => entry.variant === "shelter_post"),
-        ...griyaOldCorners.map((value, index) => ({
-          id: `griya_old_corner_${index}`,
-          x: value[0],
-          y: value[1],
-          width: 0,
-          height: 0,
-        })),
-      ];
-      for (const post of samples) {
-        const previous = {
-          x: post.x + post.width / 2,
-          y: post.y + post.height / 2,
-        };
-        if (!isLandWalkable(oldMapV8, previous)) continue;
-        const oldPositionAt = Date.now() - 5000;
-        await store.redis.set(
-          `surface:${id}`,
-          JSON.stringify({
-            area: "hub",
-            ...previous,
-            layoutVersion: 8,
-            playerVersion: 7,
-            positionAt: oldPositionAt,
-          }),
-          "EX",
-          1800,
-        );
-        const resumed = await request("/adventure/state");
-        assert.equal(resumed.status, 200, post.id);
-        const saved = resumed.data.surface;
-        assert.equal(saved.layoutVersion, 9);
-        assert.equal(saved.area, "hub");
-        assert.deepEqual(
-          { x: saved.x, y: saved.y },
-          nearestSafeLandPoint(map, previous),
-        );
-        assert.ok(
-          reachesHub(saved),
-          `${post.id} must remain connected to the real hub network`,
-        );
-        assert.ok(saved.positionAt > oldPositionAt);
-        assert.deepEqual(
-          JSON.parse((await store.redis.get(`surface:${id}`))!),
-          saved,
-        );
-        assert.deepEqual(
-          (await request("/adventure/state")).data.surface,
-          saved,
-          "Reload must preserve the migrated position and timestamp",
-        );
-        const stale = await request("/adventure/surface-position", {
-          area: "hub",
-          x: saved.x,
-          y: saved.y,
-          version: 7,
-          fromPositionAt: oldPositionAt,
-        });
-        assert.equal(stale.status, 409);
-        assert.equal(stale.data.code, "POSITION_CHANGED");
-        const blocked = await request("/adventure/surface-position", {
-          area: "hub",
-          ...previous,
-          version: 7,
-          fromPositionAt: saved.positionAt,
-        });
-        assert.equal(blocked.status, 409);
-        assert.equal(blocked.data.code, "PATH_BLOCKED");
-        let destination: { x: number; y: number } | undefined;
-        for (let direction = 0; direction < 16; direction++) {
-          const angle = (direction * Math.PI) / 8;
-          const candidate = {
-            x: saved.x + Math.cos(angle) * 8,
-            y: saved.y + Math.sin(angle) * 8,
-          };
-          if (isLandSegmentWalkable(map, saved, candidate)) {
-            destination = candidate;
-            break;
-          }
-        }
-        assert.ok(
-          destination,
-          `${post.id} must permit legal movement after migration`,
-        );
-        const moved = await request("/adventure/surface-position", {
-          area: "hub",
-          ...destination,
-          version: 7,
-          fromPositionAt: saved.positionAt,
-        });
-        assert.equal(moved.status, 200, JSON.stringify(moved.data));
-        assert.deepEqual(
-          { x: moved.data.surface.x, y: moved.data.surface.y },
-          destination,
-        );
-        assert.equal(moved.data.surface.layoutVersion, 9);
-        assert.deepEqual(
-          (await request("/adventure/state")).data.surface,
-          moved.data.surface,
-        );
-        assert.deepEqual(
-          await store.users.findOne({ id }),
-          before,
-          "Migration and movement must preserve coins, inventory, calendar, homestead and story",
-        );
-        migrated++;
-      }
-      assert.equal(
-        migrated,
-        14,
-        "Exercise ten support centres and four formerly free corners of Griya",
+      mongoUrl.pathname = `/${database}`;
+      const previousEnv = Object.fromEntries(
+        ["NODE_ENV", "APP_ORIGIN", "MONGO_URL", "REDIS_URL"].map((key) => [
+          key,
+          process.env[key],
+        ]),
       );
-      for (const value of [[160, 400], ...deckAisles]) {
-        const previous = point(value);
-        assert.ok(isLandWalkable(oldMapV8, previous));
-        assert.ok(isLandWalkable(map, previous));
-        await store.redis.set(
-          `surface:${id}`,
-          JSON.stringify({
-            area: "hub",
-            ...previous,
-            layoutVersion: 8,
-            playerVersion: 7,
-            positionAt: Date.now() - 5000,
-          }),
-          "EX",
-          1800,
-        );
-        const resumed = await request("/adventure/state");
-        assert.equal(resumed.status, 200);
-        assert.deepEqual(
-          { x: resumed.data.surface.x, y: resumed.data.surface.y },
-          previous,
-          "A valid old saved point must be preserved, including the strip behind Griya",
-        );
-        assert.ok(reachesHub(resumed.data.surface));
-        assert.deepEqual(
-          (await request("/adventure/state")).data.surface,
-          resumed.data.surface,
-        );
-      }
-      t.diagnostic(
-        `${migrated} old support/corner saves migrated and completed legal API round-trips; five valid old deck points stayed unchanged`,
-      );
-    } finally {
-      if (app) await app.close();
-      if (store) {
-        const keys = [`surface:${id}`, `calendar:writer:${id}`, ...authKeys];
-        let cursor = "0";
-        do {
-          const result = await store.redis.scan(
-            cursor,
-            "MATCH",
-            `*${remoteAddress}*`,
-            "COUNT",
-            100,
-          );
-          cursor = result[0];
-          keys.push(...result[1]);
-        } while (cursor !== "0");
-        await store.redis.del(...keys);
+      process.env.NODE_ENV = "test";
+      process.env.APP_ORIGIN = "http://localhost:5173";
+      process.env.MONGO_URL = mongoUrl.toString();
+      process.env.REDIS_URL =
+        process.env.TEST_REDIS_URL ?? "redis://127.0.0.1:6380/14";
+      const id = randomUUID();
+      const remoteAddress = `fd00:${runId.match(/.{4}/g)!.slice(0, 5).join(":")}::1`;
+      const cookies: Record<string, string> = {};
+      const authKeys = new Set<string>();
+      let csrf = "",
+        store: Store | undefined,
+        app: Awaited<ReturnType<typeof buildApp>> | undefined;
+      try {
+        store = await connect();
         assert.equal(store.db.databaseName, database);
-        await store.db.dropDatabase();
-        await close(store);
+        await seed(store);
+        app = await buildApp(store, false);
+        await app.ready();
+        const request = async (
+          path: string,
+          payload?: Record<string, unknown>,
+        ) => {
+          const response = await app!.inject({
+            method: payload === undefined ? "GET" : "POST",
+            url: `/api${path}`,
+            remoteAddress,
+            headers: {
+              cookie: Object.entries(cookies)
+                .map(([key, value]) => `${key}=${value}`)
+                .join("; "),
+              origin: store!.cfg.origin,
+              "x-csrf-token": csrf,
+            },
+            payload,
+          });
+          for (const cookie of response.cookies) {
+            cookies[cookie.name] = cookie.value;
+            if (cookie.name === "jalasmara")
+              authKeys.add(`auth:${digest(cookie.value)}`);
+          }
+          const data = response.json();
+          if (data.csrf) csrf = data.csrf;
+          return { status: response.statusCode, data };
+        };
+        const now = new Date().toISOString(),
+          password = opaque();
+        const user: User = {
+          id,
+          email: `${id}@shelter.test.invalid`,
+          name: "Penguji Serambi",
+          role: "player",
+          status: "active",
+          coins: 1234,
+          inventory: [{ fragmentId: "klorofil", stars: 3, quantity: 2 }],
+          abilities: freshAbilities(),
+          progress: {
+            ...freshProgress(),
+            tutorial: true,
+            day: 2,
+            missions: ["malam_1"],
+          },
+          version: 7,
+          authVersion: 0,
+          passwordHash: await argon2.hash(password, { type: argon2.argon2id }),
+          createdAt: now,
+          updatedAt: now,
+        };
+        await store.users.insertOne(user);
+        assert.equal((await request("/auth/session")).status, 200);
+        assert.equal(
+          (await request("/auth/login", { email: user.email, password }))
+            .status,
+          200,
+        );
+        assert.equal((await request("/adventure/state")).status, 200);
+        const before = await store.users.findOne({ id });
+        let migrated = 0;
+        const samples =
+          legacyVersion === 8
+            ? [
+                ...map.obstacles
+                  .filter((entry) => entry.variant === "shelter_post")
+                  .map((post) => ({ ...post, legacyVersion: 8 })),
+                ...griyaOldCorners.map((value, index) => ({
+                  id: `griya_old_corner_${index}`,
+                  x: value[0],
+                  y: value[1],
+                  width: 0,
+                  height: 0,
+                  legacyVersion: 8,
+                })),
+              ]
+            : houseCornersV9.flatMap(([house, corners]) =>
+                corners.map((at, index) => ({
+                  id: `${house}_layout9_corner_${index}`,
+                  x: at[0],
+                  y: at[1],
+                  width: 0,
+                  height: 0,
+                  legacyVersion: 9,
+                })),
+              );
+        for (const post of samples) {
+          const previous = {
+            x: post.x + post.width / 2,
+            y: post.y + post.height / 2,
+          };
+          const legacyMap = post.legacyVersion === 9 ? oldMapV9 : oldMapV8;
+          if (post.legacyVersion === 9)
+            assert.ok(isLandWalkable(legacyMap, previous, 13), post.id);
+          if (!isLandWalkable(legacyMap, previous)) continue;
+          assert.equal(isLandWalkable(map, previous), false, post.id);
+          const oldPositionAt = Date.now() - 5000;
+          await store.redis.set(
+            `surface:${id}`,
+            JSON.stringify({
+              area: "hub",
+              ...previous,
+              layoutVersion: post.legacyVersion,
+              playerVersion: 7,
+              positionAt: oldPositionAt,
+            }),
+            "EX",
+            1800,
+          );
+          const resumed = await request("/adventure/state");
+          assert.equal(resumed.status, 200, post.id);
+          const saved = resumed.data.surface;
+          assert.equal(saved.layoutVersion, 10);
+          assert.equal(saved.area, "hub");
+          assert.ok(
+            isLandWalkable(map, saved, 13),
+            `${post.id} must clear the client's real body margin`,
+          );
+          assert.deepEqual(
+            { x: saved.x, y: saved.y },
+            nearestSafeLandPoint(map, previous),
+          );
+          assert.ok(
+            reachesHub(saved),
+            `${post.id} must remain connected to the real hub network`,
+          );
+          assert.ok(saved.positionAt > oldPositionAt);
+          assert.deepEqual(
+            JSON.parse((await store.redis.get(`surface:${id}`))!),
+            saved,
+          );
+          assert.deepEqual(
+            (await request("/adventure/state")).data.surface,
+            saved,
+            "Reload must preserve the migrated position and timestamp",
+          );
+          const stale = await request("/adventure/surface-position", {
+            area: "hub",
+            x: saved.x,
+            y: saved.y,
+            version: 7,
+            fromPositionAt: oldPositionAt,
+          });
+          assert.equal(stale.status, 409);
+          assert.equal(stale.data.code, "POSITION_CHANGED");
+          const blocked = await request("/adventure/surface-position", {
+            area: "hub",
+            ...previous,
+            version: 7,
+            fromPositionAt: saved.positionAt,
+          });
+          assert.equal(blocked.status, 409);
+          assert.equal(blocked.data.code, "PATH_BLOCKED");
+          let destination: { x: number; y: number } | undefined;
+          for (let direction = 0; direction < 16; direction++) {
+            const angle = (direction * Math.PI) / 8;
+            const candidate = {
+              x: saved.x + Math.cos(angle) * 8,
+              y: saved.y + Math.sin(angle) * 8,
+            };
+            if (isLandSegmentWalkable(map, saved, candidate, 13)) {
+              destination = candidate;
+              break;
+            }
+          }
+          assert.ok(
+            destination,
+            `${post.id} must permit legal movement after migration`,
+          );
+          const moved = await request("/adventure/surface-position", {
+            area: "hub",
+            ...destination,
+            version: 7,
+            fromPositionAt: saved.positionAt,
+          });
+          assert.equal(moved.status, 200, JSON.stringify(moved.data));
+          assert.deepEqual(
+            { x: moved.data.surface.x, y: moved.data.surface.y },
+            destination,
+          );
+          assert.equal(moved.data.surface.layoutVersion, 10);
+          assert.deepEqual(
+            (await request("/adventure/state")).data.surface,
+            moved.data.surface,
+          );
+          assert.deepEqual(
+            await store.users.findOne({ id }),
+            before,
+            "Migration and movement must preserve coins, inventory, calendar, homestead and story",
+          );
+          migrated++;
+        }
+        assert.equal(
+          migrated,
+          legacyVersion === 8 ? 13 : 14,
+          "Exercise nine legal layout8 support centres plus four Griya corners, or two layout9 corners per changed house",
+        );
+        for (const value of [[160, 400], ...deckAisles]) {
+          const previous = point(value);
+          assert.ok(isLandWalkable(oldMapV8, previous));
+          assert.ok(isLandWalkable(map, previous));
+          await store.redis.set(
+            `surface:${id}`,
+            JSON.stringify({
+              area: "hub",
+              ...previous,
+              layoutVersion: legacyVersion,
+              playerVersion: 7,
+              positionAt: Date.now() - 5000,
+            }),
+            "EX",
+            1800,
+          );
+          const resumed = await request("/adventure/state");
+          assert.equal(resumed.status, 200);
+          assert.deepEqual(
+            { x: resumed.data.surface.x, y: resumed.data.surface.y },
+            previous,
+            "A valid old saved point must be preserved, including the strip behind Griya",
+          );
+          assert.ok(reachesHub(resumed.data.surface));
+          assert.deepEqual(
+            (await request("/adventure/state")).data.surface,
+            resumed.data.surface,
+          );
+        }
+        t.diagnostic(
+          `${migrated} old support/corner saves migrated and completed legal API round-trips; five valid old deck points stayed unchanged`,
+        );
+      } finally {
+        if (app) await app.close();
+        if (store) {
+          const keys = [`surface:${id}`, `calendar:writer:${id}`, ...authKeys];
+          let cursor = "0";
+          do {
+            const result = await store.redis.scan(
+              cursor,
+              "MATCH",
+              `*${remoteAddress}*`,
+              "COUNT",
+              100,
+            );
+            cursor = result[0];
+            keys.push(...result[1]);
+          } while (cursor !== "0");
+          await store.redis.del(...keys);
+          assert.equal(store.db.databaseName, database);
+          await store.db.dropDatabase();
+          await close(store);
+        }
+        for (const [key, value] of Object.entries(previousEnv)) {
+          if (value === undefined) delete process.env[key];
+          else process.env[key] = value;
+        }
       }
-      for (const [key, value] of Object.entries(previousEnv)) {
-        if (value === undefined) delete process.env[key];
-        else process.env[key] = value;
-      }
-    }
-  },
-);
+    },
+  );
