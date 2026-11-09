@@ -159,6 +159,7 @@ func update_pose(tint: Color) -> void:
 	_place_part(torso_name,_body_transform(_center(torso_name) if data.parts[torso_name].has("center") else _center("torso"),lean),lean,.03)
 	var head_angle:=0.0 if reduced else sin(t*2.4)*.035 if clip=="interact" else wave*.008
 	var head_name:="head_back" if back else "head"
+	if _foot_plant!=null and facing=="west" and data.parts.has("head_west"): head_name="head_west"
 	_place_part(head_name,_body_transform(_center(head_name) if data.parts[head_name].has("center") else _center("head"),lean),lean+head_angle,.08)
 	_local_hands.clear()
 	hands.clear()
@@ -235,7 +236,7 @@ func update_pose(tint: Color) -> void:
 	_last_pose={"clip":clip,"direction":facing,"frame":state.frame,"phase":state.workPhase,"parts":sprites.size(),"handsLocal":_local_hands.duplicate(true),"toolFront":not back,"footPivot":[0,0],"rootMotion":false,"source":"original portrait cutout rig"}
 	if _foot_plant!=null:
 		_last_pose["logicalDirection"]=str(state.direction)
-		_last_pose["directionArt"]="Authored rear upper body" if back else "Unmirrored three-quarter fallback; independent side views pending"
+		_last_pose["directionArt"]="Authored rear upper body" if back else "Authored west head; unmirrored body fallback" if facing=="west" else "Unmirrored three-quarter fallback; independent side body views pending"
 	if _foot_plant!=null:
 		_last_pose["contacts"]=_contact_pose.duplicate(true)
 		for side in ["left","right"]:

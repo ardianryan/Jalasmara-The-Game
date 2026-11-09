@@ -19,6 +19,9 @@ var _ready:=false
 var _hips:Dictionary={}
 var _resets:=0
 var _lateral:=Vector2.RIGHT
+var _turn:Dictionary={}
+var _turn_steps:=0
+const TURN_DISTANCE:=6.0
 
 func configure(renderer:Node,actor:Node2D,data:Dictionary) -> bool:
 	if not ("map" in renderer) or renderer.map.is_empty(): return false
@@ -100,6 +103,36 @@ func _begin_swing(entry:Dictionary,phase:float,at:Vector2,side:String) -> void:
 	entry.startProgress=(phase-.5)*2.0
 	entry.grounded=false
 
+func _begin_turn(at:Vector2) -> void:
+	var side:="right"
+	for name in ["left","right"]:
+		if not bool(_feet[name].grounded): side=name; break
+	var entry:Dictionary=_feet[side]
+	var target:=_safe(_base(side,at)+_direction*TURN_DISTANCE/_ratio,at)
+	_turn={"side":side,"from":entry.logical,"target":target,"distance":0.0,"lift":maxf(0,(Vector3(entry.sole)-_ground(entry.logical)).dot(_up()))}
+	entry.grounded=false
+	_turn_steps+=1
+
+func _advance_turn(physical:float,at:Vector2) -> void:
+	_turn.distance=float(_turn.distance)+physical
+	var u:=clampf(float(_turn.distance)/TURN_DISTANCE,0,1)
+	var smooth:=u*u*(3.0-2.0*u)
+	var side:String=_turn.side
+	var entry:Dictionary=_feet[side]
+	entry.logical=_safe(Vector2(_turn.from).lerp(_turn.target,smooth),at)
+	entry.sole=_ground(entry.logical)+_up()*(lerpf(float(_turn.lift),0,u)+sin(u*PI)*LIFT)
+	if u>=1:
+		entry.plant=_ground(entry.logical)
+		entry.sole=entry.plant
+		entry.grounded=true
+		# The arriving foot supports the body before the old support begins its swing.
+		_phase_distance=0.0 if side=="left" else STRIDE*.5
+		for name in ["left","right"]:
+			_feet[name].phase=fposmod(_phase_distance/STRIDE+(.25 if name=="left" else .75),1.0)
+		var released:="right" if side=="left" else "left"
+		_begin_swing(_feet[released],.75,at,released)
+		_turn.clear()
+
 func update(at:Vector2,velocity:Vector2,time:float,_flip:float) -> Dictionary:
 	_update_lateral(at)
 	var body_ground:Vector3=_renderer.map_point(at,_renderer.ground_height(at))
@@ -112,36 +145,44 @@ func update(at:Vector2,velocity:Vector2,time:float,_flip:float) -> Dictionary:
 		_ready=false
 		walking=false
 	if not _ready:
+		_turn.clear()
 		for side in ["left","right"]:
 			var point:=_base(side,at)
 			_feet[side]={"logical":point,"sole":_ground(point),"plant":_ground(point),"phase":.25 if side=="left" else .75,"grounded":true,"swingFrom":point,"swingTo":point,"startProgress":0.0}
 		_phase_distance=0
 		_ready=true
 	if walking:
-		_direction=velocity.normalized()
+		var next_direction:=velocity.normalized()
+		var turned:=_walking and _direction.dot(next_direction)<.5
+		_direction=next_direction
 		_ratio=clampf(physical/maxf(.001,moved),1.0,8.0)
-		if not _walking:
-			_phase_distance=0
-			_begin_swing(_feet.right,.75,at,"right")
-		else: _phase_distance+=physical
-		for side in ["left","right"]:
-			var entry:Dictionary=_feet[side]
-			var phase:=fposmod(_phase_distance/STRIDE+(.25 if side=="left" else .75),1.0)
-			if phase<.5:
-				if not bool(entry.grounded):
-					entry.logical=entry.swingTo
-					entry.plant=_ground(entry.logical)
-					entry.grounded=true
-				entry.sole=entry.plant
-			else:
-				if bool(entry.grounded): _begin_swing(entry,phase,at,side)
-				var u:=clampf(((phase-.5)*2.0-float(entry.startProgress))/maxf(.001,1.0-float(entry.startProgress)),0,1)
-				var smooth:=u*u*(3.0-2.0*u)
-				entry.logical=Vector2(entry.swingFrom).lerp(entry.swingTo,smooth)
-				entry.logical=_safe(entry.logical,at)
-				entry.sole=_ground(entry.logical)+_up()*sin(u*PI)*LIFT
-			entry.phase=phase
+		if turned: _begin_turn(at)
+		if not _turn.is_empty():
+			_advance_turn(physical,at)
+		else:
+			if not _walking:
+				_phase_distance=0
+				_begin_swing(_feet.right,.75,at,"right")
+			else: _phase_distance+=physical
+			for side in ["left","right"]:
+				var entry:Dictionary=_feet[side]
+				var phase:=fposmod(_phase_distance/STRIDE+(.25 if side=="left" else .75),1.0)
+				if phase<.5:
+					if not bool(entry.grounded):
+						entry.logical=entry.swingTo
+						entry.plant=_ground(entry.logical)
+						entry.grounded=true
+					entry.sole=entry.plant
+				else:
+					if bool(entry.grounded): _begin_swing(entry,phase,at,side)
+					var u:=clampf(((phase-.5)*2.0-float(entry.startProgress))/maxf(.001,1.0-float(entry.startProgress)),0,1)
+					var smooth:=u*u*(3.0-2.0*u)
+					entry.logical=Vector2(entry.swingFrom).lerp(entry.swingTo,smooth)
+					entry.logical=_safe(entry.logical,at)
+					entry.sole=_ground(entry.logical)+_up()*sin(u*PI)*LIFT
+				entry.phase=phase
 	else:
+		_turn.clear()
 		for entry in _feet.values():
 			if not bool(entry.grounded):
 				var target:=_ground(entry.logical)
@@ -153,4 +194,4 @@ func update(at:Vector2,velocity:Vector2,time:float,_flip:float) -> Dictionary:
 	_last_at=at
 	_last_ground=body_ground
 	_last_time=time
-	return {"feet":_feet.duplicate(true),"walking":walking,"phaseDistance":_phase_distance,"physicalRatio":_ratio,"stride":STRIDE,"essentialMotion":true,"discontinuityResets":_resets,"anatomicalSidesStable":true,"lateralLogical":[_lateral.x,_lateral.y]}
+	return {"feet":_feet.duplicate(true),"walking":walking,"phaseDistance":_phase_distance,"physicalRatio":_ratio,"stride":STRIDE,"essentialMotion":true,"discontinuityResets":_resets,"anatomicalSidesStable":true,"lateralLogical":[_lateral.x,_lateral.y],"turnStep":not _turn.is_empty(),"turnSteps":_turn_steps}

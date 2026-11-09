@@ -1,5 +1,7 @@
 # 06-B2: anatomical facing candidate and unfinished turns
 
+Historical checkpoint: the 36 failing samples and east-looking west fallback below were subsequently addressed by the transition step and original west head. See [final transition-step review](06b2-ujang-transition-step.md). The diagnostic is retained and now also runs in the default contact test; it is no longer excluded from the CI path.
+
 This follow-up is held in the isolated body worktree after `05a38bb`. It is **not accepted for release**. The added no-stop turn diagnostic fails; the existing commute test remains green. Keeping those facts separate avoids mistaking an improvement in a transform invariant for completed natural walking.
 
 ## Confirmed source issue and bounded changes

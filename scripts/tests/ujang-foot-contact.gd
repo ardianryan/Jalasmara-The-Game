@@ -53,9 +53,14 @@ func _measure() -> void:
 	var pose:Dictionary=rig.pose_snapshot()
 	assert(pose.has("contacts"),"Actual LandWorld Ujang must use the contact pilot")
 	var contact:Dictionary=pose.contacts
+	assert(bool(contact.feet.left.grounded) or bool(contact.feet.right.grounded),"The transition step must hand over support rather than put both feet in flight")
 	if not contact.reachValid:
 		contact_failures+=1
-		push_error("Fixed-length legs cannot be accepted by hiding unreachable contacts: "+str(contact.requestedPelvisDrop)+" at "+str(person.position))
+		var details:Dictionary={}
+		for name in ["left","right"]:
+			var foot:Dictionary=contact.feet[name]
+			details[name]={"phase":foot.phase,"grounded":foot.grounded,"sole":foot.sole,"plant":foot.plant,"knee":foot.get("kneeLocal",[])}
+		push_error("Unreachable contacts: pelvis="+str(contact.requestedPelvisDrop)+" actor="+str(person.position)+" direction="+str(pose.direction)+" turn="+str(contact.get("turnStep",false))+" feet="+str(details))
 		return
 	assert(rig.global_basis.determinant()>0 and rig.scale.x>0,"Facing must not reflect the anatomical rig or its wooden right leg")
 	assert(float(contact.maxLengthError)<.02)
@@ -262,7 +267,7 @@ func run() -> void:
 			scene.free()
 			quit(1)
 			return
-		print("UJANG TURN PASS ",turn_steps," real 90/180-degree turn steps at actual camera azimuths 0/-45, normal/reduced; max stance drift=",max_drift,"; positive anatomical basis and actual-camera facing")
+		print("UJANG TURN PASS ",turn_steps," real 90/180-degree turn steps at actual camera azimuths 0/-45, normal/reduced; max stance drift=",max_drift," pelvis=",max_pelvis,"; positive anatomical basis and actual-camera facing")
 		scene.free()
 		quit()
 		return
@@ -292,6 +297,7 @@ func run() -> void:
 			break
 		await _step(proposed)
 	assert(hit_edge,"Must actually reach the authored dock/water collision boundary")
+	await _turn_trace()
 	assert(checked>500 and max_pelvis<=8)
 	assert(rig.pose_snapshot().gripMeasurement.status=="inactive")
 	assert(JSON.stringify({"world":state.world,"player":state.player,"dive":state.dive})==before)
@@ -301,7 +307,7 @@ func run() -> void:
 		scene.free()
 		quit(1)
 		return
-	print("UJANG CONTACT PASS actual3/4renderer: ",checked," legal26unit/s steps, alpha-sole world drift=",max_drift," knee join=",max_join_error," bounded pelvis=",max_pelvis,"; fixed pixel lengths, rendered floor/tread triangles, reduced/stop/turn; ",measured_grips," authored west grip poses max error=",max_grip_error,"; no actor root motion/world mutation")
+	print("UJANG CONTACT PASS actual3/4renderer: ",checked," legal26unit/s steps including ",turn_steps," sharp-turn samples, alpha-sole world drift=",max_drift," knee join=",max_join_error," bounded pelvis=",max_pelvis,"; fixed pixel lengths, rendered floor/tread triangles, reduced/stop/turn; ",measured_grips," authored west grip poses max error=",max_grip_error,"; no actor root motion/world mutation")
 	if _capture: FileAccess.open(OUTPUT+"/results.json",FileAccess.WRITE).store_string(JSON.stringify(_recording,"  "))
 	scene.free()
 	quit()

@@ -1,5 +1,7 @@
 # 06-B2: Ujang rear artwork and independent fishing grip
 
+Later increment: the [transition-step review](06b2-ujang-transition-step.md) adds the original west head, keeps the anatomical root unreflected, and passes the sharp-turn diagnostic in the default contact test. Counts and hashes below identify this earlier seventeen-part art checkpoint; the later atlas has eighteen parts.
+
 Candidate on isolated branch `work/06b-body-next`, based on main `1f097cc` with the earlier foot-contact pilot and art audit cherry-picked first. This is a reviewable Ujang-only increment. It is not a four-direction artwork pack or acceptance of natural walking for every resident.
 
 ## What changes

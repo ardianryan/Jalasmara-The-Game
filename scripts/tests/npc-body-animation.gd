@@ -25,7 +25,7 @@ func _initialize() -> void:
 	assert(animation.clip=='rest' and animation.frame==0)
 	for id in ['ujang','darmi','sari']:
 		var metadata: Dictionary=JSON.parse_string(FileAccess.get_file_as_string('res://resources/art/npc-rigs/'+id+'.json'))
-		assert(metadata.parts.size()==(17 if id=='ujang' else 16) and float(metadata.footPivot[0])==0 and float(metadata.footPivot[1])==0)
+		assert(metadata.parts.size()==(18 if id=='ujang' else 16) and float(metadata.footPivot[0])==0 and float(metadata.footPivot[1])==0)
 		assert(metadata.sourceSha256.length()==64)
-	print('NPC BODY ANIMATION PASS: clips, one-shot action events, tidy lock, four-direction distance gait, pause/reduced motion, 49 modular parts')
+	print('NPC BODY ANIMATION PASS: clips, one-shot action events, tidy lock, four-direction distance gait, pause/reduced motion, 50 modular parts')
 	quit()

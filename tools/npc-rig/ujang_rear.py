@@ -20,10 +20,11 @@ def pack():
         ('head_back', (180, 100, 600, 550), (29, 27), 14, [0, -81.5]),
         ('torso_back', None, (27, 34), 15, [0, -52.5]),
         ('hand_rod_west', (1710, 280, 1930, 470), (7, 7), 16, None),
+        ('head_west', 'west', (29, 27), 17, [-1, -81.5]),
     ]
     for name, box, size, cell, center in specs:
-        if box is None:
-            part = Image.open(SOURCE / 'generated-torso-v2.png').convert('RGBA')
+        if box is None or box == 'west':
+            part = Image.open(SOURCE / ('generated-west-head-v1.png' if box == 'west' else 'generated-torso-v2.png')).convert('RGBA')
             part.putalpha(part.getchannel('A').point(lambda a: 255 if a >= 128 else 0))
         else:
             part = raw.crop(box)
@@ -48,13 +49,14 @@ def pack():
                           'rodAxis': [[1.0, 6.0], [6.0, 1.0]], 'facing': 'west'})
         data['parts'][name] = entry
     data['atlas'] = 'res://resources/art/npc-rigs/ujang-rear-grip-v1.png'
-    data['method'] = 'Original portrait cutouts with original authored rear head/vest and west fishing fist override'
+    data['method'] = 'Original portrait cutouts with original authored rear head/vest, west head and fishing fist override'
     data['rearGripSource'] = {
         'path': 'assets/source-2d/ujang-rear-grip-v1/generated.png',
         'sha256': hashlib.sha256((SOURCE / 'generated.png').read_bytes()).hexdigest(),
         'torsoRevisionSha256': hashlib.sha256((SOURCE / 'generated-torso-v2.png').read_bytes()).hexdigest(),
+        'westHeadSha256': hashlib.sha256((SOURCE / 'generated-west-head-v1.png').read_bytes()).hexdigest(),
         'method': 'Built-in imagegen identity edit; inspected parts, nearest resize and original Ujang palette quantization',
-        'directions': 'Rear head/torso only; west fishing fist only; other directional art remains original cutout pilot',
+        'directions': 'Rear head/torso, west head and west fishing fist only; other directional body art remains unmirrored original cutout pilot',
     }
     atlas.save(OUT / 'ujang-rear-grip-v1.png')
     (OUT / 'ujang.json').write_text(json.dumps(data, indent=2) + '\n')
