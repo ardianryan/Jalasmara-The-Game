@@ -496,8 +496,8 @@ try {
           }
         : undefined,
     });
-    if (response.status() >= 400)
-      failures.push({
+    if (response.status() >= 400) {
+      const failure = {
         sequence: entry.sequence,
         path,
         status: response.status(),
@@ -507,7 +507,10 @@ try {
         at: entry.at,
         respondedAt: entry.respondedAt,
         phase: entry.phase,
-      });
+      };
+      failures.push(failure);
+      console.log(JSON.stringify({ phase: "api-failure", ...failure }));
+    }
   });
   page.on("requestfailed", (request) => {
     const entry = requestTrace.get(request);
@@ -628,6 +631,8 @@ try {
   await waitState((s) => s.nearby === "exit");
   await requestViaKeys("homestead/action", (b) => b.action === "exit", ["e"]);
   await waitState((s) => s.area !== "home" && !s.homestead?.inside);
+  await waitState((s) => s.land?.active && s.land.view?.motion);
+  await page.waitForTimeout(3500);
   await page.reload();
   await attach();
   await waitState((s) => s.stage === "dive" && !s.homestead?.inside);
