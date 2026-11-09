@@ -349,9 +349,19 @@ func _next_tread(side:String,at:Vector2,provisional:Vector2) -> Dictionary:
 		var riser:float=(float(profile.to)-float(profile.from))/count
 		if absf(riser)<.001: continue
 		var support_ordinal:=roundi((Vector3(_feet[support].plant).z-float(profile.from))/riser)
+		var support_ground:=Traversal.connector_ground(profile,_feet[support].logical)
+		var actor_ground:=Traversal.connector_ground(profile,at)
+		var support_class:="outside_height_legacy"
+		if not support_ground.is_empty():
+			support_ordinal=int(support_ground.stepIndex)+1
+			support_class="actual_tread"
+		var upper_approach:bool=along<0 and actor_ground.is_empty() and support_ground.is_empty() and support_progress>1.0 and bool(_feet[support].grounded) and absf(Vector3(_feet[support].plant).z-float(profile.to))<.003 and absf(_ground(_feet[support].logical).z-Vector3(_feet[support].plant).z)<.003
+		if upper_approach:
+			support_ordinal=count+1
+			support_class="upper_flat_approach"
 		var ordinal:=clampi(support_ordinal+(1 if along>0 else -1),0,count+1)
 		# The next new contact follows the opposite support, not this foot's old tread.
-		var center:=start.lerp(end,(float(ordinal)-.5)/count)+across*lane
+		var center:Vector2=(end if upper_approach else start.lerp(end,(float(ordinal)-.5)/count))+across*lane
 		var height:=lerpf(float(profile.from),float(profile.to),float(clampi(ordinal,0,count))/count)
 		var target:=_safe(center,at,side,height)
 		if not _supported(target,side,height):
@@ -361,7 +371,7 @@ func _next_tread(side:String,at:Vector2,provisional:Vector2) -> Dictionary:
 		var first:=_ground(midpoint-quarter)
 		var second:=_ground(midpoint+quarter)
 		var depth:=Vector2(second.x-first.x,second.y-first.y).length()*2.0
-		return {"valid":true,"target":target,"connectorId":profile.id,"landingOrdinal":ordinal,"landingHeight":height,"supportOrdinal":support_ordinal,"treadDistance":depth}
+		return {"valid":true,"target":target,"connectorId":profile.id,"landingOrdinal":ordinal,"landingHeight":height,"supportOrdinal":support_ordinal,"supportClassification":support_class,"actorOnConnector":not actor_ground.is_empty(),"supportOnConnector":not support_ground.is_empty(),"treadDistance":depth}
 	return {}
 
 func _terrain_duration(from:Vector3,to:Vector3,minimum:float,span:float) -> Dictionary:
