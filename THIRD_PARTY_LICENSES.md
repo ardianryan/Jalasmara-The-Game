@@ -67,7 +67,7 @@ SOFTWARE.
 - **Sumber:** https://github.com/danieljan-design/noxe-pixel-engine
 - **Revisi:** `d619d856398b44ad084003fac0a9fbfc9c8393e7`
 - **Berkas upstream:** `engine/pixel-engine.js`, perhitungan orbit kamera dan penguncian posisi pada grid piksel.
-- **Adaptasi Godot:** `client-godot/scripts/land/LandCameraPose.gd`, konversi Y-up ke Z-up dan helper proyeksi/ray untuk pilot. Pose rilis 0°/35° dipertahankan; kamera menyudut serta snap diuji pada fixture terpisah. Material, shader multipass, scene demo, exporter dan runtime Three.js Noxe tidak disalin.
+- **Adaptasi Godot:** `client-godot/scripts/land/LandCameraPose.gd`, konversi Y-up ke Z-up serta helper proyeksi/ray. Kamera darat kini memakai azimut −45° dan elevasi 35°; penerimaan proyeksi/input dan pin rilis tercatat di handoff. Material, shader multipass, scene demo, exporter dan runtime Three.js Noxe tidak disalin.
 - **Lisensi:** MIT; teks lengkap dan pemberitahuan hak cipta disertakan pada `client-godot/resources/licenses/noxe-MIT.txt`, ikut paket resource `.txt`.
 
 ---
