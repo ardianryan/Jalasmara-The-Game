@@ -39,7 +39,8 @@ func run() -> void:
 		for button in hud.get("_utilities"):
 			assert(not menu.intersects(button.get_global_rect()),"Host menu must leave every utility touch target free")
 		var scale:float=root.get_final_transform().x.length()
-		assert(menu.size.x*scale>=64 and menu.size.y*scale>=48)
+		print("HOST MENU METRICS ",size," physical ",menu.size*scale," logical ",menu," transform ",root.get_final_transform())
+		assert(menu.size.x*scale>=63.9 and menu.size.y*scale>=47.9,"Host reservation matches the CSS64x48 target within subpixel viewport rounding")
 	layout.set("_host_control",saved_control)
 	hud.free()
 	print("DEVICE CAPTURE PASS: opt-in real monitors without full snapshots, stop restores QA state, compact host Menu clearance at667/844/390/1440")

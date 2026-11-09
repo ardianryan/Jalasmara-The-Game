@@ -24,3 +24,9 @@ Prepared focused fixture: `scripts/tests/performance-capture.gd` verifies opt-in
 4. Measure current renderer profiles before changing quality behavior. Existing touch-auto low shadow policy remains. Forest/ocean current/foam/canopy/parallax need animated native/browser review; good base geometry is not being rebuilt speculatively. CreatureAnimator/FishGen adapter remains root ownership.
 
 Tool/skill use: local Git/worktree, Node/TypeScript/Vite, existing Playwright availability, source review, antislop/UI/human/mobile rules with the user's already selected during-work mode, and EYD V for Indonesian UI copy. Existing project art only; split licensing and notices unchanged. No image generation, new UI library, proxy or loading-transport product change, account mutation, push or deployment.
+
+## Focused engine checkpoint
+
+Root granted the serialized engine slot. A fresh first import reported the known missing theme-font cache before import completed; a second import finished with no errors. The first new device fixture passed privacy/clearance but stopped at an exact floating-point 64/48 roundtrip assertion. Its log is retained; its own stuck Godot process was terminated. The reservation-only comparison now allows less than 0.1 physical pixel of viewport conversion rounding; the CSS target itself remains exactly 64×48. Printed final measurements are 64.0×48.0 at all four sizes.
+
+Clean reruns passed `performance-capture.gd`, `hud-oxygen.gd` and `analog-dialogue.gd`, with zero script/engine/assertion errors in the complete final logs. Those checks establish actual native Godot control/monitor behavior, not browser download usability. Logs: `.runtime/hud-perf-import-final.log`, `hud-perf-performance-capture-final.log`, `hud-perf-hud-oxygen-final.log`, `hud-perf-analog-dialogue-final.log`. The GPU slot was released to root immediately afterward for transport diagnostics. Native screenshot and actual browser report/download remain pending.
