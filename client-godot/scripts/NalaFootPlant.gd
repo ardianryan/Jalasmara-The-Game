@@ -420,7 +420,8 @@ func _begin(side:String,at:Vector2,hips:Dictionary,right:Vector3,resuming:bool=f
 			entry.landingHeight=float(tread.landingHeight)
 			entry.fixedTreadTarget=true
 			var path:=_path_metrics(entry.from,entry.to)
-			var budget:=_terrain_duration(entry.fromWorld,entry.toWorld,float(tread.treadDistance),float(path.total))
+			var minimum:=_start_distance if resuming else float(tread.treadDistance)
+			var budget:=_terrain_duration(entry.fromWorld,entry.toWorld,minimum,float(path.total))
 			budget["fixedPathWorldXY"]=float(path.total)
 			_landing_distance=float(budget.distance)
 			entry.treadPlan.merge(budget,true)
