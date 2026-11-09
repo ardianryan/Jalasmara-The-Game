@@ -4,6 +4,8 @@ Terakhir diperbarui: 9 November 2026, paket integrasi 06-B berjalan. Baca berkas
 
 [Laporan progres paket06-B](reviews/06b-progress.md) merangkum perubahan, hasil tes, tool/lisensi dan urutan pengembangan berikutnya. Browser acceptance masih berjalan; lihat laporan QA untuk hasil setiap iterasi.
 
+**Pekerjaan aktif setelah pengguna meminta lanjut:** [penutupan rilis dan core berikutnya](reviews/06b-release-and-core-followup.md). Runtime rilis dibekukan padaf319da9/PCK5f2aaa. MainCI3044340306 telah diverifikasi5job,82API/45world,201aturan/0temuan,tiga audit nol. Imagea9e577 siap di VPS; backup/restore42dokumen dan rollback sudah siap, tetapi staging belum diaktifkan. Website memegang slot browser untuk QA malam/shelter/lower; Nala375a7bb menunggu focused/native, alphaNPC masih diagnosis. Source kedua polish itu tidak masuk image rilis. Root satu-satunya penulis handoff/deployment.
+
 ## Rilis versus kandidat
 
 - **Staging yang sudah terbukti:** source `9ba21c6bdcb86de1b1732fe4d646fc5a27099eec`, PCK `a9378a52c9fbb64ec96ae579bcef1ced1ab7920962823025e238a453eb8a716b`. [Laporan rilis 06-A/B1](reviews/06a-delivery.md) memuat image, backup, rollback dan CI. Main sesudahnya memuat perbaikan harness/dokumen; jangan menyamakan source host dengan HEAD lokal.
