@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { GameLoading } from "./GameLoading";
 import { INITIAL_LOADING, parseLoadingMessage } from "./loading";
+import menuFrame from "../../../client-godot/resources/art/hud-bahari-v1/button-normal.png";
+import {
+  downloadPerformance,
+  recordPerformance,
+  type PerformanceReport,
+} from "./performance-capture";
 
 interface PlayProps {
   canManage?: boolean;
@@ -38,6 +44,18 @@ export function Play({ canManage = false, onLogout }: PlayProps) {
   const [graphicsQuality, setGraphicsQuality] = useState<GraphicsQuality>(
     storedGraphicsQuality,
   );
+  const [captureDuration, setCaptureDuration] = useState<30_000 | 300_000>(
+    30_000,
+  );
+  const [captureActive, setCaptureActive] = useState(false);
+  const [captureReport, setCaptureReport] = useState<PerformanceReport | null>(
+    null,
+  );
+  const capture = useRef<ReturnType<typeof recordPerformance> | null>(null);
+  const menuOpenForCapture = useRef(menuOpen);
+  menuOpenForCapture.current = menuOpen;
+
+  useEffect(() => () => capture.current?.cancel(), []);
 
   useEffect(() => {
     try {
@@ -52,6 +70,7 @@ export function Play({ canManage = false, onLogout }: PlayProps) {
     const target = game.current?.contentWindow;
     if (!host || !target) return;
     const bounds = host.getBoundingClientRect();
+    const menuBounds = menuButton.current?.getBoundingClientRect();
     const style = safeArea.current && getComputedStyle(safeArea.current);
     const inset = (side: "Top" | "Right" | "Bottom" | "Left") =>
       style ? Number.parseFloat(style[`padding${side}`]) || 0 : 0;
@@ -71,13 +90,44 @@ export function Play({ canManage = false, onLogout }: PlayProps) {
         },
         hostMenuOpen: menuOpen,
         graphicsQuality,
+        performanceCapture: captureActive,
         reservedTopPx: inset("Top") + 52,
         focused: document.hasFocus() && !document.hidden && !menuOpen,
-        hostControl: { placement: "top-center", width: 88, height: 48 },
+        hostControl: {
+          placement: "top-center",
+          x: menuBounds ? menuBounds.left - bounds.left : bounds.width / 2 - 32,
+          y: menuBounds ? menuBounds.top - bounds.top : 4,
+          width: menuBounds?.width ?? 64,
+          height: menuBounds?.height ?? 48,
+        },
       },
       location.origin,
     );
-  }, [menuOpen, graphicsQuality]);
+  }, [menuOpen, graphicsQuality, captureActive]);
+
+  function startCapture() {
+    if (!ready || !game.current || captureActive) return;
+    try {
+      setCaptureReport(null);
+      capture.current = recordPerformance(game.current, {
+        durationMs: captureDuration,
+        quality: graphicsQuality,
+        paused: () => menuOpenForCapture.current,
+        complete: (report) => {
+          capture.current = null;
+          setCaptureActive(false);
+          setCaptureReport(report);
+        },
+      });
+      setCaptureActive(true);
+      setMenuOpen(false);
+      game.current.contentWindow?.focus();
+    } catch {
+      setNotice(
+        "Rekaman belum dapat dimulai. Tunggu permainan siap, lalu coba lagi.",
+      );
+    }
+  }
 
   useEffect(() => {
     let scheduled = 0;
@@ -222,6 +272,17 @@ export function Play({ canManage = false, onLogout }: PlayProps) {
       <button
         ref={menuButton}
         className="play-menu-toggle"
+        style={{ borderImageSource: `url(${menuFrame})` }}
+        data-capture={
+          captureActive ? "active" : captureReport ? "ready" : undefined
+        }
+        title={
+          captureActive
+            ? "Perekaman performa aktif. Buka Menu untuk berhenti."
+            : captureReport
+              ? "Laporan performa siap diunduh melalui Menu."
+              : "Menu permainan"
+        }
         aria-expanded={menuOpen}
         aria-controls="play-browser-menu"
         onClick={() => {
@@ -313,6 +374,54 @@ export function Play({ canManage = false, onLogout }: PlayProps) {
                 <option value="balanced">Seimbang</option>
               </select>
             </div>
+            <fieldset className="play-capture">
+              <legend>Uji performa perangkat</legend>
+              <p>
+                Rekam sambil bermain di area yang terasa berat. Tidak ada data
+                akun yang dikirim; laporan diunduh ke perangkat ini.
+              </p>
+              {captureActive ? (
+                <>
+                  <p role="status">
+                    Sedang merekam. Lanjutkan bermain atau hentikan rekaman
+                    untuk mengunduh hasilnya.
+                  </p>
+                  <button onClick={() => capture.current?.stop()}>
+                    Hentikan rekaman
+                  </button>
+                </>
+              ) : (
+                <>
+                  <label htmlFor="play-capture-duration">Durasi rekaman</label>
+                  <select
+                    id="play-capture-duration"
+                    value={captureDuration}
+                    onChange={(event) =>
+                      setCaptureDuration(
+                        event.target.value === "300000" ? 300_000 : 30_000,
+                      )
+                    }
+                  >
+                    <option value={30_000}>30 detik</option>
+                    <option value={300_000}>5 menit · sesi panjang</option>
+                  </select>
+                  <button disabled={!ready} onClick={startCapture}>
+                    Mulai rekam performa
+                  </button>
+                </>
+              )}
+              {captureReport && (
+                <>
+                  <p role="status">
+                    Laporan siap. Waktu frame menunjukkan penjadwalan browser,
+                    bukan waktu GPU.
+                  </p>
+                  <button onClick={() => downloadPerformance(captureReport)}>
+                    Unduh laporan JSON
+                  </button>
+                </>
+              )}
+            </fieldset>
             <a href="/settings">Akun dan pengaturan</a>
             {canManage && <a href="/admin">Panel pengelola</a>}
             <button

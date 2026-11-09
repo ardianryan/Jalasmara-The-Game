@@ -102,7 +102,7 @@ func run() -> void:
 			assert(sound.icon!=null,"Mute status uses the actual colored sound icon with accessible tooltip")
 			assert(not sound.tooltip_text.is_empty())
 			assert(sound.get_theme_font("font").get_string_size(sound.text,HORIZONTAL_ALIGNMENT_LEFT,-1,sound.get_theme_font_size("font_size")).x<=sound.size.x-4,"Sound label must fit without truncation")
-			var menu:=Rect2(Vector2(view.size.x/2-44*ratio,0),Vector2(88*ratio,52*ratio))
+			var menu:Rect2=root.get_node("ViewportLayout").host_control_bounds()
 			for plate in [hud.get("_identity_plate"),hud.get("_utility_plate")]:
 				assert(not menu.intersects(plate.get_global_rect()),"HUD must leave the DOM Menu target clear")
 			assert(hud.get("_action_plate").visible)

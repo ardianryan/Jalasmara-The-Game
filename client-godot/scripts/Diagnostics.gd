@@ -2,6 +2,7 @@ extends RefCounted
 
 static var _checked := false
 static var _enabled := false
+static var _capture := false
 
 static func enabled() -> bool:
 	if _checked: return _enabled
@@ -17,8 +18,14 @@ static func set_enabled(value: bool) -> void:
 	_checked=true
 	_enabled=value
 
+static func set_capture(value: bool) -> void:
+	_capture=value
+
+static func capture_enabled() -> bool:
+	return _capture
+
 static func performance_sample(actor: Node = null) -> Dictionary:
-	if not enabled(): return {}
+	if not enabled() and not _capture: return {}
 	var sample: Dictionary={"fps":Performance.get_monitor(Performance.TIME_FPS),"processMs":Performance.get_monitor(Performance.TIME_PROCESS)*1000.0,"physicsMs":Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS)*1000.0,"drawCalls":Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME),"renderObjects":Performance.get_monitor(Performance.RENDER_TOTAL_OBJECTS_IN_FRAME),"renderPrimitives":Performance.get_monitor(Performance.RENDER_TOTAL_PRIMITIVES_IN_FRAME),"quality":{}}
 	if is_instance_valid(actor):
 		var api=actor.get_node_or_null("/root/ApiClient")

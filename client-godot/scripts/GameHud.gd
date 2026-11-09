@@ -371,6 +371,9 @@ func _layout() -> void:
 	_sound_button.text=""
 	HudArt.set_icon(_sound_button,"speaker-off" if AudioManager.muted else "speaker-on",32)
 	var width:=minf(410,viewport.x-margin.x-24) if portrait else minf(370,viewport.x-cell*5-48)
+	if not portrait:
+		var host_control:=ViewportLayout.host_control_bounds()
+		width=minf(width,host_control.position.x-margin.x-6-ceilf(8*ratio))
 	_identity_plate.position=margin-Vector2(6,6)
 	_identity_plate.size=Vector2(width+12,identity_height)
 	_identity_plate.visible=not _modal
