@@ -190,7 +190,7 @@ Arah visual mengikuti moodboard pengguna: ENERGY 2, RHYTHM 2, MOTION 1. Oksigen 
 
 - Ark Pixel tetap digunakan untuk judul, tombol pendek, dan angka HUD. Teks dialog, penjelasan, serta pilihan kuis memakai Nunito Sans lokal berlisensi OFL; tidak memuat Google Fonts saat bermain.
 - Oksigen memberi peringatan amber pada ≤35% dan kritis pada ≤15%, lengkap dengan teks tindakan. Penurunan server ≥4 unit mendapat indikator sementara; pembacaan ulang snapshot dan perubahan kapasitas tidak memutar ulang efek. Reduced motion meniadakan denyut.
-- Kuis boss menggunakan pilihan 2×2 dengan ukuran tombol mengikuti panjang teks, minimum 56 piksel logis, serta shortcut 1–4. Validasi jawaban, timer, dan hadiah tetap milik server. Hasil biasa menjala mengikuti mekanik eksplorasi yang sudah ada, tidak dikembalikan menjadi kuis untuk setiap ikan.
+- Kuis boss menggunakan pilihan 2×2 dengan ukuran tombol mengikuti panjang teks, minimum 82 piksel logis, teks 24 piksel logis, serta shortcut 1–4. Pada viewport lanskap 667×375 ini mempertahankan target sentuh sekitar 57 piksel dan teks 16,7 piksel; soal panjang memakai scroll. Validasi jawaban, timer, dan hadiah tetap milik server. Hasil biasa menjala mengikuti mekanik eksplorasi yang sudah ada, tidak dikembalikan menjadi kuis untuk setiap ikan.
 - Grade warna dunia dipasang pada output SubViewport, sehingga HUD dan soal tidak ikut diberi tint atau blur.
 
 Dialog cut-in dengan emosi, typewriter, tab buku yang lengkap, aksi membuang item dengan hold, antrean kesabaran, dan katalis kedai tetap merupakan referensi pengembangan. Jangan menggunakan data contoh `SAMPLE_ENTRIES`, angka oksigen bawaan, atau tombol ekonomi tanpa endpoint nyata. Jadwal pause membaca yang sudah diakui server harus tetap dipertahankan.

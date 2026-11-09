@@ -221,6 +221,7 @@ func _open(title: String, pause_reading := true) -> VBoxContainer:
 	modal.add_theme_stylebox_override("panel",bg)
 	ui.add_child(modal)
 	var scroll := ScrollContainer.new()
+	scroll.follow_focus = true
 	scroll.custom_minimum_size = Vector2(600,370)
 	modal.add_child(scroll)
 	modal_box = VBoxContainer.new()
@@ -812,9 +813,11 @@ func _show_quiz() -> void:
 	if challenge.is_empty():
 		return
 	var box := _open("Resonansi Inti Smara",false)
-	_label(box,str(challenge.question.prompt),19)
+	var prompt_label := _label(box,str(challenge.question.prompt),24)
+	prompt_label.add_theme_font_override("font",BODY_FONT)
 	if challenge.get("answered",false):
-		_label(box,str(challenge.result.explanation))
+		var explanation_label := _label(box,str(challenge.result.explanation),24)
+		explanation_label.add_theme_font_override("font",BODY_FONT)
 		_button(box,"Lanjutkan pemulihan",func():
 			var r: Dictionary = await ApiClient.call_api("/dive/continue",{"diveId":GameState.dive.id,"challengeId":challenge.id})
 			if r.get("ok",false):
@@ -842,12 +845,12 @@ func _show_quiz() -> void:
 					_show_quiz()
 			)
 			var option_text := "%s. %s" % [String.chr(65+i),str(challenge.question.options[i])]
-			var measured := BODY_FONT.get_multiline_string_size(option_text,HORIZONTAL_ALIGNMENT_LEFT,250,18)
-			answer.custom_minimum_size = Vector2(285,maxf(56,measured.y+28))
+			var measured := BODY_FONT.get_multiline_string_size(option_text,HORIZONTAL_ALIGNMENT_LEFT,250,24)
+			answer.custom_minimum_size = Vector2(285,maxf(82,measured.y+28))
 			var option_label := Label.new()
 			option_label.text = option_text
 			option_label.add_theme_font_override("font",BODY_FONT)
-			option_label.add_theme_font_size_override("font_size",18)
+			option_label.add_theme_font_size_override("font_size",24)
 			option_label.add_theme_color_override("font_color",Color("f4ebd9"))
 			option_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			option_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
