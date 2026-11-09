@@ -243,6 +243,19 @@ const hubStairs: LandStair[] = [
   },
 ];
 const hubSurfaces: LandSurface[] = [
+  floor(
+    "residential_court",
+    [
+      [330, 100],
+      [1460, 100],
+      [1550, 135],
+      [1550, 350],
+      [300, 350],
+      [300, 135],
+    ],
+    "grass",
+    2,
+  ),
   floor("dock_main", rectangle(850, 1160, 700, 240), "dock", 0),
   floor(
     "lower_court",
@@ -362,10 +375,49 @@ const hubRoutes: LandPoint[][] = [
     [2295, 125],
   ],
 ];
+hubRoutes.push(
+  [
+    [900, 650],
+    [900, 350],
+    [940, 310],
+  ],
+  [
+    [940, 310],
+    [640, 320],
+    [465, 320],
+  ],
+  [
+    [940, 310],
+    [1150, 320],
+    [1325, 300],
+  ],
+  [
+    [1120, 1000],
+    [1005, 975],
+  ],
+);
+for (const [routeIndex, route] of hubRoutes.slice(-4).entries()) {
+  for (const [index, polygon] of miteredRouteSegments(route, 76).entries()) {
+    hubSurfaces.push({
+      ...floor(
+        `village_footpath_${routeIndex}_${index}`,
+        polygon,
+        "stone",
+        routeIndex === 3 ? 1 : 2,
+        8,
+      ),
+      walkable: false,
+    });
+  }
+}
 const hubObstacles: LandObstacle[] = [
   obstacle("kedai_waras", "house", 360, 420, 400, 175, 155, "thatch", 2),
   obstacle("galangan_beno", "house", 1090, 390, 420, 170, 125, "workshop", 2),
   obstacle("pos_cakrawala", "house", 1840, 140, 300, 105, 135, "metal", 3),
+  obstacle("balai_lurah", "house", 750, 120, 380, 145, 165, "balai", 2),
+  obstacle("rumah_ratih", "house", 350, 150, 230, 125, 108, "home_pelana", 2),
+  obstacle("rumah_sari", "house", 1210, 120, 230, 125, 112, "home_limas", 2),
+  obstacle("rumah_tedi", "house", 920, 850, 170, 90, 100, "home_pelana", 1),
   obstacle("kebun_darmi", "garden", 1810, 485, 330, 180, 34, "raised_beds", 2),
   obstacle("batu_pelataran", "rock", 760, 835, 105, 65, 70, "limestone", 1),
   obstacle("palm_lower", "tree", 1530, 1020, 34, 34, 190, "palm", 1),
@@ -373,8 +425,28 @@ const hubObstacles: LandObstacle[] = [
   obstacle("palm_garden", "tree", 1640, 600, 34, 34, 180, "palm", 2),
   obstacle("market_crates", "crate", 470, 915, 65, 48, 38, "woven", 1),
   obstacle("dock_crates", "crate", 920, 1190, 80, 55, 48, "wood", 0),
-  obstacle("changing_post_north", "fence", 1425, 1195, 10, 10, 120, "changing_booth", 0),
-  obstacle("changing_post_south", "fence", 1425, 1375, 10, 10, 120, "changing_booth", 0),
+  obstacle(
+    "changing_post_north",
+    "fence",
+    1425,
+    1195,
+    10,
+    10,
+    120,
+    "changing_booth",
+    0,
+  ),
+  obstacle(
+    "changing_post_south",
+    "fence",
+    1425,
+    1375,
+    10,
+    10,
+    120,
+    "changing_booth",
+    0,
+  ),
   obstacle("forest_gate_west", "fence", 2240, 80, 25, 110, 80, "bamboo", 3),
   obstacle("forest_gate_east", "fence", 2325, 80, 25, 110, 80, "bamboo", 3),
 ];
@@ -573,12 +645,12 @@ for (const [i, x, y] of [
 export const LAND_MAPS: Record<"hub" | "forest", LandMap> = {
   hub: {
     id: "hub",
-    layoutVersion: 6,
+    layoutVersion: 7,
     landmass: [
-      [240, 300],
-      [680, 280],
-      [1080, 305],
-      [1530, 300],
+      [240, 80],
+      [680, 60],
+      [1080, 80],
+      [1530, 80],
       [1600, 170],
       [1650, 65],
       [2060, 40],

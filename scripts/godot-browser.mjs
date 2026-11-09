@@ -350,7 +350,11 @@ try {
       await page.keyboard.up("d");
       await page.waitForTimeout(350);
       const shore = await capture("01-dock-shore", "hub");
-      assert.equal(shore.outfit, "diving", "Crossing the changing booth must equip dive clothing before entry");
+      assert.equal(
+        shore.outfit,
+        "diving",
+        "Crossing the changing booth must equip dive clothing before entry",
+      );
       assert.equal(shore.equipment?.tank, true);
       assert.equal(shore.equipment?.net, true);
       assert(
@@ -370,20 +374,39 @@ try {
       await page.keyboard.up("w");
       await page.waitForTimeout(350);
       const architecture = await capture("02-kedai-roof-boundary", "hub");
-      assert.equal(architecture.outfit, "daily", "Returning to the village removes dive equipment");
+      assert.equal(
+        architecture.outfit,
+        "daily",
+        "Returning to the village removes dive equipment",
+      );
       assert.equal(architecture.equipment?.tank, false);
+      assert(
+        architecture.land.actors.activities?.actors >= 6,
+        "Village work props must be connected to the live renderer",
+      );
+      assert.equal(
+        architecture.land.actors.residentStates?.["Mang Ujang"]?.kind,
+        "fishing",
+      );
+      assert.equal(
+        architecture.land.actors.residentStates?.["Bu Darmi"]?.kind,
+        "gardening",
+      );
       assert(
         architecture.y < beforeHouse.y - 25,
         "Building collision test must really approach the wall",
       );
       assert(!inside([architecture.x, architecture.y], house.footprint));
       assert(
-        architecture.land.houses >= 3 &&
-          architecture.land.components?.LimasRoof === 2 &&
+        architecture.land.houses === 7 &&
+          architecture.land.components?.LimasRoof === 3 &&
+          architecture.land.components?.GabledHomeRoof === 2 &&
+          architecture.land.components?.BalaiLowerRoof === 1 &&
+          architecture.land.components?.BalaiUpperRoof === 1 &&
           architecture.land.components?.ContainerFlatRoof === 1 &&
           architecture.land.components?.ContainerOfficeBody === 1 &&
           architecture.land.components?.CorporateServiceWindow === 1,
-        "Kedai/Beno roofs and the distinct corporate container must actually be emitted",
+        "Resident roofs, two-tier village hall and corporate container must actually be emitted",
       );
       const garden = maps.hub.obstacles.find((item) => item.kind === "garden");
       assert(garden);

@@ -14,6 +14,7 @@ var _shadows: Dictionary={}
 var _shadow_material: ShaderMaterial
 var max_foot_error:=0.0
 var _equipment: Node3D
+var _activities: Node3D
 
 func configure(owner_renderer: Node, scene: Node2D, player: Node2D) -> void:
 	renderer=owner_renderer
@@ -126,6 +127,12 @@ func update_actors(delta: float) -> void:
 		_scan()
 	max_foot_error=0
 	counts={"player":0,"npcs":0,"creatures":0}
+	if not is_instance_valid(_activities):
+		_activities=preload("res://scripts/VillageActivity3D.gd").new()
+		add_child(_activities)
+		_activities.configure(renderer)
+	_activities.begin_frame()
+	var resident_states: Dictionary={}
 	if "swim_sprite" in actor:
 		var visual: Sprite2D=actor.get("swim_sprite")
 		if visual!=null and visual.texture!=null:
@@ -173,8 +180,12 @@ func update_actors(delta: float) -> void:
 		var flip_npc := false if bool(npc.crate) else float(npc.get("_facing")) < 0.0
 		var npc_sprite:=_sprite("NPC_"+key,frame,npc.position,Vector2(70,70) if bool(npc.crate) else Vector2(100,100),30 if bool(npc.crate) else 36,flip_npc)
 		if "custom_tint" in npc: npc_sprite.modulate*=npc.get("custom_tint")
+		_activities.update_actor(npc,npc_sprite)
+		if npc.has_method("activity_state") and str(npc.activity_kind)!="idle": resident_states[key]=npc.activity_state()
 		counts.npcs=int(counts.npcs)+1
 
+	counts["activities"]=_activities.debug_status()
+	counts["residentStates"]=resident_states
 	for creature in _creatures:
 		if not is_instance_valid(creature): continue
 		var species: String=str(creature.get("species"))

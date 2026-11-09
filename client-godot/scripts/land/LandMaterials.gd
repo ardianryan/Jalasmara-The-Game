@@ -73,7 +73,7 @@ func _init() -> void:
 func get_material(id: String) -> ShaderMaterial:
 	var key: String={"dock":"wood","bridge":"wood","cliff":"stone"}.get(id,id)
 	if _cache.has(key): return _cache[key]
-	var types: Dictionary={"dirt":[0,"9b7c52",0],"grass":[1,"76a268",-1],"sand":[2,"cdbb87",-1],"stone":[3,"969d98",1],"wood":[4,"887055",2],"thatch":[5,"a48c63",4],"bamboo":[6,"b39d74",3],"leaves":[7,"657361",5],"metal":[8,"344a4b",-1],"bridge_board":[9,"88775f",-1],"bridge_board_light":[9,"8b7a62",-1],"bridge_board_dark":[9,"85745d",-1],"terracotta":[0,"aa7050",-1],"cloth_cream":[0,"d2bd91",-1],"cloth_teal":[0,"4c8178",-1],"office_shell":[8,"c6c5b4",-1],"office_glass":[8,"425e65",-1],"corporate_copper":[8,"a76045",-1]}
+	var types: Dictionary={"dirt":[0,"9b7c52",0],"grass":[1,"76a268",-1],"sand":[2,"cdbb87",-1],"stone":[3,"969d98",1],"wood":[4,"887055",2],"thatch":[5,"a48c63",4],"bamboo":[6,"b39d74",3],"leaves":[7,"657361",5],"metal":[8,"344a4b",-1],"bridge_board":[9,"88775f",-1],"bridge_board_light":[9,"8b7a62",-1],"bridge_board_dark":[9,"85745d",-1],"terracotta":[0,"aa7050",-1],"cloth_cream":[0,"d2bd91",-1],"cloth_teal":[0,"4c8178",-1],"office_shell":[8,"c6c5b4",-1],"office_glass":[8,"425e65",-1],"corporate_copper":[8,"a76045",-1],"roof_tiles":[5,"97674e",-1]}
 	var data: Array=types.get(key,types.stone)
 	var material:=ShaderMaterial.new()
 	material.shader=_shader

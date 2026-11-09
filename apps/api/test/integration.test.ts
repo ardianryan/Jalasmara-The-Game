@@ -26,6 +26,9 @@ import type { FastifyInstance } from "fastify";
 import { WORLD } from "../../../packages/shared/src/world.js";
 import {
   isLandWalkable,
+  isLandSegmentWalkable,
+  landPointInPolygon,
+  landDistanceToSegment,
   nearestSafeLandPoint,
 } from "../../../packages/shared/src/land.js";
 import { hubRoute } from "../../../scripts/game-navigation.mjs";
@@ -2212,6 +2215,82 @@ test("tiang bilik ganti memblokir badan dan migrasi save mempertahankan akun ser
   assert.deepEqual(await s.users.findOne({ id: u.id }), before);
 });
 
+function checkHubActivityRoute(
+  route: readonly (readonly number[])[],
+  label: string,
+) {
+  const map = WORLD.landMaps.hub;
+  const elevations = new Map(
+    map.terraces.map((terrace) => [terrace.id, terrace.elevation]),
+  );
+  const heightAt = (point: { x: number; y: number }) => {
+    for (const stair of map.stairs) {
+      const [a, b] = stair.path;
+      const dx = b[0] - a[0],
+        dy = b[1] - a[1];
+      const t =
+        ((point.x - a[0]) * dx + (point.y - a[1]) * dy) / (dx * dx + dy * dy);
+      if (
+        t >= 0 &&
+        t <= 1 &&
+        landDistanceToSegment(point, a, b) <= stair.width / 2
+      ) {
+        assert.ok(
+          elevations.has(stair.from) && elevations.has(stair.to),
+          `${stair.id} must reference actual terrace elevations`,
+        );
+        return (
+          elevations.get(stair.from)! +
+          (elevations.get(stair.to)! - elevations.get(stair.from)!) * t
+        );
+      }
+    }
+    const floor = map.surfaces
+      .filter(
+        (surface) =>
+          surface.walkable !== false &&
+          landPointInPolygon(point, surface.polygon),
+      )
+      .sort(
+        (a, b) =>
+          (b.priority ?? 0) - (a.priority ?? 0) || b.elevation - a.elevation,
+      )[0];
+    assert.ok(floor, `${label} needs an authoritative floor`);
+    return floor.elevation;
+  };
+  const maxSlope = Math.max(
+    ...map.stairs.map(
+      (stair) =>
+        Math.abs(elevations.get(stair.to)! - elevations.get(stair.from)!) /
+        Math.hypot(
+          stair.path[1][0] - stair.path[0][0],
+          stair.path[1][1] - stair.path[0][1],
+        ),
+    ),
+  );
+  for (let index = 1; index < route.length; index++) {
+    const [ax, ay] = route[index - 1],
+      [bx, by] = route[index];
+    const length = Math.hypot(bx - ax, by - ay),
+      steps = Math.max(1, Math.ceil(length / 6));
+    let previous = heightAt({ x: ax, y: ay });
+    for (let step = 0; step <= steps; step++) {
+      const t = step / steps,
+        point = { x: ax + (bx - ax) * t, y: ay + (by - ay) * t };
+      assert.ok(
+        isLandWalkable(map, point, 13),
+        `${label} crosses a building, trunk, water or cliff at sample ${step}`,
+      );
+      const elevation = heightAt(point);
+      assert.ok(
+        Math.abs(elevation - previous) <= (length / steps) * maxSlope + 0.02,
+        `${label} changes terrace elevation without traversing authored stairs/ramp`,
+      );
+      previous = elevation;
+    }
+  }
+}
+
 test("rute enam warga desa berada pada lantai bersama dan tidak memotong prop atau tebing", () => {
   const residents = WORLD.surface_hub.residents;
   assert.equal(residents.length, 6);
@@ -2219,25 +2298,104 @@ test("rute enam warga desa berada pada lantai bersama dan tidak memotong prop at
     new Set(residents.map((resident) => resident.id)).size,
     residents.length,
   );
-  const saras = residents.find((resident) => resident.id === "npc_saras");
-  assert.equal(saras?.cycle, 2);
+  assert.equal(
+    residents.find((resident) => resident.id === "npc_saras")?.cycle,
+    2,
+  );
   for (const resident of residents) {
     assert.ok(resident.route.length >= 2);
-    for (let index = 1; index < resident.route.length; index++) {
-      const [ax, ay] = resident.route[index - 1],
-        [bx, by] = resident.route[index];
-      const steps = Math.ceil(Math.hypot(bx - ax, by - ay) / 6);
-      for (let step = 0; step <= steps; step++) {
-        const t = step / steps;
-        assert.ok(
-          isLandWalkable(
-            WORLD.landMaps.hub,
-            { x: ax + (bx - ax) * t, y: ay + (by - ay) * t },
-            13,
-          ),
-          `${resident.name} crosses a building, trunk, water or cliff at route sample ${step}`,
-        );
-      }
+    assert.ok(resident.activity.startMinute < resident.activity.endMinute);
+    assert.deepEqual(resident.activity.commute[0], resident.activity.work);
+    assert.deepEqual(resident.activity.commute.at(-1), resident.activity.rest);
+    for (const anchor of [
+      resident.activity.work,
+      resident.activity.rest,
+      resident.activity.shelter,
+    ]) {
+      assert.ok(
+        isLandWalkable(WORLD.landMaps.hub, { x: anchor[0], y: anchor[1] }, 13),
+        `${resident.name} activity anchor must have walkable ground`,
+      );
     }
+    checkHubActivityRoute(resident.route, `${resident.name} workplace`);
+    checkHubActivityRoute(
+      resident.activity.commute,
+      `${resident.name} commute`,
+    );
   }
+});
+
+test("empat bangunan baru menghalangi badan dan memiliki pintu depan terhubung ke jaringan tangga desa", async () => {
+  const u = await account(),
+    b = await new Browser().login(u),
+    before = await s.users.findOne({ id: u.id });
+  for (const [id, entrance] of [
+    ["balai_lurah", { x: 940, y: 310 }],
+    ["rumah_ratih", { x: 465, y: 320 }],
+    ["rumah_sari", { x: 1325, y: 300 }],
+    ["rumah_tedi", { x: 1005, y: 975 }],
+  ] as const) {
+    const house = WORLD.landMaps.hub.obstacles.find(
+      (obstacle) => obstacle.id === id,
+    );
+    assert.ok(house?.kind === "house");
+    const center = {
+      x: house.x + house.width / 2,
+      y: house.y + house.height / 2,
+    };
+    assert.equal(isLandWalkable(WORLD.landMaps.hub, center), false);
+    assert.ok(isLandWalkable(WORLD.landMaps.hub, entrance, 13));
+    const route = hubRoute(WORLD, WORLD.surfaceSpawn, entrance);
+    checkHubActivityRoute(route, `${id} entrance route`);
+    for (let index = 1; index < route.length; index++) {
+      assert.ok(
+        isLandSegmentWalkable(
+          WORLD.landMaps.hub,
+          { x: route[index - 1][0], y: route[index - 1][1] },
+          { x: route[index][0], y: route[index][1] },
+          13,
+        ),
+      );
+    }
+    await fixtureSurface(u, "hub", entrance, 10000);
+    const blocked = await b.request("/adventure/surface-position", {
+      area: "hub",
+      ...center,
+    });
+    assert.equal(blocked.status, 409, JSON.stringify(blocked.data));
+    assert.equal(blocked.data.code, "PATH_BLOCKED");
+    const resumed = await b.request("/adventure/state");
+    assert.deepEqual(
+      [resumed.data.surface.x, resumed.data.surface.y],
+      [entrance.x, entrance.y],
+    );
+  }
+  assert.deepEqual(await s.users.findOne({ id: u.id }), before);
+});
+
+test("jadwal Bu Darmi menghubungkan kebun, rumah dan tempat berlindung melalui teras yang sah", () => {
+  const district = WORLD.surface_hub.districtActivities["Bu Darmi"];
+  assert.ok(district);
+  const activity = district.activity;
+  assert.equal(activity.kind, "gardening");
+  assert.ok(
+    activity.startMinute >= 0 &&
+      activity.startMinute < activity.endMinute &&
+      activity.endMinute <= 1440,
+  );
+  assert.deepEqual(activity.commute[0], activity.work);
+  assert.deepEqual(activity.commute.at(-1), activity.rest);
+  for (const anchor of [activity.work, activity.rest, activity.shelter]) {
+    assert.ok(
+      isLandWalkable(WORLD.landMaps.hub, { x: anchor[0], y: anchor[1] }, 13),
+      "Bu Darmi must not stand inside a house, garden bed, tree, water or cliff",
+    );
+  }
+  checkHubActivityRoute(activity.commute, "Bu Darmi work/home commute");
+  const restToShelter = hubRoute(
+    WORLD,
+    { x: activity.rest[0], y: activity.rest[1] },
+    { x: activity.shelter[0], y: activity.shelter[1] },
+  );
+  checkHubActivityRoute(restToShelter, "Bu Darmi shelter route");
 });

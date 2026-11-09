@@ -345,7 +345,7 @@ func _build_surface_geometry(surface: Dictionary) -> void:
 		for part in range(parts):
 			var a:=first.lerp(second,float(part)/parts)
 			var b:=first.lerp(second,float(part+1)/parts)
-			if _connector_at((a+b)*.5): continue
+			if _connector_at((a+b)*.5) or _shared_floor_edge((a+b)*.5,b-a,surface): continue
 			var top_a:=map_point(a,height)
 			var top_b:=map_point(b,height)
 			var thickness:=32.0 if height<1 else 44.0
@@ -366,6 +366,18 @@ func _build_surface_geometry(surface: Dictionary) -> void:
 		for point in polygon:
 			var at:=map_point(point,height)
 			_column(at-Vector3(0,0,60),at+Vector3(0,0,10),9,_materials.get_material("wood"))
+
+
+func _shared_floor_edge(point: Vector2, tangent: Vector2, surface: Dictionary) -> bool:
+	var normal:=Vector2(-tangent.y,tangent.x).normalized()*2.0
+	var polygon:=_polygon(surface.get("polygon",[]))
+	var outside:=point+normal
+	if Geometry2D.is_point_in_polygon(outside,polygon): outside=point-normal
+	for neighbor in map.get("surfaces",[]):
+		if str(neighbor.id)==str(surface.id) or not bool(neighbor.get("walkable",true)): continue
+		if not is_equal_approx(float(neighbor.get("elevation",0)),float(surface.get("elevation",0))): continue
+		if Geometry2D.is_point_in_polygon(outside,_polygon(neighbor.get("polygon",[]))): return true
+	return false
 
 func _connector_at(point: Vector2) -> bool:
 	for stair in map.get("stairs",[]):
@@ -438,6 +450,9 @@ func _house_parts(entry: Dictionary, rect: Rect2, center: Vector3) -> void:
 	if str(entry.get("variant",""))=="metal":
 		_corporate_office(center,width,depth,height)
 		return
+	if str(entry.get("variant",""))=="balai":
+		_balai_parts(center,width,depth,height)
+		return
 	var wall:=height*.70
 	var floor_height:=12.0
 	var wood: Material=_materials.get_material("wood")
@@ -455,14 +470,17 @@ func _house_parts(entry: Dictionary, rect: Rect2, center: Vector3) -> void:
 		var x: float=-width*.34+index*width*.23
 		_box("WovenPanel",center+Vector3(x,depth*.5-12,wall*.55),Vector3(width*.17,5,wall*.5),bamboo)
 	var eave:=center+Vector3(0,0,wall+floor_height)
-	var corners: Array[Vector3]=[eave+Vector3(-width*.55,-depth*.57,0),eave+Vector3(width*.55,-depth*.57,0),eave+Vector3(width*.55,depth*.57,0),eave+Vector3(-width*.55,depth*.57,0)]
-	var peak_left:=eave+Vector3(-width*.27,0,height*.43)
-	var peak_right:=eave+Vector3(width*.27,0,height*.43)
-	_mesh("LimasRoof",PackedVector3Array([corners[0],corners[1],corners[2],corners[3],peak_left,peak_right]),PackedInt32Array([0,1,5,0,5,4,1,2,5,2,3,4,2,4,5,3,0,4]),roof)
-	for i in range(8):
-		var x: float=-width*.49+i*width*.14
-		_column(eave+Vector3(x,-depth*.58,-4),eave+Vector3(x,depth*.58,-4),2.0,wood)
-	_column(peak_left+Vector3(0,0,2),peak_right+Vector3(0,0,2),4,wood)
+	if str(entry.get("variant",""))=="home_pelana":
+		_gabled_roof("GabledHomeRoof",eave,width,depth,height*.43,_materials.get_material("roof_tiles"))
+	else:
+		var corners: Array[Vector3]=[eave+Vector3(-width*.55,-depth*.57,0),eave+Vector3(width*.55,-depth*.57,0),eave+Vector3(width*.55,depth*.57,0),eave+Vector3(-width*.55,depth*.57,0)]
+		var peak_left:=eave+Vector3(-width*.27,0,height*.43)
+		var peak_right:=eave+Vector3(width*.27,0,height*.43)
+		_mesh("LimasRoof",PackedVector3Array([corners[0],corners[1],corners[2],corners[3],peak_left,peak_right]),PackedInt32Array([0,1,5,0,5,4,1,2,5,2,3,4,2,4,5,3,0,4]),roof)
+		for i in range(8):
+			var x: float=-width*.49+i*width*.14
+			_column(eave+Vector3(x,-depth*.58,-4),eave+Vector3(x,depth*.58,-4),2.0,wood)
+		_column(peak_left+Vector3(0,0,2),peak_right+Vector3(0,0,2),4,wood)
 	_lantern(center+Vector3(-width*.35,-depth*.5+12,wall*.68))
 	for side in [-1.0,1.0]:
 		var window_at:=center+Vector3(side*width*.30,depth*.5-12,wall*.52)
@@ -494,7 +512,47 @@ func _house_parts(entry: Dictionary, rect: Rect2, center: Vector3) -> void:
 		_column(p,p+Vector3(0,0,22),9,_materials.get_material("stone"))
 
 
-	if area=="hub": _house_trade_details(str(entry.get("variant","")),center,width,depth,wall)
+	if area=="hub" and str(entry.get("id","")) in ["kedai_waras","galangan_beno"]: _house_trade_details(str(entry.get("variant","")),center,width,depth,wall)
+
+
+func _gabled_roof(label: String, eave: Vector3, width: float, depth: float, rise: float, material: Material) -> void:
+	var a:=eave+Vector3(-width*.54,-depth*.55,0)
+	var b:=eave+Vector3(width*.54,-depth*.55,0)
+	var c:=eave+Vector3(width*.54,depth*.55,0)
+	var d:=eave+Vector3(-width*.54,depth*.55,0)
+	var left:=eave+Vector3(-width*.54,0,rise)
+	var right:=eave+Vector3(width*.54,0,rise)
+	_mesh(label,PackedVector3Array([a,b,c,d,left,right]),PackedInt32Array([0,1,5,0,5,4,3,4,5,3,5,2,0,4,3,1,2,5]),material)
+	_column(left+Vector3(0,0,2),right+Vector3(0,0,2),3.0,_materials.get_material("wood"))
+	for end_sign in [-1.0,1.0]:
+		var at:=eave+Vector3(end_sign*width*.545,0,rise)
+		_column(at,at+Vector3(0,-depth*.56,-rise),2.5,_materials.get_material("wood"))
+		_column(at,at+Vector3(0,depth*.56,-rise),2.5,_materials.get_material("wood"))
+
+func _balai_parts(center: Vector3, width: float, depth: float, _height: float) -> void:
+	var wood:Material=_materials.get_material("wood")
+	var bamboo:Material=_materials.get_material("bamboo")
+	var stone:Material=_materials.get_material("stone")
+	var roof:Material=_materials.get_material("roof_tiles")
+	_box("BalaiStonePlinth",center+Vector3(0,0,8),Vector3(width,depth,16),stone)
+	_box("BalaiRaisedFloor",center+Vector3(0,0,19),Vector3(width-10,depth-10,6),wood)
+	_box("BalaiBackWall",center+Vector3(0,depth*.38,60),Vector3(width*.86,10,80),bamboo)
+	for side in [-1.0,1.0]:
+		_box("BalaiSideWall",center+Vector3(side*width*.43,depth*.1,55),Vector3(8,depth*.66,70),bamboo)
+		for along in [-.38,0.0,.38]:
+			var foot:=center+Vector3(side*width*.43,along*depth,22)
+			_column(foot,foot+Vector3(0,0,106),6,wood)
+			_box("BalaiPostFoot",foot+Vector3(0,0,7),Vector3(18,18,14),stone)
+		_box("BalaiMeetingBench",center+Vector3(side*width*.28,-depth*.04,37),Vector3(18,depth*.46,8),wood)
+		_lantern(center+Vector3(side*width*.32,-depth*.42,89))
+	var eave:=center+Vector3(0,0,128)
+	_gabled_roof("BalaiLowerRoof",eave,width,depth,35,roof)
+	_box("BalaiUpperClerestory",center+Vector3(0,0,158),Vector3(width*.58,depth*.38,20),bamboo)
+	_gabled_roof("BalaiUpperRoof",center+Vector3(0,0,171),width*.64,depth*.52,35,_materials.get_material("thatch"))
+	_box("BalaiCivicNoticeBoard",center+Vector3(0,-depth*.38,76),Vector3(width*.26,6,34),wood)
+	for i in range(3):
+		_box("BalaiNoticePaper",center+Vector3((i-1)*23,-depth*.38-4,76),Vector3(17,2,22),_materials.get_material("cloth_cream"))
+	_cloth_panel(center+Vector3(0,-depth*.46,120),width*.30,24,_materials.get_material("cloth_teal"))
 
 func _cloth_panel(at: Vector3, width: float, length: float, material: Material) -> void:
 	var pivot:=Node3D.new()

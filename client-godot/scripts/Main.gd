@@ -94,6 +94,9 @@ func _ready() -> void:
 		actor.actor_name = str(district.npc)
 		actor.position = Vector2(float(district.x),float(district.y))
 		actor.player = nala
+		actor.walkable = Callable(terrain,"is_walkable")
+		var activity: Dictionary = GameState.world.surface_hub.get("districtActivities",{}).get(str(district.npc),{})
+		if not activity.is_empty(): actor.configure_activity(activity)
 		add_child(actor)
 		surface_actors.append(actor)
 	_ensure_residents()
@@ -148,6 +151,7 @@ func _ensure_residents() -> void:
 		actor.position = actor.route[0]
 		actor.player = nala
 		actor.walkable = Callable(terrain,"is_walkable")
+		actor.configure_activity(resident)
 		actor.set_meta("conversation",resident.line)
 		actor.set_meta("evening_conversation",resident.evening)
 		add_child(actor)
@@ -427,7 +431,10 @@ func _find_nearby() -> void:
 				var text: String = actor.get_meta("evening_conversation") if float(EnvironmentState.snapshot().daylight)<.45 else actor.get_meta("conversation")
 				objects.append({"id":actor.actor_name,"x":actor.position.x,"y":actor.position.y,"name":actor.actor_name,"kind":"resident","radius":80.0,"text":text})
 		for district in GameState.world.get("surface_hub",{}).get("districts",[]):
-			objects.append({"id":district.id,"x":district.x,"y":district.y,"name":district.npc,"kind":"npc","radius":140.0})
+			var actor_position := Vector2(float(district.x),float(district.y))
+			for actor in surface_actors:
+				if actor.actor_name==str(district.npc): actor_position=actor.position
+			objects.append({"id":district.id,"x":actor_position.x,"y":actor_position.y,"name":district.npc,"kind":"npc","radius":140.0})
 		for landmark in GameState.world.get("surface_hub",{}).get("landmarks",[]):
 			var item: Dictionary = landmark.duplicate()
 			item["kind"] = "surface_landmark"

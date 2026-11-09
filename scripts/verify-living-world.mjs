@@ -43,6 +43,7 @@ const scripts = [
   "scripts/tests/surface-traversal.gd",
   "scripts/tests/land-path.gd",
   "scripts/tests/world-clock.gd",
+  "scripts/tests/village-activities.gd",
 ];
 const results = [];
 try {

@@ -1,5 +1,5 @@
 import { LAND_MAPS } from "./land.ts";
-import { VILLAGE_RESIDENTS } from "./village.ts";
+import { VILLAGE_RESIDENTS, VILLAGE_DISTRICT_ACTIVITIES } from "./village.ts";
 
 const TERRAIN = [
   [-100, -100, 100, 3800],
@@ -108,6 +108,7 @@ export const WORLD = {
   ],
   surface_hub: {
     residents: VILLAGE_RESIDENTS,
+    districtActivities: VILLAGE_DISTRICT_ACTIVITIES,
     city_id: "city_bandar_hujung",
     name: "Kota Apung Bandar Hujung",
     lore: "Bekas pelabuhan muara yang kini menjadi permukiman rakit di atas Palung Smara.",

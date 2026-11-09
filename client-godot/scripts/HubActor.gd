@@ -17,6 +17,67 @@ var _attention := 0.0
 var _facing := 1.0
 var _anchor := Vector2.ZERO
 var _anchored := false
+var activity_profile: Dictionary = {}
+var activity_kind := "idle"
+var activity_phase := "idle"
+var activity_motion := 0.0
+var moving := false
+var _navigation: RefCounted
+var _activity_goal := ""
+var _activity_path := PackedVector2Array()
+var _activity_index := 0
+var _activity_target := Vector2.ZERO
+var _schedule_clock := 1.0
+
+func configure_activity(profile: Dictionary) -> void:
+	activity_profile=profile.get("activity",{}).duplicate(true)
+	if activity_profile.is_empty(): return
+	activity_kind=str(activity_profile.get("kind","idle"))
+	var paths: Array=GameState.world.get("landMaps",{}).get("hub",{}).get("routes",[]).duplicate(true)
+	for resident in GameState.world.get("surface_hub",{}).get("residents",[]):
+		var commute: Array=resident.get("activity",{}).get("commute",[])
+		if commute.size()>1: paths.append(commute)
+	var own_commute: Array=activity_profile.get("commute",[])
+	if own_commute.size()>1: paths.append(own_commute)
+	_navigation=preload("res://scripts/NpcActivityNavigation.gd").new()
+	_navigation.configure(paths,walkable)
+	_activity_goal=""
+	_schedule_clock=1.0
+
+func _activity_update(delta: float,nearby: bool) -> void:
+	moving=false
+	var weather:=EnvironmentState.snapshot()
+	var minute: float=EnvironmentState.visual_minutes
+	var open:=minute>=float(activity_profile.get("startMinute",420)) and minute<float(activity_profile.get("endMinute",1080))
+	var desired:="shelter" if float(weather.get("rain",0))>.42 else "work" if open else "rest"
+	_schedule_clock+=delta
+	if desired!=_activity_goal or (_activity_path.is_empty() and _schedule_clock>3.0):
+		_schedule_clock=0
+		_activity_goal=desired
+		var point: Array=activity_profile.get(desired,activity_profile.get("work",[position.x,position.y]))
+		_activity_target=Vector2(float(point[0]),float(point[1]))
+		_activity_path=_navigation.path_between(position,_activity_target)
+		_activity_index=1 if _activity_path.size()>1 else 0
+	var arrived:=position.distance_to(_activity_target)<2.0
+	activity_phase=desired if arrived else "walking_"+desired if not _activity_path.is_empty() else "blocked_"+desired
+	activity_motion=0.0 if EnvironmentState.reduced_motion or EnvironmentState.clock_paused else sin(_elapsed*1.8)
+	if arrived or nearby or EnvironmentState.clock_paused or EnvironmentState.reduced_motion: return
+	if _activity_index>=_activity_path.size(): return
+	var target:=_activity_path[_activity_index]
+	var candidate:=position.move_toward(target,delta*26.0)
+	if _navigation.segment_clear(position,candidate):
+		if absf(candidate.x-position.x)>.01: _facing=signf(candidate.x-position.x)
+		moving=position.distance_to(candidate)>.001
+		position=candidate
+		if position.distance_to(target)<.3: _activity_index+=1
+	else:
+		_activity_path.clear()
+		_schedule_clock=0
+		activity_phase="blocked_"+desired
+
+func activity_state() -> Dictionary:
+	return {"kind":activity_kind,"phase":activity_phase,"moving":moving,"atStation":not moving and position.distance_to(_activity_target)<2,"destination":[_activity_target.x,_activity_target.y],"remaining":maxi(0,_activity_path.size()-_activity_index),"minute":EnvironmentState.visual_minutes,"reducedMotion":EnvironmentState.reduced_motion}
+
 
 func _process(delta: float) -> void:
 	if not _anchored and position != Vector2.ZERO:
@@ -27,7 +88,10 @@ func _process(delta: float) -> void:
 	var check_pos := _anchor if _anchored else position
 	var nearby := is_instance_valid(player) and player.position.distance_to(check_pos)<165
 	_attention = move_toward(_attention,1.0 if nearby else 0.0,delta*2.4)
-	if not route.is_empty() and not crate:
+	if not activity_profile.is_empty():
+		_activity_update(delta,nearby)
+		_anchor=position
+	elif not route.is_empty() and not crate:
 		if not nearby and not EnvironmentState.reduced_motion:
 			rest_time = maxf(0,rest_time-delta)
 			if rest_time<=0:
