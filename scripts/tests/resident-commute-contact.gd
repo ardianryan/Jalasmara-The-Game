@@ -122,7 +122,7 @@ func _tick() -> bool:
 	if not _check(collision.is_walkable(actor.position),"Actual route left floor/entered collider"): return false
 	renderer.actors_3d.update_actors(.1)
 	if not _measure(): return false
-	if not paused_once and actor.moved_velocity.length()>.1:
+	if not paused_once and actor.moved_velocity.length()>.1 and absf(sin(float(rig.pose_snapshot().contacts.phaseDistance)/float(rig.pose_snapshot().contacts.stride)*TAU))>.2:
 		paused_once=true
 		var frozen:Dictionary=rig.pose_snapshot()
 		var stopped:Vector2=actor.position
