@@ -558,11 +558,20 @@ async function verifyShelters() {
   checks.push(
     "seven-residents-reach-rain-shelter-stations-on-the-real-night-calendar",
   );
-  for (const resident of residents.sort(
-    (a, b) =>
+  for (const resident of residents.sort((a, b) => {
+    if (shelterPredecessor) {
+      const distance = (entry) =>
+        Math.hypot(
+          entry.activity.shelter[0] - shelterWaitPosition.x,
+          entry.activity.shelter[1] - shelterWaitPosition.y,
+        );
+      return distance(a) - distance(b);
+    }
+    return (
       a.activity.shelter[1] - b.activity.shelter[1] ||
-      a.activity.shelter[0] - b.activity.shelter[0],
-  )) {
+      a.activity.shelter[0] - b.activity.shelter[0]
+    );
+  })) {
     if (shelterPredecessor?.completedResidents.includes(resident.name))
       continue;
     const [x, y] = resident.activity.shelter;
