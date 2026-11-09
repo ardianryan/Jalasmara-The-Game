@@ -23,12 +23,13 @@ class ReleasePackageTests(unittest.TestCase):
                 path /= "source.txt"
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text("tracked source\n")
+        self.game = self.root / "apps/web/public/game"
+        self.game.mkdir(parents=True)
+        (self.game / ".gitkeep").touch()
         self.git("init", "-q")
         self.git("add", ".")
         self.git("-c", "user.name=Fixture", "-c", "user.email=fixture@test.invalid",
                  "commit", "-qm", "fixture")
-        self.game = self.root / "apps/web/public/game"
-        self.game.mkdir(parents=True)
         for name, content in {"index.html": b"html", "index.js": b"loader",
                               "index.wasm": b"wasm", "index.pck": b"pck"}.items():
             (self.game / name).write_bytes(content)
@@ -55,6 +56,7 @@ class ReleasePackageTests(unittest.TestCase):
             names = context.getnames()
         self.assertIn("apps/web/public/game/index.pck", names)
         self.assertNotIn("apps/web/public/game/index.wasm", names)
+        self.assertNotIn("apps/web/public/game/.gitkeep", names)
         self.assertFalse(any(".env" in name or "node_modules" in name for name in names))
         self.assertEqual({x["name"] for x in result["requiredReusedAssets"]},
                          {"index.wasm", "index.wasm.gz"})

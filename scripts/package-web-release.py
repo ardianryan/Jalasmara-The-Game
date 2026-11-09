@@ -37,6 +37,10 @@ def sha256(path):
 def asset_records(directory):
     records = []
     for path in sorted(directory.iterdir()):
+        if path.name == ".gitkeep":
+            if path.is_symlink() or not path.is_file() or path.stat().st_size != 0:
+                raise ValueError("Expected an empty regular export placeholder")
+            continue
         if path.name not in ASSET_NAMES and not re.fullmatch(r"bootstrap-[1-9][0-9]*\.js(?:\.gz)?", path.name):
             raise ValueError(f"Unexpected file in generated game export: {path.name}")
         if path.is_symlink() or not path.is_file():
@@ -104,12 +108,16 @@ def package(root, output, reuse_wasm=False, export_source=None):
         members = tracked.getmembers()
         if not all(safe_member(member) for member in members):
             raise ValueError("Unsafe or secret-bearing tracked Docker input")
-        if any(member.name.startswith("apps/web/public/game/") for member in members):
+        if any(member.isfile() and member.name.startswith("apps/web/public/game/")
+               and not (member.name == "apps/web/public/game/.gitkeep" and member.size == 0)
+               for member in members):
             raise ValueError("Generated game exports must not be tracked in Git")
         output.mkdir(parents=True)
         context = output / "context.tar"
         with tarfile.open(context, "x") as bundle:
             for member in members:
+                if member.name == "apps/web/public/game/.gitkeep":
+                    continue
                 bundle.addfile(member, tracked.extractfile(member) if member.isfile() else None)
             for asset in assets:
                 if reuse_wasm and asset["name"] in REUSABLE:
