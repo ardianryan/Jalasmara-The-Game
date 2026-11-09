@@ -19,6 +19,7 @@ assert(
 const origin = "https://staging-jalasmara.ardianryan.com";
 const expectedPck =
   "a9378a52c9fbb64ec96ae579bcef1ced1ab7920962823025e238a453eb8a716b";
+const expectedPckBytes = 64_249_828;
 const id = randomUUID(),
   email = `plan06-public-${id}@test.invalid`;
 const password = randomBytes(24).toString("base64url");
@@ -253,13 +254,16 @@ try {
   for await (const bytes of response.body) {
     hash.update(bytes);
     decodedBytes += bytes.length;
+    assert(decodedBytes <= expectedPckBytes, "Public PCK exceeds pinned release size");
   }
-  publicPck = { sha256: hash.digest("hex"), decodedBytes };
   assert.equal(
-    publicPck.sha256,
+    hash.digest("hex"),
     expectedPck,
     "Public release PCK must match before creating an account",
   );
+  assert.equal(decodedBytes, expectedPckBytes, "Public PCK size must match release");
+  // Only validated release metadata reaches the report, never downloaded content.
+  publicPck = { sha256: expectedPck, decodedBytes: expectedPckBytes };
   checks.push("public-health-and-downloaded-pck-match-release");
   fixtureAttempted = true;
   await remote("create");
