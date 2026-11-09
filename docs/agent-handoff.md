@@ -2,6 +2,8 @@
 
 Terakhir diperbarui: 9 November 2026, paket integrasi 06-B berjalan. Baca berkas ini bersama [AGENTS.md](../AGENTS.md), [PRD](PRD.md) dan [Rencana 06](plans/06-finishing-dunia-npc-dan-perluasan-desa.md). Bagian ini ditimpa dengan keadaan terbaru; log singkat di bawah ditambah saat paket selesai. Laporan historis tetap disimpan.
 
+[Laporan progres paket06-B](reviews/06b-progress.md) merangkum perubahan, hasil tes, tool/lisensi dan urutan pengembangan berikutnya. Browser acceptance masih berjalan; lihat laporan QA untuk hasil setiap iterasi.
+
 ## Rilis versus kandidat
 
 - **Staging yang sudah terbukti:** source `9ba21c6bdcb86de1b1732fe4d646fc5a27099eec`, PCK `a9378a52c9fbb64ec96ae579bcef1ced1ab7920962823025e238a453eb8a716b`. [Laporan rilis 06-A/B1](reviews/06a-delivery.md) memuat image, backup, rollback dan CI. Main sesudahnya memuat perbaikan harness/dokumen; jangan menyamakan source host dengan HEAD lokal.

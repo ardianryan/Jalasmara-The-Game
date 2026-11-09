@@ -15,6 +15,8 @@ Lihat [status pengembangan dan bukti pengujian](docs/development-status.md). Ver
 
 Untuk melanjutkan pengembangan dengan agent AI, mulai dari [AGENTS.md](AGENTS.md), [handoff aktif dan ringkasan progres](docs/agent-handoff.md), serta [PRD](docs/PRD.md). Handoff membedakan kandidat lokal dari rilis staging, tool yang benar-benar dipakai, kegagalan tes yang masih terbuka, dan urutan kerja berikutnya.
 
+[Progres paket06-B](docs/reviews/06b-progress.md) mencatat koreksi rumah–dermaga, kontak kaki/turn Ujang, perbaikan website serta port kamera Noxe yang terbatas; status kamera gameplay dan rilis dibedakan dari fixture/native.
+
 Nala dapat memasuki Griya Sasmita, menyimpan fragmen, merawat dua petak kangkung, membeli bibit, dan membawa panen ke kedai. Kalender akun memakai satu hari selama 36 menit aktif; tidur menyelesaikan pagi berikutnya tanpa melewati syarat cerita. Tiga warga memakai animasi tubuh berlapis dengan alat terpisah. Rincian serta batas implementasi ada di [Rencana 03](docs/plans/03-desa-hidup-dan-siklus-harian.md).
 
 ## Menjalankan lokal

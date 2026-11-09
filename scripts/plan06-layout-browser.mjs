@@ -517,7 +517,7 @@ try {
   }
   assert.equal(downloaded, expectedPckBytes);
   assert.equal(digest.digest("hex"), expectedPck);
-  candidatePck = { sha256: expectedPck, decodedBytes: downloaded };
+  candidatePck = { sha256: expectedPck, decodedBytes: expectedPckBytes };
   await mongo.connect();
   assert(
     await mongo.db().collection("contents").findOne({ state: "published" }),
