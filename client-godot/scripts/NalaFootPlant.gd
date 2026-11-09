@@ -21,6 +21,7 @@ var _discontinuities := 0
 var _support_extents:Dictionary={}
 var _right:=Vector3.RIGHT
 var _stairs:Array=[]
+var _connectors:Array=[]
 var _body_height:=0.0
 var _body_rate:=1.0
 var _stair_transfer:=false
@@ -44,6 +45,7 @@ func configure(owner_renderer: Node,contract:Dictionary={}) -> void:
 	_turn_cosine=float(contract.get("turnCosine",.5))
 	_landing_distance=_start_distance
 	for profile in renderer.get("_stair_queries"):
+		_connectors.append(profile)
 		if str(profile.get("type",""))=="stairs":
 			_stairs.append(profile)
 			_body_rate=maxf(_body_rate,absf(float(profile.to)-float(profile.from))/float(profile.steps)/_steady_distance*1.5)
@@ -124,7 +126,7 @@ func _logical_offset(at:Vector2,world:Vector3) -> Vector2:
 func _path_metrics(from:Vector2,to:Vector2) -> Dictionary:
 	var delta:=to-from
 	var fractions:Array[float]=[0.0,1.0]
-	for profile in _stairs:
+	for profile in (_connectors if _physical_contract else _stairs):
 		if delta.length_squared()<.000001: break
 		var start:Vector2=profile.start
 		var end:Vector2=profile.end
