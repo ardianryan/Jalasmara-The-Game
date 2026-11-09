@@ -65,5 +65,5 @@ func run() -> void:
 	assert(directions.size()>=2,"Ascent and descent must be distinguished")
 	assert(JSON.stringify(world)==world_before,"Stair sampling changed world/collision metadata")
 	assert(JSON.stringify({"player":state.player,"dive":state.dive})==account_before,"Stairs changed account resources or progression")
-	print("SURFACE TRAVERSAL PASS: ",samples," ascending/descending path samples, continuous elevation, step indices, idle/outside/reduced motion and unchanged body/world/account state")
+	print("SURFACE TRAVERSAL PASS: ",samples," ascending/descending path samples, tread/ramp elevation, step indices, idle/outside/reduced motion and unchanged body/world/account state")
 	quit()

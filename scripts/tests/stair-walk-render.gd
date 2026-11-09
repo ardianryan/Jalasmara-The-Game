@@ -32,6 +32,7 @@ func run() -> void:
 	var player: CharacterBody2D=load("res://scripts/Player.gd").new()
 	stage.add_child(player)
 	player.set_physics_process(false)
+	player.hybrid_visual=true
 	player.land_mask=collision.is_walkable
 	player.position=Vector2(1370,825)
 	var camera:=Camera2D.new()

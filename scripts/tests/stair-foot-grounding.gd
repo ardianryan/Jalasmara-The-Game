@@ -50,6 +50,7 @@ func run() -> void:
 	var player: CharacterBody2D=load("res://scripts/Player.gd").new()
 	stage.add_child(player)
 	player.set_physics_process(false)
+	player.hybrid_visual=true
 	player.position=Vector2(1370,795)
 	player.surface_traversal.configure(state.world.landMaps.hub)
 	var camera:=Camera2D.new()

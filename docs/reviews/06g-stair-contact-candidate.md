@@ -8,6 +8,18 @@ The candidate keeps global `map_point`, accepted 2D movement, server coordinates
 
 The helper provides an analytical inverse for the local stair ground plane. Root must wire `ground_point`, implicit-height host projection, ray-to-ground logical recovery, camera follow and canopy focus. The global projection helper and its existing input matrix remain unchanged. Facing should follow the continuous path gradient rather than the instantaneous height jump at a riser.
 
-Nala's sprite, shadow and equipment root consume the same physical support point. The existing distance-driven traversal lift is now explicit in 3D, capped at1.6 units, zero on a ramp or under reduced motion; pause holds it rather than advancing a timed bounce. NPC rig roots and Ujang sole/body/lateral basis queries use the same support hook, with fallbacks for older focused test renderers. Ordinary floors keep their existing embedding and shadow offset.
+Nala's sprite, shadow and equipment root consume the same physical support point. The existing distance-driven traversal lift is now explicit in 3D, capped at 1.6 units, zero on a ramp or under reduced motion; pause holds it rather than advancing a timed bounce. NPC rig roots and Ujang sole/body/lateral basis queries use the same support hook, with fallbacks for older focused test renderers. Ordinary floors keep their existing embedding and shadow offset.
 
 This does **not** provide independently authored left/right stair poses for the current whole-body Nala atlas. A correct support point and visible body rise do not prove anatomically natural per-leg stepping. Final acceptance requires the prepared actual-mesh ray test, inverse/ordinary-floor/input regressions, an actual ascent/descent sequence and visual review. No new art, paid API, Noxe geometry or runtime dependency is introduced.
+
+## Integration evidence and native review checkpoint
+
+Root integrated the helper/actor source and `LandWorld3D` hooks on the combined branch. Initial Godot execution found typed-array mismatches in dynamic `_face` calls for risers/cheeks; root fixed the helper with explicit `Array[Vector3]` locals. The first focused fixture also required explicit types. These failures preceded the passing runs and are not omitted from the history.
+
+Root reports the focused check passed **868** actual highest-triangle/height/inverse/projection/lift checks, including all 12 authored stair treads and ramp. Existing projection/input checks passed 2,304 cases and actual left-controller checks passed 60. These are integration-reported results; this lane has not launched an engine.
+
+The first native controller fixture reached the opposite landing in all eight normal/reduced ascent/descent cases, producing 75 images at `artifacts/godot/06b2-stair-walk/`. JSON confirms central stairs rise through 60/72/84/96 world units, ridge stairs through 112/128/144, and the dock remains a continuous ramp. Moving rows settle to north-west on ascent and south-east on descent. Reduced motion has no added body lift.
+
+CPU image inspection found a **fixture defect**: the 2D player remained visible alongside the 3D clone, notably in `forest_ridge_steps-up-normal-016.png` and `dock_gangway-up-normal-016.png`. Therefore these first 75 images are diagnostic evidence, not clean final visual acceptance. `review-contact-sheet.png` and its SHA/crop manifest in the same directory preserve the finding. The fixture now sets `hybrid_visual=true`, matching Main's existing runtime behavior; root must rerun the sequential capture. No product visibility behavior was changed for this defect.
+
+The actual stair silhouette now has distinct treads and joined risers, but the reused whole-body walking poses still do not establish independently planted feet. Some leg silhouettes cross in the original flat-walk atlas. Keep natural per-leg stair animation open rather than treating support-height tests or still images as its completion.
