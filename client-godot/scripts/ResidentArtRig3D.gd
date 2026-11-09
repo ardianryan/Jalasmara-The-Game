@@ -67,7 +67,7 @@ void fragment() { vec4 texel=texture(atlas_tex,part_uv); if(texel.a<0.5) discard
 	_plant=FootPlant.new()
 	var shortest_leg:=minf(_length("upper_leg_left")+_length("lower_leg_left"),_length("upper_leg_right")+_length("lower_leg_right"))
 	var step_scale:=minf(float(actor.body_scale),shortest_leg*.85/FootPlant.STRIDE)
-	if not _plant.configure(renderer,actor,{"joints":hips,"stepScale":step_scale}): return false
+	if not _plant.configure(renderer,actor,{"joints":hips,"stepScale":step_scale,"turnCosine":.8}): return false
 	_held=Node3D.new()
 	_held.name="SeparateHeldProp"
 	add_child(_held)

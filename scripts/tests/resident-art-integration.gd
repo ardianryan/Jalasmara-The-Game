@@ -110,6 +110,7 @@ func _run() -> void:
 			else: assert(not Color(day_tints[str(actor.resident_id)]).is_equal_approx(_rig(actor)._tint),"Night must alter actual shader tint")
 		assert(_rig(legacy).get_script().resource_path.ends_with("NpcBodyRig3D.gd"),"Legacy Ujang selection cannot silently migrate to resident helper")
 		assert(_renderer.actors_3d._activities._actors.has(legacy.get_instance_id()),"Original fishing prop path must remain active for Ujang")
+		assert(is_equal_approx(float(_rig(legacy)._foot_plant.turn_cosine),.5),"Legacy Ujang must keep its original default turn threshold")
 	_clock.clock_paused=true
 	var paused:Array=[]
 	for actor in _people: paused.append(_rig(actor).pose_snapshot())

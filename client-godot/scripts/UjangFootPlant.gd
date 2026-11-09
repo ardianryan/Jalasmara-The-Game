@@ -4,6 +4,7 @@ const STRIDE := 25.0
 const LIFT := 3.4
 var stride_length:=STRIDE
 var lift_height:=LIFT
+var turn_cosine:=.5
 const SOLE_RADIUS := 6.0
 var _renderer:Node
 var _actor:Node2D
@@ -33,6 +34,8 @@ func configure(renderer:Node,actor:Node2D,data:Dictionary) -> bool:
 	stride_length=STRIDE*step_scale
 	lift_height=LIFT*step_scale
 	turn_distance=TURN_DISTANCE*step_scale
+	turn_cosine=clampf(float(data.get("turnCosine",.5)),-.99,.99)
+	if not is_finite(turn_cosine): turn_cosine=.5
 	_renderer=renderer
 	_actor=actor
 	for surface in renderer.map.get("surfaces",[]):
@@ -166,7 +169,7 @@ func update(at:Vector2,velocity:Vector2,time:float,_flip:float) -> Dictionary:
 		_ready=true
 	if walking:
 		var next_direction:=velocity.normalized()
-		var turned:=_walking and _direction.dot(next_direction)<.5
+		var turned:=_walking and _direction.dot(next_direction)<turn_cosine
 		_direction=next_direction
 		_ratio=clampf(physical/maxf(.001,moved),1.0,8.0)
 		if turned: _begin_turn(at)
@@ -207,4 +210,4 @@ func update(at:Vector2,velocity:Vector2,time:float,_flip:float) -> Dictionary:
 	_last_at=at
 	_last_ground=body_ground
 	_last_time=time
-	return {"feet":_feet.duplicate(true),"walking":walking,"phaseDistance":_phase_distance,"physicalRatio":_ratio,"stride":stride_length,"essentialMotion":true,"discontinuityResets":_resets,"anatomicalSidesStable":true,"lateralLogical":[_lateral.x,_lateral.y],"turnStep":not _turn.is_empty(),"turnSteps":_turn_steps}
+	return {"feet":_feet.duplicate(true),"walking":walking,"phaseDistance":_phase_distance,"physicalRatio":_ratio,"stride":stride_length,"essentialMotion":true,"discontinuityResets":_resets,"anatomicalSidesStable":true,"lateralLogical":[_lateral.x,_lateral.y],"turnStep":not _turn.is_empty(),"turnSteps":_turn_steps,"turnCosine":turn_cosine}

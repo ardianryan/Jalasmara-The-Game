@@ -79,6 +79,7 @@ func _run() -> void:
 			rig.update_pose(Color.WHITE)
 			var status:Dictionary=rig.debug_status()
 			assert(status.authoredViews==1 and not status.mirrored and status.separateProp)
+			assert(is_equal_approx(float(status.contacts.turnCosine),.8),"Resident path corners need the explicit tighter turn handover")
 			var left_leg:Dictionary=status.links.leg_left
 			var right_leg:Dictionary=status.links.leg_right
 			var shortest_leg:=minf(float(left_leg.first)+float(left_leg.second),float(right_leg.first)+float(right_leg.second))

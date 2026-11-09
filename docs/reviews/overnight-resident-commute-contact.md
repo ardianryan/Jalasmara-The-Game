@@ -17,3 +17,8 @@ Root menjalankan before meaningful pause: FAIL sampel24 pada direktur, lengan ke
 
 
 Root mengizinkan kandidat reach cap setelah kegagalan Gito terbukti: stepScale=min(bodyScale, shortest actual thigh+calf ×.85/25), minimum opsi .25 (enam sumber diketahui jauh di atas ini), default Ujang1 tetap. Director tidak mengecil; tidak ada override nama, hip/art/toleransi berubah. Uji576 sekarang mengharuskan stride positif, tidak melebihi25×bodyScale maupun .85×panjang kaki yang diukur dari fixed links. Contact/reach guard tidak dilonggarkan. Kandidat ini menunggu actual all6 commutes + ulang legacy1242 oleh root sebelum ekspor baru.
+
+
+Root run cap-only `.runtime/overnight-export2-focused-resident-commute-contact.log` masih FAIL6767: Gito[1124.327,1192.885], pelvis11.284485 >6.3, reset0. Sudut rute aktual dari south ke normalized[.832,.555] memiliki dot .555 sehingga threshold lama .5 tidak mengenali turn56derajat. SwingTo lama tetap ke selatan1202.744 saat body sudah berbelok, ankle local depth10.413/down−4.751; cap hanya mengubah fase.
+
+Root mengizinkan optional turnCosine: default .5 pada Ujang tetap persis, enam Resident memakai .8 agar corner authored56derajat memulai handover existing. Tidak mengubah posisi/goal server, menambah teleport, mengganti hip/art, atau melonggarkan contact/reach/stance guard. Contact debug mencatat threshold,576 mewajibkan explicit.8, integrasi mewajibkan legacy.5. Kandidat CPU, pending actualall6 PASS dan default1242.
