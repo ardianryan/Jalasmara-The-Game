@@ -76,14 +76,15 @@ func _height(point:Vector2) -> float:
 	return height
 
 func _ground(point:Vector2) -> Vector3:
+	if _renderer.has_method("ground_point"): return _renderer.ground_point(point)
 	return _renderer.map_point(point,_height(point))
 
 func _update_lateral(at:Vector2) -> void:
 	var camera:Camera3D=_renderer.get("camera_3d")
 	if camera==null: return
-	var origin:Vector3=_renderer.map_point(at,0)
-	var x:Vector3=_renderer.map_point(at+Vector2.RIGHT,0)-origin
-	var y:Vector3=_renderer.map_point(at+Vector2.DOWN,0)-origin
+	var origin:Vector3=_ground(at)
+	var x:Vector3=_ground(at+Vector2.RIGHT)-origin
+	var y:Vector3=_ground(at+Vector2.DOWN)-origin
 	var right:=camera.global_basis.x
 	var determinant:=x.x*y.y-y.x*x.y
 	if absf(determinant)<.00001: return
@@ -137,7 +138,7 @@ func _advance_turn(physical:float,at:Vector2) -> void:
 
 func update(at:Vector2,velocity:Vector2,time:float,_flip:float) -> Dictionary:
 	_update_lateral(at)
-	var body_ground:Vector3=_renderer.map_point(at,_renderer.ground_height(at))
+	var body_ground:Vector3=_ground(at)
 	var moved:=at.distance_to(_last_at) if _ready else 0.0
 	var physical:=body_ground.distance_to(_last_ground) if _ready else 0.0
 	var delta:=clampf(time-_last_time,0,.15) if _ready else 0.0

@@ -97,7 +97,7 @@ func _physics_process(delta: float) -> void:
 		moved_velocity = Vector2.ZERO
 	if not in_water:
 		surface_traversal.set_reduced_motion(EnvironmentState.reduced_motion)
-		traversal_state = surface_traversal.sample(position,moved_velocity,delta)
+		traversal_state = surface_traversal.sample(position,moved_velocity,delta,frozen or ViewportLayout.host_paused or EnvironmentState.clock_paused)
 		land_path.record(position)
 	else:
 		traversal_state = {}

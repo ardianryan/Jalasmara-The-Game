@@ -124,7 +124,7 @@ func update_pose(tint: Color) -> void:
 	var state: Dictionary=actor.body_animation_state()
 	var camera:=get_viewport().get_camera_3d()
 	if camera==null: return
-	var foot: Vector3=renderer.map_point(actor.position,renderer.ground_height(actor.position))
+	var foot: Vector3=renderer.ground_point(actor.position) if renderer.has_method("ground_point") else renderer.map_point(actor.position,renderer.ground_height(actor.position))
 	if _foot_plant==null: foot-=renderer.camera_forward()*8
 	global_transform=Transform3D(camera.global_basis.orthonormalized(),foot)
 	var facing:=_camera_facing(camera,state)
