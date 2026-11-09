@@ -1084,7 +1084,8 @@ func _show_quiz() -> void:
 func _npc_interact(name_text: String) -> void:
 	network_busy = true
 	while syncing: await get_tree().process_frame
-	var saved := await _sync_surface()
+	var saved := _can_resume_kedai(name_text)
+	if not saved: saved = await _sync_surface()
 	network_busy = false
 	if not saved: return
 	var p: Dictionary = GameState.player
@@ -1121,6 +1122,17 @@ func _npc_interact(name_text: String) -> void:
 			_talk([{"name":"Bu Darmi","text":"Semua catatan dari kebun apung (3/3), Hutan Pesisir Wringin (3/3), dan Hutan Lamun Wringin (3/3) sudah lengkap!"},{"name":"Nala","text":"Begitu kembali dari penyelaman dan malam tiba, aku akan menemui Mbah Wira di Kedai Waras untuk meracik solusinya dengan Benih Hayati."}])
 	else:
 		_talk([{"name":"Inspektur Raka","text":"PT Cakrawala Sintetis menyediakan Kapsul Instan untuk seluruh kebutuhan kerja Anda. Belajar mandiri meningkatkan risiko kesalahan prosedur."},{"name":"Nala","text":"Menarik. Apakah prosedurnya juga menjelaskan pipa yang bocor di bawah kota?"},{"name":"Inspektur Raka","text":"Akses ke fasilitas Sektor Tuban-7 dibatasi. Percakapan ini dicatat."}])
+func _can_resume_kedai(name_text: String) -> bool:
+	# Active shifts reject surface writes; resume only at the already acknowledged Wira point.
+	if name_text!="Mbah Wira" or str(GameState.shift.get("id","")).is_empty(): return false
+	if not GameState.dive.is_empty() or bool(GameState.homestead.get("inside",false)): return false
+	if str(GameState.player.get("progress",{}).get("stage",""))!="night": return false
+	if str(GameState.surface.get("area","hub"))!="hub" or nala.position.distance_to(_surface_point())>.5 or nala.land_path.size()>0: return false
+	for district in GameState.world.get("surface_hub",{}).get("districts",[]):
+		if str(district.get("npc",""))=="Mbah Wira":
+			return nala.position.distance_to(Vector2(float(district.x),float(district.y)))<=float(district.get("radius",140.0))
+	return false
+
 func _show_upgrades() -> void:
 	var box := _open("Beno · Galangan Rongsok Bubat")
 	_label(box,"Tabung dan Jala Kognisi level 3 diperlukan di Tamansari. Penemuan, peti, dan pemulihan instalasi memberi bekal tambahan.",14)
