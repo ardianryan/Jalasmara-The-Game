@@ -36,3 +36,13 @@ Perbaikan yang diusulkan kepada character: bedakan nilai satu sisi pada cut, tan
 - Uji delta1/120,1/60,1/30 serta frame yang melintasi lebih dari satu cut; input nol/deceleration, diagonal, analog kecil, pause, wall slide, dan batas logis100. Sampling independen128 ground point berguna tetapi harus memasukkan offset dekat sisi, bukan hanya centerline. Tidak mengubah tolerance kontak/kecepatan untuk menerima hasil.
 
 Temuan dan counterexample dikirim ke root/character sebelum commit atau native test. Tidak ada penerimaan helper/pilot dari review CPU ini; gait, tangan berlawanan, kontak tangga, dan performa perangkat tetap gate berbeda.
+
+## Review revisi satu sisi sebelum uji pertama
+
+Character kemudian mengganti solver belum commit: setiap span mengambil dua ground_point interior satu sisi, mengekstrapolasi endpoint affine, membandingkan terhadap ground_point tepat di cut, dan berhenti pada awal span atau inset1e-3logis sebelum jump endpoint. Biaya jump tidak lagi dibayar sebagai fraksi yang menghasilkan titik di luar batas. Ini menangani counterexample dock di atas secara source; float32/parse/eksekusi aktual masih menunggu grant.
+
+Dua hook opsional kini tersedia: velocity sebelum move dan position sesudah clamp/collision/axis fallback. Hook position hanya mengembalikan prefix previous→accepted; caller memeriksa walkability existing, kembali ke previous bila invalid, serta menghitung velocity dari perpindahan yang diterima sebelum cadence/traversal/path direkam. Player mengabaikan hook saat berenang. Default callable kosong tidak mengubah controller lama.
+
+Tidak ditemukan blocker source tambahan untuk **uji pertama dock input-only**. Fixture sisi baru memakai kedua sisi/arah, progress0,1/0,5/0,9, collision-walkable approach/endpoint aktual,128 sampel ground independen, dan mensyaratkan baseline tanpa limiter benar-benar ditolak. Caveat fixture: `_side_limits` mensyaratkan minimal dua kasus sah serta satu baseline jump; profile central/west/ridge yang tidak memiliki sisi diskontinu walkable dapat gagal persiapan fixture, bukan berarti helper produksi gagal. Run pertama dibatasi `dock_gangway` sesuai arahan root.
+
+Status ini hanya membolehkan pembuktian berikutnya yang sempit, bukan penerimaan helper default atau gait. Tidak ada GPU/engine dijalankan reviewer.
