@@ -343,6 +343,7 @@ func _mesh(label: String, vertices: PackedVector3Array, triangles: PackedInt32Ar
 		var b:=vertices[triangles[index+1]]
 		var c:=vertices[triangles[index+2]]
 		var normal: Vector3=-(b-a).cross(c-a).normalized()
+		if absf(normal.z)>.85: normal=Vector3(0,0,1)
 		for corner in range(3):
 			var point:=vertices[triangles[index+corner]]
 			tool.set_normal(normal)

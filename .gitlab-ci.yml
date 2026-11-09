@@ -37,6 +37,7 @@ verify:
     - npm run typecheck
     - node --test scripts/game-loading-bridge.test.mjs scripts/godot-preloader-stream.test.mjs scripts/godot-wasm-init-errors.test.mjs
     - node --test scripts/land-view-navigation.test.mjs
+    - node --test scripts/canopy-route-fixture.test.mjs scripts/gateway-route-fixture.test.mjs
     - node --test scripts/gameplay-api-failure.test.mjs
     - node --test scripts/performance/*.test.mjs
     - npm run check:worldkit

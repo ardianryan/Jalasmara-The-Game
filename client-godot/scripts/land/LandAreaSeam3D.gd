@@ -40,10 +40,15 @@ func build(renderer: Node) -> void:
 	for surface in remote.get("surfaces",[]):
 		if surface.has("connectorId") or str(surface.material) in ["dock","bridge","wood"]: continue
 		var height: float=float(surface.get("elevation",0))*renderer.LEVEL_HEIGHT+float(surface.get("priority",0))*.018
+		if height<remote_frame.origin.z-2.0: continue
 		for intersection in Geometry2D.intersect_polygons(renderer._polygon(surface.polygon),clip):
 			var points:=PackedVector3Array()
 			for point in intersection: points.append(transform*renderer.map_point(point,height))
 			_top(renderer,"AdjacentAreaGround",points,str(surface.material))
+			if int(surface.get("priority",0))==0:
+				var local_polygon:=PackedVector2Array()
+				for point in points: local_polygon.append(renderer.ground_projection(point))
+				renderer._natural_edges.build_surface(renderer,{"id":"Adjacent_"+str(surface.id),"material":str(surface.material),"heightPixels":points[0].z},local_polygon,points[0].z)
 			surfaces+=1
 			vertices+=points.size()
 	var road_half:=absf(float(local_gate.roadSection[1])-float(local_gate.roadSection[0]))*.5
@@ -58,6 +63,7 @@ func build(renderer: Node) -> void:
 		trail.append(local_frame*Vector3(uv.x,uv.y,.42))
 	_top(renderer,"AreaSeamTrail",trail,"dirt")
 	var trees:=0
+	var houses:=0
 	var preview_centers: Array=[]
 	for entry in remote.get("obstacles",[]):
 		if str(entry.kind)!="tree": continue
@@ -72,7 +78,25 @@ func build(renderer: Node) -> void:
 		preview_centers.append([center.x,center.y,center.z])
 		trees+=1
 		if trees>=12: break
-	status={"destination":destination,"visualOnly":true,"surfaces":surfaces,"vertices":vertices,"trees":trees,"treeCenters":preview_centers,"origin":[local_frame.origin.x,local_frame.origin.y,local_frame.origin.z],"forward":[local_frame.basis.y.x,local_frame.basis.y.y,local_frame.basis.y.z],"right":[local_frame.basis.x.x,local_frame.basis.x.y,local_frame.basis.x.z],"trailHalfWidth":road_half,"remoteTrailHalfWidth":remote_half,"previewDepth":860,"trail":[trail[0],trail[1],trail[2],trail[3]]}
+	for entry in remote.get("obstacles",[]):
+		if str(entry.kind)!="house" or float(entry.get("elevation",0))*renderer.LEVEL_HEIGHT<remote_frame.origin.z-2.0: continue
+		var rect:=Rect2(float(entry.x),float(entry.y),float(entry.width),float(entry.height))
+		var at: Vector3=renderer.map_point(rect.get_center(),float(entry.get("elevation",0))*renderer.LEVEL_HEIGHT)
+		var relative: Vector3=remote_frame.affine_inverse()*at
+		if relative.y*direction<50 or relative.y*direction>650 or absf(relative.x)>300: continue
+		var center: Vector3=transform*at
+		var preview: Dictionary=entry.duplicate(true)
+		var footprint: Array=[]
+		for value in entry.get("footprint",[]):
+			var mapped: Vector2=renderer.ground_projection(transform*renderer.map_point(_point(value),at.z))
+			footprint.append([mapped.x,mapped.y])
+		preview["footprint"]=footprint
+		preview["id"]="Vista_"+str(entry.id)
+		preview["elevation"]=center.z/renderer.LEVEL_HEIGHT
+		renderer._house(preview,rect,center)
+		houses+=1
+		if houses>=3: break
+	status={"destination":destination,"visualOnly":true,"surfaces":surfaces,"vertices":vertices,"trees":trees,"houses":houses,"treeCenters":preview_centers,"origin":[local_frame.origin.x,local_frame.origin.y,local_frame.origin.z],"forward":[local_frame.basis.y.x,local_frame.basis.y.y,local_frame.basis.y.z],"right":[local_frame.basis.x.x,local_frame.basis.x.y,local_frame.basis.x.z],"trailHalfWidth":road_half,"remoteTrailHalfWidth":remote_half,"previewDepth":860,"trail":[trail[0],trail[1],trail[2],trail[3]]}
 
 func debug_status() -> Dictionary:
 	return status.duplicate(true)
