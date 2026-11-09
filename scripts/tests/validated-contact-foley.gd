@@ -166,6 +166,13 @@ func _run() -> void:
 	_offer("A",18,[_event(18)])
 	_tick()
 	if not _check(_played()==before,"Retired epoch cannot become a fresh contact source"): return
+	_offer("B",0,[],false,false,"legacy")
+	_tick()
+	_offer("B",0,[])
+	_tick()
+	_offer("B",2,[_event(2)])
+	_tick()
+	if not _check(_played()==before,"Mode barriers within one epoch must not rewind its contact watermark"): return
 	_offer("B",3,[_event(3)])
 	state.dive = {"id":"consumer-underwater"}
 	_tick()

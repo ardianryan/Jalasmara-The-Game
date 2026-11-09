@@ -69,10 +69,11 @@ func _poll_foot_contacts(underwater: bool, relocated: bool) -> Dictionary:
 		_contact_audio.lastReason = "retired_epoch"
 		return {"handled":true,"contacts":[]}
 	if barrier:
+		var same_epoch := epoch==_contact_epoch
 		if not _contact_epoch.is_empty() and epoch!=_contact_epoch: _retired_contact_epochs[_contact_epoch] = true
 		_contact_epoch = epoch
 		_contact_mode = mode
-		_contact_sequence = latest
+		_contact_sequence = maxi(_contact_sequence,latest) if same_epoch else latest
 		_contact_audio.discarded += events.size()
 		_contact_audio.lastReason = "source_barrier"
 		return {"handled":true,"contacts":[]}
