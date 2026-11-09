@@ -1,0 +1,322 @@
+{
+  "sha256": "73d45630ab69033ac36a64740ecc73ecdb7363c9f99805222b6a9237dcb2d18b",
+  "file_bytes": 64494656,
+  "format_version": 4,
+  "engine_version": [
+    4,
+    7,
+    2
+  ],
+  "pack_flags": 2,
+  "file_base": 112,
+  "directory_offset": 64430816,
+  "directory_bytes": 63840,
+  "files": 691,
+  "md5_payloads_verified": 691,
+  "payload_bytes": 64425577,
+  "header_directory_alignment_bytes": 69079,
+  "extensions": {
+    ".ctex": {
+      "count": 146,
+      "bytes": 44007882
+    },
+    ".mp3str": {
+      "count": 4,
+      "bytes": 16187080
+    },
+    ".sample": {
+      "count": 61,
+      "bytes": 1931147
+    },
+    ".fontdata": {
+      "count": 2,
+      "bytes": 1242284
+    },
+    ".gdc": {
+      "count": 85,
+      "bytes": 630701
+    },
+    ".json": {
+      "count": 53,
+      "bytes": 288823
+    },
+    ".import": {
+      "count": 215,
+      "bytes": 41858
+    },
+    ".scn": {
+      "count": 5,
+      "bytes": 26880
+    },
+    ".txt": {
+      "count": 9,
+      "bytes": 24762
+    },
+    ".bin": {
+      "count": 1,
+      "bytes": 16580
+    },
+    ".gdshader": {
+      "count": 9,
+      "bytes": 12426
+    },
+    ".res": {
+      "count": 5,
+      "bytes": 7042
+    },
+    ".remap": {
+      "count": 93,
+      "bytes": 5081
+    },
+    ".binary": {
+      "count": 1,
+      "bytes": 1384
+    },
+    ".gdshaderinc": {
+      "count": 1,
+      "bytes": 1153
+    },
+    ".cfg": {
+      "count": 1,
+      "bytes": 494
+    }
+  },
+  "largest_resources": [
+    {
+      "path": ".godot/imported/bgm_boss_gajah_mina.mp3-b0ec47f30997268194fc104ece2d92d9.mp3str",
+      "bytes": 4243315
+    },
+    {
+      "path": ".godot/imported/bgm_underwater_segaran.mp3-1c2b0410359f4939303c6ed50d7fa0ea.mp3str",
+      "bytes": 4202563
+    },
+    {
+      "path": ".godot/imported/bgm_kedai_waras_night.mp3-2ba4101e6441a61eb576ca257c509c6f.mp3str",
+      "bytes": 3875931
+    },
+    {
+      "path": ".godot/imported/bgm_coastal_day.mp3-f07cca1e1469014ca90b976e0e7c6f3f.mp3str",
+      "bytes": 3865271
+    },
+    {
+      "path": ".godot/imported/coastal-village-map.png-78537b3564668f2b8c8f9cd94d5274c5.ctex",
+      "bytes": 2972060
+    },
+    {
+      "path": ".godot/imported/forest-muara.png-2c842b154860b7f6529794a654371b9f.ctex",
+      "bytes": 2699606
+    },
+    {
+      "path": ".godot/imported/bandar-hujung-map.png-83bd4d0a2289d20619d871a1fe2897dd.ctex",
+      "bytes": 2492236
+    },
+    {
+      "path": ".godot/imported/forest-props-atlas.png-0f9202df1c391ce5588f34f4c261b4ef.ctex",
+      "bytes": 2335724
+    },
+    {
+      "path": ".godot/imported/muara-sungsang.png-75b29564350e3ced4216abb832e00de2.ctex",
+      "bytes": 2250302
+    },
+    {
+      "path": ".godot/imported/ocean-terrain-atlas.png-9eeadc6b3b87366d9e01b7a2db3f1d03.ctex",
+      "bytes": 2089824
+    },
+    {
+      "path": ".godot/imported/ocean-atmosphere-atlas.png-7ecceed2bcfd3169077a746aacbeb416.ctex",
+      "bytes": 2076238
+    },
+    {
+      "path": ".godot/imported/gajah-mina.png-c243a1d03fa049ca1045be5e4cec4bd3.ctex",
+      "bytes": 1830690
+    },
+    {
+      "path": ".godot/imported/land-foliage-v1.png-06920553e1e912be7843e71202a74a8a.ctex",
+      "bytes": 1824824
+    },
+    {
+      "path": ".godot/imported/land-materials-v1.png-a47868436333fb4b89b3de2ffcbea239.ctex",
+      "bytes": 1660994
+    },
+    {
+      "path": ".godot/imported/village-residents-v1.png-50094af262fda32c6fad47fbe32957da.ctex",
+      "bytes": 1595478
+    },
+    {
+      "path": ".godot/imported/nala-swim.png-72eb7c059cd33c9f24026ce920aed609.ctex",
+      "bytes": 1375680
+    },
+    {
+      "path": ".godot/imported/ark-pixel-12px-proportional-latin.otf-d481f03be623929572d1a105ca7300c3.fontdata",
+      "bytes": 1227453
+    },
+    {
+      "path": ".godot/imported/ocean-props-atlas.png-870627f5addc404bcf6223a05d5d2461.ctex",
+      "bytes": 1095458
+    },
+    {
+      "path": ".godot/imported/item-atlas.png-cdc6af287fda17c381389382338e64dd.ctex",
+      "bytes": 1007746
+    },
+    {
+      "path": ".godot/imported/ocean-depth-background.png-85b789d123027d17c6dabb9a3937fc75.ctex",
+      "bytes": 854950
+    },
+    {
+      "path": ".godot/imported/npc-atlas.png-cac202783899a6f07a5d75fa62c3c9c5.ctex",
+      "bytes": 816978
+    },
+    {
+      "path": ".godot/imported/coral-clusters.png-f4a65c983b9c51e3c1c893141b01d938.ctex",
+      "bytes": 815574
+    },
+    {
+      "path": ".godot/imported/female-nusantara.png-49b7a49b5479b1f621f61b9b32129364.ctex",
+      "bytes": 810444
+    },
+    {
+      "path": ".godot/imported/male-default.png-45735ab900bcff94d59f7ad4d716b6e0.ctex",
+      "bytes": 802156
+    },
+    {
+      "path": ".godot/imported/male-nusantara.png-dfcde7c66ed7b00b70af9a75f21fd8e1.ctex",
+      "bytes": 759462
+    },
+    {
+      "path": ".godot/imported/female-default.png-44fcf87aece90e2985599451fb6c22a6.ctex",
+      "bytes": 753140
+    },
+    {
+      "path": ".godot/imported/male-nusantara-base-v1.png-7112d12fb6de36a8ab50a87fa22974d6.ctex",
+      "bytes": 713112
+    },
+    {
+      "path": ".godot/imported/male-default-outfits-v1.png-17081d93c44ccd199f8939875ab23393.ctex",
+      "bytes": 706980
+    },
+    {
+      "path": ".godot/imported/female-nusantara-outfits-v1.png-df001c77437534ab681b895b7bdb3fec.ctex",
+      "bytes": 700764
+    },
+    {
+      "path": ".godot/imported/male-nusantara-outfits-v1.png-a717832c7011de0e725c45b107381e1a.ctex",
+      "bytes": 675814
+    },
+    {
+      "path": ".godot/imported/male-default-base-v1.png-bcd6bfdbc5c43eaba058f9741b8f863a.ctex",
+      "bytes": 625634
+    },
+    {
+      "path": ".godot/imported/female-nusantara-base-v1.png-a92870a11473514c8b856b855d33d020.ctex",
+      "bytes": 598316
+    },
+    {
+      "path": ".godot/imported/female-default-outfits-v1.png-e4d3fc567efb7bc331b974dd65bb4ba7.ctex",
+      "bytes": 584680
+    },
+    {
+      "path": ".godot/imported/female-default-base-v1.png-a807378ba0bb0e48c8e4ea3e586eb9c5.ctex",
+      "bytes": 564580
+    },
+    {
+      "path": ".godot/imported/bgm_underwater_ambient.wav-ee70677638972126a189a092536bf281.sample",
+      "bytes": 499151
+    },
+    {
+      "path": ".godot/imported/ambient_coastal_waves.wav-65adcf00430e24ebaa17ae87a9e5e8ae.sample",
+      "bytes": 427911
+    },
+    {
+      "path": ".godot/imported/bgm_coastal_day.wav-0990aefb4b7b561d72b54098b1a3a1a5.sample",
+      "bytes": 427911
+    },
+    {
+      "path": ".godot/imported/female-default-explorer-walk-8way-v1.png-073fe2a6a93a6726b53c10e9554ae80c.ctex",
+      "bytes": 357796
+    },
+    {
+      "path": ".godot/imported/female-default-daily-walk-8way-v1.png-2dbce56720ce4d24e5b9c3ce14b58175.ctex",
+      "bytes": 344322
+    },
+    {
+      "path": ".godot/imported/female-nusantara-explorer-walk-8way-v1.png-8c6ad838701b00ce573c919bbf0114de.ctex",
+      "bytes": 335068
+    }
+  ],
+  "duplicate_payload_bytes": 351494,
+  "duplicate_groups": [
+    {
+      "bytes_each": 164292,
+      "avoidable_bytes_if_references_reworked": 164292,
+      "paths": [
+        ".godot/imported/memory-slab_2.png-3ec9530fc9b928213aa8c4d1cf2ff1fd.ctex",
+        ".godot/imported/memory-slab_7.png-188094c386489f479035f9876019dcbf.ctex"
+      ]
+    },
+    {
+      "bytes_each": 49740,
+      "avoidable_bytes_if_references_reworked": 49740,
+      "paths": [
+        ".godot/imported/memory-slab_0.png-478429f646ba618b9929ca86dd2dfb77.ctex",
+        ".godot/imported/memory-slab_5.png-431f2ffa9b868d75ed500b79474ff4f6.ctex"
+      ]
+    },
+    {
+      "bytes_each": 36218,
+      "avoidable_bytes_if_references_reworked": 36218,
+      "paths": [
+        ".godot/imported/memory-slab_4.png-1f4bacb072ba05221933ba57f36ebe9e.ctex",
+        ".godot/imported/memory-slab_9.png-560282f8188267c2ea1539d0209703ae.ctex"
+      ]
+    },
+    {
+      "bytes_each": 30354,
+      "avoidable_bytes_if_references_reworked": 30354,
+      "paths": [
+        ".godot/imported/memory-slab_1.png-db447e2744e8123d6582474077fc3b2a.ctex",
+        ".godot/imported/memory-slab_6.png-f1be076b2c6befc0d5e7046c99097666.ctex"
+      ]
+    },
+    {
+      "bytes_each": 29560,
+      "avoidable_bytes_if_references_reworked": 29560,
+      "paths": [
+        ".godot/imported/memory-slab_3.png-da559d673214037f18155f248c94df8c.ctex",
+        ".godot/imported/memory-slab_8.png-fd165b4830cb563001ecc7fc55cb3947.ctex"
+      ]
+    },
+    {
+      "bytes_each": 27788,
+      "avoidable_bytes_if_references_reworked": 27788,
+      "paths": [
+        ".godot/imported/panel-paper.png-0ad1e66555d9a15aadee73e3fe6b3fe7.ctex",
+        ".godot/imported/panel-parchment.png-40792a0c12ea1f96b3a0ed684f176ef5.ctex"
+      ]
+    },
+    {
+      "bytes_each": 7008,
+      "avoidable_bytes_if_references_reworked": 7008,
+      "paths": [
+        ".godot/imported/inventory-slot.png-dafcc2e923c7b6ce0b94d91d48b05220.ctex",
+        ".godot/imported/slot.png-3f7774bd639cff23804a169faadfe59f.ctex"
+      ]
+    },
+    {
+      "bytes_each": 3706,
+      "avoidable_bytes_if_references_reworked": 3706,
+      "paths": [
+        ".godot/imported/icon-bag.png-7d6eb1da9a8ef4cf23b96ff5940ab652.ctex",
+        ".godot/imported/icon-satchel.png-71fc329f0320f5dbc6bde0ac29a6e46d.ctex"
+      ]
+    },
+    {
+      "bytes_each": 2828,
+      "avoidable_bytes_if_references_reworked": 2828,
+      "paths": [
+        ".godot/imported/icon-oxygen-tank.png-42a2c358ee3b1143df131894693eda0e.ctex",
+        ".godot/imported/icon-oxygen.png-ce21ce69a82c045a00d759bcfa445637.ctex"
+      ]
+    }
+  ],
+  "limitations": "Stored resource bytes are not decoded GPU memory, network transfer, or proof that a resource is unused. No files were extracted or removed."
+}
