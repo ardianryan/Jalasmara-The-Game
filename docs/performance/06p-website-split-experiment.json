@@ -1,0 +1,72 @@
+{
+  "current": [
+    {
+      "name": "entry.js",
+      "entry": true,
+      "imports": [],
+      "dynamicImports": [],
+      "decodedBytes": 267576,
+      "estimatedGzipBytes": 82547,
+      "modules": [
+        "src/api.ts",
+        "src/components.tsx",
+        "src/loading.ts",
+        "src/game-loading.css",
+        "src/GameLoading.tsx",
+        "src/play.tsx",
+        "src/admin.tsx",
+        "src/style.css",
+        "src/main.tsx",
+        "index.html"
+      ]
+    }
+  ],
+  "defer-admin": [
+    {
+      "name": "entry.js",
+      "entry": true,
+      "imports": [],
+      "dynamicImports": [
+        "admin.js"
+      ],
+      "decodedBytes": 244031,
+      "estimatedGzipBytes": 76217,
+      "modules": [
+        "src/api.ts",
+        "src/components.tsx",
+        "src/loading.ts",
+        "src/game-loading.css",
+        "src/GameLoading.tsx",
+        "src/play.tsx",
+        "src/style.css",
+        "src/main.tsx",
+        "index.html"
+      ]
+    },
+    {
+      "name": "admin.js",
+      "entry": false,
+      "imports": [
+        "entry.js"
+      ],
+      "dynamicImports": [],
+      "decodedBytes": 24559,
+      "estimatedGzipBytes": 7555,
+      "modules": [
+        "src/admin.tsx"
+      ]
+    }
+  ],
+  "pckGzipEstimate": {
+    "decodedBytes": 64249828,
+    "encodedBytes": 63469128,
+    "actualSidecarExists": false
+  },
+  "method": {
+    "source": "ca78445daa4efbdd80ea417680e22072ed32b4a5",
+    "tool": "Vite 6.4.5 production build, React plugin, minification; deterministic entry/chunk names; write:false",
+    "variant": "In-memory pre-transform of main.tsx only: React.lazy import of admin.tsx wrapped in Suspense with existing Loading. No production source or export filter changed.",
+    "gzip": "Node zlib gzipSync level 9, size estimate; not a measured browser response",
+    "limitations": "No runtime, network, startup or FPS benchmark. Existing CSS/fonts retained. Admin users request both chunks."
+  }
+}
