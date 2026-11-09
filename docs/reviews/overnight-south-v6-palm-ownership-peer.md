@@ -28,3 +28,7 @@ Provenance:
 - v6 manifest SHA256 `465405a0503c86038fc72438e3bea3b85e8dd926b323e63e0741abd1d6167a36`.
 - v6 ownership spec SHA256 `4f8b65a434c701615c9c06361b9714cde437288722995aefa9511f68f7ff6d24` (matched current spec at review time).
 - v6 authoring script SHA256 `80e9f71358f7323c668f16bb56ab298f66d8d7e3f1eb2cb53550d6dae310bc0a`.
+
+## Read-only v7 visual follow-up
+
+The website author generated `south-upper-ownership-draft-v7/south-daily0-alpha-contour-and-separate-arms.png` after reserving11 exact reviewed source cloth pixels for the torso before all arm masks. This peer viewed that actual image: the broad teal triangular flap is gone from isolated LEFT, and the warm palm keeps a narrow dark border. The previously ambiguous dark pixels remain explicit hand-boundary choices; this still does not prove their anatomy from source color alone. The author's original rest remains byte-exact and newly authored hidden repair decreases104→93pixels because11pixels are now retained original cloth. This bounded visual improvement applies only to SOUTH daily0 source ownership, not the four source masks, elbow/wrist anatomy or moving gait.

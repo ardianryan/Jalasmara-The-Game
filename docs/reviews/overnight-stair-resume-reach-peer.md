@@ -37,3 +37,17 @@ The separately prepared `scripts/tests/nala-restart-body-budget.gd` and `fixture
 - `samples.jsonl` SHA256 `95a39b2f964780a4cdb37a059315bcc2babf35a546716f738b57e13b58a96a53`.
 - `source.json` SHA256 `3183bb85210ee03a25283783c21a79b9381616dcf0b4213cf0c5c0c7c18ad2cf`.
 - Curve equations read from character `NalaFootPlant._terrain_duration` and its existing offline `model_stair_curve_budget.py`; the latter was imported for pure CPU calculations. No artwork, geometry, server state or runtime source changed.
+
+## Actual frozen helper and first-three follow-up:7e14c09
+
+The character-owned exclusive engine run has now produced actual artifacts, which this peer read without launching an engine. The frozen original-b05 helper run exits0 in2.060877834s with no recorded errors. Original body14.7888323255851, D10 input plan, separate held SOUTH left foot/SE body and immutable flat target are retained. Actual helper selects11.25 with32 cached phases,64 marker inverse requests and6 tested algebra candidates. Its internal elapsed time is7755µs; this one cold fixture value is not a frame-time/device benchmark. `conditionalPreview=true`, `fullMaskProof=false` and `fullRuntimeProof=false` correctly retain the limited claim.
+
+The following unchanged FIRST3 terrain fixture exits1 in7.009707583s. Both normal dock directions complete, then central ascent rejects **later** at root `(1370,743.951782226562)`, body84, requested drop9.0479564921973. The resumed left foot really lands on84 at duration10 with curve bound4.11443367824; its prior fresh-tread minimum no longer causes the old failure. Contact-order evidence observes60→72→84 and leaves96 missing; no completed central or full16 claim is justified.
+
+The new limiting limb is the grounded LEFT84 foot while the RIGHT72→96 swing is at17.9630126953125/20.73095703125. The right target and actual tread remain unchanged. From the prior actual hip/ankle and next1.18200683594world advance, the left horizontal separation is22.1959228516, raw hipZ118.181687948 and planted ankleZ90.103874207. The same original conservative leg reach reproduces9.04795768968px, within0.000002px of rejection. The free right ankle lies near its hip and is not the outer-reach limiter.
+
+At frozen body84/NW the trailing-left8px threshold occurs around swing phase16.9199339. The actual fresh curve needs duration20.730957 to certify4.899675; blindly reducing it to a full tread17.730957 would instead give bound4.929335, above the unchanged4.9 certificate. Thus the resume-only change is causally supported, but a global shorter-duration change is not. Current torso baseline rises72→84 by phase12.0527 while the next96 foot is still free. At the single rejected pose, baseline≤82.72068 would satisfy the existing8px bound with the same feet; this is a conditional pose witness, not a viable temporal body trajectory, natural crouch or new lower-height policy. Both original annuli, actual body rate, clearance and later contact must constrain any follow-up.
+
+- Frozen-helper results SHA256 `56c8c76d2cc3ae752504008363ba5ee2586aacf3d72b2d988d0ab867d9125cbb`.
+- Later FIRST3 rejection SHA256 `f54fe4bd530822c4ab75591d4383273f6c54b8df2a89969d0703f5b0ad508648`.
+- Character command/log records preserve exits, source7e14c09 and the explicit central reach error. No source guard changed in this peer.
