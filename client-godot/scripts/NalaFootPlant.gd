@@ -3,6 +3,7 @@ extends RefCounted
 # This pilot owns visual soles only. Actor coordinates and legacy step audio are untouched.
 const STEP_DISTANCE := 18.0
 const TOE_CLEARANCE := 2.0
+const LANDING_LEAD := 6.0
 var renderer: Node
 var _feet: Dictionary = {}
 var _last_at := Vector2.ZERO
@@ -68,7 +69,7 @@ func _begin(side:String,at:Vector2,hips:Dictionary,right:Vector3) -> void:
 	_distance=0.0
 	var entry:Dictionary=_feet[side]
 	entry.from=entry.logical
-	entry.to=_safe(_base(at,float(hips[side]),right)+_heading*STEP_DISTANCE/maxf(.001,_world_motion(at,_heading).length()),at)
+	entry.to=_safe(_base(at,float(hips[side]),right)+_heading*(STEP_DISTANCE+LANDING_LEAD)/maxf(.001,_world_motion(at,_heading).length()),at)
 	entry.fromWorld=entry.sole
 	entry.toWorld=_ground(entry.to)
 	entry.grounded=false
@@ -113,7 +114,7 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 			_distance+=chunk
 			var entry:Dictionary=_feet[_swing]
 			# Retarget only the free foot; an already planted sole never follows the torso.
-			var target:=_safe(_base(sample,float(hips[_swing]),right)+_heading*(_landing_distance-_distance)/maxf(.001,_world_motion(sample,_heading).length()),sample)
+			var target:=_safe(_base(sample,float(hips[_swing]),right)+_heading*(_landing_distance-_distance+LANDING_LEAD)/maxf(.001,_world_motion(sample,_heading).length()),sample)
 			entry.to=target
 			entry.toWorld=_ground(target)
 			var u:=clampf(_distance/_landing_distance,0,1)

@@ -111,7 +111,14 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 		var forward:=posmod(target-index,8)
 		var adjacent:String=DIRECTIONS[posmod(index+(1 if forward<=4 else -1),8)]
 		var trial:=_anatomy(_data.views[adjacent],stored.feet,actor.position,right,vertical)
-		if not bool(trial.horizontalInvalid) and float(trial.drop)*vertical<=6.0:
+		var look_ahead:=actor.position
+		var accepted:Vector2=actor.get("velocity") if "velocity" in actor else Vector2.ZERO
+		if accepted.length()>.1:
+			var world_delta:Vector3=renderer.ground_point(actor.position+accepted.normalized())-renderer.ground_point(actor.position)
+			world_delta.z=0
+			look_ahead+=accepted.normalized()*4.0/maxf(.001,world_delta.length())
+		var future:=_anatomy(_data.views[adjacent],stored.feet,look_ahead,right,vertical)
+		if not bool(trial.horizontalInvalid) and not bool(future.horizontalInvalid) and maxf(float(trial.drop),float(future.drop))*vertical<=6.0:
 			_direction=adjacent
 			_facing_frame=Engine.get_process_frames()
 	var direction:=_direction
