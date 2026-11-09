@@ -16,6 +16,7 @@ var previous:Dictionary={}
 var frames:Array=[]
 var capture:=false
 var last_delta:=0.0
+var capture_stride:=4
 var trace:Array=[]
 const OUTPUT:="res://../artifacts/godot/overnight-nala-lower"
 
@@ -127,7 +128,7 @@ func _tick(target:Vector2,delta:float,label:String) -> void:
 	renderer.call("_process",delta)
 	_measure(label)
 	await process_frame
-	if capture and checks%4==0:
+	if capture and checks%capture_stride==0:
 		RenderingServer.force_draw(false)
 		var index:=frames.size()
 		renderer.viewport_3d.get_texture().get_image().save_png(OUTPUT+"/%04d.png"%index)
@@ -144,6 +145,7 @@ func _reset_case(at:Vector2,outfit:String) -> void:
 
 func run() -> void:
 	capture=OS.get_environment("NALA_LOWER_CAPTURE")=="1"
+	capture_stride=clampi(int(OS.get_environment("NALA_LOWER_CAPTURE_STRIDE")) if OS.has_environment("NALA_LOWER_CAPTURE_STRIDE") else 4,1,24)
 	if capture:
 		root.size=Vector2i(1440,810)
 		DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(OUTPUT))
@@ -191,6 +193,12 @@ func run() -> void:
 				var settled_pose:Dictionary=renderer.actors_3d.counts.nalaLowerBody
 				if not _check(settled_pose.direction==settled_pose.desiredDirection,"Cutout facing failed to converge after walk+stop "+label): return
 				for index in range(12): await _tick(stopped-direction*(index+1)*2,1.0/30,label+" restart turn")
+	if OS.get_environment("NALA_LOWER_FLAT_ONLY")=="1":
+		if capture: FileAccess.open(OUTPUT+"/flat-results.json",FileAccess.WRITE).store_string(JSON.stringify(frames,"  "))
+		print("NALA LOWER BODY FLAT ONLY PASS: ",checks," actual sprite samples; stairs and full natural gait NOT accepted")
+		stage.free()
+		quit()
+		return
 	var stairs:Array=state.world.landMaps.hub.stairs
 	for stair in stairs:
 		if str(stair.get("type","stairs"))!="stairs": continue
