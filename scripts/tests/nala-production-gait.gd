@@ -26,8 +26,11 @@ class PhysicalInputDriver extends Node:
 	var controller:Node
 	var requested:=Vector2.ZERO
 	var delivered:=Vector2.ZERO
+	var observations:Array=[]
 	func _physics_process(_delta:float) -> void:
 		delivered=preload("res://scripts/NalaPhysicalMotion.gd").screen_input(renderer,requested,actor.position)
+		observations.append({"tick":Engine.get_physics_frames(),"position":actor.position,"requested":requested,"delivered":delivered,"gradient":renderer.ground_gradient(actor.position)})
+		if observations.size()>64: observations.pop_front()
 		if controller.has_method("_is_walkable"): controller.set("touch_direction",delivered)
 		else: actor.set("touch",delivered)
 
@@ -201,6 +204,7 @@ func run() -> void:
 	for path in ["res://scripts/Player.gd","res://scripts/Forest.gd","res://scripts/CharacterVisual.gd","res://scripts/NalaFootPlant.gd","res://scripts/NalaLowerBody3D.gd","res://scripts/NalaPhysicalMotion.gd","res://scripts/land/LandActors3D.gd","res://../scripts/tests/nala-production-gait.gd","res://../scripts/tests/nala-lower-body.gd"]: hashes[path]=FileAccess.get_sha256(path)
 	FileAccess.open(output+"/source.json",FileAccess.WRITE).store_string(JSON.stringify({"files":hashes,"firstCase":first_case,"requestedCases":case_limit,"physicalPilot":physical_pilot,"analogProbe":analog_probe,"physicsHz":Engine.physics_ticks_per_second,"captureStride":capture_stride,"acceptance":"Geometry diagnostic; cadence and arm opposition require sequence review. No default adoption."},"  "))
 	var state:=root.get_node("GameState")
+	if not _check(float(load("res://scripts/Player.gd").LAND_WALK_SPEED)==PhysicalMotion.LOGICAL_CAP,"Physical input contract differs from actual controller authority cap"): return
 	state.world=JSON.parse_string(FileAccess.get_file_as_string("res://../.runtime/world-map.json"))
 	state.player={"appearance":"male_nusantara","progress":{"day":2,"stage":"dive"}}
 	state.dive={}

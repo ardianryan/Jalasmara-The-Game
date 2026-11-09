@@ -1,7 +1,7 @@
 extends RefCounted
 
 const WORLD_XY_SPEED:=100.0
-const LOGICAL_CAP:=preload("res://scripts/Player.gd").LAND_WALK_SPEED
+const LOGICAL_CAP:=100.0
 const INNER_DEADZONE:=.18
 
 static func _bounded(input:Vector2) -> Vector2:
