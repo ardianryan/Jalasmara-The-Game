@@ -1,5 +1,17 @@
 # Handoff aktif agent
 
+## Pembaruan 07.24 WIB
+
+Staging tetap image559/PCK9a1; tidak ada perubahan runtime Nala yang digabung. Root browser41259 selesai **18/18 PASS**: fixturecf51efb3,468.786ms,1469 pulsa matrix/0legacy,323 operasi teramati,0error dan cleanup pemain uji berhasil. Satu rute membuktikan kedatangan13 warga ke shelter serta semua akses fisik, percakapan dan resume; layanan bersama lurah/izin memberi hanya benih yang ditentukan dan mempertahankan koin/progres. Identitas WebGL AppleM2/ANGLEMetal dicatat dan diassert; defaultSwiftShader tetap. Ini bukan FPS Windows/S23 atau smoke publik baru. [Laporan lengkap beserta timeout lama](reviews/overnight-export5-canonical-shelters.md). Slot GPU sudah RELEASE.
+
+Optimasi lighting36b68af lulus **67/67 pemeriksaan dunia**,140.929ms,10spesies/722frame; tiga warning lama dicatat. Perubahan ini belum diekspor. Upper NW explorer dan daily masing-masing lulus10tes rig+9tes loop root, seluruh PNG/APNG reproduksi identik. Galeri kini25gambar/3.879.245byte, termasuk bukti koreksi audit Gemini. Artwork tetap proposal gerak siku dengan bahu tetap, bukan runtime, phase kontak, grip atau natural walking yang diterima. Website melanjutkan kajian NORTH dua pakaian tanpa menyentuh atlas.
+
+Gemini menyerahkan commit lokal `f67de11a9c067ec80cf42ed5fb6cfa9dae4a89e2`; root **HOLD**, belum cherry-pick. Scope10file baru/257.905byte sesuai dan6tes existing lulus. Namun dua hash laporan salah,65status bersih terisi default, klaim gear melampaui gambar yang diperiksa, dan guard output terlalu luas. Pembesaran semua18kepala female_default/explorer membuktikan P0 NW/NE merupakan positif palsu: NW tetap kiri, NE tetap kanan; ekor bandana mencemari centroid kulit. Jangan menukar baris tersebut. [Instruksi koreksi rinci](reviews/gemini-character-audit-integration-review.md) disiapkan untuk Gemini. Dua manifest yang disebut laporan tetap identik terhadapbase; kesalahan laporan bukan mutasi source. Workspace Gemini tetap dipertahankan. Kedua remote terakhir5407a62, commit setelahnya belum dipush; GitLab memakai ci.skip sebagai mirror, bukan CI baru PASS.
+
+Nala source6b6a7e3: carried-resume helper aktual lulus1.949s; inheritedFIRST7 gagal14.976s setelah6kasus, ridgeUP drop8.71736>8. Kali ini LEFT sungguh tiba144; kegagalan terjadi pada langkah RIGHT berikutnya menuju upper exit. Character/peer memodelkan klasifikasi boundary sebenarnya sebelum mengubah source. Belum full16, freshflat32 atau native bergerak baru. Tidak melonggarkan guard. Seluruh delapan jalur belum selesai; pekerjaan berlanjut sampai08.00WIB.
+
+Catatan berikut adalah riwayat checkpoint; pembaruan di atas mengatasi source/slot/status lama.
+
 ## Pembaruan antrean 07.05 WIB
 
 Staging tetap image559/PCK9a1 yang sudah diterima. [Browser desa kanonis](reviews/overnight-export5-canonical-shelters.md): Griya masuk/gerak/reload/keluar dan migrasi lantai selesai; fixture terpisah membuktikan13 warga tiba/diam di shelter serta percakapan direktur. Rute603.827ms gagal budget10menit;12percakapan lain belum diterima, cleanup fixture berhasil. Browser34617 sudah RELEASE.

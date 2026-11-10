@@ -1,6 +1,24 @@
 # Jalasmara visual evidence
 
-Twenty-two original evidence images, copied without cropping, recoloring or recompression. This is a small review gallery, not an asset kit or a complete acceptance report. Total PNG/APNG payload: **3,749,914 bytes**. Released-world images, local browser evidence and uninstalled authoring proposals are labelled separately.
+Twenty-five original evidence images, copied without cropping, recoloring or recompression. This is a small review gallery, not an asset kit or a complete acceptance report. Total PNG/APNG payload: **3,879,245 bytes**. Released-world images, local browser evidence and uninstalled authoring proposals are labelled separately.
+
+## Gemini audit review: preserve correctly facing female explorer rows
+
+![Original female explorer heads: NW IDLE plus WALK0–7 on top; NE IDLE plus WALK0–7 below. NW faces left and NE right in both IDLE and WALK.](/docs/visual/gemini-review-female-nw-ne-original-heads.png)
+
+The external auditf67de11 labelled these rows reversed. Root and peer reviewed these enlarged original crops and rejected that P0 pair: the brown bandana tail contaminated the tool's skin-color centroid. No production row was swapped or mirrored. [Integrator corrections](../reviews/gemini-character-audit-integration-review.md) keep the audit on HOLD. This image is a diagnostic nearest-neighbor crop sheet from original project art, not game rendering or new authoring.
+
+Peer source `.runtime/gemini-female-explorer-original-heads80-f67.png`, copied byte-for-byte:88,718bytes SHA256 `d61697e3341a5f863c42905295930fa4cf4e07e0a20d4460bd70a11adbdc391d`. Root independently checked original WALK SHA `c9fcd98430fc7fb27f0d08470e69030bd768a87a550f65f8033ce3c1398ab38f` and the cited original tail/face pixels. Project-art terms remain; no third-party moodboard or account data.
+
+## NW daily authored elbow loop: proposal, not active gameplay
+
+![Eight authored NW daily upper poses, using original WALK frame4 as the fixed source reference.](/docs/visual/nw-daily-upper-eight-detail.png)
+
+![Eight-frame daily elbow preview; illustrative timing, not runtime contact cadence.](/docs/visual/nw-daily-upper-loop-preview.png)
+
+Sourcef013d91/rootd4a14af. Root viewed all eight poses, independently passed9loop+10rig CPU tests, and reproduced all fifteen output PNG/APNGs byte-for-byte. Original sourceFrame4 is distinct from authored animation phase0 and from any physical foot contact. Eleven explicit hidden shirt fills, a disclosed3pixel authored elbow-axis revision and five original hand-edge ownership decisions remain in the [report](../reviews/overnight-nw-daily-upper-loop.md). Fixed shoulders, fixed rear compositing, five unique poses/eight timed frames and unknown source anatomy/grip remain limitations. This is uninstalled artwork, not a new full-body walk or terrain acceptance.
+
+Byte-identical curated copies: detail24,743bytes SHA256 `fba15bf6d0a3a99b8a5fe3f58923db1d563e342d129ac27250510f38b63b2393`; APNG15,870bytes SHA256 `6429a938628dd62a24e6c4a47553d499f6deef03af1cdbe0963461c700b13795`. Root checked source images/metadata; no account data or text metadata. APNG duration/loop are intentional. Original-project artwork terms remain separate from MIT code or moodboards.
 
 ## NW explorer authored elbow loop: proposal, not active gameplay
 

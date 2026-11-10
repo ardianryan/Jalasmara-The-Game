@@ -44,6 +44,10 @@ import {
 } from "./land-view-navigation.mjs";
 
 const origin = process.env.APP_TEST_ORIGIN ?? "http://localhost:3101";
+const angleBackend = process.env.PLAN06_ANGLE_BACKEND ?? "swiftshader";
+assert(["swiftshader", "metal"].includes(angleBackend));
+assert(angleBackend !== "metal" || process.platform === "darwin");
+let webglIdentity;
 const mongoUrl =
   process.env.MONGO_URL ?? "mongodb://127.0.0.1:27018/jalasmara?replicaSet=rs0";
 const redisUrl = process.env.REDIS_URL ?? "redis://127.0.0.1:6380";
@@ -282,6 +286,21 @@ async function attach() {
   );
   await page.locator(".game-loading").waitFor({ state: "detached" });
   await frame.locator("canvas").focus();
+  const identity = await frame.evaluate(() => {
+    const canvas = document.querySelector("canvas");
+    const gl = canvas.getContext("webgl2") || canvas.getContext("webgl");
+    if (!gl) return { webgl: false };
+    const debug = gl.getExtension("WEBGL_debug_renderer_info");
+    return {
+      webgl: true,
+      version: gl.getParameter(gl.VERSION),
+      renderer: debug ? gl.getParameter(debug.UNMASKED_RENDERER_WEBGL) : null,
+    };
+  });
+  if (angleBackend === "metal")
+    assert(identity.webgl && /ANGLE Metal Renderer/.test(identity.renderer ?? ""));
+  if (webglIdentity) assert.deepEqual(identity, webglIdentity);
+  webglIdentity = identity;
   const value = await snapshot();
   console.log(
     JSON.stringify({
@@ -1677,8 +1696,8 @@ try {
     args: [
       "--enable-webgl",
       "--use-gl=angle",
-      "--use-angle=swiftshader",
-      "--enable-unsafe-swiftshader",
+      `--use-angle=${angleBackend}`,
+      ...(angleBackend === "swiftshader" ? ["--enable-unsafe-swiftshader"] : []),
     ],
   });
   context = await browser.newContext({
@@ -2108,6 +2127,7 @@ try {
           checks,
           origin,
           candidatePck,
+          browserRendering: { requestedAngle: angleBackend, actual: webglIdentity },
           routeMode,
           shelterPredecessor,
           fixtureMissions,

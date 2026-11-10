@@ -31,3 +31,13 @@ PLAN06_EXPECT_PCK_BYTES=64500848 node --import tsx scripts/plan06-layout-browser
 ```
 
 Browser34617 exited1 and released the serialized engine slot. Character's isolated upper-approach tests then received GO. Next: complete remaining dialogue coverage in explicitly separate bounded fixtures when appropriate, investigate performance with measured A/B evidence, and preserve focus on full Nala terrain/contact/native acceptance before adopting the physical pilot.
+
+## Subsequent hardware-backed local browser: all thirteen conversations
+
+Root first ran a separate WebGL capability probe: actual Chromium reports `ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)`, WebGL2. This is the development Mac, not Windows/S23. The harness now accepts optional `PLAN06_ANGLE_BACKEND=metal` only on macOS, asserts the actual game canvas reports Metal, and records that identity in results. Default remains SwiftShader. Identity must remain the same after iframe reload. No game, route, walk speed, physics tolerance, calendar, fixture reward or budget changed.
+
+Fresh fixture `cf51efb3-c3f2-49fd-9727-cb5d02a5dfdc` completed **18/18PASS**,468,786ms,1469matrix/0legacy pulses,323observed operations/322position syncs,0browser/API errors/failures. Same exact export5/PCK9a1; no predecessor fixture or teleported conversation target. All13 routine arrivals and physical shelter approaches/dialogues/resume completed in this single run. Lurah's overlapping permit board correctly opens shared service then actual named dialogue; explicit permit action grants only defined starter seeds, preserving coins/inventory/story progress. Final state assertions pass. Own-player cleanup succeeds and browser41259exit0/RELEASE.
+
+Result `artifacts/browser/plan06-layout-cf51efb3-c3f2-49fd-9727-cb5d02a5dfdc/results.json` SHA256 `8ad5cf5702ad01e6db0c1f9bbc7f1cdfef78b6c5c2c9810d5fe687efe75b2221`; log `.runtime/overnight-export5-metal-shelters.log`. Root viewed actual667×375 Lurah dialogue: original wood/parchment frame, portrait, legible text/action, gameplay HUD hidden during modal. This does not accept every dialogue sentence/typewriter phase, natural Nala gait or device performance.
+
+Reproduce by adding `PLAN06_ANGLE_BACKEND=metal` to the command above on a Mac with actual Metal canvas support. These are separate fixtures/backends, not a controlled GPU performance A/B or evidence that the earlier software timeout disappeared. Preserve all failed runs. Public staging remains accepted image559/PCK9a1; this focused local route is not a new public full-route smoke.

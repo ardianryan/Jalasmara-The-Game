@@ -16,6 +16,8 @@ Raw `artifacts/godot/actor-lighting-frame-first/results.json`, SHA256 `4ec4c3229
 
 Subsequent root full combined suite source1448539: **67/67PASS**,140,929ms summed case durations;10species/722frames still pass. `.runtime/world-check-lighting-frame/world-checks.json` SHA256 `07b30b059b7b3cf45ab361c18af59a2d95c2c20b28525dfcae2462070021cd78`, full log `.runtime/overnight-world-lighting-frame.log`, process71002exit0 and noSCRIPTERROR/ERROR. Includes actual land renderer, actors/equipment, dynamic crop updates, thirteen routines and resident commute tests. Slot released before hardware browser. This does not update public PCK9a1; export/native movement/browser/device acceptance of the experimental physical Nala remain separate.
 
+Full log retains three pre-existing warning types/occurrences: one unsupported sample-playback warning and two `4 ObjectDB instances were leaked at exit` warnings. They are not silently described as warning-free; the targeted new lighting fixture itself has no such warning.
+
 ```sh
 ACTOR_LIGHTING_REPORT="$PWD/artifacts/godot/actor-lighting-frame-first/results.json" \
 /Users/ardianryan/Documents/Jalasmara/.runtime/godot/Godot.app/Contents/MacOS/Godot \
