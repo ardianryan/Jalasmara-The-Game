@@ -2,7 +2,7 @@
 
 ## Migrasi berikutnya: Gitea utama
 
-Pengguna mengalihkan repo/CI/CD ke Gitea melalui `tea`, tetap backup GitHub/GitLab. Pekerjaan berada di worktree/branch `Jalasmara-gitea-ci`/`work/gitea-ci`, bukan worktree Gemini. Baca [hasil aktual](reviews/gitea-ci-migration.md), [operasi](operations-gitea.md), dan [addendum Gemini](plans/08c-gitea-ci-addendum.md). Run pertama gagal karena Git belum dipasang sebelum checkout; perbaikannya ada pada run2. Jangan menyebut seluruh pipeline lulus sebelum conclusion/log/artifact final dicatat. Game/staging tidak diubah oleh migrasi ini.
+Pengguna mengalihkan repo/CI/CD ke Gitea melalui `tea`, tetap backup GitHub/GitLab. Pekerjaan berada di worktree/branch `Jalasmara-gitea-ci`/`work/gitea-ci`, bukan worktree Gemini. **Run6 source2fb54aa SUCCESS**, termasuk CodeQL/export/67world/build/dua artefak; laporan dan kegagalan terdahulu ada pada [hasil aktual](reviews/gitea-ci-migration.md). [Operasi](operations-gitea.md) dan [addendum Gemini](plans/08c-gitea-ci-addendum.md) mengatur backup satu SHA ke tiga remote. GitHub Actions/GitLab CI dimatikan,59refs cocok, tidak force/delete. Hasil Gemini yang dibackup belum ikut divalidasi CI6; game/staging tidak diubah oleh migrasi ini.
 
 ## Delegasi berikutnya: Gemini day01
 

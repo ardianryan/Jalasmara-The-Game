@@ -41,8 +41,8 @@ Satu job menjalankan urutan:
 2. Checkout source penuh; credential action tidak dipersist ke Git config.
 3. MongoDB8 disposable dalam container job, replset `rs0`, port27018 dan alias `mongo`; Redis7.4 service terpisah. Tidak terhubung database pemain.
 4. [Verifikasi](../ci/verify.sh): typecheck, tes API, host/loader/controller/performance/tooling/art, audit dependensi. Daftar dipindahkan dari GitLab, bukan dikurangi untuk migrasi.
-5. [Godot4.7.2](../ci/setup-godot.sh): tes sprite/HUD, export Web, pemeriksaan dunia dan audio.
-6. Build web/API, kemudian [CodeQL](../ci/codeql.sh).
+5. [CodeQL](../ci/codeql.sh) sebelum export yang lebih mahal; error tetap menolak kandidat, tanpa mengubah rule/severity.
+6. [Godot4.7.2](../ci/setup-godot.sh): tes sprite/HUD, export Web, pemeriksaan dunia dan audio; kemudian build web/API.
 7. Packager memverifikasi source/PCK/part/gzip lalu menghasilkan context Docker dan manifest yang terikat SHA. Tidak memasukkan `.env`, cache, `.git` atau data pemain.
 8. Laporan disimpan di Actions Gitea14hari, paket `verified-delivery`3hari agar storage terkontrol. Paket tidak dipush sebagai commit Git.
 
@@ -66,3 +66,5 @@ tea api repos/ardianryan/Jalasmara-The-Game/actions/runs
 ```
 
 API run harus mempunyai `conclusion: success`; `status: completed` atau step yang sekadar selesai tidak membuktikan PASS. Baca log, jumlah tes, warning, artefak dan SHA source. Laporan migrasi aktual berada pada [review](reviews/gitea-ci-migration.md).
+
+Workflow `security.yml` menyediakan diagnosis CodeQL manual tanpa mengulang export. Hasilnya tidak menggantikan pipeline penuh. Artifactv3 dapat diunduh melalui UI Actions, tetapi [REST artifact-list v1 mempunyai keterbatasan untuk v3](https://github.com/go-gitea/gitea/issues/36973). Jangan menganggap array kosong berarti upload gagal atau mengaku sudah memverifikasi isi ZIP melalui REST jika belum.
