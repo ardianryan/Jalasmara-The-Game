@@ -1,0 +1,630 @@
+{
+  "schemaVersion": 1,
+  "status": "AUTHORED original daily NW WALK4 source-specific ownership and two endpoints; not measured anatomy or runtime walk",
+  "identity": "male_nusantara",
+  "outfit": "daily",
+  "view": "north_west",
+  "sourceFrame": 4,
+  "sourceAtlas": {
+    "path": "client-godot/resources/art/player-gait/male-nusantara-daily-walk-8way-v1.png",
+    "sha256": "342724d1724490279cd0f65c0340c5b35cdf366ecc36a99af716c51f751b8fc3"
+  },
+  "sourceUpperRgbaSha256": "23448a1a3dff4da1a1ab60badbee97480eac3441c18b4c90ddb0736485d66ba7",
+  "sourceMeasurement": {
+    "anatomicalSide": "unknown",
+    "wrist": null,
+    "grip": null
+  },
+  "authoredConvention": {
+    "status": "AUTHORED side naming for this new rig only; source sides remain unknown",
+    "left": "ChainA visible screen-left sleeve above authored rear-left hip; no measured source side",
+    "right": "ChainB visible screen-right arm and cuff; chosen rear-right rig label, not screenX proof",
+    "contactPhase": null
+  },
+  "sourceRuns": {
+    "left": {
+      "cap": [
+        [
+          45,
+          60,
+          64
+        ],
+        [
+          46,
+          59,
+          64
+        ],
+        [
+          47,
+          58,
+          64
+        ],
+        [
+          48,
+          58,
+          64
+        ],
+        [
+          49,
+          58,
+          64
+        ],
+        [
+          50,
+          57,
+          64
+        ],
+        [
+          51,
+          56,
+          64
+        ],
+        [
+          52,
+          56,
+          64
+        ],
+        [
+          53,
+          56,
+          64
+        ]
+      ],
+      "upper": [
+        [
+          54,
+          56,
+          62
+        ],
+        [
+          55,
+          55,
+          63
+        ],
+        [
+          56,
+          55,
+          64
+        ],
+        [
+          57,
+          55,
+          63
+        ],
+        [
+          58,
+          55,
+          63
+        ]
+      ],
+      "fore": [
+        [
+          59,
+          53,
+          63
+        ],
+        [
+          60,
+          53,
+          63
+        ],
+        [
+          61,
+          49,
+          62
+        ],
+        [
+          62,
+          48,
+          61
+        ],
+        [
+          63,
+          47,
+          60
+        ]
+      ],
+      "hand": [
+        [
+          64,
+          47,
+          57
+        ],
+        [
+          65,
+          47,
+          57
+        ],
+        [
+          66,
+          47,
+          57
+        ],
+        [
+          67,
+          47,
+          55
+        ],
+        [
+          68,
+          47,
+          55
+        ],
+        [
+          69,
+          50,
+          53
+        ],
+        [
+          64,
+          57,
+          59
+        ],
+        [
+          65,
+          57,
+          59
+        ],
+        [
+          66,
+          58,
+          59
+        ]
+      ]
+    },
+    "right": {
+      "cap": [
+        [
+          47,
+          75,
+          77
+        ],
+        [
+          48,
+          75,
+          77
+        ],
+        [
+          49,
+          75,
+          77
+        ],
+        [
+          50,
+          75,
+          78
+        ],
+        [
+          51,
+          75,
+          79
+        ],
+        [
+          52,
+          75,
+          79
+        ],
+        [
+          53,
+          75,
+          79
+        ]
+      ],
+      "upper": [
+        [
+          54,
+          75,
+          79
+        ],
+        [
+          55,
+          75,
+          79
+        ],
+        [
+          56,
+          75,
+          79
+        ],
+        [
+          57,
+          75,
+          80
+        ],
+        [
+          58,
+          75,
+          80
+        ],
+        [
+          59,
+          75,
+          81
+        ],
+        [
+          60,
+          75,
+          81
+        ]
+      ],
+      "fore": [
+        [
+          61,
+          76,
+          82
+        ],
+        [
+          62,
+          77,
+          82
+        ],
+        [
+          63,
+          77,
+          82
+        ],
+        [
+          64,
+          77,
+          82
+        ],
+        [
+          65,
+          77,
+          82
+        ],
+        [
+          66,
+          77,
+          83
+        ]
+      ],
+      "hand": [
+        [
+          67,
+          77,
+          84
+        ],
+        [
+          68,
+          77,
+          84
+        ],
+        [
+          69,
+          77,
+          84
+        ],
+        [
+          70,
+          77,
+          83
+        ],
+        [
+          71,
+          77,
+          83
+        ],
+        [
+          72,
+          77,
+          82
+        ]
+      ]
+    }
+  },
+  "bodyContour": [
+    [
+      45,
+      63,
+      75
+    ],
+    [
+      46,
+      63,
+      75
+    ],
+    [
+      47,
+      63,
+      75
+    ],
+    [
+      48,
+      63,
+      75
+    ],
+    [
+      49,
+      63,
+      75
+    ],
+    [
+      50,
+      63,
+      75
+    ],
+    [
+      51,
+      63,
+      75
+    ],
+    [
+      52,
+      63,
+      75
+    ],
+    [
+      53,
+      63,
+      75
+    ],
+    [
+      54,
+      63,
+      75
+    ],
+    [
+      55,
+      63,
+      75
+    ],
+    [
+      56,
+      63,
+      75
+    ],
+    [
+      57,
+      63,
+      75
+    ],
+    [
+      58,
+      63,
+      75
+    ],
+    [
+      59,
+      63,
+      75
+    ],
+    [
+      60,
+      63,
+      75
+    ],
+    [
+      61,
+      61,
+      76
+    ],
+    [
+      62,
+      61,
+      76
+    ],
+    [
+      63,
+      61,
+      76
+    ],
+    [
+      64,
+      61,
+      76
+    ],
+    [
+      65,
+      61,
+      76
+    ],
+    [
+      66,
+      61,
+      76
+    ]
+  ],
+  "donors": [
+    {
+      "pixel": [
+        68,
+        45
+      ],
+      "rgba": [
+        67,
+        77,
+        74,
+        255
+      ]
+    },
+    {
+      "pixel": [
+        68,
+        46
+      ],
+      "rgba": [
+        92,
+        105,
+        103,
+        255
+      ]
+    },
+    {
+      "pixel": [
+        68,
+        47
+      ],
+      "rgba": [
+        93,
+        108,
+        106,
+        255
+      ]
+    },
+    {
+      "pixel": [
+        68,
+        48
+      ],
+      "rgba": [
+        95,
+        111,
+        109,
+        255
+      ]
+    },
+    {
+      "pixel": [
+        68,
+        49
+      ],
+      "rgba": [
+        94,
+        111,
+        110,
+        255
+      ]
+    },
+    {
+      "pixel": [
+        68,
+        50
+      ],
+      "rgba": [
+        93,
+        112,
+        109,
+        255
+      ]
+    },
+    {
+      "pixel": [
+        68,
+        51
+      ],
+      "rgba": [
+        94,
+        111,
+        110,
+        255
+      ]
+    },
+    {
+      "pixel": [
+        68,
+        52
+      ],
+      "rgba": [
+        94,
+        111,
+        110,
+        255
+      ]
+    },
+    {
+      "pixel": [
+        68,
+        53
+      ],
+      "rgba": [
+        92,
+        109,
+        109,
+        255
+      ]
+    },
+    {
+      "pixel": [
+        68,
+        56
+      ],
+      "rgba": [
+        92,
+        110,
+        108,
+        255
+      ]
+    },
+    {
+      "pixel": [
+        68,
+        61
+      ],
+      "rgba": [
+        86,
+        102,
+        102,
+        255
+      ]
+    }
+  ],
+  "jointsStatus": "AUTHORED NW daily design anchors, not original measured shoulder/elbow/wrist or grip",
+  "joints": {
+    "left": {
+      "shoulder": [
+        60,
+        50
+      ],
+      "elbow": [
+        60,
+        59
+      ],
+      "wrist": [
+        51,
+        65
+      ]
+    },
+    "right": {
+      "shoulder": [
+        76,
+        51
+      ],
+      "elbow": [
+        78,
+        60
+      ],
+      "wrist": [
+        80,
+        68
+      ]
+    }
+  },
+  "poses": [
+    {
+      "name": "authored-neutral-source4",
+      "left": {
+        "upperDeg": 0,
+        "foreRelativeDeg": 0
+      },
+      "right": {
+        "upperDeg": 0,
+        "foreRelativeDeg": 0
+      },
+      "behindTorso": [
+        "right"
+      ]
+    },
+    {
+      "name": "authored-A-forward-B-back",
+      "left": {
+        "upperDeg": 0,
+        "foreRelativeDeg": 28
+      },
+      "right": {
+        "upperDeg": 0,
+        "foreRelativeDeg": -20
+      },
+      "behindTorso": [
+        "right"
+      ]
+    }
+  ],
+  "gearContract": {
+    "newNodes": 0,
+    "newPixels": 0,
+    "garmentMeshEnabled": false
+  },
+  "jointDesignRationale": "AUTHORED elbow LEFT60,59 lies inside original opaque upper/fore hinge near inner bend. CPU56..62 pivot probe retained;60 closes first rigid-cut root notch without new overlap/pixel changes. Not source joint measurement.",
+  "additionalOutlineStatus": "AUTHORED ownership of five original dark boundary texels outside neutral shirt contour, adjoining hand perimeter; preserve original RGBA, not deletion or palette classification."
+}
