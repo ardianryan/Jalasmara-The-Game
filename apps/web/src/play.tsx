@@ -233,6 +233,10 @@ export function Play({ canManage = false, onLogout }: PlayProps) {
 
   async function toggleFullscreen() {
     setNotice("");
+    game.current?.contentWindow?.postMessage(
+      { type: "jalasmara:ui-sfx", version: 1 },
+      location.origin,
+    );
     try {
       if (document.fullscreenElement === shell.current) {
         await document.exitFullscreen();

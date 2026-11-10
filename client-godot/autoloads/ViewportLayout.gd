@@ -21,7 +21,11 @@ func _host_message(args: Array) -> void:
 	var objects := JavaScriptBridge.get_interface("Object")
 	if str(event.origin) != str(window.location.origin) or not bool(objects.call("is",event.source,window.parent)): return
 	var data = event.data
-	if data == null or str(data.type) != "jalasmara:viewport" or int(data.version)!=1: return
+	if data == null: return
+	if str(data.type)=="jalasmara:ui-sfx" and int(data.version)==1:
+		AudioManager.play_sfx("wooden_click_light",1.0,-8.0)
+		return
+	if str(data.type)!="jalasmara:viewport" or int(data.version)!=1: return
 	# CSS safe insets arrive in physical pixels and are converted during layout.
 	if data.safeArea != null:
 		safe_area = Vector4(float(data.safeArea.left), float(data.safeArea.top), float(data.safeArea.right), float(data.safeArea.bottom))

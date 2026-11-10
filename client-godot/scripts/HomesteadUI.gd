@@ -179,6 +179,7 @@ func _button(value: String,action: Callable) -> Button:
 	button.add_theme_font_override("font",BODY_FONT)
 	button.add_theme_font_size_override("font_size",_ui_font())
 	HudArt.apply_button(button)
+	button.pressed.connect(func(): AudioManager.play_sfx("wooden_click_light",1.0,-8.0))
 	button.pressed.connect(action)
 	var first_button:=true
 	for child in content.get_children():

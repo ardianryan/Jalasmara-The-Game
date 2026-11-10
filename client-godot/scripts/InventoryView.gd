@@ -20,6 +20,7 @@ func configure(player: Dictionary = {},dive: Variant = null) -> void:
 	if is_inside_tree(): _build()
 
 func _ready() -> void:
+	AudioManager.play_sfx("chest_open",1.0,-5.0)
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	get_viewport().size_changed.connect(_build)
@@ -132,6 +133,7 @@ func _build() -> void:
 		_button_style(button)
 		button.add_theme_stylebox_override("normal",HudArt.slot())
 		button.pressed.connect(func():
+			AudioManager.play_sfx("wooden_click_light",1.0,-8.0)
 			_selected=index
 			_show_detail()
 		)

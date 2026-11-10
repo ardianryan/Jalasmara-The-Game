@@ -1257,14 +1257,14 @@ func _kedai_customer() -> void:
 				if r.get("ok",false):
 					AudioManager.play_sfx("recipe_cooked")
 					if str(current.id) == "akar":
-						AudioManager.play_sfx("quest_complete")
+						AudioManager.play_victory_jingle()
 					GameState.player = r.player
 					GameState.shift = r.shift
 					GameState.apply_result(r)
 					_show_kedai_result(current,r)
 					_update_hud()
 				else:
-					AudioManager.play_sfx("ui_Toggle_off")
+					AudioManager.play_sfx("wooden_toggle")
 					var err_msg := str(r.get("error","Fragmen belum sesuai. Baca kembali keluhan pelanggan dan bukti lapangan."))
 					if is_instance_valid(feedback_label):
 						feedback_label.text = "Belum tepat (fragmen tidak berkurang): " + err_msg

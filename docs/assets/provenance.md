@@ -75,3 +75,18 @@ The built-in image tool generated a rear head, rear vest and one west fishing fi
 `tools/npc-rig/ujang_rear.py` thresholds alpha, resizes with nearest sampling, quantizes to the original Ujang palette and packs `resources/art/npc-rigs/ujang-rear-grip-v1.png`. The original `ujang.png` remains intact. This adds one fist to the sixteen-part rig and replaces only the two old rear placeholders. It does not create four authored views: E/W still mirror the three-quarter source and rear limbs remain cutouts. The independently annotated fist/rod test and final actual-size native evidence are described in `docs/reviews/06b2-ujang-rear-grip.md`; mathematical contact does not imply natural walking is complete.
 
 The subsequent turn increment adds an original west head from the same built-in tool, with `generated-west-head-v1.png`, `prompt-west-head-v1.txt` and packed `head_west.png` preserved in that source directory. Ujang now has eighteen parts and an unreflected anatomical land rig, so his wooden right leg is not exchanged when facing west. The actual west artwork looks left; other body sides remain cutouts. `docs/reviews/06b2-ujang-transition-step.md` records the final 1,242 contact samples, including the formerly failing 168 sharp turns, and sequential native evidence. This supersedes the earlier seventeen-part direction fallback description without claiming four fully authored body views.
+
+## New music and victory jingle — 10 November 2026
+
+**Composer / music generation:** Google Gemini. **Prompt and curation:** Ardian Ryan. Music composed with Google Gemini from prompts by Ardian Ryan and curated by Ardian Ryan. The six MP3s were supplied by the project owner from local `~/Downloads`; originals remain there. No third-party music library was used in this import. The exact Gemini model, generation session, and distribution license were not supplied, so they are not asserted here. Verify music distribution rights before a public game release.
+
+| Original filename in `~/Downloads` | Runtime file | Use | Bytes | SHA-256 |
+| --- | --- | --- | ---: | --- |
+| `Bamboo_Sails_at_High_Tide-bgm_title_theme.mp3` | `client-godot/audio/bgm/bgm_title_theme.mp3` | Title/menu | 4,095,021 | `2ce9cf110bc4f8b50804419c28aff30c8985279ecda2afe3d7886343dbe6c1cb` |
+| `Where_the_Roots_Meet_Water-bgm_mangrove_forest.mp3` | `client-godot/audio/bgm/bgm_mangrove_forest.mp3` | Mangrove forest | 4,111,949 | `bdaa40792a843bde8abd0cc3bac591f13aa8a1cd4937df0c7a6dfcb21e48be3d` |
+| `Gold_on_the_Shoreline-bgm_coastal_dusk.mp3` | `client-godot/audio/bgm/bgm_coastal_dusk.mp3` | Coastal dusk | 4,347,678 | `685d86d1be57191e17cd55f11fe8e77facc3d54f98efa36bcef2d4d22ef1703a` |
+| `Senja_di_Balai_Desa-bgm_village_hall.mp3` | `client-godot/audio/bgm/bgm_village_hall.mp3` | Village hall | 4,128,249 | `d99242df5bfb25aeefb83db62b7396a0449ab035f126853ddb0bcefe5c042b81` |
+| `The_Sunken_Bronze_Ritual-bgm_underwater_cave_deep.mp3` | `client-godot/audio/bgm/bgm_underwater_cave_deep.mp3` | Deep underwater cave | 4,182,166 | `a99db5655440570c85fe30dd3f210ff9ad712ff3046491beee70b5fcb1a322dc` |
+| `Arrival_at_the_Bronze_Coast-Jingle Kemenangan Misi.mp3` | `client-godot/audio/sfx/jingle_victory_fanfare.mp3` | Major quest victory | 1,511,407 | `6c9c9fa734bdaf769f1896e89102b115c55d84deeebe32f76b349116f1930abd` |
+
+All six files were copied without transcoding or replacing the source files. Godot 4.7.2 generated corresponding `.mp3.import` files; these describe import settings and are not alternate audio masters. Existing WAV/MP3 tracks are unchanged.

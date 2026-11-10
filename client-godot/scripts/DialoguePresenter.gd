@@ -220,6 +220,7 @@ func _finish_layout() -> void:
 	if is_inside_tree(): _layout()
 
 func advance() -> void:
+	AudioManager.play_sfx("wooden_click_light",1.0,-8.0)
 	if text_view.visible_characters>=0 and text_view.visible_characters<_total:
 		text_view.visible_characters = -1
 		return

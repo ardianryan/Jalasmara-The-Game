@@ -4,6 +4,7 @@ signal mute_changed(value: bool)
 const SFX_PATH := "res://audio/sfx/"
 const BGM_PATH := "res://audio/bgm/"
 const ENVIRONMENT_BUS := "Jalasmara Environment"
+const BGM_BUS := "Jalasmara Music"
 const UI_BUS := "Jalasmara UI"
 const BGM_VOLUME_DB := -14.0
 const SFX_VOLUME_DB := -9.0
@@ -19,12 +20,14 @@ var current_water_sfx_idx := 0
 var bgm_player: AudioStreamPlayer
 var panic_player: AudioStreamPlayer
 var ambience_player: AudioStreamPlayer
+var victory_player: AudioStreamPlayer
 var current_bgm_track := ""
 var is_underwater := false
 var audio_unlocked := false
 var muted := false
 var _bgm_players: Array[AudioStreamPlayer] = []
 var _fade: Tween
+var _duck_fade: Tween
 var _filter: AudioEffectLowPassFilter
 var _environment_bus_index := -1
 var _ui_bus_index := -1
@@ -61,6 +64,8 @@ func _ready() -> void:
 
 func _setup_buses() -> void:
 	_environment_bus_index = _ensure_bus(ENVIRONMENT_BUS)
+	var music_bus := _ensure_bus(BGM_BUS)
+	AudioServer.set_bus_send(music_bus,ENVIRONMENT_BUS)
 	_ui_bus_index = _ensure_bus(UI_BUS)
 	_filter = AudioEffectLowPassFilter.new()
 	_filter.cutoff_hz = 1400.0
@@ -93,12 +98,18 @@ func _setup_audio_players() -> void:
 		water_sfx_players.append(water_sound)
 	for i in range(2):
 		var music := AudioStreamPlayer.new()
-		music.bus = ENVIRONMENT_BUS
+		music.bus = BGM_BUS
 		music.playback_type = AudioServer.PLAYBACK_TYPE_STREAM
 		music.volume_db = SILENCE_DB
 		add_child(music)
 		_bgm_players.append(music)
 	bgm_player = _bgm_players[0]
+	victory_player = AudioStreamPlayer.new()
+	victory_player.bus = UI_BUS
+	victory_player.playback_type = AudioServer.PLAYBACK_TYPE_STREAM
+	victory_player.volume_db = -7.0
+	add_child(victory_player)
+	victory_player.finished.connect(_restore_bgm_after_jingle)
 	panic_player = AudioStreamPlayer.new()
 	panic_player.bus = ENVIRONMENT_BUS
 	panic_player.playback_type = AudioServer.PLAYBACK_TYPE_STREAM
@@ -142,6 +153,10 @@ func _load_audio_resources() -> void:
 		var path: String = SFX_PATH + sound_name + ".wav"
 		if ResourceLoader.exists(path):
 			sfx_streams[sound_name] = load(path)
+	var victory_path := SFX_PATH + "jingle_victory_fanfare.mp3"
+	if ResourceLoader.exists(victory_path):
+		sfx_streams["jingle_victory_fanfare"] = load(victory_path)
+		victory_player.stream = sfx_streams["jingle_victory_fanfare"]
 	if sfx_streams.has("heartbeat"):
 		sfx_streams["heartbeat"] = _looping_copy(sfx_streams.heartbeat)
 	if sfx_streams.has("ambient_coastal_waves"):
@@ -149,6 +164,11 @@ func _load_audio_resources() -> void:
 		if is_instance_valid(ambience_player):
 			ambience_player.stream = sfx_streams.ambient_coastal_waves
 	var definitions := {
+		"title_theme":["bgm_title_theme.mp3"],
+		"mangrove_forest":["bgm_mangrove_forest.mp3"],
+		"coastal_dusk":["bgm_coastal_dusk.mp3"],
+		"village_hall":["bgm_village_hall.mp3"],
+		"underwater_cave_deep":["bgm_underwater_cave_deep.mp3"],
 		"coastal_day":["bgm_coastal_day.mp3","bgm_coastal_day.wav"],
 		"underwater_segaran":["bgm_underwater_segaran.mp3","bgm_underwater_ambient.wav"],
 		"kedai_waras_night":["bgm_kedai_waras_night.mp3"],
@@ -210,6 +230,27 @@ func play_sfx(sound_name: String,pitch_scale: float=1.0,volume_db: float=0.0) ->
 	sound.play()
 	_played_sfx += 1
 	_last_sfx = sound_name
+
+func play_victory_jingle() -> void:
+	if not audio_unlocked or muted or not is_instance_valid(victory_player) or victory_player.stream==null:
+		return
+	victory_player.stop()
+	_duck_bgm(-13.0,0.18)
+	victory_player.play()
+	_played_sfx += 1
+	_last_sfx = "jingle_victory_fanfare"
+
+func _restore_bgm_after_jingle() -> void:
+	_duck_bgm(0.0,0.65)
+
+func _duck_bgm(target_db: float,duration: float) -> void:
+	if _duck_fade!=null and _duck_fade.is_valid():
+		_duck_fade.kill()
+	var bus := AudioServer.get_bus_index(BGM_BUS)
+	if bus<0:
+		return
+	_duck_fade = create_tween()
+	_duck_fade.tween_method(func(level: float): AudioServer.set_bus_volume_db(bus,level),AudioServer.get_bus_volume_db(bus),target_db,duration)
 
 func play_water_sfx(sound_name: String,pitch_scale: float=1.0,volume_db: float=0.0) -> void:
 	if not can_play_environment() or _menu_paused() or not sfx_streams.has(sound_name) or water_sfx_players.is_empty():
@@ -377,15 +418,39 @@ func _refresh_context() -> void:
 	var diving := not GameState.dive.is_empty()
 	set_underwater_filter(diving)
 	if GameState.player.is_empty():
-		if not current_bgm_track.is_empty():
-			stop_bgm(0.4)
+		play_bgm("title_theme",0.4)
 		return
 	var desired := "coastal_day"
 	if diving:
-		desired = "boss_gajah_mina" if str(GameState.dive.get("mode",""))=="boss" else "underwater_segaran"
+		var depth := float(GameState.dive.get("depth",0.0))
+		var scene := get_tree().current_scene
+		if depth<=0.0 and scene!=null and scene.get("nala") is Node2D:
+			depth = maxf(0.0,(scene.nala.position.y-400.0)/28.0)
+		var zone := str(GameState.dive.get("zone","")).to_lower()
+		if str(GameState.dive.get("mode",""))=="boss":
+			desired = "boss_gajah_mina"
+		elif depth>=60.0 or "cave" in zone or "gua" in zone or "jalatunda" in zone:
+			desired = "underwater_cave_deep"
+		else:
+			desired = "underwater_segaran"
 	elif not GameState.shift.is_empty() or str(GameState.player.get("progress",{}).get("stage","dive"))=="night":
 		desired = "kedai_waras_night"
+	elif str(GameState.surface.get("area","hub"))=="forest":
+		desired = "mangrove_forest"
+	elif _near_village_hall():
+		desired = "village_hall"
+	elif str(EnvironmentState.snapshot().get("phase",""))=="senja":
+		desired = "coastal_dusk"
 	play_bgm(desired,1.0)
+
+func _near_village_hall() -> bool:
+	if str(GameState.surface.get("area","hub"))!="hub":
+		return false
+	var board: Dictionary = GameState.world.get("homestead",{}).get("permitBoard",{})
+	if board.is_empty():
+		return false
+	var location := Vector2(float(GameState.surface.get("x",-10000)),float(GameState.surface.get("y",-10000)))
+	return location.distance_to(Vector2(float(board.get("x",0)),float(board.get("y",0))))<320.0
 
 func _observe_state() -> void:
 	var id := str(GameState.player.get("id",""))
@@ -435,6 +500,13 @@ func _notification(what: int) -> void:
 
 func _exit_tree() -> void:
 	_kill_fade()
+	if _duck_fade!=null and _duck_fade.is_valid():
+		_duck_fade.kill()
+	var music_bus := AudioServer.get_bus_index(BGM_BUS)
+	if music_bus>=0: AudioServer.set_bus_volume_db(music_bus,0.0)
+	if is_instance_valid(victory_player):
+		victory_player.stop()
+		victory_player.stream = null
 	for music in _bgm_players:
 		music.stop()
 		music.stream = null

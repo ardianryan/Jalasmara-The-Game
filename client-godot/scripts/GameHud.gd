@@ -189,6 +189,7 @@ func _button(text: String,rect: Rect2,callback: Callable) -> Button:
 	button.focus_mode = Control.FOCUS_NONE
 	button.text = text
 	button.clip_text = true
+	button.pressed.connect(func(): AudioManager.play_sfx("wooden_click_light",1.0,-8.0))
 	if callback.is_valid(): button.pressed.connect(callback)
 	root_control.add_child(button)
 	return button
@@ -274,7 +275,10 @@ func _build_utilities() -> void:
 		_utilities.append(button)
 		key.visible = not touch_enabled
 		index += 1
-	_sound_button = _button("",Rect2(start+cell*4,14,cell,cell),func():AudioManager.toggle_mute())
+	_sound_button = _button("",Rect2(start+cell*4,14,cell,cell),func():
+		AudioManager.toggle_mute()
+		if not AudioManager.muted: AudioManager.play_sfx("wooden_click_light",1.0,-8.0)
+	)
 	_sound_button.add_theme_font_size_override("font_size",18 if touch_enabled else 12)
 	var refresh: Callable = func(_muted: bool):
 		_sound_button.text = ""
