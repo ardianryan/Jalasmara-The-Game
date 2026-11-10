@@ -20,4 +20,6 @@ These form the brown boundary next to the source palm, rather than gray shirt fi
 
 The v2 shown endpoints retain the shirt/head/body identity and readable authored counterpart opposition. Original anatomical side, shoulder/elbow/wrist, grip and contact phase remain unmeasured. No temporal smoothness, native rendering, rig integration or natural-walk acceptance follows from these stills.
 
+Follow-up inspection of website `nw-daily-upper-loop-v1/{nw-daily-upper-eight-detail.png,nw-daily-upper-extremes.png}` finds the prior cavity closed through all eight shown cuff/forearm poses, no obvious gray-cloth flap or returning hand spur, and consistent fixed head/shirt/pants anchors. This is still-image contour review only. Original source frame4 is not a validated movement/contact phase, and native temporal motion remains untested.
+
 Evidence paths are beneath `/Users/ardianryan/Documents/Jalasmara-overnight-ground-consumers/artifacts/player-gait/`: `nw-daily-upper-source-v1/daily-nw-frame4-coordinate-grid.png` and `nw-daily-upper-rig-v2/{nw-daily-two-endpoints.png,nw-daily-isolated-arm-endpoints.png}`. CPU module execution used `PYTHONDONTWRITEBYTECODE=1`; no engine/browser/GPU ran.
