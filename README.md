@@ -7,9 +7,9 @@ Petualangan pixel art dengan daratan 3D tiga perempat dan penyelaman 2.5D di Kot
 Dibangun dengan **Godot 4.7.2** untuk permainan, **React + Vite** untuk akun dan panel admin, **Fastify** untuk API, **MongoDB** untuk progres, dan **Redis** untuk sesi. Ekspor browser memakai renderer Compatibility dan single thread.
 
 - Staging: https://staging-jalasmara.ardianryan.com
-- Sumber dan CI: [GitLab](https://gitlab.com/ardianryan/jalasmara-the-game)
-- Mirror sumber dan laporan: [GitHub](https://github.com/ardianryan/Jalasmara-The-Game)
-- [Laporan CI GitLab yang dikirim ke GitHub](https://github.com/ardianryan/Jalasmara-The-Game/tree/ci-reports)
+- Sumber, CI dan paket delivery: [Gitea](https://git.ppti.me/ardianryan/Jalasmara-The-Game)
+- Backup Git: [GitHub](https://github.com/ardianryan/Jalasmara-The-Game) dan [GitLab](https://gitlab.com/ardianryan/jalasmara-the-game), keduanya tanpa CI aktif.
+- [Operasi Gitea dan push tiga remote](docs/operations-gitea.md); [Actions](https://git.ppti.me/ardianryan/Jalasmara-The-Game/actions). Laporan lama di branch `ci-reports` GitHub tetap merupakan arsip historis.
 
 [Galeri visual pengembangan](docs/visual/README.md) menampilkan screenshot dunia, HUD/loading dan perbandingan animasi, lengkap dengan commit, asal bukti dan batas pengujian. Gambar kandidat yang belum dirilis diberi label tersendiri.
 

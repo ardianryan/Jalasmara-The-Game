@@ -1,5 +1,7 @@
 # Operasi Jalasmara
 
+**Pembaruan 10 November 2026:** [Gitea](operations-gitea.md) menjadi pusat repository, CI dan paket delivery. GitHub/GitLab tetap backup dengan CI dinonaktifkan. Tahap aktivasi VPS di bawah tetap terpisah dari build dan tidak otomatis dijalankan oleh workflow baru.
+
 ## Topologi staging
 
 Aplikasi berada di VPS alias SSH `dev-jalasmara`, direktori `/opt/jalasmara`. Upstream game adalah **HTTP `10.1.0.8:3000`**, dengan URL publik **`https://staging-jalasmara.ardianryan.com`**. Pengguna mengatur reverse proxy dan sertifikat melalui aaPanel pada server terpisah `moodle-server` (`10.1.0.18`). Jangan memasang proxy tambahan atau mengubah server tersebut lewat deployment aplikasi.

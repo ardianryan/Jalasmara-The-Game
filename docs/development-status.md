@@ -1,5 +1,7 @@
 # Status pengembangan
 
+**Migrasi Gitea, 10 November 2026:** sumber/CI/delivery diarahkan ke [Gitea](operations-gitea.md); GitHub dan GitLab tetap backup dengan CI project dinonaktifkan. [Laporan migrasi](reviews/gitea-ci-migration.md) memegang hasil run aktual, kegagalan bootstrap dan verifikasi tiga remote. Runtime/staging tidak berubah karena migrasi; hasil Gemini yang baru dibackup tetap membutuhkan review terpisah.
+
 **Checkpoint penutup 07.53 WIB:** [laporan terbaru](reviews/overnight-0800-close.md) memegang status aktif. Rilis tetap export5/image559/PCK9a1; 13 warga/dialogue lokal18/18 dan full67 dunia lulus. Proposal upper NORTH rig10/loop9 lulus CPU, belum runtime. Nala831 FIRST7 masih gagal setelah enam kasus dan recovery belum diterima; pilot tetapOFF. Semua tujuh P0 audit Gemini dan diving-SE positif palsu; [koreksi dibatasi audit](plans/07b-gemini-character-audit-corrections.md), tanpa mengganti atlas. Seluruh pekerjaan belum selesai. Pembaruan lebih lama berikut adalah riwayat.
 
 **Pembaruan 07.28 WIB:** browser lokal Metal pada PCK9a1 menyelesaikan18/18 pemeriksaan: seluruh13 warga berteduh dan dapat diajak bicara, layanan lurah/izin serta progres tetap benar, cleanup berhasil. Full67 dunia lulus untuk optimasi lighting lokal; belum diekspor. Audit Gemini f67 belum digabung: P0 female explorer NW/NE terbukti positif palsu, hash/klaim/guard output perlu dikoreksi. Nala6b helper lulus tetapi FIRST7 ridgeUP masih gagal setelah6kasus; pilot tetapOFF. [Handoff](agent-handoff.md) memegang status/antrean terinci.

@@ -1,5 +1,9 @@
 # Petunjuk kerja agent Jalasmara
 
+## Primary Gitea dan backup remote, keputusan terbaru
+
+Repo/CI/delivery kini dipusatkan di Gitea `https://git.ppti.me/ardianryan/Jalasmara-The-Game`; GitHub dan GitLab adalah backup dengan CI dimatikan. Baca [operasi Gitea](docs/operations-gitea.md) serta [addendum Gemini](docs/plans/08c-gitea-ci-addendum.md). Untuk branch sendiri yang siap direkam gunakan `npm run push:all -- <branch>`; jangan force/mirror/delete atau mengaktifkan CI backup. Keputusan pengguna ini mengatasi larangan push menyeluruh pada handoff day01 hanya untuk checkpoint branch Gemini miliknya; main, worktree lain dan deploy tetap dilarang. Push bukan bukti CI/art/physics diterima.
+
 ## Delegasi Gemini satu hari, 10 November 2026
 
 Pengguna meminta Gemini bekerja pada branch/worktree sendiri. Untuk sesi tersebut baca [kontrak day01](docs/plans/08-gemini-day01-handoff.md), [prompt lengkap](docs/plans/08-gemini-day01-prompt.md), dan [kontrak Imagen](docs/plans/08-gemini-day01-imagen.md). Worktree utama `/Users/ardianryan/Documents/Jalasmara-gemini-day01`, branch `work/gemini-day01`; checkout utama dan worktree lama read-only. Audit/gait lab baru dibuat hanya bila diperlukan, sesuai kontrak. Semua hasil commit lokal; tidak merge/push/deploy dalam delegasi ini. Ini izin mengerjakan paket bounded sehari, bukan sekadar audit-only, dan bukan izin menulis ke worktree agent lain. Aturan umum berikut tetap berlaku.

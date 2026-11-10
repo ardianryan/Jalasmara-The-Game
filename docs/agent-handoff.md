@@ -1,5 +1,9 @@
 # Handoff aktif agent
 
+## Migrasi berikutnya: Gitea utama
+
+Pengguna mengalihkan repo/CI/CD ke Gitea melalui `tea`, tetap backup GitHub/GitLab. Pekerjaan berada di worktree/branch `Jalasmara-gitea-ci`/`work/gitea-ci`, bukan worktree Gemini. Baca [hasil aktual](reviews/gitea-ci-migration.md), [operasi](operations-gitea.md), dan [addendum Gemini](plans/08c-gitea-ci-addendum.md). Run pertama gagal karena Git belum dipasang sebelum checkout; perbaikannya ada pada run2. Jangan menyebut seluruh pipeline lulus sebelum conclusion/log/artifact final dicatat. Game/staging tidak diubah oleh migrasi ini.
+
 ## Delegasi berikutnya: Gemini day01
 
 Pengguna meminta handoff satu hari untuk Gemini dan Imagen, dengan branch/worktree terpisah. [Kontrak lengkap](plans/08-gemini-day01-handoff.md), [prompt siap salin](plans/08-gemini-day01-prompt.md), dan [prompt/aturan Imagen](plans/08-gemini-day01-imagen.md) menetapkan tugas, file ownership, reproduksi, gate, batas waktu dan laporan. Worktree target `/Users/ardianryan/Documents/Jalasmara-gemini-day01`, branch `work/gemini-day01`; main/integrasi/worktree lama read-only untuk Gemini. Tugas belum dijalankan hanya karena dokumen disiapkan. Baseline runtime dan kegagalan terakhir di bawah tidak berubah. Tidak ada izin merge, push atau deploy pada delegasi day01.
