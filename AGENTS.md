@@ -1,5 +1,9 @@
 # Petunjuk kerja agent Jalasmara
 
+## Delegasi Gemini satu hari, 10 November 2026
+
+Pengguna meminta Gemini bekerja pada branch/worktree sendiri. Untuk sesi tersebut baca [kontrak day01](docs/plans/08-gemini-day01-handoff.md), [prompt lengkap](docs/plans/08-gemini-day01-prompt.md), dan [kontrak Imagen](docs/plans/08-gemini-day01-imagen.md). Worktree utama `/Users/ardianryan/Documents/Jalasmara-gemini-day01`, branch `work/gemini-day01`; checkout utama dan worktree lama read-only. Audit/gait lab baru dibuat hanya bila diperlukan, sesuai kontrak. Semua hasil commit lokal; tidak merge/push/deploy dalam delegasi ini. Ini izin mengerjakan paket bounded sehari, bukan sekadar audit-only, dan bukan izin menulis ke worktree agent lain. Aturan umum berikut tetap berlaku.
+
 ## Baca sebelum mengubah source
 
 1. [Handoff aktif](docs/agent-handoff.md): branch/worktree, paket yang benar-benar dirilis, pemeriksaan terakhir, dan pekerjaan berikutnya.
