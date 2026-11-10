@@ -194,9 +194,16 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 	if physical_plane:
 		for side in ["left","right"]:
 			var foot_direction:=str(_foot_views[side])
-			geometry[side]={"id":outfit+"/"+foot_direction+"/"+side,"leg":_data.views[foot_direction].legs[side],"bodyLeg":view.legs[side],"vertices":_opaque_vertices[foot_direction+"/"+side],"right":right,"vertical":vertical,"plane":_plane(side),"pivot":_pivot_offsets.get(side,Vector3.ZERO)}
+			var current_leg:Dictionary=_data.views[foot_direction].legs[side]
+			var body_leg:Dictionary=view.legs[side]
+			var pivot:Vector3=_pivot_offsets.get(side,Vector3.ZERO)
+			geometry[side]={"id":outfit+"/"+foot_direction+"/"+side,"leg":current_leg,"bodyLeg":body_leg,"vertices":_opaque_vertices[foot_direction+"/"+side],"right":right,"vertical":vertical,"plane":_plane(side),"pivot":pivot}
 			var view_steps:=posmod(DIRECTIONS.find(direction)-DIRECTIONS.find(foot_direction),8)
 			geometry[side]["bodyFootViewSteps"]=mini(view_steps,8-view_steps)
+			var current_ankle_z:float=float(current_leg.solePixel[1])-float(current_leg.ankle[1])+float(current_leg.parts.foot[1])
+			var body_ankle_z:float=float(body_leg.solePixel[1])-float(body_leg.ankle[1])+float(body_leg.parts.foot[1])
+			if foot_direction!=direction and pivot.is_finite() and _plane(side).angle_to(Quaternion.IDENTITY)<.0001 and absf(current_ankle_z-body_ankle_z)<.0001:
+				geometry[side]["heldMaskCertified"]=true
 	var planner_delta:=delta
 	var settlement_budget:=0.0
 	var settlement_ready:=true

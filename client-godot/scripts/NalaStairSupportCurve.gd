@@ -15,12 +15,15 @@ static func build(renderer:Node,profile:Dictionary,from:Vector2,to:Vector2,from_
 	if plane.angle_to(Quaternion.IDENTITY)>.0001 or (not carried_resume and pivot.length()>.0001) or absf(right.z)>.0001: return unsupported
 	if not from_world.is_finite() or not to_world.is_finite() or float(geometry.vertical)<=0 or to_world.z<=from_world.z+.01: return unsupported
 	if carried_resume:
-		if not geometry.has("bodyLeg") or int(geometry.get("bodyFootViewSteps",8)) not in [0,1]: return {"supported":false,"reason":"carried resume requires current or adjacent original foot view"}
+		if not geometry.has("bodyLeg"): return {"supported":false,"reason":"carried resume requires body leg"}
 		var current:Dictionary=geometry.leg
 		var body:Dictionary=geometry.bodyLeg
 		var current_ankle_z:float=float(current.solePixel[1])-float(current.ankle[1])+float(current.parts.foot[1])
 		var body_ankle_z:float=float(body.solePixel[1])-float(body.ankle[1])+float(body.parts.foot[1])
 		if absf(current_ankle_z-body_ankle_z)>.0001: return {"supported":false,"reason":"carried resume requires equal original vertical ankle offsets"}
+		var view_steps:int=int(geometry.get("bodyFootViewSteps",8))
+		var certified_held:bool=bool(geometry.get("heldMaskCertified",false))
+		if not certified_held and view_steps not in [0,1]: return {"supported":false,"reason":"carried resume requires current or adjacent original foot view"}
 		var actual_from:=Traversal.connector_ground(profile,from)
 		var actual_to:=Traversal.connector_ground(profile,to)
 		if actual_from.is_empty() or actual_to.is_empty() or float(actual_to.groundHeight)<=float(actual_from.groundHeight): return {"supported":false,"reason":"carried resume requires real ascending tread membership"}
@@ -98,7 +101,7 @@ static func view_envelope(plan:Dictionary,geometry:Dictionary,correction:Vector3
 	# C decays toward zero: use its worst one-sided envelope over the remaining path.
 	leading+=maxf(0,normal.dot(Vector2(correction.x,correction.y)))
 	minimum_z+=minf(0,correction.z)
-	var old_minimum:=minf(0,Vector3(plan.get("initialPivot",Vector3.ZERO)).z)
+	var old_minimum:=minf(0,Vector3(plan.get("initialPivot",Vector3.ZERO)).z)-1.0/vertical-.001
 	var allowed:bool=is_finite(leading) and is_finite(minimum_z) and leading<=float(plan.leadingOriginalCorner) and minimum_z>=old_minimum
 	return {"supported":allowed,"scope":"remaining frozen ascending riser envelope; actual full-mask guards remain independent","leading":leading,"plannedLeading":plan.leadingOriginalCorner,"minimumZ":minimum_z,"plannedMinimumZ":old_minimum}
 
