@@ -93,6 +93,32 @@ def main():
         for stitch in ['legacy_constant', 'continuous_taper']:
             stitch_reserve = .08 + abs(float(pivot[2])) if stitch == 'continuous_taper' else 0.0
             duration = max(10, math.ceil((1.5 * arc + 3 * math.pi + np.linalg.norm(pivot) + stitch_reserve) / 4.9 * 4) / 4)
+            def raw_point(fraction):
+                distance = fraction * fraction * (3 - 2 * fraction) * arc
+                point = np.array([np.interp(distance, np.r_[0, np.cumsum(lengths)], knots[:, i]) for i in range(3)])
+                point[2] += 3 * math.sin(fraction * math.pi)
+                return point
+
+            floor_jumps = []
+            for step in range(profile['steps']):
+                edge = first_y + step / profile['steps'] * (last_y - first_y)
+                if not start[1] < edge < target[1]: continue
+                low, high = 0.0, 1.0
+                for _ in range(60):
+                    middle = (low + high) * .5
+                    if raw_point(middle)[1] < edge: low = middle
+                    else: high = middle
+                fraction = (low + high) * .5
+                checks = []
+                for probe in [fraction - 1e-9, fraction + 1e-9]:
+                    point = raw_point(probe)
+                    margin = .02 if stitch == 'legacy_constant' else .08 * probe * (1 - probe)
+                    compensate = 0 if stitch == 'legacy_constant' else max(0, -pivot[2] * (1 - probe))
+                    floor = float(ground(point[1]))
+                    slack = float(point[2] - floor - margin - compensate)
+                    checks.append({'u': probe, 'floor': floor, 'unclampedSupportSlack': slack})
+                assert min(check['unclampedSupportSlack'] for check in checks) > 0
+                floor_jumps.append({'riserIndex': step, 'u': fraction, 'oneSided': checks, 'clampInactive': True})
             speed_inside = (last_y - first_y) / abs(b[1] - a[1]) * 80.0
             schedules = {'uniform_10000_phase': np.linspace(0, duration, 10001),
                              'endpoint_logarithmic': np.r_[np.linspace(0, .9 * duration, 1001), duration * (1 - 10.0 ** -np.arange(1, 10)), duration]}
@@ -154,7 +180,7 @@ def main():
                                        'taperEndpointDerivativePerAccepted': float(np.linalg.norm(terminal_coefficient + np.array([0, 0, 3 * math.pi])) / duration),
                                        'initialPivotDerivativeNorm': float(np.linalg.norm(pivot) / duration),
                                        'terminalPivotDerivativeNorm': float(np.linalg.norm(terminal_coefficient) / duration),
-                                   'stitchDerivativeReserve': stitch_reserve,
+                                   'stitchDerivativeReserve': stitch_reserve, 'centerFloorJumpChecks': floor_jumps,
                                        'sourceSwitchAtAcceptedDistance': view_switched,
                                        'terminalSource': 'north_west' if view_switched else 'north',
                                        'finiteFrozenGeometryOnly': True})
