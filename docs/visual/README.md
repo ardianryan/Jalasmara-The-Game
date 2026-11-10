@@ -1,6 +1,16 @@
 # Jalasmara visual evidence
 
-Twenty original evidence images, copied without cropping, recoloring, recompression or new image generation. This is a small review gallery, not an asset kit or a complete acceptance report. Total PNG payload: **3,710,611 bytes**. Released-world images, local browser evidence and uninstalled authoring proposals are labelled separately.
+Twenty-two original evidence images, copied without cropping, recoloring or recompression. This is a small review gallery, not an asset kit or a complete acceptance report. Total PNG/APNG payload: **3,749,914 bytes**. Released-world images, local browser evidence and uninstalled authoring proposals are labelled separately.
+
+## NW explorer authored elbow loop: proposal, not active gameplay
+
+![Eight authored NW explorer upper-body poses; fixed head/torso, opposite elbow swing and the repaired elbow seam.](/docs/visual/nw-explorer-upper-eight-detail.png)
+
+![Eight-frame authored elbow preview. Timing is illustrative, not runtime contact cadence.](/docs/visual/nw-explorer-upper-loop-preview.png)
+
+Source448e077/root2fd6340. Root independently passed9loop+10rig CPU tests, reproduced every PNG/APNG byte identically, and viewed all eight poses and the original notch repair. This is an authored coherent reference arrangement and two explicit hidden fore-root overlap pixels, not repaired production atlas, measured anatomical joints, grip, contact phase or natural walking acceptance. Five unique raster poses span eight timed frames; return retraces the authored curve. Fixed shoulders and fixed right-behind compositing remain limitations. [Report](../reviews/overnight-nw-explorer-upper-loop.md).
+
+Original root outputs `artifacts/player-gait/nw-explorer-upper-loop-root-review/`: detail22,866bytes SHA256 `e39e6ea64259bb1428864edb759a2a91b8da174cd81ba382cf619b810c06c912`; APNG16,437bytes SHA256 `d4864e59e4693cfeff8c6668bf2375d0faac76a6fb09b03dc1c7eb78ccfb555e`. Copied without modification, no account data or image text metadata; APNG loop/duration are intentional. Original-project artwork terms remain separate from MIT tool code and third-party moodboards.
 
 ## Export5 local browser evidence: visible compact location overflow
 
