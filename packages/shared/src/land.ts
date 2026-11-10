@@ -630,7 +630,7 @@ const hubObstacles: LandObstacle[] = [
   obstacle("palm_kedai", "tree", 800, 430, 34, 34, 185, "palm", 2),
   obstacle("palm_garden", "tree", 1640, 600, 34, 34, 180, "palm", 2),
   obstacle("market_crates", "crate", 470, 915, 65, 48, 38, "woven", 1),
-  obstacle("dock_crates", "crate", 920, 1190, 80, 55, 48, "wood", 0),
+  obstacle("dock_crates", "crate", 875, 1190, 80, 55, 48, "wood", 0),
   obstacle(
     "changing_post_north",
     "fence",
