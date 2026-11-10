@@ -1,6 +1,14 @@
 # Jalasmara visual evidence
 
-Twenty-five original evidence images, copied without cropping, recoloring or recompression. This is a small review gallery, not an asset kit or a complete acceptance report. Total PNG/APNG payload: **3,879,245 bytes**. Released-world images, local browser evidence and uninstalled authoring proposals are labelled separately.
+Twenty-six original evidence images, copied without cropping, recoloring or recompression. This is a small review gallery, not an asset kit or a complete acceptance report. Total PNG/APNG payload: **4,046,375 bytes**. Released-world images, local browser evidence and uninstalled authoring proposals are labelled separately.
+
+## Gemini audit review: remaining claimed inversions also rejected
+
+![Original IDLE then WALK0–7 heads for male-default daily NW/NE, male-default explorer NW/NE, male-nusantara diving NW and SE. NW faces left, NE and SE right throughout.](/docs/visual/gemini-review-remaining-inversion-heads.png)
+
+Root created this diagnostic sheet directly from the original atlas cells using nearest-neighbor crops, then root and peer independently reviewed all54heads. Together with the eighteen female explorer heads below, it rejects all seven submitted P0 inversion claims and the diving SE mismatch claim. The brown bandana tail is not the face. No source was mirrored, swapped, recolored or repaired. The genuinely reversed male-nusantara explorer NW set is excluded from Gemini's task and remains a different confirmed source issue. [Review and bounded correction instructions](../reviews/gemini-character-audit-integration-review.md).
+
+Byte-identical copy of `.runtime/gemini-p0-original-crosscheck.png`:167,130bytes, SHA256 `a30ae9983466163e951488b9c3d8e3692e2c45aef5e28e6652b0f4afade8ec2b`. Each row labels original identity/outfit/direction; first column is IDLE, remaining eight are WALK0–7. Source crop x38..87/y16..49,3×nearest. No account data or text metadata. This is original project-art diagnostic documentation, not an MIT sprite pack or gameplay/native acceptance.
 
 ## Gemini audit review: preserve correctly facing female explorer rows
 
