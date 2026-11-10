@@ -17,6 +17,7 @@ var _equipment: Node3D
 var _activities: Node3D
 var _body_rigs: Dictionary={}
 var _wet_effects: MultiMeshInstance3D
+var _lighting_frame: Dictionary={}
 
 func configure(owner_renderer: Node, scene: Node2D, player: Node2D) -> void:
 	renderer=owner_renderer
@@ -127,7 +128,9 @@ func _shadow(key: String,feet: Vector2,height: float,radius: float) -> void:
 	mesh.position=support+renderer.map_point(feet,height+.35)-renderer.map_point(feet,height)
 
 func update_actors(delta: float) -> void:
+	_lighting_frame={}
 	if not is_instance_valid(actor): return
+	_lighting_frame=_lighting_context()
 	_update_wet_marks()
 	_scan_clock+=delta
 	if _scan_clock>2:
@@ -230,16 +233,26 @@ func update_actors(delta: float) -> void:
 		var size: Vector2=data.size
 		_sprite("Animal_"+str(creature.get_instance_id()),_frame(data.texture,data.source),creature.position,Vector2(width,width*size.y/maxf(1,size.x)),0)
 		counts.creatures=int(counts.creatures)+1
+	_lighting_frame={}
 
-func _readable_tint(feet: Vector2,height: float) -> Color:
+func _lighting_context() -> Dictionary:
 	var weather: Dictionary=EnvironmentState.snapshot()
 	var daylight:=clampf((float(weather.get("daylight",.8))-.24)/.76,0,1)
+	var lamps: Array=[]
+	if daylight<1:
+		for lamp in renderer.get("_lanterns"):
+			lamps.append({"position":lamp.global_position,"range":lamp.omni_range})
+	return {"daylight":daylight,"lamps":lamps}
+
+func _readable_tint(feet: Vector2,height: float) -> Color:
+	var context: Dictionary=_lighting_frame if not _lighting_frame.is_empty() else _lighting_context()
+	var daylight: float=context.daylight
 	var tint:=Color(.74,.82,.86).lerp(Color(1,1,.98),daylight)
 	var at: Vector3=renderer.map_point(feet,height+30)
 	var warmth:=0.0
-	for lamp in renderer.get("_lanterns"):
-		var reach: float=lamp.omni_range
-		var proximity:=clampf(1.0-at.distance_to(lamp.global_position)/reach,0,1)
+	for lamp in context.lamps:
+		var reach: float=lamp.range
+		var proximity:=clampf(1.0-at.distance_to(lamp.position)/reach,0,1)
 		warmth=maxf(warmth,proximity*proximity*(1-daylight)*.42)
 	return tint.lerp(Color(1,.89,.73),warmth)
 

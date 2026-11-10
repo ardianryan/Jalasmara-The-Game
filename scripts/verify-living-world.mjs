@@ -49,6 +49,7 @@ const scripts = [
   "scripts/tests/field-book.gd",
   "scripts/tests/world-atlas-layout.gd",
   "scripts/tests/render-performance.gd",
+  "scripts/tests/actor-lighting-frame.gd",
   "scripts/tests/performance-capture.gd",
   "scripts/tests/player-locomotion.gd",
   "scripts/tests/locomotion-collision-foley.gd",
