@@ -1,5 +1,9 @@
 # Handoff aktif agent
 
+## Konsolidasi terbaru: `main` dan pembersihan Claude
+
+Atas arahan pengguna, `main` fast-forward ke source integrasi `59e916bff3beeeb6e5a5b78bcc6f72bdd034c385` dan SHA itu ada di Gitea/GitHub/GitLab. Tidak ada commit Claude dalam `main`. Branch/worktree Claude dihapus setelah patch dan 11 fixture belum tracked diarsipkan lokal; pilot gait tetap OFF karena flat32 gagal, checker 16 kasus belum lengkap dan native/browser belum diterima. [Laporan konsolidasi](reviews/main-consolidation-2026-11-10.md) mencatat bukti, batas dan langkah berikutnya. [CI Gitea run 10](https://git.ppti.me/ardianryan/Jalasmara-The-Game/actions/runs/10) pada SHA source tersebut **SUCCESS** dengan delivery upload. Staging tetap export5/PCK9a1 serta health OK; belum ada aktivasi baru. Bagian historis di bawah tidak mengatasi keputusan ini.
+
 ## Instruksi terbaru untuk Claude Opus 5.5
 
 Pengguna meminta instruksi pekerjaan berat ditulis dalam Markdown. [Handoff gait Nala](plans/09-claude-opus-gait-integration.md) menugaskan Claude di worktree/branch sendiri untuk meninjau dan memverifikasi lab Gemini `ab5574b`, lalu port minimal dan uji gerak nyata jika gate lulus. [Catatan delegasi](reviews/claude-gait-delegation.md) membedakan klaim Gemini dari hasil yang sudah diterima. Gemini coordinator `ba98c19` dan lab gait belum digabung ke branch integrasi atau `main`; pilot kaki fisik tetap OFF. CI Gitea run6 mendahului hasil Gemini. Gitea default sekarang `main`; source integrasi tetap pada `work/overnight-integration`. Bagian historis di bawah tidak mengatasi status ini.

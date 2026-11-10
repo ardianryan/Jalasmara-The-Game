@@ -1,5 +1,7 @@
 # Handoff Claude Opus 5.5: verifikasi dan integrasi gait Nala
 
+**Status 10 November 2026: ditutup, jangan dijalankan ulang.** Kandidat Claude tidak diterima dan branch-nya telah dihapus atas arahan pengguna. Lihat [laporan konsolidasi](../reviews/main-consolidation-2026-11-10.md) untuk bukti kegagalan dan langkah baru yang dimulai dari `main`. Isi di bawah dipertahankan sebagai catatan instruksi historis.
+
 Dokumen ini adalah instruksi kerja siap pakai. Tujuannya menghasilkan kandidat gait Nala yang dapat ditinjau dalam game, bukan menganggap lulusnya fixture sebagai bukti jalan alami. Baca `AGENTS.md`, `docs/agent-handoff.md`, `docs/PRD.md`, `docs/art-direction-comfy.md`, dan laporan yang disebut di bawah sebelum mengubah source.
 
 ## Keadaan awal dan hasil yang diminta
