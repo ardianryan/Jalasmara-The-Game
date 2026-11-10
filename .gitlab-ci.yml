@@ -58,6 +58,8 @@ verify:
     - python3 tools/player-gait/nw-explorer-upper-loop-test.py
     - python3 tools/player-gait/nw-daily-upper-rig-test.py
     - python3 tools/player-gait/nw-daily-upper-loop-test.py
+    - python3 tools/player-gait/north-upper-rig-test.py
+    - python3 tools/player-gait/north-upper-loop-test.py
     - npm run check:worldkit
     - npm ci --prefix tools/image-to-pixel --ignore-scripts
     - node --test tools/image-to-pixel/convert.test.mjs

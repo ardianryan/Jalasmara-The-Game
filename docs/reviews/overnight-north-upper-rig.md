@@ -1,5 +1,9 @@
 # NORTH daily/explorer: source inventory and two endpoint proposals
 
+## Integrator verification, 10 November 07.48 WIB
+
+Root independently ran all 10 CPU tests and Python compilation, regenerated the proposal under `artifacts/player-gait/north-upper-rig-root-review`, and compared all 15 PNG files byte-for-byte with the submitted v8 outputs: identical. Root viewed both outfits' actual endpoint images before authorizing the separate loop proposal. This supersedes the pending-review statements retained below as authoring history. It accepts the bounded offline proposal only; anatomical sides, contact phases, grip and runtime natural walking remain unproved. No production atlas or actor was changed.
+
 CPU/source-only authoring in new [tool](../../tools/player-gait/north-upper-rig.py), [spec](../../tools/player-gait/north-upper-rig.json) and [tests](../../tools/player-gait/north-upper-rig-test.py). **Both two-endpoint rigs are art proposals awaiting root image review**, not accepted source anatomy, a complete walk or runtime adoption. No NORTH loop is made. No original atlas, actor, Lower, gear or Gemini other-ten-set audit is modified. Parent owns handoff/integration updates.
 
 ## Original eight frames versus idle

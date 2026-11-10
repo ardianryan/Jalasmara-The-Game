@@ -1,5 +1,9 @@
 # NORTH daily/explorer authored loops: offline art proposals
 
+## Integrator verification, 10 November 07.48 WIB
+
+Root independently ran the shared 9-test loop suite and 10-test rig suite, plus Python compilation. Regenerated output at `artifacts/player-gait/north-upper-loop-root-review` matches all 28 submitted PNG/APNG files byte-for-byte. Root viewed each outfit's actual eight-pose detail sheet. Daily APNG SHA256 is `87d88108c99c6d6972fce9018ca80c272b7bf304da1790d7a2792e997769835a`; explorer is `2b35dd6c08de2c2105c9dcf90ed517fe4b1fb80f3428c2f11e244e0330a6cbda`. The shared tests are counted once, not twice per outfit. Both CPU suites are registered in GitLab configuration; registration is not an executed CI result. This is offline art acceptance only, with no runtime, Lower/contact-phase or gear integration.
+
 Root viewed both final v8 [NORTH source-specific endpoints](overnight-north-upper-rig.md) from `1cfb73c` and authorized bounded eight-frame proposals for both outfits. New [tool](../../tools/player-gait/north-upper-loop.py), [spec](../../tools/player-gait/north-upper-loop.json) and [tests](../../tools/player-gait/north-upper-loop-test.py) reuse that original rig's source-specific masks/affine operations. **No atlas, runtime, actor, Lower, gear or Gemini other-ten-set audit is changed.** This package is ready for root loop/APNG review, not accepted anatomy or natural walking. No new direction will start without assignment. Parent owns integration, gallery and handoff updates.
 
 ## Preserved separate source contracts
