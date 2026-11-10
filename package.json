@@ -12,6 +12,7 @@
     "node": ">=22.12"
   },
   "scripts": {
+    "push:all": "node scripts/push-remotes.mjs",
     "dev": "concurrently -k \"npm run dev -w @jalasmara/api\" \"npm run dev -w @jalasmara/web\"",
     "build": "npm run build:game && npm run build -w @jalasmara/web && npm run build -w @jalasmara/api",
     "typecheck": "tsc --noEmit -p apps/api/tsconfig.json && tsc --noEmit -p apps/web/tsconfig.json",

@@ -1,0 +1,63 @@
+name: Jalasmara verification and delivery
+
+on:
+  push:
+    branches: [main, 'work/**']
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verify-build-delivery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    container:
+      image: node:22-bookworm-slim
+    services:
+      redis:
+        image: redis:7.4-alpine
+    env:
+      TEST_MONGO_URL: mongodb://mongo:27018/jalasmara_ci?replicaSet=rs0
+      TEST_REDIS_URL: redis://redis:6379/14
+      npm_config_cache: /tmp/jalasmara-npm
+    steps:
+      - name: Checkout exact source
+        uses: https://github.com/actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install build prerequisites and isolated test MongoDB
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq python3 python3-pil git curl unzip gzip gpg ca-certificates libfontconfig1 libx11-6 libxcursor1 libxinerama1 libxrandr2 libxi6 libgl1 libasound2
+          bash ci/start-test-mongo.sh
+          mkdir -p reports
+          git rev-parse HEAD > reports/source-commit.txt
+          node -e 'console.log("Runner memory MiB:", Math.round(require("os").totalmem()/1048576))'
+      - name: Verify API, host, tooling and dependencies
+        run: bash ci/verify.sh
+      - name: Export Godot and verify world
+        run: bash ci/setup-godot.sh
+      - name: Build web and API
+        run: |
+          npm run build -w @jalasmara/web
+          npm run build -w @jalasmara/api
+      - name: CodeQL security analysis
+        run: bash ci/codeql.sh
+      - name: Prepare verified delivery bundle
+        run: |
+          python3 scripts/package-web-release.py \
+            --output .runtime/gitea-delivery \
+            --export-source "$(git rev-parse HEAD)"
+      - name: Preserve reports even when verification fails
+        if: always()
+        uses: https://github.com/actions/upload-artifact@v3
+        with:
+          name: verification-reports
+          path: reports/
+          retention-days: 14
+      - name: Store delivery bundle on Gitea
+        uses: https://github.com/actions/upload-artifact@v3
+        with:
+          name: verified-delivery
+          path: .runtime/gitea-delivery/
+          retention-days: 3
