@@ -468,9 +468,9 @@ func _begin(side:String,at:Vector2,hips:Dictionary,right:Vector3,resuming:bool=f
 			var path:=_path_metrics(entry.from,entry.to)
 			var minimum:=_start_distance if resuming else float(tread.treadDistance)
 			var swept:Dictionary={"supported":false,"reason":"unfinished resume retains its actual remaining legacy curve"}
-			if not resuming and _landing_geometry.has(side):
+			if _landing_geometry.has(side) and (not resuming or bool(tread.get("actorOnConnector",false))):
 				for profile in _stairs:
-					if str(profile.id)==str(tread.connectorId): swept=StairSupportCurve.build(renderer,profile,entry.from,entry.to,entry.fromWorld,entry.toWorld,_landing_geometry[side],_start_distance)
+					if str(profile.id)==str(tread.connectorId): swept=StairSupportCurve.build(renderer,profile,entry.from,entry.to,entry.fromWorld,entry.toWorld,_landing_geometry[side],_start_distance,resuming)
 			var budget:Dictionary=swept if bool(swept.supported) else _terrain_duration(entry.fromWorld,entry.toWorld,minimum,float(path.total))
 			budget["sweptSupportMode"]={"supported":swept.supported,"reason":str(swept.get("reason","original per-riser path"))}
 			budget["fixedPathWorldXY"]=float(path.total)
@@ -593,7 +593,7 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 					return snapshot()
 				entry.logical=swept.logical
 				var point:Vector3=swept.world
-				point.z=maxf(point.z+sin(u*PI)*TOE_CLEARANCE,_ground(entry.logical).z+.02)
+				point.z=maxf(point.z+sin(u*PI)*TOE_CLEARANCE,_ground(entry.logical).z+StairSupportCurve.floor_stitch(entry.treadPlan,u))
 				entry.sole=point
 			else:
 				var advance:=u

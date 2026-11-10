@@ -195,6 +195,8 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 		for side in ["left","right"]:
 			var foot_direction:=str(_foot_views[side])
 			geometry[side]={"id":outfit+"/"+foot_direction+"/"+side,"leg":_data.views[foot_direction].legs[side],"bodyLeg":view.legs[side],"vertices":_opaque_vertices[foot_direction+"/"+side],"right":right,"vertical":vertical,"plane":_plane(side),"pivot":_pivot_offsets.get(side,Vector3.ZERO)}
+			var view_steps:=posmod(DIRECTIONS.find(direction)-DIRECTIONS.find(foot_direction),8)
+			geometry[side]["bodyFootViewSteps"]=mini(view_steps,8-view_steps)
 	var planner_delta:=delta
 	var settlement_budget:=0.0
 	var settlement_ready:=true

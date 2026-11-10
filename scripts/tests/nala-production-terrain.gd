@@ -48,7 +48,12 @@ func _measure(label:String) -> void:
 			var arc:=0.0
 			for index in range(tread.knots.size()-1): arc+=Vector3(tread.knots[index]).distance_to(tread.knots[index+1])
 			if not _check(absf(arc-float(tread.arcXYZ))<.003,"Swept stair arc disagrees with actual frozen knots "+label): return
-			var bound:float=(1.5*arc+3.0*PI)/float(tread.distance)
+			var reserve:=0.0
+			if bool(tread.get("carriedResume",false)):
+				var initial_pivot:Vector3=tread.initialPivot
+				reserve=initial_pivot.length()+4.0*.02+absf(initial_pivot.z)
+				if not _check(str(tread.floorStitch)=="continuous_quadratic" and not bool(tread.futureViewChangesIncludedInCertificate),"Carried stair curve overclaims view or stitch scope "+label): return
+			var bound:float=(1.5*arc+3.0*PI+reserve)/float(tread.distance)
 			if not _check(bound<=4.9 and absf(bound-float(tread.curveSpeedBound))<.00001,"Swept stair base certificate changed "+label): return
 			if not _check(not bool(tread.intermediateWaypointsAreContacts) and str(tread.actorPhaseUnits)=="accepted continuous world XY","Swept stair changed contact/actor-distance semantics "+label): return
 			if not entry.has("settlingTarget") and not _check(Vector3(tread.toWorld).distance_to(Vector3(entry.toWorld))<.003,"Swept stair moved frozen landing "+label): return
