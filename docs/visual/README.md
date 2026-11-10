@@ -1,5 +1,17 @@
 # Jalasmara visual evidence
 
+## Staging `main` 446abf4: browser publik, 10 November 2026
+
+![Hub publik sesudah unduhan game dan startup selesai](staging-main-446abf4/01-public-ready-hub.png)
+
+![Rute fisik hutan dan kanopi pada viewport 667×375](staging-main-446abf4/02-public-physical-canopy-667x375.png)
+
+![Jurnal SmaraPedia terbuka dan game terjeda dalam smoke sentuh](staging-main-446abf4/03-public-journal-pauses-movement.png)
+
+Ketiga PNG disalin byte-identik dari smoke publik `artifacts/browser/staging-plan06-f8109a8d-440f-45a1-9aa8-80bc2fccd904/` pada source `446abf4`, PCK SHA-256 `5c0253f0bb9f103f6032c69b42dac6fc6fda7485a38f5b4d88380480a1eb9d7c`; [laporan rilis](../reviews/staging-main-446abf4-2026-11-10.md). SHA-256 gambar berurutan: `be3f917b63120e6a4337a74c5711e5f533a8be7de0824bb11e2cf079c4e7190c`, `0a274bb8e4b6e474d78b3d5170bd66d78ddbe17186e101e36848b954b53639df`, `70014a79dac4e1ec4893b74523f2b0b0e3cc00a7c3ad8bc53d475a89bf533f24`. Browser Chromium mesin operator, bukan Samsung S23/Windows fisik atau penerimaan artistik akhir. Tidak ada data akun/kredensial pada gambar. Ini bukti proyek untuk dokumentasi, bukan aset game/kit berlisensi MIT.
+
+Bagian galeri lama di bawah mempertahankan asal dan status pada waktu pembuatannya; hitungan gambar/byte pada deskripsi historis berikut tidak mencakup tiga PNG rilis ini.
+
 Twenty-six original evidence images, copied without cropping, recoloring or recompression. This is a small review gallery, not an asset kit or a complete acceptance report. Total PNG/APNG payload: **4,046,375 bytes**. Released-world images, local browser evidence and uninstalled authoring proposals are labelled separately.
 
 ## Gemini audit review: remaining claimed inversions also rejected

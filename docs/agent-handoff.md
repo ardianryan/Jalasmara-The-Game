@@ -1,5 +1,9 @@
 # Handoff aktif agent
 
+## Rilis staging terbaru: `main` 446abf4
+
+[Laporan aktivasi](reviews/staging-main-446abf4-2026-11-10.md): `main` `446abf4` kini aktif pada staging, image `b6c8edd`, PCK `5c0253f` (64.501.312 byte). Backup MongoDB diuji restore; 14 aset image cocok manifest; API/HTTP2 dan smoke browser publik enam pemeriksaan lulus, fixture dibersihkan nol. Image export5 `559451e` tetap rollback. Gait eksperimental Claude **tidak** masuk; pilot OFF. Pengujian fisik S23/Windows dan penerimaan visual masih terbuka. Riwayat di bawah menunjukkan keadaan sebelum aktivasi dan tidak menggantikan status rilis ini.
+
 ## Konsolidasi terbaru: `main` dan pembersihan Claude
 
 Atas arahan pengguna, `main` fast-forward ke source integrasi `59e916bff3beeeb6e5a5b78bcc6f72bdd034c385` dan SHA itu ada di Gitea/GitHub/GitLab. Tidak ada commit Claude dalam `main`. Branch/worktree Claude dihapus setelah patch dan 11 fixture belum tracked diarsipkan lokal; pilot gait tetap OFF karena flat32 gagal, checker 16 kasus belum lengkap dan native/browser belum diterima. [Laporan konsolidasi](reviews/main-consolidation-2026-11-10.md) mencatat bukti, batas dan langkah berikutnya. [CI Gitea run 10](https://git.ppti.me/ardianryan/Jalasmara-The-Game/actions/runs/10) pada SHA source tersebut **SUCCESS** dengan delivery upload. Staging tetap export5/PCK9a1 serta health OK; belum ada aktivasi baru. Bagian historis di bawah tidak mengatasi keputusan ini.

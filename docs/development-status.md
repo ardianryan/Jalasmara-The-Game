@@ -1,5 +1,7 @@
 # Status pengembangan
 
+**Rilis staging 10 November 2026:** source `main` `446abf4`, image `b6c8edd`, PCK `5c0253f` aktif. Backup/restore, hash 14 aset, health HTTPS/HTTP2, dan enam pemeriksaan smoke browser publik lulus; fixture bersih. [Laporan rilis](reviews/staging-main-446abf4-2026-11-10.md) memuat bukti serta rollback. Kandidat gait Claude tidak digabung dan pilot tetap OFF. Uji perangkat fisik serta penerimaan moodboard belum selesai. Checkpoint historis di bawah merekam keadaan sebelum rilis ini.
+
 Checkpoint 10 November 2026: source integrasi sudah menjadi `main` pada SHA `59e916b` di Gitea, GitHub, dan GitLab. [CI Gitea run 10](https://git.ppti.me/ardianryan/Jalasmara-The-Game/actions/runs/10) **SUCCESS** untuk SHA itu. Staging masih export5/PCK9a1; penggabungan source tidak mengaktifkan rilis baru. Kandidat gait Claude ditolak untuk integrasi karena flat32 gagal dan pemeriksaan kontak full16 belum lengkap, lalu branch-nya dibersihkan setelah arsip lokal dibuat. Pilot kaki fisik tetap OFF. Hasil dan batas staging dicatat pada [laporan konsolidasi](reviews/main-consolidation-2026-11-10.md). Bagian historis di bawah tidak menggantikan checkpoint ini.
 
 **Migrasi Gitea, 10 November 2026:** sumber/CI/delivery diarahkan ke [Gitea](operations-gitea.md); GitHub dan GitLab tetap backup dengan CI project dinonaktifkan. [Laporan migrasi](reviews/gitea-ci-migration.md) memegang hasil run aktual, kegagalan bootstrap dan verifikasi tiga remote. Runtime/staging tidak berubah karena migrasi; hasil Gemini yang baru dibackup tetap membutuhkan review terpisah.
