@@ -14,6 +14,8 @@
 
 Hasil ini menerima **konfigurasi migrasi pada baseline integrasi**, bukan menerima perubahan game di branch Gemini yang baru dibackup. Eksperimen Nala dalam baseline ini tetapOFF. Bagian berikut menyimpan kronologi kegagalan dan perbaikan; status pending lama tidak mengatasi penerimaan final ini.
 
+Setelah review diff dan run6, branch `work/overnight-integration` di-fast-forward9c4af6e→c540ad5, lalu checkpointc540ad5 sukses dikirim ke tiga remote. Gitea default branch diatur ke `work/overnight-integration`, privat/Actions tetaptrue; upstream branch integrasi mengarah ke Gitea. `main` tetap `d070a7b67b9f42986da2e4650f7c4110713ae73b`, worktree Gemini bersih pada `e4336741037a8f20c9f2d0fa2a5caf59a9ae55c7`. Tidak ada merge main atau perubahan berkas Gemini. Commit dokumentasi penutup sesudahnya memakai `[skip ci]` karena tidak mengubah konfigurasi/kode yang diuji pada2fb54aa.
+
 ## Konfigurasi yang benar-benar diterapkan
 
 - `tea`0.16.0, login `gitlocal`, user `ardianryan`, Gitea API mengembalikan versi28.3.0. Repo privat baru [Jalasmara-The-Game](https://git.ppti.me/ardianryan/Jalasmara-The-Game) dibuat, Actions aktif.

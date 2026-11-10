@@ -12,6 +12,8 @@ Keputusan pengguna, 10 November 2026: repository dan pipeline dipusatkan di Gite
 
 `tea` lokal versi0.16.0 sudah login `gitlocal` sebagai `ardianryan`; token tetap dikelola tool, tidak ditulis ke repository. Gunakan `tea --help`/help subcommand sebelum mengasumsikan flag; `glab` terpasang tidak mempunyai flag `api --jq` pada sesi migrasi ini.
 
+Default branch Gitea adalah **`work/overnight-integration`**, yang sudah menerima konfigurasi CI teruji melalui fast-forward. `main` lama tetap utuh sebagai riwayat stabil; tidak ada promosi seluruh game ke main. Branch integrasi lokal mengikuti upstream Gitea. Default branch backup GitHub/GitLab tidak perlu diganti agar SHA branch/tag tetap dicadangkan.
+
 Push HTTPS besar pernah ditolak HTTP413. Git memakai SSH khusus repo, tanpa mengubah reverse proxy. URL SSH server sebenarnya: `ssh://gitea@git.ppti.me:2212/ardianryan/Jalasmara-The-Game.git`. Pada komputer ini alias `jalasmara-gitea` memilih host/port dan key khusus repository; remote lokal memakai `ssh://jalasmara-gitea/ardianryan/Jalasmara-The-Game.git`. Key privat hanya berada di `~/.ssh/jalasmara_gitea`, bukan Git atau artefak CI. Deploy key memiliki write ke repo ini saja, bukan shell server. Jangan menyalin key ke runner, worktree atau dokumen.
 
 Login `tea` dan SSH Git adalah dua mekanisme terpisah. Di komputer baru, daftarkan public key baru atau gunakan credential manager untuk HTTPS; jangan menyalin key privat komputer lama. Alias SSH tidak otomatis tersedia di komputer lain.
@@ -26,6 +28,8 @@ npm run push:all -- work/nama-branch
 Tanpa nama branch, helper memakai branch aktif; detached HEAD ditolak. Helper membekukan satu SHA commit sebelum transaksi pertama, kemudian mengirim SHA yang sama ke ketiga branch remote meskipun agent membuat commit baru di tengah proses. Hanya checkpoint tersebut yang dipush. Helper tidak stage/commit WIP, mengirim cache, menghapus branch remote, mirror refs, atau force-push. Urutan: Gitea dahulu, kemudian GitHub dan GitLab. GitLab juga menerima opsi `ci.skip` sebagai perlindungan tambahan bagi konfigurasi lama.
 
 Ini tiga transaksi Git, bukan transaksi atomik. Gitea gagal: backup tidak dilanjutkan. GitHub gagal: GitLab tetap dicoba; hasil gagal tetap membuat exit nonzero. Jangan menganggap ketiga salinan identik sebelum memeriksa hasil/SHA. Retry perintah yang sama aman untuk branch yang sudah terkirim; jangan menambahkan `--force` untuk menyembunyikan divergence.
+
+Backup tiga remote mencakup riwayat Git/branch/tag. Database Gitea, issue/PR, konfigurasi server, secret dan artefak Actions bukan bagian Git push; migrasi ini tidak menyalin rahasia atau mengklaim backup penuh server Gitea.
 
 Remote disimpan di common Git config, sehingga terlihat di seluruh linked worktree. `remote.pushDefault=gitea` membuat push biasa memilih primary saat tidak ada pengaturan branch lain. **Push biasa tidak otomatis mengirim ke tiga tempat**; gunakan helper untuk checkpoint backup. Ini bukan server-side push mirror yang menyimpan token GitHub/GitLab pada Gitea.
 

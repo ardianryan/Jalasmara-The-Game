@@ -165,6 +165,10 @@ Seluruh dependensi ekosistem JavaScript/TypeScript di bawah ini dilisensikan di 
 *(Lisensi mendetail dari setiap modul npm tersimpan pada masing-masing subdirektori di dalam `node_modules/`)*
 
 
+## Alat CI Gitea, hanya lingkungan build
+
+Workflow Gitea memakai [actions/checkout](https://github.com/actions/checkout) pada revisi `11bd71901bbe5b1630ceea73d27597364c9af683` dan [actions/upload-artifact](https://github.com/actions/upload-artifact) versi `v3`. Keduanya mencantumkan MIT, copyright GitHub, Inc. and contributors: [notice checkout](https://raw.githubusercontent.com/actions/checkout/11bd71901bbe5b1630ceea73d27597364c9af683/LICENSE), [notice upload-artifact](https://raw.githubusercontent.com/actions/upload-artifact/v3/LICENSE). Tool diunduh runner untuk checkout/unggah artefak; kode upstream tidak disalin ke source/runtime/aset permainan. Gitea/tea adalah layanan/CLI pengelolaan repository, bukan engine game baru. Atribusi ini tidak mengubah lisensi artwork Jalasmara.
+
 ## Fish Gen offline-generated decorative fauna
 
 [JacobKulberg/fish-gen](https://github.com/JacobKulberg/fish-gen), revision `0faa79003ca50a7d422b618cb59179d9834094f1`, version0.1.0, copyright2026JacobKulberg, MIT. Original notice: [tools/fish-gen/LICENSE.upstream](tools/fish-gen/LICENSE.upstream), also packaged at `client-godot/resources/licenses/FISH-GEN-MIT.txt`. The pinned README separately permits use of generated sprites, including commercial games.
