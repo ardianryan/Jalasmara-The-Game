@@ -1,5 +1,11 @@
 # Jalasmara visual evidence
 
+## Staging `main` 4980d6b: player visible beside dock crates
+
+![Nala's whole body visible at a saved dock position during rain on public staging.](dock-player-visible-staging-20261110.png)
+
+Original-game browser screenshot from staging source `4980d6b172e7524fad8dbef3ea02e3916c4ea3c3` and PCK `cb5bd527bca632c66f2d23f7dc1a87758d2e4d057249a28d5efc4a40e3516b27`, captured after real login at saved hub position `(1000, 1200)`. Chromium on the operator's Mac used a 1865 × 900 viewport and touch emulation. PNG: 305,702 bytes, SHA-256 `d6514da09da9a8750b908f28508a76b95baf0524af46101ca907aafceb1934e3`. The temporary test account was removed; no credentials appear. This is browser evidence, not a Samsung S23 or Windows GPU benchmark. [Release report](../reviews/main-staging-dock-2026-11-10.md). The game screenshot retains project-art terms and is not a MIT-licensed WorldKit asset.
+
 ## Staging `main` 446abf4: browser publik, 10 November 2026
 
 ![Hub publik sesudah unduhan game dan startup selesai](staging-main-446abf4/01-public-ready-hub.png)

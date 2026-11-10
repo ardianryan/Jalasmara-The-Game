@@ -1,5 +1,7 @@
 # Contextual music and UI feedback — 10 November 2026
 
+**Release update:** This audio package reached staging inside `main` `4980d6b` on 10 November 2026, following the dock-visibility correction. Its PCK remains SHA-256 `cb5bd527bca632c66f2d23f7dc1a87758d2e4d057249a28d5efc4a40e3516b27`. The [staging release report](main-staging-dock-2026-11-10.md) records CI, public smoke, image, backup, and rollback. The local-only status below describes the earlier checkpoint, not the current release. Listening, distribution rights, and mobile download impact still need owner review.
+
 The owner supplied five new background tracks and one victory jingle from `~/Downloads`, and specified the music credit as Google Gemini composition with prompts and curation by Ardian Ryan. Six byte-identical MP3 copies and their Godot `.import` metadata were added under `client-godot/audio/`; the source files remain in Downloads. [Asset provenance](../assets/provenance.md) records every original filename, destination, byte count, and SHA-256. The exact Gemini model/session and distribution license were not provided, so no rights claim beyond the supplied credit is made.
 
 Implementation commit: `1454bffc8087415808a040ed805ddaa8f6f43e1d` on local `main`, based on `1a3e82c7f6f5a975f3a8d605421075aafecfd11b`. The report/handoff commit follows separately. Neither commit was pushed or deployed during this package.
