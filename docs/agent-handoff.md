@@ -1,5 +1,9 @@
 # Handoff aktif agent
 
+## Instruksi terbaru untuk Claude Opus 5.5
+
+Pengguna meminta instruksi pekerjaan berat ditulis dalam Markdown. [Handoff gait Nala](plans/09-claude-opus-gait-integration.md) menugaskan Claude di worktree/branch sendiri untuk meninjau dan memverifikasi lab Gemini `ab5574b`, lalu port minimal dan uji gerak nyata jika gate lulus. [Catatan delegasi](reviews/claude-gait-delegation.md) membedakan klaim Gemini dari hasil yang sudah diterima. Gemini coordinator `ba98c19` dan lab gait belum digabung ke branch integrasi atau `main`; pilot kaki fisik tetap OFF. CI Gitea run6 mendahului hasil Gemini. Gitea default sekarang `main`; source integrasi tetap pada `work/overnight-integration`. Bagian historis di bawah tidak mengatasi status ini.
+
 ## Migrasi berikutnya: Gitea utama
 
 Pengguna mengalihkan repo/CI/CD ke Gitea melalui `tea`, tetap backup GitHub/GitLab. Pekerjaan berada di worktree/branch `Jalasmara-gitea-ci`/`work/gitea-ci`, bukan worktree Gemini. **Run6 source2fb54aa SUCCESS**, termasuk CodeQL/export/67world/build/dua artefak; laporan dan kegagalan terdahulu ada pada [hasil aktual](reviews/gitea-ci-migration.md). [Operasi](operations-gitea.md) dan [addendum Gemini](plans/08c-gitea-ci-addendum.md) mengatur backup satu SHA ke tiga remote. GitHub Actions/GitLab CI dimatikan,59refs cocok, tidak force/delete. Hasil Gemini yang dibackup belum ikut divalidasi CI6; game/staging tidak diubah oleh migrasi ini.

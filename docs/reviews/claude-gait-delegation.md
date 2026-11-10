@@ -1,0 +1,7 @@
+# Catatan delegasi Claude Opus 5.5
+
+Permintaan pengguna: simpan instruksi tugas berat untuk Claude dalam Markdown. Hasilnya adalah [handoff gait](../plans/09-claude-opus-gait-integration.md) pada `work/overnight-integration`; dokumen ini **belum menjalankan** port source, pengujian gait, build, CI baru, atau rilis.
+
+Dasar yang diperiksa: integrasi `fb50edff5ceaae09b39141e1daa3123bd03d737f`; Gemini coordinator bersih `ba98c194e15a275da2b060ac5bcf4f956cfa3160`; lab gait bersih `ab5574bc6e0c76a50e4d3db6b4bbd26f9ebaab7a`. Laporan Gemini mengklaim full16/814 sampel pada lab, sementara runtime gait tidak ada pada branch koordinator dan pilot rilis tetap OFF. CI Gitea run6 menguji source terdahulu `2fb54aacb3abf8a1032b11cf133c7ab0d14dc224`. Gitea default branch saat pemeriksaan adalah `main` di `d070a7b67b9f42986da2e4650f7c4110713ae73b`; itu tidak menggabungkan source integrasi/Gemini.
+
+Tool untuk paket dokumentasi ini: `git`, `rg`, `sed`, dan Python standar; `tea` tidak dipanggil. Tidak ada aset atau dependensi baru. Verifikasi dokumen: file handoff 67 baris ada, dua rujukan lokal mengarah ke file tersebut, dan `git diff --check` lulus. Tes runtime tidak dijalankan karena hanya dokumentasi yang berubah. Langkah berikutnya: Claude membuat worktree sendiri, memverifikasi ulang kandidat, mem-port perubahan minimum bila lulus, menjalankan gate gabungan/native/browser, lalu menyerahkan branch dan laporan. Windows/S23 membutuhkan sesi pengguna pada build kandidat yang sudah dipin.
