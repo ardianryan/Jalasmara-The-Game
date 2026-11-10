@@ -1,5 +1,7 @@
 # Penyelesaian delapan jalur malam ini
 
+Pembaruan07.28WIB: jalur5/6 kini mempunyai actual18/18 browser untuk semua13 shelter/dialogue dan layanan lurah; bukan lagi12dialogue belum diuji. Jalur3 full67 lulus pada lighting lokal, belum ekspor/FPS fisik. Jalur2 Nala6b helper lulus tetapi ridgeUP FIRST7 tetap gagal setelah6kasus; belum full16/flat/native. Gemini f67 tetapHOLD karena klaim false-positive NW/NE female explorer dan masalah audit lainnya. Galeri25gambar3.879.245byte berisi bukti asli/proposal berlabel. Seluruh delapan jalur belum selesai. [Handoff](../agent-handoff.md) memegang detail.
+
 ## Pembaruan 07.05 WIB
 
 Rilis tetap export5/PCK9a1. Jalur2: a7e7ace inheritedFIRST4/214geometry PASS, full16 source sama selesai6kasus lalu ridgeUP gagal drop8.90117>8; pilot tetapOFF, freshflat32/native baru belum dijalankan. Jalur3: optimasi lighting CPU36b68af focusedPASS/checksumABidentik, full67gabungan sedang berjalan; belum ekspor atau FPS perangkat. Jalur5/6: actualbrowser13warga shelter/diam serta direktur dialoguePASS, tetapi rute10menit berhenti sehingga12dialogue lain belum diterima. Jalur4 tidak berubah; rootreview NWupper ownership/2pixeloverlap hanya proposaltool. [BriefGemini](../plans/07-gemini-character-source-audit.md) terpisah10set/80arah, audit-only, bukan perubahanruntime. Seluruh delapan jalur belum selesai. [Handoff](../agent-handoff.md) memegang source/slot terkini; tabel lama berikut historis.
