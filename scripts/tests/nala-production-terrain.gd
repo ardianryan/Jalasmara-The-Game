@@ -6,6 +6,10 @@ var terrain_profile:Dictionary={}
 var previous_terrain_position:=Vector2.INF
 
 func _measure(label:String) -> void:
+	var actual_pose:Dictionary=renderer.actors_3d.counts.get("nalaLowerBody",{})
+	if not bool(actual_pose.get("enabled",false)):
+		super._measure(label)
+		return
 	var expected:=1.0
 	if str(terrain_profile.get("type",""))=="ramp":
 		var a:Vector2=terrain_profile.start
