@@ -1,5 +1,7 @@
 # Status pengembangan
 
+**Local audio candidate, 10 November 2026:** Six owner-supplied Gemini music files and contextual BGM/jingle/UI feedback are integrated. Godot import, 68/68 world checks, 121/121 API tests with disposable remote test services, typecheck, and build passed. This source/PCK has not been pushed or deployed; staging remains the earlier `446abf4` release. [Audio report](reviews/audio-context-integration-2026-11-10.md) records provenance, remaining listening/rights checks, and the larger 86.9 MB local Web PCK.
+
 **Documentation and repository cleanup, 10 November 2026:** Public English README/community/citation/roadmap/TODO/changelog files were added; WorldKit is now published as a separate public tool repository with rights-labeled game screenshots and Gitea CI run 13 success. Thirty-eight patch-equivalent historical branches were retired; 20 candidate branches remain for review. [Package report](reviews/public-documentation-worldkit-2026-11-10.md) and [branch inventory](reviews/branch-retirement-2026-11-10.md) distinguish the kit and docs from the active game build.
 
 

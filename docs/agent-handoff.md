@@ -1,5 +1,9 @@
 # Handoff aktif agent
 
+## Local audio integration candidate — 10 November 2026
+
+[Audio package report](reviews/audio-context-integration-2026-11-10.md): implementation commit `1454bff` on local `main` contains six owner-supplied Gemini music files and credit; contextual BGM, victory-jingle duck/recovery, HUD/dialogue/inventory/homestead/fullscreen click feedback, and the missing SFX ID. Godot import, focused audio context/duck test, 68/68 world checks, 121/121 API tests with disposable SSH-hosted Mongo/Redis, typecheck, and Web build passed. Final local PCK `cb5bd527` is 86,885,700 bytes. This is **not pushed or deployed**; staging remains source `446abf4` / PCK `5c0253f`. Review the report and provenance before release, especially audio rights, listening, and download-size impact.
+
 ## Public documentation, WorldKit, and branch retirement
 
 [Current package](reviews/public-documentation-worldkit-2026-11-10.md): English public documentation was pushed from `main` `d5bf3d935ad015a4fcb35b0c81203b6e05304c18` to all three remotes; WorldKit is published on Gitea/GitHub/GitLab at `9858d9d` with separately licensed game screenshots and Gitea CI run 13 success. Thirty-eight historical patch-equivalent branches were retired while 20 candidate branches remain; remote branch heads are Gitea/GitLab 21 and GitHub 22 including `ci-reports`. Game staging remains source `446abf4` / PCK `5c0253f`; this docs/kit package is not a new game deployment. Read the report and [branch inventory](reviews/branch-retirement-2026-11-10.md) before further merge or cleanup.
