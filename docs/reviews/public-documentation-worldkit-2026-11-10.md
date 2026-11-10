@@ -8,6 +8,8 @@ The owner requested a professional English-language public entry point, communit
 
 The root project remains split-licensed: MIT source code, separately reserved game art/lore, and third-party notices. This package does not relicense assets or distribute reference moodboards. New public prose is English; the existing `LICENSE` text was left intact to avoid silently changing legal terms.
 
+The documentation was committed on `main` as `d5bf3d935ad015a4fcb35b0c81203b6e05304c18` and pushed to Gitea, GitHub, and GitLab. All three remote `main` refs were read back at that SHA. This report's final publication note is a later documentation-only bookkeeping commit. `git diff --cached --check`, local Markdown link resolution, and CFF YAML parsing passed. No runtime suite or new browser/device test was run for these prose-only changes; the last game staging build remains the one identified above.
+
 ## WorldKit repository
 
 The previously private [JalasmaraWorldKit](https://github.com/ardianryan/jalasmara-worldkit) source was updated and published at [Gitea](https://git.ppti.me/ardianryan/jalasmara-worldkit), [GitHub](https://github.com/ardianryan/jalasmara-worldkit), and [GitLab](https://gitlab.com/ardianryan/jalasmara-worldkit). All three repository settings report public. The Gitea repository was created without an initialized commit, then populated from the existing two-commit WorldKit history; default branch is `main`. A new repository-specific Gitea deploy key lives only in the local SSH store and Gitea, not in source or reports. GitHub and GitLab copies receive the same main SHA, `9858d9d0971af5bf105cac51bd8f805f380f52e7`.
@@ -25,7 +27,7 @@ Gitea metadata sets WorldKit `private: false`, but the Gitea instance currently 
 ## Remaining work
 
 - Keep the three WorldKit remotes at one SHA for future changes. Gitea anonymous access requires an instance policy decision outside this repository.
-- Commit and push the same main-documentation SHA to Gitea, GitHub and GitLab. Relative links and `git diff --check` passed locally before commit.
+- Keep the three main-game remotes synchronized after later commits. At publication, Gitea and GitLab each had 21 branch heads and GitHub had 22, including its retained `ci-reports` branch.
 - Review the 20 retained branches individually. Gait and character-audit candidates still have known blockers in the active handoff; do not mass-merge them.
 
 Tools actually used: Git/SSH/Gitea `tea`, GitHub `gh`, GitLab `glab`, Node/npm, Python standard library, Rust/Cargo, Ruby YAML parser, `curl`, and filesystem moves. No image generator, moodboard asset, or new game runtime dependency was used.

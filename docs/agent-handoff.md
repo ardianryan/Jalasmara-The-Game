@@ -2,7 +2,7 @@
 
 ## Public documentation, WorldKit, and branch retirement
 
-[Current package](reviews/public-documentation-worldkit-2026-11-10.md): the public entry documentation was rewritten in English; WorldKit is published on Gitea/GitHub/GitLab with separately licensed game screenshots and Gitea CI run 13 success; 38 historical patch-equivalent branches were retired while 20 candidate branches remain. Game staging remains source `446abf4` / PCK `5c0253f`; this docs/kit package is not a new game deployment. Read the report and [branch inventory](reviews/branch-retirement-2026-11-10.md) before further merge or cleanup.
+[Current package](reviews/public-documentation-worldkit-2026-11-10.md): English public documentation was pushed from `main` `d5bf3d935ad015a4fcb35b0c81203b6e05304c18` to all three remotes; WorldKit is published on Gitea/GitHub/GitLab at `9858d9d` with separately licensed game screenshots and Gitea CI run 13 success. Thirty-eight historical patch-equivalent branches were retired while 20 candidate branches remain; remote branch heads are Gitea/GitLab 21 and GitHub 22 including `ci-reports`. Game staging remains source `446abf4` / PCK `5c0253f`; this docs/kit package is not a new game deployment. Read the report and [branch inventory](reviews/branch-retirement-2026-11-10.md) before further merge or cleanup.
 
 
 ## Rilis staging terbaru: `main` 446abf4

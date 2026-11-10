@@ -80,6 +80,6 @@ The branches below still have unique patches and need integration review. Their 
 
 1. Review the remaining unique commits by changed file, current-tree effect, and acceptance report. Cherry-pick only work that improves the current source and passes focused plus combined tests. Some gait and audit candidates are explicitly on hold in the active handoff.
 2. The two untracked `.uid` files on the final patch-equivalent branch were byte-identical to tracked `main` files, so that branch was retired without losing unique content.
-3. After the documentation and kit work in this package is committed, verify the same `main` SHA on Gitea, GitHub, and GitLab. Do not equate branch cleanup with a new staging deployment.
+3. The documentation commit `d5bf3d935ad015a4fcb35b0c81203b6e05304c18` was read back at the same `main` SHA on Gitea, GitHub, and GitLab. Do not equate branch cleanup with a new staging deployment.
 
 Tools: Git worktree/branch/cherry/ls-remote, Python standard library, and filesystem moves. No third-party merge service or generated asset was used.
