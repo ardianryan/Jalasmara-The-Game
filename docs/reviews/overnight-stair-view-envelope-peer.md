@@ -14,7 +14,7 @@ The gate iterates opaque corners whereas curve construction also includes direct
 
 Character retained `artifacts/godot/nala-terrain-first7-view-envelope-831cf9b/rejected.json` and `samples.jsonl`. The previous future-mask riser failure is no longer the reported rejection. The run now reaches the predicted carried-resume fallback: LEFT uses labelled legacy `stair_clearance`, distance22.75, because current/adjacent-view eligibility is absent. Its actual144 walking contact occurs at accepted75.752014 and body128, observed physics frame769. These are raw transition records; they do not validate intermediate contact poses.
 
-The next RIGHT original EAST swing retains the physical upper-flat target `(1783.889,383.1063)`, duration15.25. At failure, accepted86.593506, phase10.841492, actor `(1780,381.012726)`, body138.841492, RIGHT is still airborne. Its desired NE path-fit attempt is rejected (leading6.717515 versus planned3.181981); the shoe remains EAST after1.3 recorded seconds/74.143616 accepted world units. The exit has not been contacted, so its one-shot handover has not armed.
+The next RIGHT original EAST swing retains the physical upper-flat target `(1783.889,383.1063)`, duration15.25. At failure, accepted86.593506, phase10.841492, actor `(1780,381.012726)`, body138.841492, RIGHT is still airborne. Its desired NE path-fit attempt is rejected (leading6.717515 versus planned3.181981); the shoe remains EAST after1.3 accumulated fixture/render-delta seconds/74.143616 accepted world units. This is not device wall-time cadence. The exit has not been contacted, so its one-shot handover has not armed.
 
 Independent source-length reconstruction identifies the planted **LEFT144/NW** as the limiting leg:
 
