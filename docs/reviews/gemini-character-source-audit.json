@@ -1,0 +1,6866 @@
+{
+  "audit_meta": {
+    "auditor": "Gemini 3.8 Flash (High)",
+    "date": "2026-11-10",
+    "base_commit": "5dd4ac4d2545dfff4a221a5b303ee27bd6cf79aa",
+    "branch": "work/gemini-character-source-audit",
+    "tool_versions": {
+      "python": "3.9.6",
+      "pillow": "11.3.0"
+    },
+    "boundaries": "Offline 2D sprite source audit only; no engine, browser, network, or production atlas modifications."
+  },
+  "summary": {
+    "total_sets_audited": 10,
+    "total_directions_audited": 80,
+    "total_walk_frames_audited": 640,
+    "total_idle_poses_audited": 80,
+    "clean_directions_count": 65,
+    "issues_count": 15,
+    "p0_issues_count": 7,
+    "p1_issues_count": 8,
+    "p2_issues_count": 0
+  },
+  "unknowns": [
+    "Anatomical left/right vs viewer left/right cannot be verified without 3D skeletal landmarks.",
+    "Grip, finger articulation, and wrist joints are below 128x128 resolution threshold; marked unknown.",
+    "Terrain contact slope adaptation, inverse kinematics, and stair tread reach are runtime engine physics, not evaluated in sprite audit.",
+    "Native process animation timing, frame pacing, and actual browser RAF feel require live GPU execution; not evaluated in offline 2D audit."
+  ],
+  "set_summaries": [
+    {
+      "identity": "male_default",
+      "outfit": "daily",
+      "inputs_complete": true,
+      "directions_checked": 8,
+      "issues_count": 3,
+      "p0_count": 2,
+      "p1_count": 1,
+      "p2_count": 0,
+      "clean_count": 5,
+      "sources": [
+        {
+          "path": "assets/source-2d/nala-daily-eightway/source.json",
+          "sha256": "8e65f4e8d22d18060e6b21bf889c558c39631a1c942e66cee65d33e48d9e9c74",
+          "manifest_sha256": null,
+          "sha_matches_manifest": true
+        },
+        {
+          "path": "assets/source-2d/nala-daily-eightway/directions-idle.png",
+          "sha256": "c74e228da57fa795b53b4138b0df3ebfcfff274e75686dcdae691597b7706c4b",
+          "manifest_sha256": null,
+          "sha_matches_manifest": true
+        },
+        {
+          "path": "assets/source-2d/nala-daily-eightway/east.png",
+          "sha256": "9a0322895331678d769a5bb0885ad2308da29fc499c0ec07715c5c94fc8192e9",
+          "manifest_sha256": "9a0322895331678d769a5bb0885ad2308da29fc499c0ec07715c5c94fc8192e9",
+          "sha_matches_manifest": true
+        },
+        {
+          "path": "assets/source-2d/nala-daily-eightway/south_east.png",
+          "sha256": "f7927900d74c79e319395f6e00f5b00031e7528f67a72a5e62f6a6d28de3ace8",
+          "manifest_sha256": "f7927900d74c79e319395f6e00f5b00031e7528f67a72a5e62f6a6d28de3ace8",
+          "sha_matches_manifest": true
+        },
+        {
+          "path": "assets/source-2d/nala-daily-eightway/south.png",
+          "sha256": "8c9fd85d739fbef5138e76ecedb289b57f6037f068afcc509cc51ee75781ba26",
+          "manifest_sha256": "8c9fd85d739fbef5138e76ecedb289b57f6037f068afcc509cc51ee75781ba26",
+          "sha_matches_manifest": true
+        },
+        {
+          "path": "assets/source-2d/nala-daily-eightway/south_west.png",
+          "sha256": "5445b613cab62e359d35be3f9dcf826d891a9d6d408883c2c5b747bddb35304b",
+          "manifest_sha256": "5445b613cab62e359d35be3f9dcf826d891a9d6d408883c2c5b747bddb35304b",
+          "sha_matches_manifest": true
+        },
+        {
+          "path": "assets/source-2d/nala-daily-eightway/west.png",
+          "sha256": "e1f97fb817b5751832aba128ef34a38ae398ac92f7cbeea040b78036234cc036",
+          "manifest_sha256": "e1f97fb817b5751832aba128ef34a38ae398ac92f7cbeea040b78036234cc036",
+          "sha_matches_manifest": true
+        },
+        {
+          "path": "assets/source-2d/nala-daily-eightway/north_west.png",
+          "sha256": "6ea2456ba36308f4519bd9016be11b20229bcfd01fe86ea5bc8f61133bff3d15",
+          "manifest_sha256": "6ea2456ba36308f4519bd9016be11b20229bcfd01fe86ea5bc8f61133bff3d15",
+          "sha_matches_manifest": true
+        },
+        {
+          "path": "assets/source-2d/nala-daily-eightway/north.png",
+          "sha256": "7877cb857c220f4311572221685ae852501cc43d4f579a064ed23ff2dcf42e8b",
+          "manifest_sha256": "7877cb857c220f4311572221685ae852501cc43d4f579a064ed23ff2dcf42e8b",
+          "sha_matches_manifest": true
+        },
+        {
+          "path": "assets/source-2d/nala-daily-eightway/north_east.png",
+          "sha256": "6f76894627af813692bfc16e06c54d7b18984818f1e348119b4641270d8b8bc4",
+          "manifest_sha256": "6f76894627af813692bfc16e06c54d7b18984818f1e348119b4641270d8b8bc4",
+          "sha_matches_manifest": true
+        }
+      ],
+      "gear_cleanliness": {
+        "equipmentBaked_claimed": false,
+        "baked_tank_found": true,
+        "walk_north_tank_spine_pixels": 178,
+        "idle_north_tank_spine_pixels": 265
+      }
+    },
+    {
+      "identity": "male_default",
+      "outfit": "explorer",
+      "inputs_complete": true,
+      "directions_checked": 8,
+      "issues_count": 4,
+      "p0_count": 2,
+      "p1_count": 2,
+      "p2_count": 0,
+      "clean_count": 4,
+      "sources": [
+        {
+          "path": "assets/source-2d/nala-eightway-batch/male-default-explorer-source.png",
+          "sha256": "d34626bbb5f8877469351751bdee4c8b196747a87bc9f62896d036ec61d24ad6",
+          "manifest_sha256": "d34626bbb5f8877469351751bdee4c8b196747a87bc9f62896d036ec61d24ad6",
+          "sha_matches_manifest": true
+        },
+        {
+          "path": "assets/source-2d/nala-eightway-batch/male-default-idle24.png",
+          "sha256": "20214fd64578b4eead51316e66e18a7ace671eb11e2c8288a1ab43a2955854aa",
+          "manifest_sha256": "20214fd64578b4eead51316e66e18a7ace671eb11e2c8288a1ab43a2955854aa",
+          "sha_matches_manifest": true
+        },
+        {
+          "path": "assets/source-2d/nala-eightway-batch/male-default-explorer-north-repair.png",
+          "sha256": "e55ff11f79c1d59941a9dc0126fd0aee8ab26d86f406b01132ec94b7c6cbfeaa",
+          "manifest_sha256": "e55ff11f79c1d59941a9dc0126fd0aee8ab26d86f406b01132ec94b7c6cbfeaa",
+          "sha_matches_manifest": true
+        }
+      ],
+      "gear_cleanliness": {
+        "equipmentBaked_claimed": false,
+        "baked_tank_found": false,
+        "walk_north_tank_spine_pixels": 6,
+        "idle_north_tank_spine_pixels": 4
+      }
+    },
+    {
+      "identity": "male_default",
+      "outfit": "diving",
+      "inputs_complete": true,
+      "directions_checked": 8,
+      "issues_count": 0,
+      "p0_count": 0,
+      "p1_count": 0,
+      "p2_count": 0,
+      "clean_count": 8,
+      "sources": [
+        {
+          "path": "assets/source-2d/nala-eightway-batch/male-default-diving-source.png",
+          "sha256": "6040a3e5da98b903f0cbaea0583c58753b6b5f4d737112d812d5bb37487c0e4f",
+          "manifest_sha256": "6040a3e5da98b903f0cbaea0583c58753b6b5f4d737112d812d5bb37487c0e4f",
+          "sha_matches_manifest": true
+        },
+        {
+          "path": "assets/source-2d/nala-eightway-batch/male-default-idle24.png",
+          "sha256": "20214fd64578b4eead51316e66e18a7ace671eb11e2c8288a1ab43a2955854aa",
+          "manifest_sha256": "20214fd64578b4eead51316e66e18a7ace671eb11e2c8288a1ab43a2955854aa",
+          "sha_matches_manifest": true
+        },
+        {
+          "path": "assets/source-2d/nala-eightway-batch/male-default-diving-north-repair.png",
+          "sha256": "67cfd1fa44ed482365be043c435aa6cc6d5f0b74bf91ee96b29eecffbd38d191",
+          "manifest_sha256": "67cfd1fa44ed482365be043c435aa6cc6d5f0b74bf91ee96b29eecffbd38d191",
+          "sha_matches_manifest": true
+        }
+      ],
+      "gear_cleanliness": {
+        "equipmentBaked_claimed": false,
+        "baked_tank_found": false,
+        "walk_north_tank_spine_pixels": 1,
+        "idle_north_tank_spine_pixels": 4
+      }
+    },
+    {
+      "identity": "female_default",
+      "outfit": "daily",
+      "inputs_complete": true,
+      "directions_checked": 8,
+      "issues_count": 0,
+      "p0_count": 0,
+      "p1_count": 0,
+      "p2_count": 0,
+      "clean_count": 8,
+      "sources": [
+        {
+          "path": "assets/source-2d/nala-eightway-batch/female-default-daily-source.png",
+          "sha256": "8f5c333edb72bd30e9d21bd5c7424e149099aa954829e2c2bb0170406cf1d734",
+          "manifest_sha256": "8f5c333edb72bd30e9d21bd5c7424e149099aa954829e2c2bb0170406cf1d734",
+          "sha_matches_manifest": true
+        },
+        {
+          "path": "assets/source-2d/nala-eightway-batch/female-default-idle24.png",
+          "sha256": "76770fd11a26fcfaceca21247a33201d3f3724389e48da695ad8f7186c5dabea",
+          "manifest_sha256": "76770fd11a26fcfaceca21247a33201d3f3724389e48da695ad8f7186c5dabea",
+          "sha_matches_manifest": true
+        }
+      ],
+      "gear_cleanliness": {
+        "equipmentBaked_claimed": false,
+        "baked_tank_found": true,
+        "walk_north_tank_spine_pixels": 36,
+        "idle_north_tank_spine_pixels": 159
+      }
+    },
+    {
+      "identity": "female_default",
+      "outfit": "explorer",
+      "inputs_complete": true,
+      "directions_checked": 8,
+      "issues_count": 2,
+      "p0_count": 2,
+      "p1_count": 0,
+      "p2_count": 0,
+      "clean_count": 6,
+      "sources": [
+        {
+          "path": "assets/source-2d/nala-eightway-batch/female-default-explorer-source.png",
+          "sha256": "0b896c865684e5e55cc9482eab1a6a35163bd2e91b1696eee45979cd7f1a042b",
+          "manifest_sha256": "0b896c865684e5e55cc9482eab1a6a35163bd2e91b1696eee45979cd7f1a042b",
+          "sha_matches_manifest": true
+        },
+        {
+          "path": "assets/source-2d/nala-eightway-batch/female-default-idle24.png",
+          "sha256": "76770fd11a26fcfaceca21247a33201d3f3724389e48da695ad8f7186c5dabea",
+          "manifest_sha256": "76770fd11a26fcfaceca21247a33201d3f3724389e48da695ad8f7186c5dabea",
+          "sha_matches_manifest": true
+        },
+        {
+          "path": "assets/source-2d/nala-eightway-batch/female-default-explorer-north-repair.png",
+          "sha256": "c1372039aabe520d10302af05811bb0a0c1ba276eb3c98a4f994f18f2d79e49e",
+          "manifest_sha256": "c1372039aabe520d10302af05811bb0a0c1ba276eb3c98a4f994f18f2d79e49e",
+          "sha_matches_manifest": true
+        }
+      ],
+      "gear_cleanliness": {
+        "equipmentBaked_claimed": false,
+        "baked_tank_found": true,
+        "walk_north_tank_spine_pixels": 2,
+        "idle_north_tank_spine_pixels": 75
+      }
+    },
+    {
+      "identity": "female_default",
+      "outfit": "diving",
+      "inputs_complete": true,
+      "directions_checked": 8,
+      "issues_count": 1,
+      "p0_count": 0,
+      "p1_count": 1,
+      "p2_count": 0,
+      "clean_count": 7,
+      "sources": [
+        {
+          "path": "assets/source-2d/nala-eightway-batch/female-default-diving-source.png",
+          "sha256": "7addfd9f4e60908d3eef1559d4c38df2c018ff5e9dd45f2a78f2926f6c431d1b",
+          "manifest_sha256": "7addfd9f4e60908d3eef1559d4c38df2c018ff5e9dd45f2a78f2926f6c431d1b",
+          "sha_matches_manifest": true
+        },
+        {
+          "path": "assets/source-2d/nala-eightway-batch/female-default-idle24.png",
+          "sha256": "76770fd11a26fcfaceca21247a33201d3f3724389e48da695ad8f7186c5dabea",
+          "manifest_sha256": "76770fd11a26fcfaceca21247a33201d3f3724389e48da695ad8f7186c5dabea",
+          "sha_matches_manifest": true
+        },
+        {
+          "path": "assets/source-2d/nala-eightway-batch/female-default-diving-north-repair.png",
+          "sha256": "2c14ed7387f407283777f519126db6e0b05f2d5b59f8453179f873739e06831e",
+          "manifest_sha256": "2c14ed7387f407283777f519126db6e0b05f2d5b59f8453179f873739e06831e",
+          "sha_matches_manifest": true
+        }
+      ],
+      "gear_cleanliness": {
+        "equipmentBaked_claimed": false,
+        "baked_tank_found": false,
+        "walk_north_tank_spine_pixels": 13,
+        "idle_north_tank_spine_pixels": 14
+      }
+    },
+    {
+      "identity": "female_nusantara",
+      "outfit": "daily",
+      "inputs_complete": true,
+      "directions_checked": 8,
+      "issues_count": 0,
+      "p0_count": 0,
+      "p1_count": 0,
+      "p2_count": 0,
+      "clean_count": 8,
+      "sources": [
+        {
+          "path": "assets/source-2d/nala-eightway-batch/female-nusantara-daily-source.png",
+          "sha256": "e8f0a240c7a1d57fc80455ce5eabf675d402250dea68b980210ce3ff5aa3a0cd",
+          "manifest_sha256": "e8f0a240c7a1d57fc80455ce5eabf675d402250dea68b980210ce3ff5aa3a0cd",
+          "sha_matches_manifest": true
+        },
+        {
+          "path": "assets/source-2d/nala-eightway-batch/female-nusantara-idle24.png",
+          "sha256": "2a21f2c0bfdc0a3e420484cc55f7e178e6cca052dd48db9e3ea92fb412e6c552",
+          "manifest_sha256": "2a21f2c0bfdc0a3e420484cc55f7e178e6cca052dd48db9e3ea92fb412e6c552",
+          "sha_matches_manifest": true
+        }
+      ],
+      "gear_cleanliness": {
+        "equipmentBaked_claimed": false,
+        "baked_tank_found": true,
+        "walk_north_tank_spine_pixels": 18,
+        "idle_north_tank_spine_pixels": 270
+      }
+    },
+    {
+      "identity": "female_nusantara",
+      "outfit": "explorer",
+      "inputs_complete": true,
+      "directions_checked": 8,
+      "issues_count": 2,
+      "p0_count": 0,
+      "p1_count": 2,
+      "p2_count": 0,
+      "clean_count": 6,
+      "sources": [
+        {
+          "path": "assets/source-2d/nala-eightway-batch/female-nusantara-explorer-source.png",
+          "sha256": "c23696e9974d6757f77f341ca62f25891b4bc817c069eca7c103d523c96f8814",
+          "manifest_sha256": "c23696e9974d6757f77f341ca62f25891b4bc817c069eca7c103d523c96f8814",
+          "sha_matches_manifest": true
+        },
+        {
+          "path": "assets/source-2d/nala-eightway-batch/female-nusantara-idle24.png",
+          "sha256": "2a21f2c0bfdc0a3e420484cc55f7e178e6cca052dd48db9e3ea92fb412e6c552",
+          "manifest_sha256": "2a21f2c0bfdc0a3e420484cc55f7e178e6cca052dd48db9e3ea92fb412e6c552",
+          "sha_matches_manifest": true
+        }
+      ],
+      "gear_cleanliness": {
+        "equipmentBaked_claimed": false,
+        "baked_tank_found": true,
+        "walk_north_tank_spine_pixels": 46,
+        "idle_north_tank_spine_pixels": 97
+      }
+    },
+    {
+      "identity": "female_nusantara",
+      "outfit": "diving",
+      "inputs_complete": true,
+      "directions_checked": 8,
+      "issues_count": 1,
+      "p0_count": 0,
+      "p1_count": 1,
+      "p2_count": 0,
+      "clean_count": 7,
+      "sources": [
+        {
+          "path": "assets/source-2d/nala-eightway-batch/female-nusantara-diving-source.png",
+          "sha256": "3d266b9a6d7c455bcae54b4702082a3dc77e0020ebe360c18be417fd985e5c59",
+          "manifest_sha256": "3d266b9a6d7c455bcae54b4702082a3dc77e0020ebe360c18be417fd985e5c59",
+          "sha_matches_manifest": true
+        },
+        {
+          "path": "assets/source-2d/nala-eightway-batch/female-nusantara-idle24.png",
+          "sha256": "2a21f2c0bfdc0a3e420484cc55f7e178e6cca052dd48db9e3ea92fb412e6c552",
+          "manifest_sha256": "2a21f2c0bfdc0a3e420484cc55f7e178e6cca052dd48db9e3ea92fb412e6c552",
+          "sha_matches_manifest": true
+        },
+        {
+          "path": "assets/source-2d/nala-eightway-batch/female-nusantara-diving-north-repair.png",
+          "sha256": "16fa4661e2e2865e8c7b3bc83d97ddb054a7f5b5643af631a6b3f2119e1173b4",
+          "manifest_sha256": "16fa4661e2e2865e8c7b3bc83d97ddb054a7f5b5643af631a6b3f2119e1173b4",
+          "sha_matches_manifest": true
+        }
+      ],
+      "gear_cleanliness": {
+        "equipmentBaked_claimed": false,
+        "baked_tank_found": false,
+        "walk_north_tank_spine_pixels": 14,
+        "idle_north_tank_spine_pixels": 16
+      }
+    },
+    {
+      "identity": "male_nusantara",
+      "outfit": "diving",
+      "inputs_complete": true,
+      "directions_checked": 8,
+      "issues_count": 2,
+      "p0_count": 1,
+      "p1_count": 1,
+      "p2_count": 0,
+      "clean_count": 6,
+      "sources": [
+        {
+          "path": "assets/source-2d/nala-eightway-batch/male-nusantara-diving-source.png",
+          "sha256": "fe71155b1b7214b4eb4d9b28539e9eb277200eddb2fcd08e0850808de7fd93a8",
+          "manifest_sha256": "fe71155b1b7214b4eb4d9b28539e9eb277200eddb2fcd08e0850808de7fd93a8",
+          "sha_matches_manifest": true
+        },
+        {
+          "path": "assets/source-2d/nala-eightway-batch/male-nusantara-idle24.png",
+          "sha256": "1fd98d44c72597b5a1e19e4d70e0f3ba806b69a676f2dfb28e1580476a6aa621",
+          "manifest_sha256": "1fd98d44c72597b5a1e19e4d70e0f3ba806b69a676f2dfb28e1580476a6aa621",
+          "sha_matches_manifest": true
+        },
+        {
+          "path": "assets/source-2d/nala-eightway-batch/male-nusantara-diving-north-repair.png",
+          "sha256": "4e3ff54ee6576bf5ce392f2393e69b4b6fc9ccde3048a9199fe815efcac1f5bf",
+          "manifest_sha256": "4e3ff54ee6576bf5ce392f2393e69b4b6fc9ccde3048a9199fe815efcac1f5bf",
+          "sha_matches_manifest": true
+        }
+      ],
+      "gear_cleanliness": {
+        "equipmentBaked_claimed": false,
+        "baked_tank_found": false,
+        "walk_north_tank_spine_pixels": 0,
+        "idle_north_tank_spine_pixels": 12
+      }
+    }
+  ],
+  "records": [
+    {
+      "identity": "male_default",
+      "outfit": "daily",
+      "direction_index": 0,
+      "direction_name": "east",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "ba72f177ae0fc456120d623d17e155d5fd66ada874a984c65c6f8590d597bdc4",
+        "bbox": [
+          48,
+          18,
+          80,
+          104
+        ],
+        "facing": "RIGHT",
+        "offset": 2.42,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "ab6aa12b7081bd2328fbec770e6ed63a475c9399c9280ceda7ebd8179ab8c80f",
+          "9919fb534394849b69a092f04799a920b041fc2baca79ff4c025277767aba4ba",
+          "3bcbed80d0b422d8ea2b61a6f249de778bb7bfa0aa1c1bce5a9b07afc8e1a1a8",
+          "33873770833e4042f5d9fc517ca0cbbf7318d4c70b1bf210d9dd702aa8444717",
+          "9abe89612022dd8e9e580fdb907f4b13f6965bc47128f6e4761793736501e218",
+          "a104bba15184e9b4c36075204676dbc08420245c316499eb1cad1530df563c00",
+          "3ff539b571025ac6211306ca55bd2483fbae41a3bdf89d86b61a87da4a67c986",
+          "4def4cfa1ba7462f28b4df73c0735ca52b1a19d221a90abe16665a9c85b3f2f8"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "CENTER",
+          "RIGHT",
+          "CENTER",
+          "RIGHT",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "RIGHT"
+        ],
+        "offsets": [
+          0.55,
+          0.82,
+          0.36,
+          0.99,
+          0.01,
+          0.47,
+          0.31,
+          0.94
+        ],
+        "spreads": [
+          47,
+          37,
+          18,
+          25,
+          48,
+          36,
+          15,
+          21
+        ],
+        "bottoms": [
+          104,
+          104,
+          104,
+          105,
+          104,
+          103,
+          104,
+          104
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "male_default",
+      "outfit": "daily",
+      "direction_index": 1,
+      "direction_name": "south_east",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "2cafdde74aace76093b831ddc75a3352eaa164d6ba5b9a93db11858479f2e6ff",
+        "bbox": [
+          46,
+          18,
+          82,
+          104
+        ],
+        "facing": "RIGHT",
+        "offset": 1.93,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "c1cc1fd0a74e2296ca6a320164d2d52e19460aaa2810a9e799387a3ef7df85ac",
+          "cb66933d87b82a327dd18fbb87e8738ad7656679b68dbc594bb5c295eb495310",
+          "9c464fbe5608aa9603b8aa15afeea9fadaf0ff03ef593d3ea3a6b14a6a33a621",
+          "09a98dfb780437f8aca92668395cb10aaf7a526404f923ee88134f4fa34c767f",
+          "e13059d7a047d01550a321812ba5599ad9c17bcf0f5ee54b0dbafd52f68c4810",
+          "4ca5732607d27a93fc1f1c985a2af2a8fd4dc4f5d74358db9624dfacc1bf7c30",
+          "b232713f5c07e4a63acfd205635851ae7c355dc0eb453fdf18225a8b646c5ad6",
+          "35c2ce44733d7aa91a4f32af64f80ccf4804ec047ab03ce75282f7b80b4a619b"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT"
+        ],
+        "offsets": [
+          1.94,
+          1.87,
+          1.84,
+          1.97,
+          1.91,
+          1.58,
+          2.21,
+          1.19
+        ],
+        "spreads": [
+          44,
+          32,
+          17,
+          21,
+          46,
+          38,
+          19,
+          20
+        ],
+        "bottoms": [
+          104,
+          104,
+          104,
+          102,
+          103,
+          103,
+          104,
+          103
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "male_default",
+      "outfit": "daily",
+      "direction_index": 2,
+      "direction_name": "south",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "46dcdea24ee157490ff7b6eec2d452b9d97937fdb8be70130d2fd9c10dc99bc6",
+        "bbox": [
+          48,
+          18,
+          81,
+          104
+        ],
+        "facing": "CENTER",
+        "offset": 0.16,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "8417846a1dfd3b51bc9706246710a2b763a836d99c11bcc952e4b53cd4048b67",
+          "33a4730883c56a6092bf0c31ef185493de5192291ccd7c02b69afa404a9129f0",
+          "768ef66b547440e95d9194a405ba68bd43bfe8432206bcd2ecbb9662d83bc1cd",
+          "8e70f9f1b3429b6c7ad621975839f3c24c54543fbd0ef7f90993a7652e01cf63",
+          "d1d34bd34a596c4138ce023c745ac9acad75c2eaf603664efe8de5db9b71a876",
+          "f34adb8fb6f4bb6e991845f8183c01b2bb04f369bda35173e3095b5d2ad06bdb",
+          "b716a7d653227d9499b61a4d7ba7158882866be7755c8dd4d15038efe2d17e9b",
+          "c4eb983b1383d1ecf5605d45642883a3da1d731fe10ccb87ccd8b8c7d737d3bb"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "CENTER",
+          "LEFT",
+          "LEFT",
+          "CENTER",
+          "CENTER"
+        ],
+        "offsets": [
+          -1.13,
+          -1.19,
+          -0.81,
+          -0.75,
+          -0.91,
+          -1.43,
+          -0.58,
+          -0.75
+        ],
+        "spreads": [
+          13,
+          13,
+          10,
+          14,
+          16,
+          18,
+          10,
+          12
+        ],
+        "bottoms": [
+          105,
+          105,
+          104,
+          103,
+          104,
+          104,
+          103,
+          103
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "male_default",
+      "outfit": "daily",
+      "direction_index": 3,
+      "direction_name": "south_west",
+      "status": "issue",
+      "priority": "P1",
+      "idle": {
+        "sha256": "ad6759ed5e6ddcef0f26cc2190b453bad00b5455e8f1ebce43c53f240cc14161",
+        "bbox": [
+          47,
+          18,
+          81,
+          104
+        ],
+        "facing": "LEFT",
+        "offset": -1.98,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "4c8170eab5423c098e681a0185ffe09d2ec41743ae61895679722400a30fd12c",
+          "be581cbb86f6cfca460cab9ac177aa01bacc4649cacef64944c6a7a68a0fd6af",
+          "c610d20e0903cfe954eeb16900879328df69ffb08ade8e1f7c8dd3c160881db5",
+          "d301fcaf141951863960eb6d9d8a1c12ad8ef2bab578da61bed32fed886c4131",
+          "943aed95b3beb20352ec22297f1c58b9ac34d845ef634fa7142eed982a4897cc",
+          "7e5a5d33b5ab042033c3f816469800fb0b0cd5a4cb51a025fe05a33c7f9e30ee",
+          "34df61591758d4a87f650a593abbaab90934ebc220526081a4df78c293700b79",
+          "af902d623ad5e8f269c72bb6c8c69036c77d397ce8e0e1e8cafce68ae1375cca"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT"
+        ],
+        "offsets": [
+          -3.3,
+          -2.11,
+          -2.83,
+          -3.37,
+          -2.3,
+          -2.49,
+          -2.56,
+          -3.4
+        ],
+        "spreads": [
+          45,
+          36,
+          27,
+          25,
+          42,
+          31,
+          18,
+          31
+        ],
+        "bottoms": [
+          104,
+          104,
+          104,
+          103,
+          103,
+          104,
+          105,
+          99
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [
+        {
+          "category": "loop_discontinuity",
+          "priority": "P1",
+          "description": "Frame 7 foot bottom lifts to y=99 while frame 0 rests at y=104, producing a 5-pixel vertical loop jump on frame 7 -> 0 transition.",
+          "local_cell_bbox": [
+            45,
+            99,
+            85,
+            105
+          ],
+          "atlas_bbox": [
+            941,
+            483,
+            981,
+            489
+          ]
+        }
+      ],
+      "action_recommended": "Adjust baseline normalization or author transition frame 7 to match heel baseline 104.",
+      "evidence_path": "docs/visual/gemini-character-source-audit/proof-male-default-daily-nw-ne-swap.png"
+    },
+    {
+      "identity": "male_default",
+      "outfit": "daily",
+      "direction_index": 4,
+      "direction_name": "west",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "2ebf837caca1b65805041920283375d52398a628273ca17fbfde22b78bfffd40",
+        "bbox": [
+          49,
+          18,
+          80,
+          104
+        ],
+        "facing": "LEFT",
+        "offset": -2.74,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "98f6f038f145bdd1ad0dd0bd31da87c0fbcedc79ae3757ff49bdb0b2ae2af63f",
+          "9384eb3703c1abfb30b341c0caafbb52151c59e8411c23c9bab58c6ef8982eb6",
+          "c04a48871a89d2e802cf632995ebbbd89893281b5dac06917d78e4ed7293267b",
+          "1348fc09c1d92ebb6f9ca0eead8de610698a9ff955a1a07a68b4163624118ab1",
+          "b9c14821bc33ca27b1090d7ab65e06da7d6658af739f39efe3a26661d614b400",
+          "9816d913a1a01f19670ef0533bd20af84b47efd83e95c20eb9986e73f088c509",
+          "78fe7e3081ff31a8e21de3c188860c556178ec6b7e944fe797b19c57d8d121b6",
+          "7473c3c3c3949d58a2863c477b52baf182f495f65dd5671460fd11c655f04645"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT"
+        ],
+        "offsets": [
+          -2.64,
+          -2.59,
+          -2.66,
+          -3.79,
+          -2.89,
+          -3.01,
+          -2.55,
+          -2.99
+        ],
+        "spreads": [
+          51,
+          35,
+          17,
+          13,
+          51,
+          34,
+          19,
+          24
+        ],
+        "bottoms": [
+          103,
+          103,
+          103,
+          104,
+          103,
+          103,
+          102,
+          104
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "male_default",
+      "outfit": "daily",
+      "direction_index": 5,
+      "direction_name": "north_west",
+      "status": "issue",
+      "priority": "P0",
+      "idle": {
+        "sha256": "91795ade17604b245bd16635a2e9a9379e2e54a757e4bc5e27be5f215257293f",
+        "bbox": [
+          46,
+          18,
+          82,
+          104
+        ],
+        "facing": "RIGHT",
+        "offset": 1.39,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "c51e52cbecd487fcbf588385e6418fa0477b81637257fc48babcc6fb4038aaef",
+          "0fac74285b7dd5569033190e3b05cdf299bbab851c2d601f59c35bdf398ff8e8",
+          "877d3ca646ea0c80c0e48783654ce3ccde440708eb9c8400d068ab83d4d1c9c4",
+          "101292b612c95fdffea2dfccafdb211713ebcc7dacde5ddd9487f31f68ee9d09",
+          "b2b0380732f94f393ca84e7027c0854cdcbea80ca0b5b6304f37156c94a37f2b",
+          "79363956f8b7d84c1091c22372358752e683e44d12e22449b81d10b74f92c0ba",
+          "9346215bbf47035b0d4c3a835ea37789a61c46dce19ed8249153933c7bf3b7d4",
+          "60998ebd2f5726a0c7f60a7f14a52739c6e9ceb538763abca2287ac89eb89bcc"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT"
+        ],
+        "offsets": [
+          1.17,
+          1.13,
+          1.76,
+          1.73,
+          1.51,
+          1.83,
+          1.84,
+          1.71
+        ],
+        "spreads": [
+          45,
+          31,
+          17,
+          13,
+          33,
+          28,
+          14,
+          22
+        ],
+        "bottoms": [
+          104,
+          104,
+          104,
+          105,
+          106,
+          104,
+          103,
+          104
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [
+        {
+          "category": "direction_inversion",
+          "priority": "P0",
+          "description": "WALK row 5 (f0..f7) and IDLE col 5 face viewer-RIGHT (+X, offset +1.4) instead of viewer-LEFT. Back of head on left, face profile and reaching arm on right. Swapped with North-East.",
+          "local_cell_bbox": [
+            66,
+            26,
+            80,
+            42
+          ],
+          "atlas_bbox": [
+            66,
+            666,
+            80,
+            682
+          ]
+        }
+      ],
+      "action_recommended": "Author dedicated North-West rear-left view (or swap and mirror normal candidate) with head facing upper-left.",
+      "evidence_path": "docs/visual/gemini-character-source-audit/proof-male-default-daily-nw-ne-swap.png"
+    },
+    {
+      "identity": "male_default",
+      "outfit": "daily",
+      "direction_index": 6,
+      "direction_name": "north",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "23bba948b85d609af842dd1680893ec6309bb7b27739a335a857f4c29c5bb605",
+        "bbox": [
+          47,
+          18,
+          81,
+          104
+        ],
+        "facing": "CENTER",
+        "offset": 0.07,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "79b86eabc562840694d590cb21226a1828c53056935a8a4432c048487dd312b9",
+          "1d481b93afb684d8150eeb3db12e9104c50930b513ee319bd0c76d58ad49d75a",
+          "b6212edcf3cdb9fd440f42d08439d4db984428bf28a902733d31b496b2154126",
+          "d72ae12eda25ca4ead9076a357def3a6236f6da430f7cf36b118723f63e3aaa9",
+          "fc8990c00a01058eea1d4dd3a6dce2139fda941979089b6eacbc322a9cb1d04b",
+          "93051093ae732c1ad4605e95a51433e9dde1144abeb4f243891a468a2fdb649c",
+          "8c328db7fa6e2e0d3cc64e5161f468be77df5632e13ef0081cd3ba57833aa3e1",
+          "e6c2b4d95575d1c20dfbdc2913cdd7bd30c38c2e16683dbcd6bffee8922f7f7b"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER"
+        ],
+        "offsets": [
+          -0.54,
+          0.48,
+          0.03,
+          0.19,
+          0.11,
+          0.01,
+          -0.11,
+          0.18
+        ],
+        "spreads": [
+          18,
+          17,
+          16,
+          14,
+          15,
+          18,
+          16,
+          12
+        ],
+        "bottoms": [
+          106,
+          105,
+          104,
+          104,
+          104,
+          104,
+          105,
+          104
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "male_default",
+      "outfit": "daily",
+      "direction_index": 7,
+      "direction_name": "north_east",
+      "status": "issue",
+      "priority": "P0",
+      "idle": {
+        "sha256": "94dc7c36c672cfa892aaf822aa9f024f1e8698159987e69fe9dcfbce43ea2142",
+        "bbox": [
+          47,
+          18,
+          81,
+          104
+        ],
+        "facing": "LEFT",
+        "offset": -1.09,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "92c87c7aa39a011b5bc8037473447d278929c9711b709e1e8f7fcbd1671ded0f",
+          "fef3cd6e19326571605f13b5d51edff683e91693559330b790a55ba368e9eef3",
+          "b52ac0cd6f9f63098ab9a703c2ee9a66b94e1ddec77368adc6a4072b98e003d5",
+          "78a2e21fc846464bfca11547cc344111a96ed1d3547f66edd980eb1cc1ab7d68",
+          "b36835091a435ab38941fdebcbe0a7016c03e0d3d2d841b42f342877ff7d9dcb",
+          "8817a211020917a92c15035b65f9103fb4e1df9ed86150dec320b6986912ed77",
+          "8fadcf9f099d3982c71b175de2b24d6d6f8ead680af1003a9e98a998e8371739",
+          "e20ff40b2fdbd781463ad4dd42a9903e9faf7b4dac076e00923acd7ea36d83a3"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "LEFT",
+          "LEFT",
+          "CENTER",
+          "CENTER",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT"
+        ],
+        "offsets": [
+          -1.45,
+          -1.88,
+          -0.63,
+          -0.43,
+          -1.02,
+          -1.47,
+          -0.82,
+          -1.07
+        ],
+        "spreads": [
+          36,
+          27,
+          17,
+          11,
+          34,
+          27,
+          16,
+          12
+        ],
+        "bottoms": [
+          106,
+          105,
+          104,
+          103,
+          102,
+          103,
+          103,
+          102
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [
+        {
+          "category": "direction_inversion",
+          "priority": "P0",
+          "description": "WALK row 7 (f0..f7) and IDLE col 7 face viewer-LEFT (-X, offset -1.1) instead of viewer-RIGHT. Back of head on right, face profile and reaching arm on left. Swapped with North-West.",
+          "local_cell_bbox": [
+            48,
+            26,
+            62,
+            42
+          ],
+          "atlas_bbox": [
+            48,
+            922,
+            62,
+            938
+          ]
+        }
+      ],
+      "action_recommended": "Author dedicated North-East rear-right view with head facing upper-right.",
+      "evidence_path": "docs/visual/gemini-character-source-audit/proof-male-default-daily-nw-ne-swap.png"
+    },
+    {
+      "identity": "male_default",
+      "outfit": "explorer",
+      "direction_index": 0,
+      "direction_name": "east",
+      "status": "issue",
+      "priority": "P1",
+      "idle": {
+        "sha256": "f536ecbda6250568a0beee5233193d46bdd41ad49811340b097455841e148d33",
+        "bbox": [
+          47,
+          18,
+          82,
+          104
+        ],
+        "facing": "RIGHT",
+        "offset": 1.66,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "de5f2e044c208b65fe27d2009374042ab250a12c75a9c0489fbb9a717c84293a",
+          "0f28dfea2b99ef3ebb7e393141aea9fe218d66e72f6e3cd8a79025ec36f867b9",
+          "c8656575f34e4f256bb4d405aa9d60792dfc3cd01c9d903ce5f3441b8dad5bbd",
+          "892c8cdac961c30cc1d033656b10a1bbcebac2bc74d9878280ab7e93c19068c9",
+          "68a292de7c59b7aff90b62e9df6e628fc1a7b145582567033ba891a427a5d2f1",
+          "7181da0795768f7eaa2e214dcd3908eaf60820d12a5d51235050f917c352a9b5",
+          "dd762e3396f03ac2140adbd10795bc498038ad75425baa96b43a8865a51d1e65",
+          "ecb942f645c3ac1b448ce0a9a07bdb7dce63b8d858440dfaac6abcddffc4d821"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "LEFT",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER"
+        ],
+        "offsets": [
+          0.06,
+          0.59,
+          0.43,
+          -1.21,
+          0.08,
+          0.12,
+          -0.17,
+          0.25
+        ],
+        "spreads": [
+          51,
+          42,
+          18,
+          29,
+          52,
+          37,
+          17,
+          23
+        ],
+        "bottoms": [
+          103,
+          103,
+          105,
+          104,
+          103,
+          103,
+          105,
+          104
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [
+        {
+          "category": "facing_drift",
+          "priority": "P1",
+          "description": "WALK frames drift towards center/left profile (offset 0.06) rather than maintaining strong viewer-right facing.",
+          "local_cell_bbox": [
+            55,
+            24,
+            75,
+            45
+          ],
+          "atlas_bbox": [
+            55,
+            24,
+            75,
+            45
+          ]
+        }
+      ],
+      "action_recommended": "Investigate directional conditioning prompt/authoring to maintain clean East profile.",
+      "evidence_path": null
+    },
+    {
+      "identity": "male_default",
+      "outfit": "explorer",
+      "direction_index": 1,
+      "direction_name": "south_east",
+      "status": "issue",
+      "priority": "P1",
+      "idle": {
+        "sha256": "a9d0ba30e7b5de4a6d234cc6345537ecb6bff696db8fb6f81a1f6fe00fe2a9f7",
+        "bbox": [
+          45,
+          18,
+          83,
+          104
+        ],
+        "facing": "RIGHT",
+        "offset": 1.27,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "51c012390120450280e7bee1905367749658820e81301e655fe397a9ebeda6e2",
+          "7939c0656dc148e5f953d777b4c83d2625cd7107f258ab903eca01c65b2ac464",
+          "bd46af546410c84fc2dcca2c756fbab6903c8794e6306ef2b3095cca32020f0d",
+          "18b7080abbf3118559409e9c783dfb0c861a4807a4087d80ba0e6d0a6ce5f8cb",
+          "b26769f5060431763804bc1df9d1e903fe35c981cd3ce41ba81965899a904e0e",
+          "1d43fcc6bb3778acec060f75aba6ac351f074cc27875dde47490d54786d7c11d",
+          "b1d24c0f50789db283b64b7513c1132480319d881baa6d2a821073cb1774410b",
+          "277c76850f4033ed405f9116d2ce47be4220f9ddcf84f7b9db04a1137e18c7bc"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "LEFT",
+          "CENTER"
+        ],
+        "offsets": [
+          -0.1,
+          0.09,
+          -0.61,
+          -0.36,
+          0.41,
+          -0.18,
+          -1.75,
+          0.06
+        ],
+        "spreads": [
+          48,
+          36,
+          19,
+          20,
+          49,
+          40,
+          19,
+          22
+        ],
+        "bottoms": [
+          104,
+          104,
+          106,
+          103,
+          104,
+          104,
+          105,
+          104
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [
+        {
+          "category": "facing_drift",
+          "priority": "P1",
+          "description": "WALK frames drift towards center/left profile (offset -0.1) rather than maintaining strong viewer-right facing.",
+          "local_cell_bbox": [
+            55,
+            24,
+            75,
+            45
+          ],
+          "atlas_bbox": [
+            55,
+            152,
+            75,
+            173
+          ]
+        }
+      ],
+      "action_recommended": "Investigate directional conditioning prompt/authoring to maintain clean East profile.",
+      "evidence_path": null
+    },
+    {
+      "identity": "male_default",
+      "outfit": "explorer",
+      "direction_index": 2,
+      "direction_name": "south",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "add89d8a10ca33a3aa86e767bae7a84a3a16c6c8111658bfd8bb41ae450d04bb",
+        "bbox": [
+          48,
+          18,
+          81,
+          104
+        ],
+        "facing": "CENTER",
+        "offset": 0.13,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "c6a17f45ce30f1e7ad1078cea10aca06745d487eb2554004a0a42fd786e5b70c",
+          "9db6ea2f114dc52deed3acc98403b8b3ba0f537aa7d4f82e56c932098cf72f6c",
+          "1b05728d0c3bf8833c645ffe829953aae91bb455e312bb104b4aefcab99117cf",
+          "68b1edd413bb15c77e82a14ce633aa20e4f3fc8c6cf9c768cb0a3ee1e8e4aee8",
+          "b4bf0f147403bbe86307ddba3f947e13892d4fcc55fc68e4fdfdc799a832cc10",
+          "cd7a4a17e30434c476bbe2e9060b2162a0039aaba42a003d77240a4fd0264457",
+          "d18eae898e6a4a7a73987d297c3ae22f5be8a546696c99bec92a125fada6b3ee",
+          "8c9f8cfe7001000d3c4db2d45e5d568839eadc198e974b35024a51319ec0e8ab"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "CENTER",
+          "LEFT",
+          "CENTER",
+          "LEFT",
+          "CENTER",
+          "LEFT",
+          "LEFT",
+          "LEFT"
+        ],
+        "offsets": [
+          -0.56,
+          -1.05,
+          -0.51,
+          -0.84,
+          -0.51,
+          -1.33,
+          -0.88,
+          -0.87
+        ],
+        "spreads": [
+          13,
+          15,
+          12,
+          18,
+          17,
+          19,
+          12,
+          17
+        ],
+        "bottoms": [
+          104,
+          105,
+          105,
+          104,
+          105,
+          105,
+          104,
+          104
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "male_default",
+      "outfit": "explorer",
+      "direction_index": 3,
+      "direction_name": "south_west",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "815468752cf9aa84f1dbc25831842d8e8218062733117be2cc14750383ce8461",
+        "bbox": [
+          45,
+          18,
+          83,
+          104
+        ],
+        "facing": "LEFT",
+        "offset": -2.78,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "e722d88cf4a9407eb4bfda997641a6ce1438da343daa647a3106cf8be7b9e446",
+          "969e90e734aee937e2933ee70a8bbd5c574d8fcf61120db5fc99c89d301a8eff",
+          "ee34f364d516085fbda0918ad54a9a1d7821b04d5f51ecca41d4c1203ba46d90",
+          "69481e1c8d7a9586d892b1796c14673822f3cedfcdc5d3074dacc98434fecc1f",
+          "4ec9fee2f1b38eb4ff46f58f076ba7f7940e792071d085b8b5b43b9d44093475",
+          "f24490050d2a8d9e40e12b01f94b08e4e002d295f001e4fca38b2bd49d4d8a25",
+          "69fa772d58b030714e536c467ef0bd8e4461cb0f8ae9e010255067ca73e561d5",
+          "7e4d847b7bb4826c39e2844d65728b227d113f15e09a836d0abbaeb869797832"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER"
+        ],
+        "offsets": [
+          0.66,
+          0.38,
+          -0.17,
+          0.6,
+          0.47,
+          0.69,
+          -0.34,
+          -0.61
+        ],
+        "spreads": [
+          48,
+          36,
+          32,
+          28,
+          48,
+          32,
+          20,
+          35
+        ],
+        "bottoms": [
+          104,
+          104,
+          104,
+          104,
+          104,
+          105,
+          105,
+          101
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "male_default",
+      "outfit": "explorer",
+      "direction_index": 4,
+      "direction_name": "west",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "4a65b033e8fbc4b716fa0befa3e5d910225e144fbecf6ecd4431700442171f19",
+        "bbox": [
+          48,
+          18,
+          81,
+          104
+        ],
+        "facing": "LEFT",
+        "offset": -2.21,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "0868145afb052ea00b67cc6785d1f5ffa5fc65de4b8572c3f14a447748a57c0c",
+          "3ed921394f03a04317b04ad09e1d20c12f295ade68979b373dc904e79e818ac0",
+          "1bbd9dc8a4cf2b6e7809d63256614292ac2ac86305479a7fcd94d082dea6fc4c",
+          "d99c87c92542063e9878aedf3977b947bf989a87b1e8faeb46c5cd7c5b1f26d0",
+          "735bf77f16feb2e301756426b46a3a7e54896e07629dfefc46c3d1805ee2cc13",
+          "95e13d843a02ed9cb822b72af99b0a583b857ea3c29044097d0fea0d952f620d",
+          "7cc9f82dbed4a52afda4448afc8be652434e12327b4977e03687334a779d18f0",
+          "e1069684ee0d42f41e3cd96aa39ef962d5e445f54f5960e5762f4a5f404c47f0"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "LEFT",
+          "CENTER",
+          "LEFT",
+          "CENTER"
+        ],
+        "offsets": [
+          -0.71,
+          -0.65,
+          -0.28,
+          -0.18,
+          -0.9,
+          -0.6,
+          -0.89,
+          -0.13
+        ],
+        "spreads": [
+          50,
+          36,
+          19,
+          15,
+          51,
+          35,
+          16,
+          26
+        ],
+        "bottoms": [
+          104,
+          105,
+          105,
+          105,
+          104,
+          105,
+          105,
+          105
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "male_default",
+      "outfit": "explorer",
+      "direction_index": 5,
+      "direction_name": "north_west",
+      "status": "issue",
+      "priority": "P0",
+      "idle": {
+        "sha256": "780f031a35e0c50fd930b1b29c9acbce2b99d018ca3f7665216e43cadf9a1c4b",
+        "bbox": [
+          46,
+          18,
+          82,
+          104
+        ],
+        "facing": "CENTER",
+        "offset": 0.39,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "281546171e85a5fd6e79fc2f0422c31b80e4a7aa5b137fa68b9932e41ada4521",
+          "cdf5b3242c70b01701ff4f31de7f1550dea0ca9ce011df13e0ccb18e0d22e6c7",
+          "d7709c9c2630b6276e4698fe6982d7f5f6f2bbf521606c1d88105b55b284b918",
+          "0ce6bab7534b89441c9a1e628ed8cdf6f273fc42574fb67c5b5063095a02e9f4",
+          "cd8774fb8ffa3fbd25f615455d6122f9c72e1eb125e0c4eb0acf850ec53324d8",
+          "d293e163196d9b660f2125ad86d660cbded614fe776b27e521a8bda11dfe5068",
+          "db9d8237c752a7e9b2434c416640cd031eca33a453e86dcd4472dee9df72adf0",
+          "8e02fa9871a4eed3fd835b294e4b39f869e7a7dd94d2fc54ea3288138acb5252"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "RIGHT",
+          "RIGHT",
+          "CENTER",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT"
+        ],
+        "offsets": [
+          1.05,
+          1.35,
+          0.42,
+          1.49,
+          1.48,
+          2.04,
+          1.38,
+          1.54
+        ],
+        "spreads": [
+          15,
+          17,
+          14,
+          16,
+          14,
+          17,
+          17,
+          14
+        ],
+        "bottoms": [
+          105,
+          105,
+          104,
+          104,
+          105,
+          105,
+          105,
+          105
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [
+        {
+          "category": "direction_inversion_and_stride_collapse",
+          "priority": "P0",
+          "description": "WALK row 5 faces viewer-RIGHT (+X, offset +1.1) across all 8 walk frames, inverted from canonical NW. Stride is collapsed to 14-17px (shuffling in place vs 51px in East).",
+          "local_cell_bbox": [
+            64,
+            24,
+            78,
+            42
+          ],
+          "atlas_bbox": [
+            64,
+            664,
+            78,
+            682
+          ]
+        }
+      ],
+      "action_recommended": "Re-author row 5 from scratch with correct upper-left facing and full 48-52px contact stride.",
+      "evidence_path": "docs/visual/gemini-character-source-audit/proof-male-default-explorer-nw-ne-inversion.png"
+    },
+    {
+      "identity": "male_default",
+      "outfit": "explorer",
+      "direction_index": 6,
+      "direction_name": "north",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "67d41e6e57a0210effdfdbd757dfca33e70a697d8885bf929ed7925cdebb3912",
+        "bbox": [
+          47,
+          18,
+          81,
+          104
+        ],
+        "facing": "CENTER",
+        "offset": -0.15,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "b428f805fd594b12c71bec1cc7cfd973e4346369aeff9c58e7f67123b6c23fb7",
+          "46956e243e3a9123d1e681423f203029d7b6bb9c01ae2d689321b77d65f1beab",
+          "c92fd763cb5076dc833c3f00486cdb3fae8a022771d445aa10fef4dc37c1c878",
+          "feeab0257cea88c0c33ce096b002069f0c2594891110c1d1144c358c0f6a008b",
+          "3752695f3762e3c07d73d3d8fba4edcdd3c343aa05a7a54c14b3ab7d5f628042",
+          "60e62d7f4f38c0b8b8be9eb3350fd3151a10874473f32d1248f0200f2349b81c",
+          "7e6b49d4c0867df5d098e9597866cbb7546347b6aa9717ef3b798ece64677f4c",
+          "f1ad91b505930709613ab37cb159ca8267ee7b6393a86d1cca2211fc07d33d46"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER"
+        ],
+        "offsets": [
+          -0.79,
+          0.37,
+          0.01,
+          0.2,
+          0.01,
+          0.11,
+          -0.04,
+          0.48
+        ],
+        "spreads": [
+          25,
+          22,
+          21,
+          20,
+          21,
+          21,
+          20,
+          25
+        ],
+        "bottoms": [
+          105,
+          105,
+          104,
+          105,
+          104,
+          104,
+          103,
+          104
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "male_default",
+      "outfit": "explorer",
+      "direction_index": 7,
+      "direction_name": "north_east",
+      "status": "issue",
+      "priority": "P0",
+      "idle": {
+        "sha256": "b179945afc977c86c4a10e20c447e7b3d1fa11b4cd09e65ce5f25da0e518118f",
+        "bbox": [
+          47,
+          18,
+          82,
+          104
+        ],
+        "facing": "CENTER",
+        "offset": -0.02,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "31a527ab901473208b3c9a71afba9ed5fe3405e21ebbd21e1b70e899c56d23f8",
+          "d021f51d1d883da3364a22de9c45fe4ee221b11b674804d8b22e751c36c24a76",
+          "e9c74efbc4f9979b9566fcc1130225eb77b2f00b9ee8e6a0fa9ede25ec05256f",
+          "6b45cb1aa24017557b0d4689c24f0a5999543e4cebe3795d857a86f36c0ac88d",
+          "62fab9bf14ec1e6d504b115b313b45716394ebb34fcc92158d62cfbdab408a76",
+          "bf28d11f83e183941c6f9840f5974684518bb20f988f70ab7212e3f22bdd771e",
+          "ac1f4936e59b839a36d93b6f1a10db5bfafbae4c4741c5ddee669765cee3b7b5",
+          "cb41165bf584d81e4d82c6fa2cbc6d7a5cde88419941cfe1545f256d022cf10d"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "LEFT",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "LEFT",
+          "CENTER",
+          "CENTER",
+          "CENTER"
+        ],
+        "offsets": [
+          -1.26,
+          -0.32,
+          0.01,
+          -0.15,
+          -1.09,
+          -0.37,
+          -0.5,
+          -0.04
+        ],
+        "spreads": [
+          34,
+          32,
+          17,
+          14,
+          39,
+          30,
+          16,
+          20
+        ],
+        "bottoms": [
+          105,
+          104,
+          105,
+          104,
+          103,
+          103,
+          104,
+          103
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [
+        {
+          "category": "direction_inversion",
+          "priority": "P0",
+          "description": "WALK row 7 faces viewer-LEFT (-X, offset -1.3), inverted from IDLE NE (faces right). WALK NW and NE are reversed.",
+          "local_cell_bbox": [
+            48,
+            24,
+            64,
+            42
+          ],
+          "atlas_bbox": [
+            48,
+            920,
+            64,
+            938
+          ]
+        }
+      ],
+      "action_recommended": "Re-author row 7 with clean upper-right facing.",
+      "evidence_path": "docs/visual/gemini-character-source-audit/proof-male-default-explorer-nw-ne-inversion.png"
+    },
+    {
+      "identity": "male_default",
+      "outfit": "diving",
+      "direction_index": 0,
+      "direction_name": "east",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "73c971c59ec399bea2d06559b04d64e5c9e1ba3e1f4c9a5b539d039a2035b7f1",
+        "bbox": [
+          47,
+          18,
+          82,
+          104
+        ],
+        "facing": "RIGHT",
+        "offset": 1.52,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "af4815949f440f95d9728155b10ba889a317a00ed11e69f178f4ae9076102f9f",
+          "a29d611646eccc5845f097b0f06f0e50c3b0734bd1ce1826e6f5a14efd29e8d1",
+          "3769edda77fa608575fb3a5711e48cab69fcdd728a23bb6d4a03674b5756368c",
+          "a0d35133103829f27f66cb47867c83c4b028f7eb8ae9e8bbed2b200e81e25cda",
+          "c84427c27d1842e320be6dc29381518ca4771b2a2ce7be65643acc4cd3ab662e",
+          "aaef4c46b96922c10b0451f0a4b538c53b1f20d5d4c400ede43db0b793341d6e",
+          "a4ba6603a050ecda24c2ff09b5c3d7482c19009cdd56b6f3d2f3f5a2e91a177c",
+          "0841ede053ff5c3c0a1b46db7fc4d0268a890a189305a07241a1b54f597dc061"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT"
+        ],
+        "offsets": [
+          3.63,
+          3.3,
+          2.16,
+          3.23,
+          2.82,
+          2.89,
+          1.98,
+          2.96
+        ],
+        "spreads": [
+          50,
+          40,
+          19,
+          24,
+          52,
+          39,
+          18,
+          24
+        ],
+        "bottoms": [
+          104,
+          104,
+          104,
+          104,
+          103,
+          104,
+          104,
+          103
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "male_default",
+      "outfit": "diving",
+      "direction_index": 1,
+      "direction_name": "south_east",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "50da592ddb2cd52e0642ff0858f499778cc1e244cd65464563f68eeabf772e7c",
+        "bbox": [
+          45,
+          18,
+          83,
+          104
+        ],
+        "facing": "CENTER",
+        "offset": 0.39,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "f3fa8dfe1225012763c3615cc8a08617bdb7fc8441298b1c82194af3b700ead5",
+          "80fb0a52ee85807cba288b5b1e35bda7962166d749ddde752f1a562143cf08bd",
+          "95c01f98a7098b083d10a16b2c8fa2c6d412bc152d8acfa7f570a395a5cdaa33",
+          "4a04b7e681977345838a2119d7fe59ca0a9e78be03af870addc06f27bc14aa7e",
+          "2402a4c60e71692a7657736bda4a3b59cc4d51dfe802bced487da7757c411940",
+          "d827c896caf4d08082f8652280518344ee62b91bfd6eb66cd7c925aabef9d241",
+          "a1c42a1c0429e673f8cf825dc705b998e6e4259b42798ea1c3eb139f39b3c28a",
+          "7e2e223125349eb80ba3571c503e7e05ef679c77971a6a8f043c798abfebf08d"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "RIGHT",
+          "CENTER",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT"
+        ],
+        "offsets": [
+          2.53,
+          0.36,
+          1.04,
+          1.47,
+          1.1,
+          1.35,
+          1.2,
+          1.75
+        ],
+        "spreads": [
+          45,
+          35,
+          18,
+          21,
+          46,
+          39,
+          20,
+          23
+        ],
+        "bottoms": [
+          104,
+          104,
+          104,
+          102,
+          102,
+          103,
+          104,
+          101
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "male_default",
+      "outfit": "diving",
+      "direction_index": 2,
+      "direction_name": "south",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "b7702e6ac793d3daf4bf4ea469584fa0040d5155180185fcd7ef87f896a89b2b",
+        "bbox": [
+          48,
+          18,
+          81,
+          104
+        ],
+        "facing": "CENTER",
+        "offset": -0.62,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "cbc20f96ed84b10e8ba2c7255016a13645e53a50c5c71661b614014ffd13d314",
+          "09f0a9930705799dc228b09e1ceef10f6a080d0c8f0b81ebbf51545e3726e1e1",
+          "e7a0a9c605406e72c3ae1dc7ea5133d649d411f9957f28a5a5a3bd28ba749d3b",
+          "df28467dc2f265cb61e411a76fa134d9da43c64188acaa8692b45379c498c191",
+          "d4ba5a6f0c7f37bb812043676d4ae9e6a92333bafc388eacf536deced32d1824",
+          "3b5d828ea08dabf6795124d90a30043854e4724f0867ce749c323d5be93a13cd",
+          "8bc4a0f426daea9db7dda03fcef4bf92e002eaa7e64997ecc4632073e57b7ae3",
+          "ab7e592f095673c6f752008bdd0d7a42b4875d0f1a9b0520cefdd23808002c68"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "LEFT",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "LEFT",
+          "CENTER",
+          "CENTER"
+        ],
+        "offsets": [
+          -0.89,
+          -0.79,
+          0.02,
+          0.65,
+          0.13,
+          -0.99,
+          -0.17,
+          0.46
+        ],
+        "spreads": [
+          11,
+          10,
+          10,
+          11,
+          11,
+          11,
+          11,
+          10
+        ],
+        "bottoms": [
+          104,
+          104,
+          104,
+          104,
+          104,
+          104,
+          104,
+          104
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "male_default",
+      "outfit": "diving",
+      "direction_index": 3,
+      "direction_name": "south_west",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "29dbfdb2729f96ef6d5a78fe601f064a3aef584bf29cd59c7cef759e06c6fdc4",
+        "bbox": [
+          46,
+          18,
+          83,
+          104
+        ],
+        "facing": "LEFT",
+        "offset": -0.91,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "076df6c9745649a1b979730837c895c52cef1bc54603ca616abedfbfd97335cb",
+          "86a44c06318ea8e5fa6458a38ad82cab92aaae91258f8e8198fa6b1ecd00347e",
+          "0086e23eef2456eb661aa0feba74b08d938e2d42f95884b01c817d6ef3f06547",
+          "c766da17700b585c7c836c6511d25cd323627679de38e6f8b15cbffa618b7d67",
+          "41cb94259785b1eb03ec6cece465a9b4eac31e2285886223cc20bebd6af58742",
+          "3de90f32dd8573e036db9b0f4b9e996481e8de00b278be9b85c7a90d2b53720d",
+          "774b068b088a5ea323f9e72d3c31d24e5e65467cd3eddc65aa56dfa9ec2d0044",
+          "a300be10b90099544947c768749c89ccc111b05588114a600c3c422a23d0b7bf"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT"
+        ],
+        "offsets": [
+          -2.73,
+          -3.16,
+          -3.43,
+          -2.96,
+          -3.2,
+          -3.4,
+          -3.03,
+          -4.09
+        ],
+        "spreads": [
+          46,
+          37,
+          27,
+          14,
+          50,
+          33,
+          17,
+          35
+        ],
+        "bottoms": [
+          104,
+          103,
+          104,
+          104,
+          104,
+          104,
+          104,
+          100
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "male_default",
+      "outfit": "diving",
+      "direction_index": 4,
+      "direction_name": "west",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "e5b3da939a5f195dddd4102d3023b8d499a8a62642ada0691816184afdfbccdf",
+        "bbox": [
+          48,
+          18,
+          81,
+          104
+        ],
+        "facing": "LEFT",
+        "offset": -1.67,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "f1103b43e190cfc88e585cb12275513b5bdc5a3be6a1ae657e9bdae25cc8699e",
+          "ccdea57a8fe4d84a7393eda762886017eb44e9399222480a550f8cac577e5db5",
+          "323e7b8805e84976eaa0fa8bc74ec0e71ca17cc9506b18462d58f4a91376afe7",
+          "7a9c36a7669a2c2c434f81a31add00dab91c545f2abb8cecc814e607843e9b61",
+          "4c2bd3e330c85bdb8b36589b27f6e428b250dfa886bfc3475b3011f8ab0b22d4",
+          "682d5de79925321d14e24d796b138b615811de64b0d7b3b1e127bd8881ae3f1b",
+          "af18c689d2630783b9e63a1e1319cd1cec7f7db9a7af8afdfb9135c1f2291da0",
+          "417723ef3887b4995efe42b3a63f6b76c64359c1874940cf12942b92af5ef174"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT"
+        ],
+        "offsets": [
+          -3.32,
+          -2.85,
+          -2.78,
+          -3.44,
+          -4.11,
+          -3.72,
+          -3.29,
+          -3.47
+        ],
+        "spreads": [
+          52,
+          33,
+          17,
+          14,
+          51,
+          33,
+          17,
+          23
+        ],
+        "bottoms": [
+          104,
+          104,
+          104,
+          104,
+          104,
+          104,
+          104,
+          104
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "male_default",
+      "outfit": "diving",
+      "direction_index": 5,
+      "direction_name": "north_west",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "945842f8efbe021263dceeff3cdd7289d55aa662d38e68d9b2c40b88a362f886",
+        "bbox": [
+          46,
+          18,
+          82,
+          104
+        ],
+        "facing": "RIGHT",
+        "offset": 1.2,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "70c76ba2f9775f7d80275ba832b9b5b613491dd4de2795142e0f4c38fdaea346",
+          "7aefd276af6c04651f0f4eadf9d8f19828ccdbcfcae82f13868c997c17377beb",
+          "d956fc8f87a313f3cbd602bbf09ed67051b1d1ea1c54edca4e18a952e9311660",
+          "52c246ed4a8878a0c3a419974698662812e0e67ed99e43eb0f89f48dc9afab14",
+          "a87168426c70876fa04a35fbe395c3b538a14019c867e56ddb825c155c753113",
+          "24d03d49924f1f08dc7f78044faf11917aacadec928f9a61aa8db19eb643715d",
+          "cc2060a7c6c3e788beb7e6134da9e8f2334976f30673598cec1439cc18a1195f",
+          "6028526e97086a9b9a760ee05c206299b1b99e5bc02ce08545bbfb720397c18d"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "CENTER",
+          "CENTER",
+          "LEFT",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "LEFT",
+          "CENTER"
+        ],
+        "offsets": [
+          0.48,
+          0.41,
+          -1.02,
+          0.61,
+          0.28,
+          -0.15,
+          -1.15,
+          -0.46
+        ],
+        "spreads": [
+          48,
+          32,
+          19,
+          14,
+          36,
+          32,
+          16,
+          21
+        ],
+        "bottoms": [
+          104,
+          104,
+          104,
+          105,
+          105,
+          104,
+          105,
+          104
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "male_default",
+      "outfit": "diving",
+      "direction_index": 6,
+      "direction_name": "north",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "41e6e4f7977305d92b49c48ea4f059643d292a09c5cd9872886aa2d03d89bb24",
+        "bbox": [
+          47,
+          18,
+          81,
+          104
+        ],
+        "facing": "CENTER",
+        "offset": -0.2,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "5bb08f127590d70449b28be6f24deec52c9817322f39ee4cccceb8a718c6fcb0",
+          "f2e62dbd827c54b1082f5f0c21583b4378d87afd0291ae24a9b51df3bdf3aaef",
+          "cd837b648e8b4498c6ff7a2ae5fbbaefd78268a0d130a1016c4ae0d16b7add0a",
+          "5d8b4ccd0e04220a0c080bf69021674a2a5a6787e79a624acbf3bb80cf5b9753",
+          "75c3a196e583f8a7574bdd3d593e32dfe8680acae2a42aea21741f72f9b15137",
+          "ea54576f350394cac777abab5dbaffeaf68848b0672061c46f7c3cf395a140a2",
+          "90a06d9c9e36a6ce44fb033949a5feaa39e7861abf571fc3c81803d7a6a5633e",
+          "930d85e737bbcc27842b2048b7685623ce13fa74d145b93bddc73dfa21e489a4"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "CENTER",
+          "CENTER",
+          "LEFT",
+          "LEFT",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER"
+        ],
+        "offsets": [
+          0.09,
+          -0.54,
+          -0.82,
+          -0.84,
+          0.48,
+          -0.21,
+          0.3,
+          -0.11
+        ],
+        "spreads": [
+          23,
+          22,
+          19,
+          17,
+          18,
+          16,
+          19,
+          9
+        ],
+        "bottoms": [
+          103,
+          103,
+          103,
+          103,
+          104,
+          104,
+          104,
+          104
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "male_default",
+      "outfit": "diving",
+      "direction_index": 7,
+      "direction_name": "north_east",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "d95d9602dafddc8065f7346aaaa3337078868b61bede7276c4994f7e045fd7a5",
+        "bbox": [
+          47,
+          18,
+          82,
+          104
+        ],
+        "facing": "CENTER",
+        "offset": 0.57,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "365e24fb1cb76575ecf6d865849e8621384fc2c96b0ee47c6c8a09f52e274fe4",
+          "7006a0f365a4608950f63910ddf05bd4afa1cf6b9b620d4c0942d51aa3a7e202",
+          "ea5307d5891546aa21d5ca17b431173825b29d383bdb34eb28ff7b23bbd76d71",
+          "f9e12e8d9175321023df681df11f3c22c0399b16ebd41684ce81dec27e16d444",
+          "381f5220b9d31f146ea339bc9c8d40d29a3c3e4927c7adae50bd130ede033980",
+          "e72e22134fceaf1a0140653871aa529036d9f90eba7673387844f0bab8e343be",
+          "aacc251cb89b7b3e500a8ba321102e5f30cf854cc79b84d4f8d99ffb3a0a68b4",
+          "3ecf6922f39ebf6294cbfc0dd0c1b5d7282c444d4ccfd6e1df283a360fb6b7f0"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "CENTER",
+          "CENTER",
+          "LEFT",
+          "CENTER",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "RIGHT"
+        ],
+        "offsets": [
+          -0.47,
+          -0.65,
+          -0.85,
+          0.4,
+          -1.74,
+          -2.06,
+          -1.43,
+          1.04
+        ],
+        "spreads": [
+          36,
+          32,
+          17,
+          12,
+          35,
+          30,
+          15,
+          13
+        ],
+        "bottoms": [
+          104,
+          103,
+          104,
+          103,
+          102,
+          103,
+          104,
+          104
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_default",
+      "outfit": "daily",
+      "direction_index": 0,
+      "direction_name": "east",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "e0080605255585143a3126d32023b7028e1c4718b42b8b587c53e5c2462eb445",
+        "bbox": [
+          48,
+          18,
+          81,
+          104
+        ],
+        "facing": "RIGHT",
+        "offset": 4.15,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "713b3cfde6ef22c030cb4178d497d46ce832f3a38e9ab610674d8538d65c943e",
+          "46759ec2d61d1c3fb4c1f14a5667414e856adb763fae9b83b03a59647887c775",
+          "708fdf5eac564e3f9c447463411fb9607300d067593da1a262f72d34cb8c43f6",
+          "0604b6e41f3d6de0302a0a8df48466816b013711a12d8c11b575cc210841921f",
+          "b34a1da277e3dcaa15e5e8837a7e857a3dfef147fd39c93c2a567c1c5712346a",
+          "35eb6377f29ab5856a0e3c2090bd26737f513ac14d1b47d24f469ed39325e60e",
+          "a59f529c6082268357a5266e7b3d36b7a3b30af89e0007a365c18b9a10a653b3",
+          "30ed929652edb9faf045b82a888a80e6cb1734921926bf663d82b06a0f2e3d2b"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT"
+        ],
+        "offsets": [
+          4.34,
+          3.66,
+          4.12,
+          2.83,
+          3.06,
+          4.31,
+          3.86,
+          3.24
+        ],
+        "spreads": [
+          50,
+          42,
+          19,
+          12,
+          51,
+          39,
+          16,
+          20
+        ],
+        "bottoms": [
+          104,
+          104,
+          104,
+          105,
+          105,
+          104,
+          105,
+          105
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_default",
+      "outfit": "daily",
+      "direction_index": 1,
+      "direction_name": "south_east",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "430aeb7b5908152c8314f4d2ca0babbfeb31e07e6d24e39e11b3be6b920102e8",
+        "bbox": [
+          45,
+          18,
+          83,
+          104
+        ],
+        "facing": "RIGHT",
+        "offset": 2.95,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "afb68f6b01a393c2005b285122ffad805d5f3dee46f9008b3c7f81845ad9d3e5",
+          "03a8c0d84dc1a1dae3bdb26ce338b70ebe606ec9c67438cbc632125f2100af04",
+          "41a70f4feeb3bb76af5000a4d37ebff20ed348fc5c1163871ddfe4be9170c3ae",
+          "820f79c6eebdcaede57afe11d74656b8413dddb6ac4699e0c12deede5bc23e82",
+          "060f1b05332da6c42f827ebff648f367b57e637d984f97bbeab5a99b1e04ff19",
+          "258c8e656983433accdfbedad20eadf9983d2f5963f162a37e9e2e1aa2c9237b",
+          "80a3d2ae5375c694ba08f632c7a5260321c9fdc98fd45ecacada6026370ca945",
+          "fd0c5decb38e0691a7142880e07dc7960ef406058067e6a6800aa9c87beeb338"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT"
+        ],
+        "offsets": [
+          3.73,
+          2.68,
+          1.44,
+          2.64,
+          3.64,
+          3.04,
+          2.4,
+          2.86
+        ],
+        "spreads": [
+          42,
+          34,
+          16,
+          17,
+          44,
+          36,
+          19,
+          20
+        ],
+        "bottoms": [
+          104,
+          104,
+          104,
+          103,
+          102,
+          104,
+          104,
+          102
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_default",
+      "outfit": "daily",
+      "direction_index": 2,
+      "direction_name": "south",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "9d7da01b50800d2a09051359bb3e0d2b2fc54bce7c51a8ef3848b22a8052c5b3",
+        "bbox": [
+          46,
+          18,
+          82,
+          104
+        ],
+        "facing": "RIGHT",
+        "offset": 1.53,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "a5b69dca9f3b0a62862970f54a3d354415345dc28fa79d6d65d74273a9ad6001",
+          "85f719fadbdaeb97be2c5414337938441b8e67c2b9664c70ca4b6815a4543723",
+          "78240dd8b24fc4ee5ff14ffe20ef0684405cadd7a05e99bfb6368b4bb6fbec37",
+          "b7524f0db97f1874e897e1afbca0866d8a8dbca0f6ae9109e00df04c6b8a3d9d",
+          "fada4ba65554f0a1ee4d125c00a0f3eb8acc224b24a79c253e957888db8cb28f",
+          "77588d98208270b49e4bd638b62ab358d5f4ae7116037568ae998f3ba622906d",
+          "09265676130d3e2b22ff80c5b99bb328f20a69bb61fae0768185f8826c0a9459",
+          "72be28f74395c2acf863b2901a01a291a45dc8bdea8d6d8737f4405442dac59e"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "LEFT",
+          "CENTER",
+          "LEFT",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "LEFT",
+          "CENTER"
+        ],
+        "offsets": [
+          -1.0,
+          -0.72,
+          -2.11,
+          -0.46,
+          -0.58,
+          -0.61,
+          -1.34,
+          -0.8
+        ],
+        "spreads": [
+          9,
+          9,
+          10,
+          14,
+          13,
+          13,
+          10,
+          9
+        ],
+        "bottoms": [
+          105,
+          105,
+          104,
+          104,
+          105,
+          104,
+          103,
+          104
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_default",
+      "outfit": "daily",
+      "direction_index": 3,
+      "direction_name": "south_west",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "f3923d5046ba62c7ccf9e189639c75b9d5c3f11797d380ea796d7c5d4a5ac047",
+        "bbox": [
+          46,
+          18,
+          83,
+          104
+        ],
+        "facing": "LEFT",
+        "offset": -5.26,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "8547e7f9c4f6429efcd2cf9a47bcfc7f80dda791527f3db7577de7b893e2f952",
+          "ccb51b22c7f54ab405a6b6e6c7f33bacf7fc3a6cbcff6af5ded57f176f67a511",
+          "10558d7614839417c0dd7355df84f11b9a272468d49c90c2c9b976c92e2f8ba0",
+          "078eb0a9a67d8fedacfdbdcc43174802820b5d78ed536a8ec8713e9165cd940f",
+          "652ab2136eaaf499f9f04930c69f0fdbedcebe4b54ee1a0324c366b9914476f5",
+          "4b3706018998128af6055061684cdf33dd1f5e7bf60a6b4432b0266809bfa1c4",
+          "e82baeb5a3f975c34f596993a2632498dcc550b448e9a79dc9a3cb0d5288d76a",
+          "5b0bd8709ff3ab2514ecd75e441c09e136cbc701217a60e37f85200d0dd06b2b"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT"
+        ],
+        "offsets": [
+          -3.02,
+          -3.27,
+          -3.04,
+          -3.13,
+          -2.7,
+          -3.58,
+          -2.98,
+          -3.22
+        ],
+        "spreads": [
+          50,
+          40,
+          21,
+          24,
+          47,
+          34,
+          19,
+          32
+        ],
+        "bottoms": [
+          104,
+          102,
+          104,
+          105,
+          104,
+          104,
+          104,
+          103
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_default",
+      "outfit": "daily",
+      "direction_index": 4,
+      "direction_name": "west",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "ed06563fc791697213c95ea793c80d83df82ee0b6854cf2c8adedfb9a2ba092c",
+        "bbox": [
+          47,
+          18,
+          82,
+          104
+        ],
+        "facing": "LEFT",
+        "offset": -4.61,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "47ce8b60933dba283af3baf9ac8d2db26d6f6a0aca2289a4c55df267af31b98d",
+          "58eaf5b1d22999b05e7b9696ae8a7ad704cfdf73625312c0fda11aeff925a92d",
+          "753d759364f94b768fe964f17a154f2b126a7847205d9e67b2f818f3201e5d25",
+          "c9e48c257d46ab132281ed638f77107fb533f6dee510dd8c2522861332d9e073",
+          "784260c4d6488acfd2607285292b5f4820ac29ece111a799f19e0c9528d862fa",
+          "0e0ec060fb9d18e715703378e04900a4d6a1d89676e6d74a6667c8369deb469b",
+          "0c9f2e1f22119697a9412a9c9af89c2a1eed9beaefd0a49ee8b90bb8143dfd38",
+          "f082008fd766583b7efd2ecaf4bd0face34337514974943325eefd4a8816b5a2"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT"
+        ],
+        "offsets": [
+          -3.81,
+          -3.53,
+          -2.71,
+          -2.14,
+          -2.99,
+          -3.61,
+          -2.87,
+          -2.45
+        ],
+        "spreads": [
+          49,
+          38,
+          18,
+          18,
+          48,
+          30,
+          20,
+          23
+        ],
+        "bottoms": [
+          105,
+          104,
+          105,
+          105,
+          104,
+          103,
+          104,
+          105
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_default",
+      "outfit": "daily",
+      "direction_index": 5,
+      "direction_name": "north_west",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "3ba73f91ff28ee1d6e71bffe9dbe9839249d80a31cce15e4b152fd7db92c1611",
+        "bbox": [
+          46,
+          18,
+          83,
+          104
+        ],
+        "facing": "LEFT",
+        "offset": -1.72,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "560e69e1be978bee30f442d6e688af9c4e7c5f4fd1273e3654326cab5a2bda3a",
+          "4219edaae339496745960ec50d5cfb4e9b9d4162cb15cd09789dd4920b27ffc4",
+          "29b55836292afee781e2a1f794b0e127270eaa92659163c2b77b5f2e105a6abe",
+          "8ee32f84dee80715b3d7944daecb917815fa8360a643c0f8c0bdc885c331396c",
+          "2d5540d75eb833ab0009ad2516b19b654f548cff37ce43a79737182832b107eb",
+          "728d1ec4b611ca3bd34747fea9304f919ca6327889ed858b6e3438d446a2bbb6",
+          "e1224de6fd884642031b0a9b16a4cdd3e3913df464c7866e86f04bb6542aaac6",
+          "59f83291ea93c1a777794f8c41ac65fbdea1a1b9026199b14840e98dbbda760f"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "LEFT",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER"
+        ],
+        "offsets": [
+          -1.06,
+          0.12,
+          0.19,
+          0.24,
+          0.49,
+          -0.71,
+          -0.13,
+          -0.68
+        ],
+        "spreads": [
+          44,
+          31,
+          16,
+          13,
+          41,
+          27,
+          13,
+          22
+        ],
+        "bottoms": [
+          102,
+          104,
+          104,
+          104,
+          104,
+          104,
+          104,
+          103
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_default",
+      "outfit": "daily",
+      "direction_index": 6,
+      "direction_name": "north",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "fd98ed1970aff9d1f71255f1229e8ce6119682b014254435e2ca1cc83fc337ee",
+        "bbox": [
+          47,
+          18,
+          82,
+          104
+        ],
+        "facing": "CENTER",
+        "offset": 0.18,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "a2a846705779c95c021886ad345d509e5eabeb689004360176619d1175c2d563",
+          "9221165244026e523e665c388813a60395c1ceef33f6a414ac6796580d6c1d76",
+          "43cbee23059359cbd9d42e8d7f387f1c8ac777afd87906937741af36e3bec119",
+          "bbb828f1c7a9d551092eb7a6a699a410887a357ab2394fc39b2318509dc0df16",
+          "ab102a1b16c79788e77ac33ce633adc4a203381bb159430e75a41080220ccfe2",
+          "1bdf70701f52891b0c3dd5924d57b9d6cd4ffbb1920ee1a8b9223966b45fa823",
+          "33dc53388b0ee12e66bade4e848a326aeb3cbad096c68a4b3fb78b68ed7701d7",
+          "a1ffd1caf81c0b1d874d074b12daa1864c55ac8a82536e0a74161199ddaa78dc"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "RIGHT",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "RIGHT",
+          "CENTER",
+          "RIGHT"
+        ],
+        "offsets": [
+          0.85,
+          0.1,
+          0.56,
+          0.48,
+          0.62,
+          1.4,
+          0.38,
+          1.05
+        ],
+        "spreads": [
+          19,
+          16,
+          15,
+          14,
+          15,
+          17,
+          15,
+          14
+        ],
+        "bottoms": [
+          104,
+          104,
+          103,
+          103,
+          104,
+          104,
+          104,
+          103
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_default",
+      "outfit": "daily",
+      "direction_index": 7,
+      "direction_name": "north_east",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "be89e9a1b176a10396122b0d06d79136943bb10334c1f1471d7d06dad3595898",
+        "bbox": [
+          45,
+          18,
+          83,
+          104
+        ],
+        "facing": "RIGHT",
+        "offset": 1.37,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "73caeba8f309ad7e03001d53249c444b185776680376093d694bb76908f51a61",
+          "f3597276cfbafcb6af8446b0ad88ad2337d060d444b9d4004d0dd4b563b3f74f",
+          "194d90fc52d4a0cd9cfcd0197d3c1e81495bcc1058df1fd33e4f3ebb5ee5a77b",
+          "8845ea901e00da11d7319399f2e574429bc5c98b06c1004c9c0617bda9b5b33a",
+          "bb6fd56a1deae4e57fa10665d4f3f25ee683676019e2ab01e977f9e27b84a527",
+          "f04d7d9f72f9b56865848a8c380c44acd8ee805b453c7f45662b9a794a32d328",
+          "c4dc0c5e4c2b6b76233b6cae3cc1598623aa396c4de68c33dc77d363c37b4bc1",
+          "3cc19d995cbc665d2fac4c610234bc6300ae44f77ce59f73b169ab98734002f2"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "CENTER",
+          "CENTER",
+          "RIGHT",
+          "CENTER",
+          "RIGHT",
+          "RIGHT",
+          "CENTER",
+          "RIGHT"
+        ],
+        "offsets": [
+          0.77,
+          0.43,
+          1.01,
+          -0.22,
+          1.54,
+          1.31,
+          0.39,
+          1.65
+        ],
+        "spreads": [
+          40,
+          33,
+          18,
+          12,
+          37,
+          31,
+          15,
+          18
+        ],
+        "bottoms": [
+          103,
+          103,
+          103,
+          103,
+          103,
+          103,
+          103,
+          103
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_default",
+      "outfit": "explorer",
+      "direction_index": 0,
+      "direction_name": "east",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "78505b1f685d05a2719cfa01df54dfe713e498103ba083eff7704f5fddfd35f9",
+        "bbox": [
+          47,
+          18,
+          81,
+          104
+        ],
+        "facing": "RIGHT",
+        "offset": 3.97,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "2022af93f49b93071f737a6426948d2362e6588a30f0e7aa41a807e22c26aecd",
+          "1f68d5ea51ddb880ffc7f80b223b6435f8d3001d33345f1c863cf142678e7314",
+          "5e7d03dc479208f47da397c58cbfe6ed99d4747b99d12ee7ef5870dbcd7f126a",
+          "73947ac24dc36710336994d9356851cd714ddd549935b27f89bd91a619b4cfdc",
+          "8c185e3b93943a17a5eebb82cf28aedb5c610be230e2fd51870e13d0694a3e1d",
+          "21d6dd99cee184b633fb9d6acd2e6e2566834415c4e2543743df9b248789b0b7",
+          "b07f8ae5fb9d4d99f06a0e9f3a4606746cc2b811b5b169864df164107b09f669",
+          "e14478a74d07e714009fc7c765e04ff20cd000523b253eda10842fe6829d7429"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT"
+        ],
+        "offsets": [
+          2.24,
+          2.05,
+          1.68,
+          2.1,
+          1.74,
+          1.23,
+          0.82,
+          1.76
+        ],
+        "spreads": [
+          51,
+          40,
+          19,
+          14,
+          49,
+          37,
+          16,
+          12
+        ],
+        "bottoms": [
+          103,
+          104,
+          104,
+          104,
+          103,
+          104,
+          104,
+          104
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_default",
+      "outfit": "explorer",
+      "direction_index": 1,
+      "direction_name": "south_east",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "44fc27ce80d80d7a7abd6df61a62679fc66af45b8f39c8c5f737e978f2d046d1",
+        "bbox": [
+          45,
+          18,
+          83,
+          104
+        ],
+        "facing": "RIGHT",
+        "offset": 3.27,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "5a56a26fcf586e075626031eddeb3231d67ebe582e1601b0d3ad51dcc70e1d2d",
+          "aadc5ae09315b374bc11f73597d2393f2349e205a6416ccc8d09e07e3545397a",
+          "27db37fbc749ff418cdcfbe49e79aaa1b9fb1d574027fb667a4f23e2ef04a374",
+          "cfdbe893b83aee0793a0a1c724fa054eb31004aa2a5f8deb26b1699d992d8fba",
+          "9ed8c553afa05f46a467cb801a5b88b5fede67c5d51f186bf92f9c5c197dc243",
+          "fa6f4d998f5e14f2cc9e9bd4de0b8d64772bf6d03911f2d81629e1e18291c2ef",
+          "24b1b268c43d33ce393ec83937d158f0ec37134a7272bfbc83faf226478bbb8a",
+          "ba2e8340e75b4d7bd286c368660ac9470197d9da30b2be5390db8484fef9991c"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT"
+        ],
+        "offsets": [
+          2.72,
+          2.42,
+          2.87,
+          2.27,
+          3.18,
+          2.44,
+          2.66,
+          2.43
+        ],
+        "spreads": [
+          40,
+          32,
+          16,
+          15,
+          43,
+          32,
+          20,
+          14
+        ],
+        "bottoms": [
+          104,
+          104,
+          104,
+          101,
+          104,
+          103,
+          104,
+          104
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_default",
+      "outfit": "explorer",
+      "direction_index": 2,
+      "direction_name": "south",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "868e12b5556a4227eb6df6b2c669cfb87b67dff70c98e1c7cde073ca195f8ead",
+        "bbox": [
+          46,
+          18,
+          82,
+          104
+        ],
+        "facing": "CENTER",
+        "offset": 0.24,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "11832c314ab697419124db776c26de11de3a14400a10ac5934be7ca75f6de15d",
+          "30219d6896a5e3fbb9dd5d1de245b3bbc68712a5b05f5ab3205c558771b0ec51",
+          "a7aa3923944875d6b378621ae2d78873583778d7ff4deed966c682b986d34f5d",
+          "e7073c5f216af7757157f3f02122dbe071fc93ebf6c56bab97c27de27a5799f2",
+          "ea94d1e2c2098c148b52aa7942965364e7d88df3a36b51828cc5e355297112f3",
+          "f5eb08edf8536f34b6d23bb476032b76af9d6e0ea5dcb3b8cb0ed05aae2e71df",
+          "32bbe348af7970e6e3d8b67e410ebcae8b065bf177ebed3715df733108ab8b56",
+          "c8fb0b1444c015bd57c821ddeb77b62ccd2d6b08ea9f5da49d63d60e2c55de75"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "CENTER",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT"
+        ],
+        "offsets": [
+          -0.36,
+          -1.56,
+          -1.35,
+          -2.61,
+          -1.12,
+          -2.3,
+          -2.19,
+          -2.66
+        ],
+        "spreads": [
+          12,
+          11,
+          11,
+          12,
+          15,
+          11,
+          12,
+          13
+        ],
+        "bottoms": [
+          105,
+          105,
+          104,
+          104,
+          105,
+          104,
+          104,
+          104
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_default",
+      "outfit": "explorer",
+      "direction_index": 3,
+      "direction_name": "south_west",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "09bcefee7504655d9f09132133302b6d80dcc815759e58fa0949e1a48b67650d",
+        "bbox": [
+          46,
+          18,
+          83,
+          104
+        ],
+        "facing": "LEFT",
+        "offset": -4.26,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "a4d5801523eeebebe8dec2fb629d2d764462e45359d9b6a16cb998f06fd80b4e",
+          "b90c73929281ca7244372ce07a35249036d8223dc4a7e6d5e8d6fda2c2ad81c2",
+          "8d97aae95417e100eeec9c7a1b33445c692efe3597433e86c68a3bddbc965e6b",
+          "dc2a230f335078ab6cf5de1d8ba7113bba4241f49005b07975c15f9294399209",
+          "553dc226164b2e72ec527d8f9e07f3bb0760e65e70966b90a61ccf53591a5183",
+          "9b4174d1836eccc5b53fb01cb081572de9a531f569d426e7483a7d639df299c1",
+          "6393aeb2d15cfa06aa14f2fb8c9cbe10e8777bac64756c013157bebe956e1a69",
+          "2c325f0ed3bb5db40664ff0e4a07b6de71e8807ae37faa2d1545a379b8d6a3cc"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT"
+        ],
+        "offsets": [
+          -2.23,
+          -1.05,
+          -1.77,
+          -1.02,
+          -1.6,
+          -2.23,
+          -0.86,
+          -2.34
+        ],
+        "spreads": [
+          48,
+          39,
+          19,
+          22,
+          46,
+          33,
+          16,
+          23
+        ],
+        "bottoms": [
+          103,
+          103,
+          104,
+          105,
+          105,
+          104,
+          105,
+          105
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_default",
+      "outfit": "explorer",
+      "direction_index": 4,
+      "direction_name": "west",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "267bf982d57f889369bc98caa717c077246a5c7f4ff7e7b2bb33ce8513cd9048",
+        "bbox": [
+          47,
+          18,
+          82,
+          104
+        ],
+        "facing": "LEFT",
+        "offset": -4.36,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "982f9bcd88d20430a4298e7017ea88f5d8dcc8c6d24ac9aee0c90a243d81065c",
+          "ad4b4d3ad43a5c0cb3ded3672c3c502ff5027c1942000a9a25a2bbd960e1b0e4",
+          "fcdc696ceb7a07c00697244187ce744dbeb28acbbbf5764e2a5411a45e694ed2",
+          "93f775abb15399513e366bc3928958fa9d3c561bbe4def186b767c243d57392f",
+          "153a75f1f814d3775e2b77ca6f023753e14124f4bf719a2cfb9519953be9bb31",
+          "e7bb271ec61a99bc74ff3bb8f6cb9c52e2d4761b40705888093e28f027bf8d4b",
+          "3b580d0d8656128b83d99873bc2f8814b7857c1d717405edbff728fe6d48fc20",
+          "c70077d011572e84d3a4169ee6fa6680caefe2e40ad7fa17d31c3fc36550f037"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "CENTER",
+          "LEFT",
+          "LEFT",
+          "LEFT"
+        ],
+        "offsets": [
+          -1.1,
+          -1.57,
+          -1.1,
+          -1.95,
+          -0.74,
+          -1.6,
+          -1.63,
+          -2.19
+        ],
+        "spreads": [
+          49,
+          35,
+          18,
+          20,
+          48,
+          30,
+          16,
+          23
+        ],
+        "bottoms": [
+          102,
+          103,
+          104,
+          104,
+          102,
+          103,
+          104,
+          103
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_default",
+      "outfit": "explorer",
+      "direction_index": 5,
+      "direction_name": "north_west",
+      "status": "issue",
+      "priority": "P0",
+      "idle": {
+        "sha256": "5e010df886f779bcd6360a5d4b8d5007157142291d7ac3967623c479ff40ed34",
+        "bbox": [
+          46,
+          18,
+          83,
+          104
+        ],
+        "facing": "LEFT",
+        "offset": -3.19,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "1ea73fe5e9b5ff26e45d5745fe7e6b7eca17fcba140ea792b71805d79d932463",
+          "481c1654b24fa7465237833c2297078880e1ec78a871962eee33cdbee19ffd7c",
+          "e737f4a78dc52be6b75b00df6104564422d7edd64ac31d96c4a11b98439be944",
+          "74e36f1dd30b2bc4d002e05c19b315bd12b66a2a799453b48c2cfeb603721b37",
+          "2d03cd0cabbed46ceb75365008a155d40269e1c49a0952c2c8c72f04872a2479",
+          "7d46f59034900dafe9f11a6869bf77c22f456e109777fb97256d2d6674f67331",
+          "80950e082373e9845897522c5eaf268c9db00ef777eecc110c3c223ab180fb5f",
+          "a3b49f3981cd607324c19f6c0a9c0fd2866ccaaa66179fd7c1428b043d557c47"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT"
+        ],
+        "offsets": [
+          1.33,
+          1.12,
+          1.56,
+          1.65,
+          1.78,
+          1.49,
+          2.01,
+          2.11
+        ],
+        "spreads": [
+          23,
+          17,
+          15,
+          17,
+          18,
+          17,
+          16,
+          16
+        ],
+        "bottoms": [
+          104,
+          104,
+          105,
+          105,
+          105,
+          105,
+          105,
+          105
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [
+        {
+          "category": "direction_inversion_and_stride_collapse",
+          "priority": "P0",
+          "description": "IDLE col 5 faces LEFT (offset -3.2), but WALK row 5 faces viewer-RIGHT (offset +1.3, chest skin x: 65..80). Stride collapsed to 15-23px.",
+          "local_cell_bbox": [
+            65,
+            24,
+            80,
+            42
+          ],
+          "atlas_bbox": [
+            65,
+            664,
+            80,
+            682
+          ]
+        }
+      ],
+      "action_recommended": "Re-author row 5 with upper-left facing and full contact stride.",
+      "evidence_path": "docs/visual/gemini-character-source-audit/proof-female-default-explorer-nw-ne-reversed.png"
+    },
+    {
+      "identity": "female_default",
+      "outfit": "explorer",
+      "direction_index": 6,
+      "direction_name": "north",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "6a30eb87eed2e1e3350387c5c9bb852edf8d4c00fccdff8fbcf0054e9c8fce15",
+        "bbox": [
+          47,
+          18,
+          81,
+          104
+        ],
+        "facing": "CENTER",
+        "offset": -0.14,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "861387490c57b0354a99d9c75c3e6971846eac1f580fa694a1ec62c21ad1e596",
+          "288ca07ad3827b6a032d098069300221fb3b117a1e3666a40d28d5273be1d7f0",
+          "4c8b47c679e5a2c9bd1b767e1b24750887e47ad36e77b1e38ba2e4667e4a201c",
+          "f25dfff6aaa142415e58f033b0dbe2b00951c9cf098b941dd138b02d1408aeb1",
+          "821049068c258cd736b5828bc0bc0be1a3152e7537624fd444c9e704df3232ed",
+          "7985b742b0afd5f5bab9af878ef6265130fe93c004a37732e5ab268e36d66e8d",
+          "52793e2b55f52dc7f98a3d7651d1d7110b5c05051a9ce92960a8ed0323347364",
+          "51285d09f2f77a0da7a8266d2d2e39cacbbdc27970ecf7d366688a1f29ae0708"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "RIGHT",
+          "CENTER",
+          "CENTER"
+        ],
+        "offsets": [
+          0.1,
+          0.58,
+          0.39,
+          -0.09,
+          -0.17,
+          0.81,
+          0.1,
+          -0.51
+        ],
+        "spreads": [
+          19,
+          17,
+          15,
+          16,
+          16,
+          17,
+          15,
+          15
+        ],
+        "bottoms": [
+          103,
+          103,
+          103,
+          103,
+          104,
+          104,
+          104,
+          104
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_default",
+      "outfit": "explorer",
+      "direction_index": 7,
+      "direction_name": "north_east",
+      "status": "issue",
+      "priority": "P0",
+      "idle": {
+        "sha256": "fedbd5cc5b04b47848f843ab77bdf6418106a051a4a5de6f5f80277cf27bf732",
+        "bbox": [
+          46,
+          18,
+          83,
+          104
+        ],
+        "facing": "RIGHT",
+        "offset": 1.27,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "465e528f2d6e1bc7d4563ef733815150968589305d5ca70d735a50d6e6d80e4c",
+          "8a8b2a83d9885c018e63e0a98a7bf2d49d0467534e7a77c7dbd34e513b15f3ab",
+          "191fbcda25a2bb4b3c78fa1782246f834dab99b54782ac72a0287ed3cbb157fb",
+          "2882dc7561536367e6b0dd0aa64c156b0db5a79204cbb11679daa0af7ada7cd2",
+          "0b87f447e00bbe521c7a9677141d1f0b0558e7b7df11b640cea3a2bcd93df8aa",
+          "bc57b0866e807fd9fe6e39f29cd354a47b313dcb7b1b8b6847cd7237837cd755",
+          "3ff8e47702f4439d66691ffea2bf27fe8397dd252cfc20756a5800ba79c8a712",
+          "8c39f4d9823f486dbb3113996caaa43471abb0dac32661e4dc715f0466ae6b45"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "LEFT",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "RIGHT",
+          "RIGHT"
+        ],
+        "offsets": [
+          -1.64,
+          -0.3,
+          0.47,
+          0.24,
+          0.2,
+          0.37,
+          1.1,
+          1.05
+        ],
+        "spreads": [
+          42,
+          37,
+          16,
+          14,
+          41,
+          32,
+          16,
+          12
+        ],
+        "bottoms": [
+          103,
+          104,
+          105,
+          105,
+          103,
+          104,
+          105,
+          105
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [
+        {
+          "category": "direction_inversion",
+          "priority": "P0",
+          "description": "IDLE col 7 faces RIGHT (offset +1.3), but WALK row 7 faces viewer-LEFT (offset -1.6, chest skin x: 48..60). WALK NW and NE are reversed.",
+          "local_cell_bbox": [
+            48,
+            24,
+            62,
+            42
+          ],
+          "atlas_bbox": [
+            48,
+            920,
+            62,
+            938
+          ]
+        }
+      ],
+      "action_recommended": "Re-author row 7 with upper-right facing.",
+      "evidence_path": "docs/visual/gemini-character-source-audit/proof-female-default-explorer-nw-ne-reversed.png"
+    },
+    {
+      "identity": "female_default",
+      "outfit": "diving",
+      "direction_index": 0,
+      "direction_name": "east",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "4cb6debd46cf4fe37201ca9487fa04da386d4f8296693de24775a7eeca4fdacc",
+        "bbox": [
+          47,
+          18,
+          81,
+          104
+        ],
+        "facing": "RIGHT",
+        "offset": 3.89,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "b475b102798e3dc01f9b5c23963cc9c969887ac8efd3339b2de9d32130e004f6",
+          "f2d7a900f308f681bdeb40c25de406cf1ed325bed2f34e11b9064611321d70c1",
+          "a38ee81b7c080ef1f8408562a8c6647f303547cd1327ad6a32e2a06c6d40a73c",
+          "c7728fca3267df383e27d52cde3f332c6a91b572b2eec26494bdcd6011ed225e",
+          "71fa7569e4129853118e3a536bc21beeb751d1862ee390f40faa9f85da3c4ca2",
+          "1e8c046273a3803f60178a174037d65f9e9ba22c629aec50c12b80afa8b03ea5",
+          "b480ad7803c2b38bc5e89c1f3dbbae21b957d53392af10e16721ce4009dab3be",
+          "1e80470a6369559f496b2fb6521c71fa0002f6f1d05095b7c4573dfe1847b185"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT"
+        ],
+        "offsets": [
+          4.01,
+          3.22,
+          4.38,
+          3.94,
+          4.28,
+          3.96,
+          3.82,
+          4.35
+        ],
+        "spreads": [
+          49,
+          39,
+          18,
+          11,
+          50,
+          36,
+          15,
+          19
+        ],
+        "bottoms": [
+          104,
+          104,
+          104,
+          105,
+          105,
+          104,
+          104,
+          105
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_default",
+      "outfit": "diving",
+      "direction_index": 1,
+      "direction_name": "south_east",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "b217e102da533b710dbf67d2feda0a65740ddb25550958528058624dba6920d2",
+        "bbox": [
+          45,
+          18,
+          83,
+          104
+        ],
+        "facing": "RIGHT",
+        "offset": 3.69,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "bc41f793cde39c9e022f214504379719ddbd89274c191b0912d09da660eae8e5",
+          "5d89a1ea962706746aebec533b4080043f34eba0696ddbf63964fd1ade54f386",
+          "19b7f099fbfa05f21c19cefb9fd8c3cb4925f2c508988fee37fad58331fa67a2",
+          "0901bebbad8d3c07c49e7a368d3b2a2aeb1f10e34c83842cec4c72d5e02a07b2",
+          "49721ee6472c170e1ae3c99325252c05879bc2ac1931fefda300c5da29017142",
+          "ddd4209a672cfe63445335a753589a511c5e912ea6c3a02a1e3f172adca0d6fb",
+          "e9d6f4b7b198c22aeda979d7df5de3bbea003ffac85de4c1ead302a320c21826",
+          "b839af5d9084c086b969439d3bfd4f3d11aa9dc2b066a3098b901046ad5fb162"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT"
+        ],
+        "offsets": [
+          4.04,
+          2.07,
+          3.02,
+          3.01,
+          3.8,
+          3.22,
+          2.21,
+          2.86
+        ],
+        "spreads": [
+          41,
+          32,
+          18,
+          14,
+          41,
+          33,
+          19,
+          18
+        ],
+        "bottoms": [
+          103,
+          104,
+          105,
+          104,
+          103,
+          105,
+          105,
+          103
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_default",
+      "outfit": "diving",
+      "direction_index": 2,
+      "direction_name": "south",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "a7504938f6e2f05ef6fae336f01e8d76bb1cfb98c46c9989c8b1f95a324d2684",
+        "bbox": [
+          47,
+          18,
+          82,
+          104
+        ],
+        "facing": "CENTER",
+        "offset": 0.76,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "28b97029b3722582e080230f512005303642341afa92f5cd8e42658d222d4129",
+          "3c91121de5d59a26ae8cc6fb70094af39e3d9fbb20bf7e7d145cafe4cc947731",
+          "99399ba8548b155f070c91fa4987eb913a4de4f3f347e3ebde73378e8f0203e1",
+          "332f1e285544da7f11804220cbfccc9e99999f8abb4106be11a9e1ba86a4a404",
+          "e482eee113fe0f1b2612fa077af9cdb7e290d11a7616f8118cb9057fbcdd048a",
+          "447550a575a101ad76d7043ac7208baf5bdfc6cc915e1136c08b1e7ec086f126",
+          "2d675e80a094995ec4ac26eb789a8f8e3fb9eaa5f6cd898bf5ac713378fde17a",
+          "820ef4b059b0695301da4a708aa1a648edb7533ef863c5a3c4b10c89fb2121f0"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "CENTER",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "CENTER",
+          "LEFT",
+          "CENTER",
+          "CENTER"
+        ],
+        "offsets": [
+          0.57,
+          -1.13,
+          -1.34,
+          -1.07,
+          0.07,
+          -1.29,
+          -0.41,
+          -0.78
+        ],
+        "spreads": [
+          9,
+          9,
+          11,
+          9,
+          12,
+          9,
+          10,
+          10
+        ],
+        "bottoms": [
+          103,
+          103,
+          103,
+          102,
+          103,
+          105,
+          104,
+          103
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_default",
+      "outfit": "diving",
+      "direction_index": 3,
+      "direction_name": "south_west",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "198c93540648994d3a0000bc58747c99d7c88e8d5ef59fcd46b4cefc94743962",
+        "bbox": [
+          46,
+          18,
+          83,
+          104
+        ],
+        "facing": "LEFT",
+        "offset": -4.88,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "94c4a0a8f3742ef918f6f6a8662854ab51ad9fe152b2243c96e8316ea4a2fe6c",
+          "ea457db5093908a5176ea68320b20028dff05fd4e11859e013bb0759e7e21d8c",
+          "9c63b2b88f2d44de35f424174fc6d7475229a114b78b368a2b940f7c6f0969aa",
+          "8b6eb56d6b6f58629dbbb631370e19cc3640cae42e5315dd7331b19f40a038a2",
+          "22bf749f22203926c439dd36f7954fccbbb2eb625cc691d9587706809e2b42ef",
+          "729ccd7c828e71d33a2008e367eb802d9dff4384efa32ed752f02b8455026242",
+          "94741a6c431f6c37404d72ce59e192b2f6b8ce37015aab17b5ed9a2d64de1e27",
+          "7e858eb5172ee9e0226e02b4d5f61f67d712885a341f5ba23a104a2dc62e918c"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT"
+        ],
+        "offsets": [
+          -3.15,
+          -2.68,
+          -2.33,
+          -2.8,
+          -2.46,
+          -2.83,
+          -2.15,
+          -2.56
+        ],
+        "spreads": [
+          47,
+          35,
+          18,
+          22,
+          48,
+          31,
+          14,
+          32
+        ],
+        "bottoms": [
+          104,
+          101,
+          104,
+          104,
+          103,
+          103,
+          104,
+          104
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_default",
+      "outfit": "diving",
+      "direction_index": 4,
+      "direction_name": "west",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "1b109cc9be260b598ee3fecd54d65e50f6130e405d3539ef6f8338be650f992b",
+        "bbox": [
+          47,
+          18,
+          82,
+          104
+        ],
+        "facing": "LEFT",
+        "offset": -4.54,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "091980e4776b2787663e35aa9e047a6d81cd49fcbe2d208a3a3ebc2cec8cfe6c",
+          "dca0078127c127f1f8ac1324332ddef2c54446e87ba3b5c2519ef3e108a31029",
+          "c6ecdd14284eb2f035ad4d6a287b5e5fcabe80316a97c65f766bbb9a29bfda4f",
+          "e7f8168f8f158695ad43ed9e8d645647a2623380b21d5fa0aea1c3565c9f4b31",
+          "e52f8ded65f7f713cc777bd0500a2e760d219207f7467a83cc6a748b7a880e02",
+          "ebd15a9f55421a8e9a48e08d555258731bca9ea9be0a61122a43ef2c9d9deaf1",
+          "a5dbfcd3d1cd9a58b706754efc21230e9bc844d82547bc11c543bb179846db13",
+          "6ffac953e091a7af6e6c0a0969095acd4b8831d2e6578712d32beb5e0af0897d"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT"
+        ],
+        "offsets": [
+          -3.91,
+          -3.53,
+          -3.91,
+          -3.62,
+          -4.05,
+          -3.16,
+          -3.77,
+          -4.18
+        ],
+        "spreads": [
+          47,
+          34,
+          16,
+          20,
+          46,
+          29,
+          16,
+          21
+        ],
+        "bottoms": [
+          103,
+          103,
+          104,
+          104,
+          104,
+          103,
+          104,
+          104
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_default",
+      "outfit": "diving",
+      "direction_index": 5,
+      "direction_name": "north_west",
+      "status": "issue",
+      "priority": "P1",
+      "idle": {
+        "sha256": "ab63e46be93b639aa56705b622bc340d1e9ee6fa24ee1a420dd50b69297a3683",
+        "bbox": [
+          46,
+          18,
+          83,
+          104
+        ],
+        "facing": "LEFT",
+        "offset": -2.25,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "d99aee4bf4af0ec43a39ae21233eff34c27d223c7bb9c51bc4582d9ab45935cd",
+          "8c392f3f8228aff89d3a4d2c3bbf1f62ff6316faa770796215a99a4262af223d",
+          "90a17c02b01ce5e6ee780a6467b0df216b6748e7ecae5bde505f3d9a5fcff1a7",
+          "a5d619b9005d91ff78bf073c39694e9a3234f7611bab0fd6adfd097790316cb9",
+          "1a8167f6251a5422680e70bff3dfb232b554c095e078704c141bec38c7cc128e",
+          "021bfe79ed12825a06b14717a4a33827c5d88817500643e1414b14c7e09f18ed",
+          "0f3440a5d8cc0c621726d2b38785acd3d14051baa30fe461cd2949bf0766bbfa",
+          "b3541e485d30588f85b022f3bde9264987439baa89a76c822f07c31a68e18582"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "CENTER",
+          "RIGHT",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER"
+        ],
+        "offsets": [
+          0.03,
+          1.24,
+          0.67,
+          0.25,
+          0.04,
+          0.51,
+          0.34,
+          -0.12
+        ],
+        "spreads": [
+          18,
+          16,
+          12,
+          15,
+          16,
+          14,
+          12,
+          15
+        ],
+        "bottoms": [
+          105,
+          105,
+          105,
+          105,
+          105,
+          104,
+          105,
+          105
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [
+        {
+          "category": "stride_collapse",
+          "priority": "P1",
+          "description": "NW walk foot spread collapsed to 12-18px across all frames (vs 41-50px in East/West).",
+          "local_cell_bbox": [
+            55,
+            92,
+            75,
+            105
+          ],
+          "atlas_bbox": [
+            55,
+            732,
+            75,
+            745
+          ]
+        }
+      ],
+      "action_recommended": "Re-author NW stride to restore natural 40px contact extension.",
+      "evidence_path": null
+    },
+    {
+      "identity": "female_default",
+      "outfit": "diving",
+      "direction_index": 6,
+      "direction_name": "north",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "c12ff9fb3c1cb8e33fafeb2545d9b6c026527ed0932c8bcaae5896e1a9c1159b",
+        "bbox": [
+          47,
+          18,
+          82,
+          104
+        ],
+        "facing": "CENTER",
+        "offset": 0.0,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "9d1f8b71f89db63ff9e5a60797bd722f542a963b0855b21a7d4f00f542fb1ecc",
+          "0ac65d4b8168ce63deab6092456eef70e79a9a07027a415d7f39bd872661c49e",
+          "0b29aaa891e210a9012fa0984dbac996070adb67749ddff9e076f46b02fbc16b",
+          "05d8dee4bcf11dc532fe3782cc1454c4fc0c3c86b49047f73c85dd0497f40deb",
+          "f5a005b7177a0719971036a0e8f96ac6dba9a14c8a28d1254ac5b15b953ca070",
+          "77fa9cbadb7d41eb243ab5580cbd630cdd4c6f6a03676eb5c3d92338f7c26e40",
+          "138e2e618e079acaf38ef0ffa7c364b082d0c164aae1ae9de82a8b998a027f8a",
+          "eb01bdb784385cf616f4d3a8cfa2350ee6a3f7c98a3845d22ec38f1c07c713c2"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "LEFT",
+          "CENTER",
+          "LEFT",
+          "CENTER",
+          "LEFT",
+          "CENTER",
+          "CENTER",
+          "CENTER"
+        ],
+        "offsets": [
+          -1.13,
+          -0.04,
+          -1.4,
+          -0.11,
+          -1.31,
+          -0.14,
+          -0.73,
+          -0.43
+        ],
+        "spreads": [
+          19,
+          20,
+          19,
+          18,
+          18,
+          20,
+          18,
+          19
+        ],
+        "bottoms": [
+          104,
+          104,
+          104,
+          105,
+          104,
+          104,
+          104,
+          104
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_default",
+      "outfit": "diving",
+      "direction_index": 7,
+      "direction_name": "north_east",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "f9d57a244d0d2848c373d374e1ddd3d6320771d66b90ae6b7a3504d77fff5574",
+        "bbox": [
+          46,
+          18,
+          82,
+          104
+        ],
+        "facing": "RIGHT",
+        "offset": 1.1,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "f05e06b6b00f8ff76c7d01ec58fbfc5abfb34c52684feff8970b5a4e3ffda387",
+          "3f2e74f8f9a81154475ba30a58cf557f328f52483dc5db05a8f334e05dcc2c8d",
+          "92f0943e1877e9e2ea2f882e47da5976ac436f3690709f6c682e9dd16c8a5667",
+          "0066d2ffe9b1b5057fa4931d41f0309776823b03d3b3f2f57879688107b18ac9",
+          "cbe1dfff8d044100eed6504cfa73ed53f6bb26d851e92b86da790ab0e077b496",
+          "8ecaf56a78f4026045c703a65ffbd72856b27de13990cdbdb136f91862a11ef3",
+          "5a4f2cba5de6209f3627efbec0089f47d5649328183199a39454ced336e35534",
+          "32e7539928e515791a97c60594360dac7f0eb626b4e760c4dd6af7358a5a8a6f"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "RIGHT",
+          "CENTER",
+          "RIGHT",
+          "CENTER",
+          "CENTER"
+        ],
+        "offsets": [
+          0.22,
+          -0.49,
+          -0.68,
+          1.76,
+          -0.28,
+          0.96,
+          -0.23,
+          0.56
+        ],
+        "spreads": [
+          41,
+          33,
+          19,
+          11,
+          39,
+          31,
+          15,
+          20
+        ],
+        "bottoms": [
+          104,
+          104,
+          104,
+          105,
+          104,
+          104,
+          104,
+          105
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_nusantara",
+      "outfit": "daily",
+      "direction_index": 0,
+      "direction_name": "east",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "b3161b072a6e212a2b0129a5c8adf92cb9a899171c2f0b3269950a1f721de65b",
+        "bbox": [
+          48,
+          18,
+          80,
+          104
+        ],
+        "facing": "RIGHT",
+        "offset": 4.57,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "3510d456da8c844d1697ecbf4a9828725bb4a03a258b2644e0d88e0125f11f87",
+          "6be3893065cba3ee8848703b0ca31b7fb348fe97532d409fd8d3abe13cf68c65",
+          "9e1948acadb880cf5d4a1e80429240c1b274cf7f27799aa6dcfb8773df44fb36",
+          "724d0f31eb6e0e0e54f52e34a1062814fb2b2cc98d55e0e16f84840452ea1221",
+          "71d3f52ab417837dfeb4504a7f3c7151681f8bd2e31bc2d9782c6774ecc84d8a",
+          "d048e5a254e4e942ea104c0279acb47a022b3b56017dc4f148b9f26a5e55cf5b",
+          "260055430b519e8f64969bc1ffae964b31514114d51d629395acd5ed6cef50d1",
+          "c2c3c170e12d75134dd9a07020c952fbda70d39a9957b9e9af643310f82d6cba"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT"
+        ],
+        "offsets": [
+          4.17,
+          4.47,
+          5.15,
+          5.84,
+          4.39,
+          5.35,
+          5.31,
+          6.23
+        ],
+        "spreads": [
+          49,
+          38,
+          19,
+          24,
+          48,
+          35,
+          15,
+          23
+        ],
+        "bottoms": [
+          104,
+          104,
+          106,
+          104,
+          104,
+          104,
+          105,
+          104
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_nusantara",
+      "outfit": "daily",
+      "direction_index": 1,
+      "direction_name": "south_east",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "311b727d3a8e6cd84d54dc432c78985ce399096bd83e75a52180b8b1f7d78459",
+        "bbox": [
+          46,
+          18,
+          82,
+          104
+        ],
+        "facing": "RIGHT",
+        "offset": 3.79,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "9ad835d2ed8a4e999b7aa743311452f915c7b54ba379f3834307a955b46f17a5",
+          "2520cfee75419a4b975568cb550e12a568a820a18486f67f29517e0bfb9fcbfb",
+          "a18d407ad56cebcd244296344d630540e3dcd5d9f45f3ec49f41c29d8d63d87b",
+          "37fbc6321d94039070a6bc8ac917847bb5797e6f9fcfb40420c86dd03f549732",
+          "0134082dbbcf994d43e412c977f9eaced1e396b76a3299805eb960e607baf7b4",
+          "9726edb47c908784206929af92ee70d5bc5553b066358df00a29693b1f77d91e",
+          "eccde2f83e4fb9ca30dfc29b4d98e4b865c71af7bc9356ebc2587af14939c1bf",
+          "6452619182c540fc7f155655ba468fe4a5659ec1b523386a47fa7a902b318b60"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT"
+        ],
+        "offsets": [
+          4.55,
+          4.63,
+          4.44,
+          4.08,
+          4.56,
+          4.52,
+          4.6,
+          4.03
+        ],
+        "spreads": [
+          44,
+          30,
+          15,
+          17,
+          45,
+          34,
+          17,
+          21
+        ],
+        "bottoms": [
+          103,
+          104,
+          105,
+          103,
+          103,
+          104,
+          104,
+          104
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_nusantara",
+      "outfit": "daily",
+      "direction_index": 2,
+      "direction_name": "south",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "84d91fd7bc7ebeaf20968b2a866563695595f08eb12e21bc12596b228e80cdbc",
+        "bbox": [
+          47,
+          18,
+          81,
+          104
+        ],
+        "facing": "CENTER",
+        "offset": -0.32,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "4c94fa78445174930f941f33e762d5bfa74743161a68b300b54063a5340a8537",
+          "2b9c457363b324b133113ec642773c35385829766c08a98c0a1c6b6ab8cfc789",
+          "908aa51f1fcd7ce2ff9b9c7af3cf99364b2a4f19c856e050deda5e34e6795ff1",
+          "df018c78dab0f2fc711b7ae582f3ef78a9ff5000b418f8b626e34af2e6d922a1",
+          "5099dde3e93f384d02c98aca149f64e497b89020821fc90190eac1bbf854bfcb",
+          "076935a863afd5b86b1e2e72cac41b59092aa330181d63f8b788e5ac73fec947",
+          "510206e64b7ad278fd139ab38f56840a6879ca48f040861c637aca5a7ceb27bf",
+          "42ae6588fd3ce810ccef9f0fd86fe0224b87e1a8292489954108921e4f66eddf"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER"
+        ],
+        "offsets": [
+          0.76,
+          0.5,
+          0.14,
+          -0.01,
+          -0.24,
+          0.11,
+          -0.37,
+          -0.01
+        ],
+        "spreads": [
+          11,
+          11,
+          11,
+          13,
+          13,
+          12,
+          10,
+          11
+        ],
+        "bottoms": [
+          105,
+          105,
+          105,
+          104,
+          105,
+          105,
+          105,
+          104
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_nusantara",
+      "outfit": "daily",
+      "direction_index": 3,
+      "direction_name": "south_west",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "b8fd8fef2b18976e8cd249789f469e8f6c2d0ea29e7b09714e1c9c6976c1aec8",
+        "bbox": [
+          47,
+          18,
+          82,
+          104
+        ],
+        "facing": "LEFT",
+        "offset": -3.93,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "7f989458f7645ebdb872a4af62d98bf4ca5bd06429b7706e8f057a07549cf23d",
+          "3c19b6656953337a361cfd3963f9a79dfbe0ec5364898804931d5bae567fc2de",
+          "5f406b3d4779aa0ba97d057cbdcda22687bd6452b2fcbf91b1cb8dce856b6a04",
+          "6d69e00f557bd371e5e254e29df5cb58e87e30b7dfd599d3f1e33515f064f3d4",
+          "8c17d386847a3ac10c9fa74f1b81a6a30dde21564036a595d06502c706fa60ca",
+          "52d06785c02714a904ae85a28cb1484ec569c861faae51f4484785bfcbf884df",
+          "367d2a2398c6dd5fa283923101e6ce26dca404699c9f39d34613a22cd8da16be",
+          "3ff6c43bc4a396965188caee4372cf2d456ebffe6249b1950b7e72a2d3c70a6d"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT"
+        ],
+        "offsets": [
+          -5.21,
+          -4.95,
+          -5.12,
+          -4.43,
+          -4.75,
+          -4.52,
+          -3.91,
+          -4.55
+        ],
+        "spreads": [
+          46,
+          34,
+          23,
+          26,
+          43,
+          37,
+          15,
+          33
+        ],
+        "bottoms": [
+          104,
+          104,
+          104,
+          104,
+          104,
+          104,
+          104,
+          104
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_nusantara",
+      "outfit": "daily",
+      "direction_index": 4,
+      "direction_name": "west",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "b52f9d16cbcc0aa086d5d1e7a8505a819c50c073084f7f2474cba6ca40ff4df2",
+        "bbox": [
+          48,
+          18,
+          81,
+          104
+        ],
+        "facing": "LEFT",
+        "offset": -4.59,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "fc4251e8fb9a01502fe0b80b7aec1c39ddfac79d1d51bc517c5bb90f47a85a19",
+          "5c89a9e975440688c249aaa5c71cdfc37cc929976c57cd4c95d6f27a28cd7b9a",
+          "619a214e122f16adfd73967dfc733c24e4502a8e0b3f8dd21e1be929d8076cc8",
+          "e9a355b532556d235a4d081801e7a5e28d66129bd1ae2a5a40b1eaf340d0b38e",
+          "b1bd4d16d01f00f67fcda7092019aed9255464e98fb26cd722186ef1afe85771",
+          "b65aa151155a86c82e033bce6371f4904d8ecd6ac73457956b32938946a0fdee",
+          "77648aa3418a7b902c48db00b52000a454c2c876b4b3ab42f8254c65347e363d",
+          "855d23eed578729db15e9c34799b7af69fdc7e973d49ebd57a513a66ea9a8d50"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT"
+        ],
+        "offsets": [
+          -4.68,
+          -4.1,
+          -4.58,
+          -4.53,
+          -4.63,
+          -4.69,
+          -4.85,
+          -4.91
+        ],
+        "spreads": [
+          49,
+          35,
+          16,
+          12,
+          51,
+          35,
+          14,
+          23
+        ],
+        "bottoms": [
+          104,
+          103,
+          105,
+          106,
+          103,
+          103,
+          105,
+          104
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_nusantara",
+      "outfit": "daily",
+      "direction_index": 5,
+      "direction_name": "north_west",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "c24c8a2a2959834715e63eb78c02e6ec740ac536c559d3ee98122d3d9157b28a",
+        "bbox": [
+          47,
+          18,
+          81,
+          104
+        ],
+        "facing": "LEFT",
+        "offset": -2.95,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "eb4431a28309047a77cc2f352d80e2a04c5091ce09c2a1c74263baa183361a5c",
+          "e5755424358df048f3e8584a459261625e09c07bb4a358e53ee47e70772a08cf",
+          "b39abd2766dff148ea1408406abe8a81797c8edd82c0ba9547942354f875debd",
+          "3990d5893226362d284647885b5dd79f6c2f49607383571445a485945edd5171",
+          "7e97e9b8901c888bed12c693b2cf31d66b324cd56bc224cc883f48d19e8eb619",
+          "c6052812fb583bf1ee17204cc7fcfa217c2ceaeebe2eb5f99ab26b67a94bf530",
+          "eb175c344505639bcd066a2bebf6114f010b9729b6691c7e10e9ad7328d44687",
+          "c0ecddbd7f675fb8a62b0f1e624fb1deefa10cbd514f508f9a4565a82672a746"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "CENTER",
+          "CENTER",
+          "LEFT",
+          "CENTER",
+          "CENTER",
+          "LEFT",
+          "CENTER",
+          "CENTER"
+        ],
+        "offsets": [
+          0.66,
+          -0.3,
+          -0.91,
+          0.64,
+          -0.77,
+          -1.16,
+          -0.18,
+          0.08
+        ],
+        "spreads": [
+          48,
+          34,
+          15,
+          14,
+          37,
+          27,
+          14,
+          13
+        ],
+        "bottoms": [
+          103,
+          103,
+          104,
+          104,
+          105,
+          103,
+          104,
+          103
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_nusantara",
+      "outfit": "daily",
+      "direction_index": 6,
+      "direction_name": "north",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "77d12783b97b8614417c449a49ae617463be60b8cba9cf7cb039ef3683c0ec05",
+        "bbox": [
+          48,
+          18,
+          81,
+          104
+        ],
+        "facing": "CENTER",
+        "offset": -0.23,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "a190246f25e02d4b89e59c83acb3a2d0a744288bb787ab6c5401eba461b2f194",
+          "756f10a10a642c56998af1e803fa10b2cef372c55ffbe334057dad8464077dae",
+          "0ea2a9ae8c961847cb2f63afaa942b96e2bd13ef6af19c83b162f9164f6d5eb2",
+          "f9cb618ecb951324848351727b2401db72cb873f231bcdf9be2ee72cd788617e",
+          "039864c162408276da7165e2fd8f6925b28f809e026fa88dda2e8ccdebeb81a4",
+          "019fad62662b6b2c8c7980f3f4c260f6a802d125960c00e604b787947dbf1f8f",
+          "cbe3dcdb448323f393c8561efc71b87646afe3786b0571df8f06b2bc054783a9",
+          "c9c583ca83667cc615807a95acafd7c6b95ebff7456b1e86ff803637b7589b59"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "RIGHT",
+          "CENTER",
+          "RIGHT",
+          "CENTER",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT"
+        ],
+        "offsets": [
+          1.09,
+          0.2,
+          1.53,
+          0.59,
+          1.16,
+          0.81,
+          1.31,
+          0.81
+        ],
+        "spreads": [
+          17,
+          18,
+          14,
+          15,
+          15,
+          16,
+          14,
+          13
+        ],
+        "bottoms": [
+          104,
+          104,
+          103,
+          103,
+          105,
+          104,
+          104,
+          103
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_nusantara",
+      "outfit": "daily",
+      "direction_index": 7,
+      "direction_name": "north_east",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "ea38e6e59fb7e3ff08271cbd662795ff89db53d0d2209d3b31ae2337fd33fa70",
+        "bbox": [
+          46,
+          18,
+          82,
+          104
+        ],
+        "facing": "RIGHT",
+        "offset": 2.29,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "9059e5ace05c1e11736a196692859d332ab11628cfc64db6174fa6374b37fec6",
+          "3d152d35c569d4acb36aea5a5283d5fd0a7aa013947efbd02462035f2f06117e",
+          "515e182a399b16597e36a9d1c66ae44efb74491ada805590c7f6cdad94776d82",
+          "d7b0a72e9f46cbd13ffca90b7d0ea11c9a2728959f014b946102fdf1c15b3ad9",
+          "3a16de8e47ad9429db93f8593455969f8793a36ae12f59b262ca20445a7699b9",
+          "0d7efdb2eef4f76b3ee7602ce8f6b67ad6438fe65f12d45da3a7232b3ded3ca4",
+          "de92ba25c58cb6c1afcf77fc7849ff40abb1b62adf4e960e21b418cae51d41a9",
+          "05e8748029bc82f7aaebb64ab91a882bd880fd3970da38a192f1097815db1bad"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "RIGHT",
+          "RIGHT",
+          "CENTER",
+          "CENTER",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT"
+        ],
+        "offsets": [
+          1.68,
+          1.88,
+          0.47,
+          0.61,
+          1.69,
+          1.19,
+          0.94,
+          2.1
+        ],
+        "spreads": [
+          37,
+          30,
+          19,
+          14,
+          40,
+          27,
+          17,
+          13
+        ],
+        "bottoms": [
+          103,
+          103,
+          104,
+          104,
+          104,
+          103,
+          104,
+          104
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_nusantara",
+      "outfit": "explorer",
+      "direction_index": 0,
+      "direction_name": "east",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "6391ad58a568c195c445cbaff26de46aae9a79637e0cfbeeb95b0fe9b7d904e4",
+        "bbox": [
+          48,
+          18,
+          80,
+          104
+        ],
+        "facing": "RIGHT",
+        "offset": 3.36,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "502640c82cfba48dcd7450eb0e3167ca53984d4ee4c12e5db2efb5bb65e3d821",
+          "730b9fda62dc8f23a361ee928f6892ac608b0322d394fae86f4362b33b6618e9",
+          "c493b1ffedd1d74b5d94325c76ea591f185b3269d8dc6a6fa33b1387f441e9bb",
+          "8b65ffb5c1c6fa5f98df31805c882f2c0c035a0d7ab91bbd684eda02e907cd80",
+          "4e9f678144094d1d2766a3d79b84d8db4bcc9ac13ad50858d15470b60a729153",
+          "42bb46543e9fc9b24ec3096973778b6cb39c4a351588333c44a89a2bcf7b6a3b",
+          "93aab2affe4edda83128eeddca28022097e10bb44dcad794506176c980f67d69",
+          "dec6ce202a27762faaf1c18c6d986db60032a463bad16b1e9d40bf080dd2482f"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT"
+        ],
+        "offsets": [
+          3.09,
+          3.26,
+          4.31,
+          3.72,
+          3.46,
+          3.33,
+          3.71,
+          4.13
+        ],
+        "spreads": [
+          46,
+          36,
+          19,
+          14,
+          48,
+          35,
+          16,
+          21
+        ],
+        "bottoms": [
+          103,
+          104,
+          104,
+          104,
+          103,
+          104,
+          104,
+          103
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_nusantara",
+      "outfit": "explorer",
+      "direction_index": 1,
+      "direction_name": "south_east",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "951f92e93de69781f23ee077a26802d849b6bf8884af1519f045edfabcf3bd89",
+        "bbox": [
+          46,
+          18,
+          82,
+          104
+        ],
+        "facing": "RIGHT",
+        "offset": 3.47,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "17bfc4c304cac30a5456443a77480f580a1e0d5616183dabc4badc4b73fd1792",
+          "13cf9dcc75c7944d0c677ac4f079497d44254663901f4c0c9dbe24c2d7f4c0cf",
+          "bb71757ad7d8b6766da3f9d579d1e57fd6d16b475a0154fa1ee8253b59d6182c",
+          "716aed89a9807fa06c62ac97324c88c97f6b4ed9690a823e336ee0ae6197ee5b",
+          "17762e4431099b736a9815397c1cb9d4448faa9ea7cbbfa0541b4c1167ef0185",
+          "721c2f1f9fe2ec3785bfdcbf9f065670466d3776eb967a0dcb193a905e6c74f0",
+          "7babaef75cbadfdd9d093d1f7a9228be4ab2860978520b662c54047b2eae3e56",
+          "0cc36b8e31ec15d7a2fb42257dab2f7fd86eed5559ddd765f6d55a3d7906fc98"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT"
+        ],
+        "offsets": [
+          2.89,
+          2.48,
+          2.47,
+          3.18,
+          3.54,
+          2.63,
+          3.11,
+          3.15
+        ],
+        "spreads": [
+          41,
+          28,
+          15,
+          14,
+          46,
+          32,
+          19,
+          21
+        ],
+        "bottoms": [
+          103,
+          104,
+          104,
+          104,
+          103,
+          104,
+          104,
+          104
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_nusantara",
+      "outfit": "explorer",
+      "direction_index": 2,
+      "direction_name": "south",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "a090b198b89c68496d216640a63b4711b4051e05a9b023d98a2d4a57343fdc98",
+        "bbox": [
+          47,
+          18,
+          81,
+          104
+        ],
+        "facing": "CENTER",
+        "offset": 0.34,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "1cfb850d58022dfe4ae07c119ed109a2c6592106db762e6ab05238056dcc4302",
+          "04a65d70eb602ce5b9b9ce75f74315fed39b459f496ed8e6b34e68445910bf97",
+          "acdeeb3ff3e69f5f53f775ed6e9c365d3e8873cea719a0f7912170f9576d5d8d",
+          "9e0154988bcc436fdbc4321ed6df38aa0fda860d814db37ecedd5c6f8b1f78cd",
+          "e0845bb4eb2e2eab8899efb6ae38bfd7aaf7b7011b4f7fe9edcf7afc7076af36",
+          "a0e82f5813a5b8f89d478c85b4232456e18819f8ac025c64ac3cd5a1804a0bb6",
+          "eff93ae5cffa8cb0126e3a2bfe065aed71bd01cda9fbd85bec0c01ef1f689958",
+          "f16de7c0d58ecb03726e2b2e332dd9fe9be2ee49f35baaa3753b94f27beb9eab"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER"
+        ],
+        "offsets": [
+          -0.14,
+          -0.1,
+          0.29,
+          -0.66,
+          0.06,
+          -0.26,
+          -0.75,
+          0.28
+        ],
+        "spreads": [
+          14,
+          14,
+          12,
+          13,
+          15,
+          15,
+          11,
+          11
+        ],
+        "bottoms": [
+          104,
+          104,
+          104,
+          104,
+          104,
+          104,
+          104,
+          104
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_nusantara",
+      "outfit": "explorer",
+      "direction_index": 3,
+      "direction_name": "south_west",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "cd5476f3a77db4aeba6d7e33dfd5d08888dd8666bd0f57faade204e878b4450e",
+        "bbox": [
+          47,
+          18,
+          82,
+          104
+        ],
+        "facing": "LEFT",
+        "offset": -2.99,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "203cab0075b3c949de6247c99d0a63dc382f4aba63954b31473c259eed232444",
+          "3d5e1203786c2d8831d878eabd7ef8694be75af6a6bfd468f29d3771af980eb9",
+          "b3410f8976f27ed2e36cdc008fbe69bcd56f6ecf5d78b350f011ebe94f4ecc1c",
+          "72b34e9ba55e3d9e6a29301637c227275cb0202bd915dd1ccf17f21dc5e000d1",
+          "a67c6e26f01a598cb566d126387a7210f3c6936628baeffc042960f14d5a6411",
+          "edb6c04c6a5f6e4e508246a7b03e490cb0b8e9dbb40c2886d71d0f22ee8c6f98",
+          "d70230ca4912092d5e1e37cf6d60bdb4c62434f28f04eed62094ab516434f59b",
+          "87c06fab442ea707776ec90e84bb7b9eb0e985768a6c11c05e16d41f1ce84396"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT"
+        ],
+        "offsets": [
+          -3.86,
+          -4.44,
+          -4.79,
+          -5.28,
+          -4.78,
+          -4.72,
+          -5.12,
+          -5.42
+        ],
+        "spreads": [
+          46,
+          33,
+          23,
+          22,
+          45,
+          37,
+          16,
+          33
+        ],
+        "bottoms": [
+          104,
+          104,
+          104,
+          104,
+          104,
+          104,
+          104,
+          102
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_nusantara",
+      "outfit": "explorer",
+      "direction_index": 4,
+      "direction_name": "west",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "cfd71331ba636716f34a06a82a5a94917fd76f33af3508a62295063e21f2b791",
+        "bbox": [
+          47,
+          18,
+          81,
+          104
+        ],
+        "facing": "LEFT",
+        "offset": -4.41,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "c123010d05554edede5697bffb537b0765506a211bb836fcde80ad71c88ff9fc",
+          "c10c5623d0971208e74f11082a45a8bfe0f70910dfe0b9a835f5e814bb2f7d72",
+          "d93e15fed01b66030688728a12ef42140f014406f6fbd1702f309193e5b04853",
+          "9c3afe92a35b85181e1b6bdb73d219041a5ab9bd91f293eec30419dc070b97c0",
+          "785c2fc009c251d7f0b472df2460b6ab5cdd8e4f0dc7aed6f9f6da5fcaa4e727",
+          "c319bc2e779a1387867911d44783c401c4945076a84be4d953704a3d8a381229",
+          "c9e2f60ed412e3ffc34e8129b10150d079e1567139a9ee84adce8771b5ff7393",
+          "d552440b1f50a89844f55f497b1e51f973b62452a579bbf53de24711af572740"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT"
+        ],
+        "offsets": [
+          -4.22,
+          -4.16,
+          -4.99,
+          -4.67,
+          -3.93,
+          -3.89,
+          -4.7,
+          -4.84
+        ],
+        "spreads": [
+          49,
+          32,
+          16,
+          13,
+          50,
+          36,
+          17,
+          22
+        ],
+        "bottoms": [
+          103,
+          103,
+          105,
+          103,
+          103,
+          103,
+          103,
+          104
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_nusantara",
+      "outfit": "explorer",
+      "direction_index": 5,
+      "direction_name": "north_west",
+      "status": "issue",
+      "priority": "P1",
+      "idle": {
+        "sha256": "c6132ee7f2f47d33bc6f1d830e1b979faa48bca0fda67e0605b9f897e5703a2d",
+        "bbox": [
+          47,
+          18,
+          81,
+          104
+        ],
+        "facing": "LEFT",
+        "offset": -3.32,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "0a08e4a633405c2ca4c92ec7e235dfd4b61a69efa70991d5db8fcecfca0afeb4",
+          "86cd2346887b408827396f17adcbdedd23a873952adab8d8c41272357f18ea81",
+          "bc1341b1f7cc23473b77ffee2775bad95937cc191cd78267c1e74af59ab830d4",
+          "7d1aaf17379bfee105f14db85da3714544218a3bd331ef4891713638e37aad8e",
+          "2df5aacd4ad223a498e8be3faba06c09450835dda65b9cd48cd6882156841ffd",
+          "4a7869480b56bb8c20a0838744292955a43c41da839a88f5ea939e4be7fe3f8d",
+          "678e66c86721791520fd2cef349e6e536ab6e8b3777452ca32e844be7444a9df",
+          "9d36457b8e566b268769faf9d3f5958cd2a08ee169760edf5fca83557c774d47"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "CENTER",
+          "RIGHT",
+          "CENTER",
+          "CENTER",
+          "RIGHT",
+          "RIGHT",
+          "CENTER",
+          "CENTER"
+        ],
+        "offsets": [
+          0.72,
+          0.99,
+          0.19,
+          0.05,
+          0.85,
+          0.91,
+          -0.44,
+          0.39
+        ],
+        "spreads": [
+          43,
+          33,
+          17,
+          19,
+          38,
+          30,
+          15,
+          23
+        ],
+        "bottoms": [
+          105,
+          105,
+          105,
+          105,
+          105,
+          105,
+          105,
+          105
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [
+        {
+          "category": "direction_drift",
+          "priority": "P1",
+          "description": "WALK row 5 f0 has weak facing (offset +0.7) and drifts to the right, failing to establish clean upper-left orientation.",
+          "local_cell_bbox": [
+            60,
+            24,
+            75,
+            42
+          ],
+          "atlas_bbox": [
+            60,
+            664,
+            75,
+            682
+          ]
+        }
+      ],
+      "action_recommended": "Strengthen upper-left profile in authoring.",
+      "evidence_path": null
+    },
+    {
+      "identity": "female_nusantara",
+      "outfit": "explorer",
+      "direction_index": 6,
+      "direction_name": "north",
+      "status": "issue",
+      "priority": "P1",
+      "idle": {
+        "sha256": "a6af2ab80d2173e337a6f5cc86eba57252ea121ba01c630be9c07e5a4b11af3e",
+        "bbox": [
+          48,
+          18,
+          81,
+          104
+        ],
+        "facing": "CENTER",
+        "offset": -0.02,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "122159056160af0e38590f0a0c2760047c773f0cf995b2d6d23bfab3b6f65fec",
+          "2092a8d5641cfe99228e1d875d4f6043132e6f6647f6e081b846fd32493dac5d",
+          "36e93f52ca0a0879ed5cc78d19f0bbb2b720cb25cb645af31c48269900381a4a",
+          "d2deb7c5595b96f5b5249be37863e8f23299f81184540488ad4403c44400040d",
+          "e5d6b1fc2359696326da32e487a88312a333d1d4f9853d7f808706da483e963e",
+          "a54527005ff5b5a3f351effaaabf6d12fa33ea16f16be1d2e3fdd66df2be318f",
+          "48f0e2d3b8a5061f23e60fc540a795b23e80748501afab6b53f4959510150572",
+          "1219ddcb46f8f93d0b36873d292dcf0d057784f10439e91b4a228c86225c5a9a"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT"
+        ],
+        "offsets": [
+          2.03,
+          1.61,
+          2.55,
+          2.19,
+          1.71,
+          2.0,
+          3.36,
+          2.74
+        ],
+        "spreads": [
+          16,
+          16,
+          15,
+          13,
+          17,
+          17,
+          17,
+          12
+        ],
+        "bottoms": [
+          103,
+          103,
+          103,
+          103,
+          104,
+          104,
+          104,
+          103
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [
+        {
+          "category": "head_turn_asymmetry",
+          "priority": "P1",
+          "description": "In WALK row 6, head is consistently turned to viewer-right (offset +2.0 across all frames) rather than centered in pure North walk.",
+          "local_cell_bbox": [
+            64,
+            24,
+            76,
+            40
+          ],
+          "atlas_bbox": [
+            64,
+            792,
+            76,
+            808
+          ]
+        }
+      ],
+      "action_recommended": "Center head and spine orientation for North walk cycle.",
+      "evidence_path": "docs/visual/gemini-character-source-audit/proof-female-nusantara-explorer-north-turn.png"
+    },
+    {
+      "identity": "female_nusantara",
+      "outfit": "explorer",
+      "direction_index": 7,
+      "direction_name": "north_east",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "495165c54b4ba911e5970dc29b22b66b296a5d2aa1013e0d2318674d28e4184a",
+        "bbox": [
+          46,
+          18,
+          82,
+          104
+        ],
+        "facing": "RIGHT",
+        "offset": 2.53,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "6b7a2da24c10459c570555bf513678aef260ecb5542044e8bd671e3a5d3419b0",
+          "d9cf6ddbeea65a5fac029cafa8e5935d81291508fa23d53b9706fda9b92f4cfa",
+          "95cad9f7e3dbfb2cca011482d68ed890a002524fa86ef37443eab95488973527",
+          "6c464831c705ddfece2a9e71255955260b6fc14c239a610b3bcc9d4f7d2d5ba0",
+          "248b738cd7fa89f4ffdea1cd72710ee3d2b60ac037630ba2e81fde1190133ebe",
+          "e325b759735fd4e24f87af4f74de5e21b04d02bdca2d15ae4d5d9fea06ea8f81",
+          "eeaf69ecbdaf29902a6f6423eb3ff17ff3c4a5b3c5fea13be253e6fcb6cda830",
+          "b7f57ff2271da247839c552e9102cc29df80cd961189e168b3d5dad5767885f5"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "RIGHT",
+          "CENTER",
+          "CENTER",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT"
+        ],
+        "offsets": [
+          1.29,
+          0.01,
+          0.8,
+          1.89,
+          1.2,
+          1.36,
+          1.01,
+          1.34
+        ],
+        "spreads": [
+          35,
+          31,
+          20,
+          21,
+          43,
+          30,
+          16,
+          19
+        ],
+        "bottoms": [
+          103,
+          102,
+          104,
+          103,
+          103,
+          103,
+          104,
+          103
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_nusantara",
+      "outfit": "diving",
+      "direction_index": 0,
+      "direction_name": "east",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "cd9cedf58cbd5250505255a756fb1c3024647701157167fa970b42fe644fc2fc",
+        "bbox": [
+          48,
+          18,
+          80,
+          104
+        ],
+        "facing": "RIGHT",
+        "offset": 3.3,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "633350ab02d6fe6129109ea70e0805d1c1efda9ab3affb460af57576f6040b8f",
+          "948322b3fb56b3032e96fbd2404f6d3e58be07d6332d350c172c84fd03796c0a",
+          "4221c0451b92127e6a2c0e6223e34b7797bd600b6f87ed2152edaa7af7eae387",
+          "38331ce0d2e6aaebfd3331088676a3a04c6cadc09c2b38ac54f494fcdf6eda20",
+          "e27a1d80abc9dc7d3669af10405011abde7a499b0f026d8d12bab600794a158d",
+          "7097d4684f4bb825d228d767bc78d4d4ba178ea7047a5e44fd60fbe221b119cc",
+          "629c6ae4c46b12587f0273667bb63f5edfd9c53a113ee51bf3bfec4ad4abfc38",
+          "5cb426422602f007a34d818168354ea6ffaaf540073e42dd86e1fc9d6195067d"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT"
+        ],
+        "offsets": [
+          2.19,
+          3.46,
+          3.49,
+          3.21,
+          2.73,
+          3.89,
+          3.82,
+          2.89
+        ],
+        "spreads": [
+          48,
+          36,
+          18,
+          13,
+          50,
+          35,
+          15,
+          21
+        ],
+        "bottoms": [
+          104,
+          104,
+          105,
+          104,
+          103,
+          104,
+          105,
+          103
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_nusantara",
+      "outfit": "diving",
+      "direction_index": 1,
+      "direction_name": "south_east",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "4b745e6948803f2f5ba4942657af9f91a069b9d9ee73850a0a4826ec987f638d",
+        "bbox": [
+          46,
+          18,
+          83,
+          104
+        ],
+        "facing": "RIGHT",
+        "offset": 4.04,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "8f6f39d0c6eb3d65e1d5163d7fc732ebdc9cc4ceee546cdc062c40b583773a95",
+          "d58cacca13e5a131d417ac0c1d1dda36867c75223df33e79dd29524d28f5da4b",
+          "20a6faaedd5a33f2e5dafcfdb131611d88df23bfe07361490d2c285dc4a73f18",
+          "29729625455de133a9becaf1c920f81d805dd156c50f62def104770c67de0d1b",
+          "c124770265493fccfb3034a64526aa2f99114f87676567453675ddadba062819",
+          "2ae5307ab238967b2c52ba0234dd1293455f6c74f68a0eca6db3d1ab0d7b4bad",
+          "07e701c9bdf8acb88f731eafd5fd0c7949153c0517f6e304b459f6f7600487bb",
+          "935d2b8f816cf7010937def29f49317104edd4e5b5ba176145366dd763275fb6"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT"
+        ],
+        "offsets": [
+          3.36,
+          2.43,
+          2.39,
+          3.32,
+          3.0,
+          4.28,
+          3.87,
+          3.31
+        ],
+        "spreads": [
+          45,
+          30,
+          14,
+          18,
+          46,
+          34,
+          13,
+          21
+        ],
+        "bottoms": [
+          104,
+          104,
+          105,
+          103,
+          104,
+          104,
+          104,
+          104
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_nusantara",
+      "outfit": "diving",
+      "direction_index": 2,
+      "direction_name": "south",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "aef1f83ac1e08ba66b9a1187efd3f29c2f5558b97d96d88caddc3728fe1ee81f",
+        "bbox": [
+          48,
+          18,
+          81,
+          104
+        ],
+        "facing": "CENTER",
+        "offset": 0.28,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "35ec9e42ae510e4b8bd053557897bdcb3ad2dcda2ca185aeb7ce009815e7eb74",
+          "7f6bd973f2e4e6d3f172bf834aa98d9102689a1c3d893094b19d7069b40ad29b",
+          "211d02be56f87e56657a9074c5056949bc9bf432ef3c916d898e4970e9ba9c24",
+          "7216e6aebdb1c06b41fe73d9349c61fbb5668b9bdf61b06968bf67676f14eaae",
+          "e21745f1e4fa7cb1dc587781eaf3bf7e1becb041ef20ca3e37116b904eab2227",
+          "88fbd46c3670c2d1877699efd4b165dee69fa93d0a49c34fe78ec647d73a9d7c",
+          "0901cde32313c7bb106782306af5437d3c662010100f45740db4bd7bec640a7b",
+          "a4c32a90af4faa60b88d8b9e86c26da360b1a897aa15d46026f4a53e77d1f790"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER"
+        ],
+        "offsets": [
+          -0.3,
+          -0.07,
+          -0.15,
+          0.03,
+          0.72,
+          0.39,
+          0.39,
+          0.07
+        ],
+        "spreads": [
+          11,
+          10,
+          10,
+          11,
+          10,
+          11,
+          11,
+          10
+        ],
+        "bottoms": [
+          104,
+          104,
+          104,
+          100,
+          105,
+          104,
+          103,
+          102
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_nusantara",
+      "outfit": "diving",
+      "direction_index": 3,
+      "direction_name": "south_west",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "0f6168266a1da5b4acde9b5900792a997bc5d3c54758c3b7ea6903a395782aa5",
+        "bbox": [
+          47,
+          18,
+          82,
+          104
+        ],
+        "facing": "LEFT",
+        "offset": -3.18,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "1a23b2e5894b3775d92cfd2937ea6786f729d2888f061c00a7ed2c64e43bf4f0",
+          "bea6c33850667c9497f1f658f79a6aa1fdc5f745b55b8414e39174c0c53e0082",
+          "d7616322c0c33d215f9180381b7ea36ee1bd58e12319a5d0ed15a9bb25ea501f",
+          "7a6fcee16827cebd9bfba3de989786758745e7948eb44a2f3bda0d322f4acdbd",
+          "cbadfd23b2fcc237f6c3c1ebdc73818c4fdf6cd78f0f1a24e00a855e82a4b743",
+          "dd1bdea90118b23cf5e59fe12ee2d285f163871397f148f737f6d445ca8301dd",
+          "aa0911fcc58259eeb32841551ca0c34af41fd4a1885185ee41978bfe924eccaa",
+          "c5bed4e592877ee4d4800c30f91af96fe8072f9ecb15d0cc7fbad2c288677ea6"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT"
+        ],
+        "offsets": [
+          -2.9,
+          -3.27,
+          -2.77,
+          -2.53,
+          -3.67,
+          -2.49,
+          -3.12,
+          -3.0
+        ],
+        "spreads": [
+          49,
+          34,
+          21,
+          12,
+          44,
+          37,
+          16,
+          34
+        ],
+        "bottoms": [
+          103,
+          103,
+          105,
+          105,
+          105,
+          103,
+          105,
+          104
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_nusantara",
+      "outfit": "diving",
+      "direction_index": 4,
+      "direction_name": "west",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "3967c1c507b5d9241f8c182595ae127023a91823ec9e3723e6005a41ba48aebe",
+        "bbox": [
+          48,
+          18,
+          80,
+          104
+        ],
+        "facing": "LEFT",
+        "offset": -2.65,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "e6a3596421cc23fef1e108f22b869fe95d7088854afc63ce45a746dfc460715e",
+          "6abc1d824e27355791c41b29eb061bdcec5257120c3d8753aee99d1aba48223a",
+          "00fef6e5cc5820ca96b672dbe100d62dc561a763a20451c1ee8ad0c8cc817ad6",
+          "17685dbcffcfefd8fc5af8df8b62bd1b9c093737f53e4941dbc7e4c0747bd77f",
+          "abf0b2bf66fd34309a7074dac185da88709e8d226b470b862f73c3c8b1921b06",
+          "0629fea9e81102a7e5eafccacc20800b4875018491f256614464337c6e9ea447",
+          "1ce7787e8b0c81c20fb7bb9817a1887371494ca2f2005e4949e4d06fc37912bf",
+          "4e746f66c35e9750f3c9658d0baff63a01e355dc199e99b0a0da7776eea9e5d0"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "LEFT"
+        ],
+        "offsets": [
+          -4.38,
+          -3.56,
+          -3.39,
+          -4.1,
+          -3.97,
+          -3.16,
+          -4.05,
+          -4.09
+        ],
+        "spreads": [
+          50,
+          35,
+          19,
+          13,
+          51,
+          34,
+          14,
+          20
+        ],
+        "bottoms": [
+          101,
+          102,
+          105,
+          105,
+          103,
+          103,
+          105,
+          105
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_nusantara",
+      "outfit": "diving",
+      "direction_index": 5,
+      "direction_name": "north_west",
+      "status": "issue",
+      "priority": "P1",
+      "idle": {
+        "sha256": "59e71bef2490a083b0d620308a70572fd7c9b19424385e1dae82ebeecdf69f53",
+        "bbox": [
+          47,
+          18,
+          81,
+          104
+        ],
+        "facing": "LEFT",
+        "offset": -3.74,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "884e241d59fc1ab4d4652d9a8142a9c7953a84e87f955a2ba0caa760d9275a8c",
+          "c6a683345a7503050cf57bafb4a719a2e1319494a056d578c3e95daa11d69cce",
+          "4aab481cfa16876c5134b4af4f80a280f4e9e1c60ac8141c35a7972046ddac7f",
+          "be7ecbc8bbc457b0d53bc0a5f69d349ad82758194c51285d8671b0cf94d1f641",
+          "a336742dfaeea7fbd9b1daefa08712cef14758eec6453f05de7687d8a9a1901f",
+          "521fbe62ece81a455032530ad8e50102a87192dce2d410e0a4a8ea5d13302715",
+          "e6a1246febb7cd3e1bbc61f883c83f77821af80f246adcb33203065665c5b6c4",
+          "c4d56af41df60beeeecd48a5faf4aff62af10e0bfab946bd2b0c45d1a8e1d0c6"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "CENTER",
+          "CENTER",
+          "LEFT",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER"
+        ],
+        "offsets": [
+          -0.67,
+          -0.32,
+          -0.93,
+          0.08,
+          -0.24,
+          -0.39,
+          -0.1,
+          0.13
+        ],
+        "spreads": [
+          15,
+          16,
+          12,
+          13,
+          14,
+          18,
+          13,
+          14
+        ],
+        "bottoms": [
+          104,
+          104,
+          104,
+          104,
+          104,
+          104,
+          104,
+          103
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [
+        {
+          "category": "stride_collapse",
+          "priority": "P1",
+          "description": "NW walk foot spread collapsed to 12-18px across all frames.",
+          "local_cell_bbox": [
+            55,
+            92,
+            75,
+            105
+          ],
+          "atlas_bbox": [
+            55,
+            732,
+            75,
+            745
+          ]
+        }
+      ],
+      "action_recommended": "Re-author NW stride to restore natural contact extension.",
+      "evidence_path": null
+    },
+    {
+      "identity": "female_nusantara",
+      "outfit": "diving",
+      "direction_index": 6,
+      "direction_name": "north",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "88c3b443ed032555e33da2f3e9e460319942564a015c47a126aebb18011320f4",
+        "bbox": [
+          48,
+          18,
+          81,
+          104
+        ],
+        "facing": "CENTER",
+        "offset": -0.64,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "7cb417eade37b012d29c97a5381b57d905abb4fe191592e38d28902893121afb",
+          "d7d32039a7ff2d35e693443c6c05a00d39a5d1714717d76f94aa51a4812d5e04",
+          "08a3f095563669329fa53061cb62ec39879b88b181ac3e478d8555bcd879ed32",
+          "05cf1e30f7746680764430fa17c23a4dcbb4f965e7e8e9335595f2f3c6baa346",
+          "0bacd375b28f201ae996f499b4378e8c4ebe00c353a7e8110dd08bb8a0f0f40f",
+          "0e259fe2711be02f5fba94c7f3fa846313be15dea1145c41a330b4f85c850f68",
+          "a3e7b8b8c533428d4ecbe8739ecb71ad8d9d07e280310805016422844b9f1d5f",
+          "f7452ea431617c8a928567424b747edf8c47a220ffb77d3ff73f75dfcf755269"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "CENTER",
+          "LEFT",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "LEFT",
+          "CENTER",
+          "LEFT"
+        ],
+        "offsets": [
+          0.1,
+          -1.05,
+          -0.51,
+          -0.7,
+          -0.15,
+          -1.58,
+          0.55,
+          -1.18
+        ],
+        "spreads": [
+          20,
+          18,
+          15,
+          10,
+          16,
+          16,
+          8,
+          9
+        ],
+        "bottoms": [
+          104,
+          104,
+          104,
+          104,
+          104,
+          104,
+          104,
+          104
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "female_nusantara",
+      "outfit": "diving",
+      "direction_index": 7,
+      "direction_name": "north_east",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "e663103df642a773cd1e6a73f01ae59f7433e048d98feee542532810e2727cef",
+        "bbox": [
+          46,
+          18,
+          82,
+          104
+        ],
+        "facing": "RIGHT",
+        "offset": 1.97,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "abe92d8879d3c010ef9a7ea180807c22ca2cd926a5f460d1966de00f5eac7ee3",
+          "cfc971de70a5e2a33a8ea41f68bb512bad373667b594e89dc6a538fb35b658e7",
+          "9e941f71734e390bd409fc919c8ed46988386e2a4466cb19364ae1a911407d4f",
+          "6e28d4ff93c564424200e5d10b678bfc4f9e8e0aa1e870b675e2d13ee49644d0",
+          "79e544cdedd7867b80e15dae013b73087f65dd2f71fedd5abfdfb62f71693e3e",
+          "e9c731bff8a657741d77108d56a5a39fac25e4c873b61401fd62543e4f9d9e4b",
+          "b968247996669b3f877543b74e6a97a6838193dc40cec184042b0e0a16ad08ae",
+          "e5900aa5facb41c453a7aabd587f6a64d0bd0a5a3c7e7656ccecdc830401abd9"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "CENTER",
+          "RIGHT",
+          "CENTER"
+        ],
+        "offsets": [
+          1.36,
+          1.81,
+          1.16,
+          1.06,
+          1.64,
+          0.53,
+          1.4,
+          0.74
+        ],
+        "spreads": [
+          32,
+          28,
+          18,
+          12,
+          36,
+          27,
+          16,
+          11
+        ],
+        "bottoms": [
+          104,
+          103,
+          104,
+          104,
+          104,
+          102,
+          104,
+          104
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "male_nusantara",
+      "outfit": "diving",
+      "direction_index": 0,
+      "direction_name": "east",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "2628b5facac9985a9ba0606d19021af5a2bd471f1809cae9f9dd015f5b1f5361",
+        "bbox": [
+          49,
+          18,
+          80,
+          104
+        ],
+        "facing": "RIGHT",
+        "offset": 2.25,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "276628f6ccecdf587cdbfd46e778b8b0529d5aa3d86059c1d79a8ab12b250790",
+          "b84ed7cfc4f8fdd0e726c2d3eeea908b483023caf29a10be3dd64fba9c2dcedc",
+          "7ec9625fe6cf8ec1f2abe0abd605c249a1530b37bbad2d19563f7cf52eaef697",
+          "c48d07ef68f4180948757ed75560468b4942b2ea283d299a79c08c0644def781",
+          "905b5534867bf5e70312b924203f7e654b683c0c62c28c32d787091933ea08b0",
+          "0efa47fa2d6ad2a203b53d015fec4c593fd1b54bbf31b1a24298902f91d21e99",
+          "f36ed7dc56ad212081a0c129eba4c42157dc1e09ee38e823d5543826f861f7c7",
+          "f909ea18a0baef279bf6f00ce9e6ce84c6655c883999369ab5411b41e8a1cfa5"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "LEFT",
+          "CENTER"
+        ],
+        "offsets": [
+          -0.48,
+          -0.02,
+          0.29,
+          0.08,
+          0.02,
+          0.13,
+          -1.01,
+          0.3
+        ],
+        "spreads": [
+          50,
+          38,
+          20,
+          23,
+          50,
+          37,
+          16,
+          22
+        ],
+        "bottoms": [
+          104,
+          103,
+          103,
+          104,
+          104,
+          103,
+          104,
+          104
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "male_nusantara",
+      "outfit": "diving",
+      "direction_index": 1,
+      "direction_name": "south_east",
+      "status": "issue",
+      "priority": "P1",
+      "idle": {
+        "sha256": "b8b4362755187f4fa114cd829ba96f7114a3d4b97dc32cbb24784d785c8f0320",
+        "bbox": [
+          47,
+          18,
+          82,
+          104
+        ],
+        "facing": "RIGHT",
+        "offset": 1.3,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "6e1b92230b1ed45c86d0f5f0863e6586fe1a66ab271acf301beb5861fd1423d9",
+          "4266c09e7961e7d2ca83be5ff00354168c2605a727502b70cfa384e841cb3c29",
+          "b5b667dc51b54b92e0edb7ffe1160778312b33ba29fa0904291e4fda9b86932b",
+          "106599d2b6591fd414f283403ca318f430795a05502a8729cece3be59d22424d",
+          "ff517b6f11ce65fb46cf2412e1fc9bb6d9e81b653a75c120a0034b301852fd6c",
+          "b2ff11ce38ef4f4fc3d5a86211d1e27526d2fa5ba414ffa639634e87301b5d8c",
+          "bb088672286fb093c44215135a801f28a68487e937a4c7ef06f4079ce9a27337",
+          "ac1b073e783aca35886810335bc2e6f30b19e0fb12cc96c1e497afe2a1ca5c2d"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "LEFT",
+          "LEFT",
+          "LEFT",
+          "CENTER",
+          "CENTER",
+          "LEFT",
+          "CENTER",
+          "CENTER"
+        ],
+        "offsets": [
+          -1.0,
+          -1.37,
+          -0.88,
+          -0.33,
+          -0.54,
+          -1.21,
+          -0.55,
+          -0.45
+        ],
+        "spreads": [
+          43,
+          33,
+          17,
+          20,
+          48,
+          37,
+          21,
+          19
+        ],
+        "bottoms": [
+          105,
+          104,
+          105,
+          103,
+          105,
+          105,
+          105,
+          105
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [
+        {
+          "category": "direction_mismatch",
+          "priority": "P1",
+          "description": "IDLE col 1 faces RIGHT (offset +1.3), but WALK row 1 frames face LEFT (offset -1.0). Directional mismatch between idle and walk.",
+          "local_cell_bbox": [
+            48,
+            24,
+            64,
+            42
+          ],
+          "atlas_bbox": [
+            48,
+            152,
+            64,
+            170
+          ]
+        }
+      ],
+      "action_recommended": "Align South-East walk frames to 3/4 front-right facing.",
+      "evidence_path": "docs/visual/gemini-character-source-audit/proof-male-nusantara-diving-nw-se-mismatch.png"
+    },
+    {
+      "identity": "male_nusantara",
+      "outfit": "diving",
+      "direction_index": 2,
+      "direction_name": "south",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "46fc1f8a1f439a20d193e72af7ea83b601b308e2779e6383d57ae0df223b0139",
+        "bbox": [
+          47,
+          18,
+          81,
+          104
+        ],
+        "facing": "LEFT",
+        "offset": -1.06,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "fefe87f43834fab9231d47ce78b713ff3f1978786be7ac8e40a967cc870aa29d",
+          "a1def29f05c3afde9eeb708c5c983f19a88956080fb11711c19f5ff7b53d91d2",
+          "dc97ce2b4694e373a7af02f22e80cc7f05b296287aac3cec20f47396d8236fbf",
+          "8f6f853175458879d515659a6be80ad05e7121c3f7c026c309f4c1f4d44ec8bd",
+          "ee1a52efb197910cd052e9d7cf50d31810355f1fc10ff1fd2f47ec80253c20dd",
+          "1bf2cf7226735ef2c54e2f5553cf1f822696c37b707887b3b9d724ebbeb3f51e",
+          "9948b65365129885b86da2dd1b9c8ccc842960972bb1d54dc705028250d35a8e",
+          "3fce9018b8fb10c85e9acd192772b0a1f32b1a1381fa0aeac5a5f867ef4b55f7"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "CENTER",
+          "CENTER",
+          "LEFT",
+          "LEFT",
+          "CENTER",
+          "LEFT",
+          "CENTER",
+          "CENTER"
+        ],
+        "offsets": [
+          -0.35,
+          -0.36,
+          -1.38,
+          -1.08,
+          -0.19,
+          -1.21,
+          -0.67,
+          -0.74
+        ],
+        "spreads": [
+          12,
+          11,
+          10,
+          11,
+          11,
+          10,
+          10,
+          9
+        ],
+        "bottoms": [
+          104,
+          105,
+          104,
+          104,
+          106,
+          105,
+          104,
+          103
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "male_nusantara",
+      "outfit": "diving",
+      "direction_index": 3,
+      "direction_name": "south_west",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "7739b2e71da5a04c28fdbf83765448dc9875453db0de864c1497516ca419ff9a",
+        "bbox": [
+          46,
+          18,
+          82,
+          104
+        ],
+        "facing": "LEFT",
+        "offset": -1.75,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "ee814fe6082efbabd7602645ce685f8f5b3a7a0efca4254da3c63e0e097b6800",
+          "1519d02dd6bb4944e86797ff69ebddb4fc056a7b6f89057efbd9d7a4d801fedb",
+          "93697a70ae37e8a7b613b2f0a0e71e901d60a4aa6156081c44472bc8ed6ab616",
+          "6c377911d9e2d1b9818bf64c5b6893cc1d1807581879963ce7533ce46e12e8a9",
+          "3f3a591a98a528029a03d202c673ebb3ffed5e2d48bd35f4e409d0e4189c147f",
+          "66bda3faa0d7bfcd67544a35364e58b7dcddd88a0b86e77460de9bb6d404c973",
+          "d1d5b70abe8d862d163429e0022d21abc611124c7161bb81ec58da8a3418a8a3",
+          "114b6e6535ec6d33761ed066b8fcc4810fae9aa913b363085782df730c8e1ef4"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "RIGHT",
+          "CENTER",
+          "CENTER"
+        ],
+        "offsets": [
+          -0.05,
+          0.46,
+          0.1,
+          -0.01,
+          0.49,
+          0.88,
+          -0.44,
+          0.71
+        ],
+        "spreads": [
+          49,
+          37,
+          24,
+          29,
+          44,
+          33,
+          19,
+          34
+        ],
+        "bottoms": [
+          103,
+          104,
+          104,
+          105,
+          104,
+          105,
+          105,
+          103
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "male_nusantara",
+      "outfit": "diving",
+      "direction_index": 4,
+      "direction_name": "west",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "d8ee83bc2dd9cc9dc29c38b086d37815592a17a23f4be9087f9b3f6df83c1977",
+        "bbox": [
+          49,
+          18,
+          79,
+          104
+        ],
+        "facing": "LEFT",
+        "offset": -2.72,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "51d746953874df57f049d5cba143d8eef328a12c85d3a06cfae696b3a3f1d748",
+          "1a1d7602fa7479e24fa2e8ec3b51a23383d585af323f87e0fe37e22f40cfe90d",
+          "96fe151b9514b8137bf72d9236a909ffca933e5adcc855acdb4d22e4230ce612",
+          "beb9dbc8f62b8354d485f4efc3c261bb011509b7826fae1ee5304ec9f0fea14f",
+          "35c68eb724977d164e65f51328f6626bcf8a5a0d8ef433dc0dd74e2a9bb76e11",
+          "4f1001369118bcb9be315273ce1a0bca28d7fde55a929e2fb6823a93c75ec50e",
+          "264ed0e5eee3d18879fbf9f577f5f8831e3514c36715a296afe0be1b9924df2d",
+          "960c7f25c29cf905ea6c0c10c304e5bc71685ef47860ca140ad327da37719aa6"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER"
+        ],
+        "offsets": [
+          -0.55,
+          0.3,
+          0.19,
+          -0.33,
+          -0.74,
+          0.17,
+          0.15,
+          -0.31
+        ],
+        "spreads": [
+          53,
+          40,
+          17,
+          15,
+          50,
+          34,
+          16,
+          25
+        ],
+        "bottoms": [
+          103,
+          104,
+          105,
+          104,
+          104,
+          104,
+          104,
+          105
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "male_nusantara",
+      "outfit": "diving",
+      "direction_index": 5,
+      "direction_name": "north_west",
+      "status": "issue",
+      "priority": "P0",
+      "idle": {
+        "sha256": "8e04e2009a814d088227e28a1d914ccda8c7a3f702b0edf53bffffcd4c9e006b",
+        "bbox": [
+          47,
+          18,
+          81,
+          104
+        ],
+        "facing": "LEFT",
+        "offset": -1.43,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "c524afb49984c4896db8dfe5566c6c713b6100b07159c3088edb3e54038941ae",
+          "a7f6aae3bd373eab475c5b5f2bc8422aa8cbd6425f341b53b530d6df5985839a",
+          "ce253d74e6f5e72379e3178367edd6275a30aba41694d991f135acf8e2a69eec",
+          "60020b6b7e2e35b82e26e755d412f3d27067b0b801f5b46199bd6de98439a7f3",
+          "46c9c6a87a7f5d051155cb1e1d5788b160eee498e8851b49b803cbc16f52fb43",
+          "838e086281143622254357fb8dfb562cb5f6ebdbf09bdda13ce5709a88467c6d",
+          "71bd74e91b6417379c38bef01fed9990d0e10d4ed85b7c6e3244fd7e9066a64a",
+          "a13f792d665f6729e16ea48fbb041c4999147cc7a007e774f7da0d43631d9665"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT",
+          "RIGHT"
+        ],
+        "offsets": [
+          2.03,
+          2.04,
+          2.28,
+          2.38,
+          2.04,
+          1.7,
+          1.98,
+          1.48
+        ],
+        "spreads": [
+          43,
+          30,
+          17,
+          13,
+          39,
+          31,
+          14,
+          21
+        ],
+        "bottoms": [
+          104,
+          103,
+          104,
+          105,
+          105,
+          104,
+          105,
+          106
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [
+        {
+          "category": "direction_inversion",
+          "priority": "P0",
+          "description": "IDLE col 5 faces viewer-LEFT (offset -1.4), but WALK row 5 faces viewer-RIGHT (offset +2.0 across all frames). Identical failure mode to male_nusantara/explorer defect.",
+          "local_cell_bbox": [
+            66,
+            24,
+            80,
+            42
+          ],
+          "atlas_bbox": [
+            66,
+            664,
+            80,
+            682
+          ]
+        }
+      ],
+      "action_recommended": "Re-author North-West walk cycle facing upper-left.",
+      "evidence_path": "docs/visual/gemini-character-source-audit/proof-male-nusantara-diving-nw-se-mismatch.png"
+    },
+    {
+      "identity": "male_nusantara",
+      "outfit": "diving",
+      "direction_index": 6,
+      "direction_name": "north",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "b8d2dc14d18b58cf6fdc4ba1b4e4c672ce31455e170fa4314733fbb4ac2ae009",
+        "bbox": [
+          47,
+          18,
+          81,
+          104
+        ],
+        "facing": "RIGHT",
+        "offset": 1.02,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "7804b5148482d2a19fa5500e3cb9d29149378b5c3bdb45cd1af30e7d5898e904",
+          "547292091df888c5048fb14b1eefc7dbc565f2e54c17839bf7c2cd8134496ab3",
+          "f269391fd9c144196967d40fa6a45738742c9055eac2db9134b90698583c834a",
+          "21c5d4f9530e4664bb8096aed72a363756d9995509a446107adf6456d73bfaad",
+          "c9a8cc6b6ace7565c0cb787e2c725d93ce3077f8847937ccc186e5b5443b88fd",
+          "e543a8376a2abe4b353835a45a0efeb0b5888c03c454a537a3a9749be66a1bb2",
+          "525a7d9fd349e6dec90082b174880f332d90d589d1943ef908140ac4d38a2ffa",
+          "11481c3e2d1e598e1b2e9f4f6dc3f4f694fd5f732ad09792d9bf417403bb75e7"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "LEFT",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "LEFT"
+        ],
+        "offsets": [
+          -0.6,
+          -0.05,
+          0.13,
+          -0.85,
+          -0.57,
+          -0.47,
+          0.07,
+          -1.41
+        ],
+        "spreads": [
+          18,
+          19,
+          19,
+          9,
+          20,
+          19,
+          8,
+          19
+        ],
+        "bottoms": [
+          104,
+          104,
+          104,
+          104,
+          104,
+          101,
+          104,
+          104
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    },
+    {
+      "identity": "male_nusantara",
+      "outfit": "diving",
+      "direction_index": 7,
+      "direction_name": "north_east",
+      "status": "reviewed_no_obvious_issue",
+      "priority": null,
+      "idle": {
+        "sha256": "c355cea2d7408a13bd717c0a2fda176c906f45f3b86c834583a16c44123e5714",
+        "bbox": [
+          47,
+          18,
+          81,
+          104
+        ],
+        "facing": "RIGHT",
+        "offset": 2.2,
+        "connectivity": 1.0
+      },
+      "walk": {
+        "hashes": [
+          "8938f3843062daabd9aa19ba1f1290a42e9914a0197f8f605b1a967d3aa5ae7e",
+          "ade5cd1c40bbd62fd2372820b2ea9408c9e7a873aeeb7fe93327848761a3786c",
+          "901dd4809f46a43fd6822c840f658f9988621568fa494b41766fcfbd86c25f24",
+          "2d46786bc6e6814e5a5d080faae62ce554efda4474d9c07268966a2bc02e9f71",
+          "0ffb7f7b0a6913a471f9996080f6c3a0baac3c2fd02284c78271d758aa6d3fca",
+          "ad7bb4a04a85706dcfa100ec47783a64fb11bbeedd70a054dc4aa3422a5567e7",
+          "4b6fd1527613958c0412c50e66d218f615c661e0fe24d4cc18f91b32a17ebb66",
+          "fa87471e9759f3f617ed54b4d50928a7b1675f7c748393fecc56b109a9789cbf"
+        ],
+        "unique_hashes": 8,
+        "facings": [
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "CENTER",
+          "LEFT",
+          "CENTER",
+          "CENTER"
+        ],
+        "offsets": [
+          0.17,
+          -0.07,
+          -0.65,
+          -0.14,
+          -0.39,
+          -1.23,
+          0.02,
+          0.21
+        ],
+        "spreads": [
+          35,
+          29,
+          17,
+          12,
+          42,
+          32,
+          15,
+          21
+        ],
+        "bottoms": [
+          104,
+          103,
+          103,
+          103,
+          103,
+          105,
+          105,
+          103
+        ],
+        "min_connectivity": 1.0
+      },
+      "issues": [],
+      "action_recommended": null,
+      "evidence_path": null
+    }
+  ],
+  "curated_proofs": {
+    "male_default_daily": "/Users/ardianryan/Documents/Jalasmara-gemini-character-audit/docs/visual/gemini-character-source-audit/proof-male-default-daily-nw-ne-swap.png",
+    "male_default_explorer": "/Users/ardianryan/Documents/Jalasmara-gemini-character-audit/docs/visual/gemini-character-source-audit/proof-male-default-explorer-nw-ne-inversion.png",
+    "female_default_explorer": "/Users/ardianryan/Documents/Jalasmara-gemini-character-audit/docs/visual/gemini-character-source-audit/proof-female-default-explorer-nw-ne-reversed.png",
+    "male_nusantara_diving": "/Users/ardianryan/Documents/Jalasmara-gemini-character-audit/docs/visual/gemini-character-source-audit/proof-male-nusantara-diving-nw-se-mismatch.png",
+    "female_nusantara_explorer": "/Users/ardianryan/Documents/Jalasmara-gemini-character-audit/docs/visual/gemini-character-source-audit/proof-female-nusantara-explorer-north-turn.png",
+    "diving_gear_clean": "/Users/ardianryan/Documents/Jalasmara-gemini-character-audit/docs/visual/gemini-character-source-audit/proof-diving-gear-clean-wetsuit.png"
+  }
+}
