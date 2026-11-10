@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "status": "AUTHORED NW daily eight-pose upper elbow-swing proposal; not natural/contact-coupled walk",
+  "identity": "male_nusantara",
+  "outfit": "daily",
+  "view": "north_west",
+  "sourceFrame": 4,
+  "sourceFrameStatus": "Original sourceFrame4 only supplies pixels/cuts; authoring frame0 is not runtime phase4 or an accepted contact event.",
+  "frameCount": 8,
+  "rigSpecSha256": "df6c92dde91d4fb8df712f6dd72a7ef4306e77948db41cb90e737fde8e0ee068",
+  "previewFrameMs": 100,
+  "upperDeg": 0,
+  "motion": {
+    "left": {
+      "foreMeanDeg": 14,
+      "foreCosDeg": 14
+    },
+    "right": {
+      "foreMeanDeg": -10,
+      "foreCosDeg": 10
+    }
+  },
+  "behindTorso": [
+    "right"
+  ],
+  "phaseStatus": "AUTHORED independent cyclic phase only. No Lower/contact event, locomotion distance, stop or turn connected.",
+  "contactPhase": null,
+  "sourceMeasurement": {
+    "anatomicalSide": "unknown",
+    "wrist": null,
+    "grip": null
+  },
+  "newOutputPixels": [],
+  "newGearPixels": 0,
+  "preservedRigDecisions": "Original daily source masks/head/body/RGBA; authored elbow57\u219260,59 three-pixel revision,11 hidden shirt fills and five original hand-edge assignments remain explicit and unchanged."
+}
