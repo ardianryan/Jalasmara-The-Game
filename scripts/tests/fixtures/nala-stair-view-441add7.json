@@ -1,0 +1,33 @@
+{
+  "source": "441add7",
+  "worldSha256": "28455e6f7ec053d8e090457cae6e747d848aa3fd994e797e32608a0710dd5743",
+  "rejectedSha256": "6da99b172c1396facbe41e7adbaeedf1e21ff6a42d83541afe841a6a9bd263f0",
+  "dataSha256": "f46253f21b32fc5e4ff027c4dce5e36c9be317ade6feffb1a7174fd1774b8d48",
+  "originalView": "east",
+  "candidateView": "north",
+  "side": "left",
+  "plannedLeading": 4.94974803924561,
+  "currentPivot": [
+    -1.34436917304993,
+    1.34436917304993,
+    -0.0971849113702774
+  ],
+  "pixel": {
+    "actualTriangleHeight": 128.000015258789,
+    "actualTriangleNormal": [
+      0.0,
+      0.0,
+      1.0
+    ],
+    "pixel": [
+      0.0,
+      3.0
+    ],
+    "world": [
+      1775.33471679688,
+      -909.621154785156,
+      126.642395019531
+    ]
+  },
+  "guardUnchanged": true
+}

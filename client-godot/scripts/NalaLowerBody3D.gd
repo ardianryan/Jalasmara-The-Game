@@ -259,6 +259,10 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 					var next_geometry:Dictionary={"id":outfit+"/"+candidate+"/"+side,"leg":_data.views[candidate].legs[side],"vertices":_opaque_vertices[candidate+"/"+side],"right":right,"vertical":vertical}
 					landing_fits=_planner.landing_geometry_supported(entry.to,next_geometry)
 					entry["viewLandingFit"]={"candidate":candidate,"supported":landing_fits,"target":entry.to}
+					if str(entry.get("treadPlan",{}).get("curveType",""))=="stair_swept_support":
+						var path_fit:=preload("res://scripts/NalaStairSupportCurve.gd").view_envelope(entry.treadPlan,next_geometry,rotated,_plane(side))
+						entry["viewPathFit"]={"candidate":candidate,"result":path_fit}
+						landing_fits=landing_fits and bool(path_fit.supported)
 				if landing_fits and _rotated_shoe_clear(side,candidate,entry.logical,Vector3(entry.sole)+rotated,right,vertical):
 					var pivot:Vector3=Vector3(entry.sole)+correction+_ankle_offset(side,previous_direction,right,vertical,_plane(side))
 					var after:=Vector3(entry.sole)+rotated+_ankle_offset(side,candidate,right,vertical,_plane(side))

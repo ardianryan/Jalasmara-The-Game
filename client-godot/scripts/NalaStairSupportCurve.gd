@@ -79,6 +79,29 @@ static func build(renderer:Node,profile:Dictionary,from:Vector2,to:Vector2,from_
 	var duration:=maxf(minimum,ceilf(numerator/4.9*4.0)*.25)
 	return {"supported":true,"valid":is_finite(duration),"curveType":"stair_swept_support","distance":duration,"curveOnly":true,"curveSpeedBound":numerator/duration,"knots":knots,"lengths":lengths,"arcXYZ":arc,"fromWorld":from_world,"toWorld":to_world,"fromLogical":from,"toLogical":to,"originalFootId":str(geometry.id),"originalPoints":points.size(),"leadingOriginalCorner":leading,"physicalRiserNormal":normal,"actorPhaseUnits":"accepted continuous world XY","intermediateWaypointsAreContacts":false,"planeScope":"ascending identity foot plane/current original mask; other modes use labelled legacy curve","baseCertificateIncludesSupportCorrection":false,"carriedResume":carried_resume,"initialPivot":pivot,"initialPivotAndStitchReserve":pivot_reserve,"floorStitch":"continuous_quadratic" if carried_resume else "legacy_constant","futureViewChangesIncludedInCertificate":false}
 
+static func view_envelope(plan:Dictionary,geometry:Dictionary,correction:Vector3,plane:Quaternion) -> Dictionary:
+	if str(plan.get("curveType",""))!="stair_swept_support": return {"supported":true,"scope":"not a frozen swept stair"}
+	if not correction.is_finite() or not plane.is_finite() or plane.angle_to(Quaternion.IDENTITY)>.0001: return {"supported":false,"reason":"frozen stair view requires identity plane and finite pivot"}
+	var normal:Vector2=plan.physicalRiserNormal
+	var right:Vector3=geometry.right
+	var vertical:float=geometry.vertical
+	if not normal.is_finite() or not right.is_finite() or not is_finite(vertical) or vertical<=0: return {"supported":false,"reason":"invalid original source basis"}
+	var sole:=Vector2(float(geometry.leg.solePixel[0]),float(geometry.leg.solePixel[1]))
+	var leading:float=-INF
+	var minimum_z:float=INF
+	var points:PackedVector2Array=geometry.vertices.duplicate()
+	for edge in geometry.leg.soleEdgePixels: points.append(Vector2(float(edge[0]),float(edge[1])))
+	for pixel in points:
+		var offset:=right*(float(pixel.x)-sole.x)+Vector3(0,0,(sole.y-float(pixel.y))/vertical)
+		leading=maxf(leading,normal.dot(Vector2(offset.x,offset.y)))
+		minimum_z=minf(minimum_z,offset.z)
+	# C decays toward zero: use its worst one-sided envelope over the remaining path.
+	leading+=maxf(0,normal.dot(Vector2(correction.x,correction.y)))
+	minimum_z+=minf(0,correction.z)
+	var old_minimum:=minf(0,Vector3(plan.get("initialPivot",Vector3.ZERO)).z)
+	var allowed:bool=is_finite(leading) and is_finite(minimum_z) and leading<=float(plan.leadingOriginalCorner) and minimum_z>=old_minimum
+	return {"supported":allowed,"scope":"remaining frozen ascending riser envelope; actual full-mask guards remain independent","leading":leading,"plannedLeading":plan.leadingOriginalCorner,"minimumZ":minimum_z,"plannedMinimumZ":old_minimum}
+
 static func floor_stitch(plan:Dictionary,u:float) -> float:
 	if not bool(plan.get("carriedResume",false)): return STITCH_HEIGHT
 	return 4.0*STITCH_HEIGHT*u*(1.0-u)+maxf(0,-Vector3(plan.initialPivot).z*(1.0-u))
