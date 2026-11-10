@@ -259,7 +259,11 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 			var index:=DIRECTIONS.find(previous_direction)
 			var forward:=posmod(DIRECTIONS.find(direction)-index,8)
 			var candidate:String=DIRECTIONS[posmod(index+(1 if forward<=4 else -1),8)] if direction!=previous_direction else previous_direction
-			if candidate!=previous_direction and float(pose.swingDistance)<float(pose.landingDistance)*.85:
+			var cutoff:=.85
+			var tread_plan:Dictionary=entry.get("treadPlan",{})
+			if str(tread_plan.get("curveType",""))=="stair_clearance" and Vector3(entry.toWorld).z<Vector3(entry.fromWorld).z-.01:
+				cutoff=.70
+			if candidate!=previous_direction and float(pose.swingDistance)<float(pose.landingDistance)*cutoff:
 				var rotated:=correction+_ankle_offset(side,previous_direction,right,vertical,_plane(side))-_ankle_offset(side,candidate,right,vertical,_plane(side))
 				var landing_fits:=true
 				if physical_plane:
@@ -284,14 +288,8 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 			var envelope_active:=not bool(entry.grounded) and bool(entry.get("fixedRampTarget",false))
 			if not bool(entry.grounded) and not envelope_active and current_terrain.angle_to(Quaternion.IDENTITY)>.001: target=current_terrain
 			entry["orientationFollowsCurrentRamp"]=not bool(entry.grounded) and not envelope_active and current_terrain.angle_to(Quaternion.IDENTITY)>.001
-			if bool(entry.grounded):
-				if current.angle_to(target)>.001:
-					visible=false
-					proxy.visible=true
-					entry["unfinishedPlaneAngle"]=current.angle_to(target)
-					_last={"enabled":false,"rejected":true,"reason":"foot-plane rotation unfinished at contact","contacts":pose,"reachValid":false,"rootMotion":false}
-					return _last.duplicate(true)
-			else:
+			var prior_grounded:bool=bool(_last.get("contacts",{}).get("feet",{}).get(side,{}).get("grounded",entry.grounded))
+			if not bool(entry.grounded) or not prior_grounded:
 				var foot_leg:Dictionary=_data.views[str(_foot_views[side])].legs[side]
 				var allowance:=moved_distance if moved_distance>.00001 else maxf(0,delta)*24.0
 				var next:Quaternion=FootPlane.advance(current,target,allowance,FootPlane.radius_about_ankle(foot_leg,vertical))
@@ -353,6 +351,15 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 					var after:=Vector3(entry.sole)+correction+_ankle_offset(side,str(_foot_views[side]),right,vertical,next)
 					entry["planeRotationPivot"]={"before":[pivot.x,pivot.y,pivot.z],"after":[after.x,after.y,after.z]}
 					_foot_planes[side]=next
+			if bool(entry.grounded):
+				if _plane(side).angle_to(target)>.001:
+					visible=false
+					proxy.visible=true
+					entry["unfinishedPlaneAngle"]=_plane(side).angle_to(target)
+					_last={"enabled":false,"rejected":true,"reason":"foot-plane rotation unfinished at contact","contacts":pose,"reachValid":false,"rootMotion":false}
+					return _last.duplicate(true)
+				else:
+					_foot_planes[side]=target
 			var support:Vector3=_plane(side)*right
 			entry["footPlane"]={"rotation":[_plane(side).x,_plane(side).y,_plane(side).z,_plane(side).w],"supportAxis":[support.x,support.y,support.z],"angleRemaining":_plane(side).angle_to(target),"rigidOriginalPixels":true}
 		_pivot_offsets[side]=correction

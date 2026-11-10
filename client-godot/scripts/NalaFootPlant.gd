@@ -382,27 +382,33 @@ func _next_tread(side:String,at:Vector2,provisional:Vector2) -> Dictionary:
 		return {"valid":true,"target":target,"connectorId":profile.id,"landingOrdinal":ordinal,"landingHeight":height,"supportOrdinal":support_ordinal,"supportClassification":support_class,"actorOnConnector":not actor_ground.is_empty(),"supportOnConnector":not support_ground.is_empty(),"treadDistance":depth,"landingClassification":"upper_flat_exit" if upper_exit else ("upper_flat_approach" if upper_approach else "tread"),"exitTargetRequested":center if upper_exit else Vector2.ZERO}
 	return {}
 
-func _terrain_duration(from:Vector3,to:Vector3,minimum:float,span:float) -> Dictionary:
+func _terrain_duration(from:Vector3,to:Vector3,minimum:float,span:float,airborne_descent:bool=false) -> Dictionary:
 	var rise:=to.z-from.z
 	var duration:=maxf(_start_distance,minimum)
 	var bound:=INF
+	var is_airborne_descent:bool = airborne_descent and rise < -.01
 	for attempt in range(257):
-		var window:=clampf(absf(rise)/(duration*3.0),.25,.65)
-		var delay:=window*.5
-		var peak:=0.0
-		for index in range(1025):
-			var u:=float(index)/1024.0
-			var advance:=clampf((u-delay)/(1.0-delay) if rise>0 else u/(1.0-delay),0,1)
-			var elevation:=clampf(u/window if rise>0 else (u-(1.0-window))/window,0,1)
-			var horizontal:=span*6.0*advance*(1.0-advance)/(1.0-delay)
-			var vertical:=rise*6.0*elevation*(1.0-elevation)/window+PI*TOE_CLEARANCE*cos(u*PI)
-			peak=maxf(peak,Vector2(horizontal,vertical).length())
-		# A global second-derivative bound covers between the sampled derivatives.
-		var curvature:=Vector2(6.0*span/pow(1.0-delay,2),6.0*absf(rise)/pow(window,2)+PI*PI*TOE_CLEARANCE).length()
-		bound=(peak+curvature/2048.0)/duration
+		if is_airborne_descent:
+			var peak:=1.5*Vector2(span,absf(rise)).length()
+			var curvature:=Vector2(6.0*span,6.0*absf(rise)).length()
+			bound=(peak+curvature/2048.0)/duration
+		else:
+			var window:=clampf(absf(rise)/(duration*3.0),.25,.65)
+			var delay:=window*.5
+			var peak:=0.0
+			for index in range(1025):
+				var u:=float(index)/1024.0
+				var advance:=clampf((u-delay)/(1.0-delay) if rise>0 else u/(1.0-delay),0,1)
+				var elevation:=clampf(u/window if rise>0 else (u-(1.0-window))/window,0,1)
+				var horizontal:=span*6.0*advance*(1.0-advance)/(1.0-delay)
+				var vertical:=rise*6.0*elevation*(1.0-elevation)/window+PI*TOE_CLEARANCE*cos(u*PI)
+				peak=maxf(peak,Vector2(horizontal,vertical).length())
+			# A global second-derivative bound covers between the sampled derivatives.
+			var curvature:=Vector2(6.0*span/pow(1.0-delay,2),6.0*absf(rise)/pow(window,2)+PI*PI*TOE_CLEARANCE).length()
+			bound=(peak+curvature/2048.0)/duration
 		if bound<=4.9: break
 		duration+=.25
-	return {"distance":duration,"curveSpeedBound":bound,"curveOnly":true,"valid":bound<=4.9,"fromWorld":from,"toWorld":to,"fixedPathWorldXY":span,"curveType":"stair_clearance"}
+	return {"distance":duration,"curveSpeedBound":bound,"curveOnly":true,"valid":bound<=4.9,"fromWorld":from,"toWorld":to,"fixedPathWorldXY":span,"curveType":"stair_clearance","airborneDescent":is_airborne_descent}
 
 func _ramp_duration(from:Vector2,to:Vector2,from_world:Vector3,minimum:float,side:String) -> Dictionary:
 	var path:=_path_metrics(from,to)
@@ -458,6 +464,8 @@ func _begin(side:String,at:Vector2,hips:Dictionary,right:Vector3,resuming:bool=f
 	_upper_exit_handover=false
 	entry.from=entry.logical
 	entry.lateralOffset=float(hips[side])
+	if _physical_contract and not resuming and (_ramp_landing(entry.from,entry.from) or _ramp_landing(at,at)):
+		_landing_distance=minf(_landing_distance,21.0)
 	entry.to=_safe(_forward_point(_base(at,float(hips[side]),right),_landing_distance+_landing_lead),at,side)
 	entry.fromWorld=entry.sole
 	entry.toWorld=_ground(entry.to)
@@ -480,13 +488,15 @@ func _begin(side:String,at:Vector2,hips:Dictionary,right:Vector3,resuming:bool=f
 			if _landing_geometry.has(side) and (not resuming or bool(tread.get("actorOnConnector",false))):
 				for profile in _stairs:
 					if str(profile.id)==str(tread.connectorId): swept=StairSupportCurve.build(renderer,profile,entry.from,entry.to,entry.fromWorld,entry.toWorld,_landing_geometry[side],_start_distance,resuming)
-			var budget:Dictionary=swept if bool(swept.supported) else _terrain_duration(entry.fromWorld,entry.toWorld,minimum,float(path.total))
+			var airborne_descent:bool = resuming and entry.fromWorld.z > Vector3(entry.toWorld).z + .01 and absf(_ground(entry.from).z - Vector3(entry.toWorld).z) < .1
+			var budget:Dictionary=swept if bool(swept.supported) else _terrain_duration(entry.fromWorld,entry.toWorld,minimum,float(path.total),airborne_descent)
 			budget["sweptSupportMode"]={"supported":swept.supported,"reason":str(swept.get("reason","original per-riser path"))}
 			budget["fixedPathWorldXY"]=float(path.total)
 			_landing_distance=float(budget.distance)
 			entry.treadPlan.merge(budget,true)
 	elif _physical_contract and _ramp_landing(entry.from,entry.to):
-		var budget:=_ramp_duration(entry.from,entry.to,entry.fromWorld,_landing_distance,side)
+		var ramp_minimum:=_start_distance if resuming else minf(_landing_distance, 21.0)
+		var budget:=_ramp_duration(entry.from,entry.to,entry.fromWorld,ramp_minimum,side)
 		if resuming and bool(budget.valid) and Vector3(budget.groundKnots[0].world).z>Vector3(entry.toWorld).z+.01:
 			var direction:=_world_motion(at,_heading).normalized()
 			var preview:=RestartBodyBudget.propose(renderer,budget,side,_feet,_landing_geometry,at,direction,_body_height,maxf(_body_rate,_continuous_ground_rate))
@@ -609,7 +619,8 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 				var advance:=u
 				var elevation:=u
 				var rise:=Vector3(entry.toWorld).z-Vector3(entry.fromWorld).z
-				if absf(rise)>.01 and not bool(entry.get("fixedRampTarget",false)):
+				var is_airborne_descent:bool = bool(entry.get("treadPlan",{}).get("airborneDescent",false))
+				if absf(rise)>.01 and not bool(entry.get("fixedRampTarget",false)) and not is_airborne_descent:
 					var window:=clampf(absf(rise)/(_landing_distance*3.0),.25,.65)
 					var delay:=window*.5
 					if rise>0:
@@ -625,6 +636,8 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 				var world:=Vector3(entry.fromWorld).lerp(entry.toWorld,rise_smooth)
 				if bool(entry.get("fixedRampTarget",false)):
 					world.z=floor_world.z+float(entry.rampCurvePlan.fromGroundOffset)*(1.0-smooth)+sin(u*PI)*TOE_CLEARANCE
+				elif is_airborne_descent:
+					world.z=maxf(world.z,floor_world.z+.02)
 				else: world.z=maxf(world.z+sin(u*PI)*TOE_CLEARANCE,floor_world.z+.02)
 				entry.sole=Vector3(floor_world.x,floor_world.y,world.z)
 			if u>=1:
