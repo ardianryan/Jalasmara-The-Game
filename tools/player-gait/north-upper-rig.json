@@ -1,0 +1,1434 @@
+{
+  "schemaVersion": 1,
+  "status": "Original NORTH source-specific two-outfit ownership inventory and AUTHORED endpoints; no measured anatomy or runtime gait",
+  "identity": "male_nusantara",
+  "view": "north",
+  "walkRow": 6,
+  "idleColumn": 6,
+  "sources": {
+    "daily": {
+      "walk": {
+        "path": "client-godot/resources/art/player-gait/male-nusantara-daily-walk-8way-v1.png",
+        "sha256": "342724d1724490279cd0f65c0340c5b35cdf366ecc36a99af716c51f751b8fc3"
+      },
+      "idle": {
+        "path": "client-godot/resources/art/player-gait/male-nusantara-daily-idle-8way-v1.png",
+        "sha256": "6b5e6f8b3bf19acbd5dbfe1a84429894d2f4de4fd985dc16c024a6bf1f44c054"
+      }
+    },
+    "explorer": {
+      "walk": {
+        "path": "client-godot/resources/art/player-gait/male-nusantara-explorer-walk-8way-v1.png",
+        "sha256": "a429c378400bd5ac60a45124ac48672b4cb1360beb379cc83297b52ea48ae3b9"
+      },
+      "idle": {
+        "path": "client-godot/resources/art/player-gait/male-nusantara-explorer-idle-8way-v1.png",
+        "sha256": "68fad4626665bb75f41c61c8e950091f3f927428ca0e81090fffa6834c411f3f"
+      }
+    }
+  },
+  "findings": [
+    "Original daily NORTH WALK0..7 and IDLE share coherent straight-rear facing.",
+    "Original explorer NORTH WALK0..7 and IDLE share coherent straight-rear facing.",
+    "Both original WALK0 arms are continuously visible; no hidden NW-chain substitution or mirror needed."
+  ],
+  "cases": {
+    "daily": {
+      "sourceFrame": 0,
+      "sourceUpperRgbaSha256": "156396e8b7b9f0036f9bb77bb3c10aebb2a879550918ceb1c739e75ce8e317a1",
+      "sourceMeasurement": {
+        "anatomicalSide": "unknown",
+        "wrist": null,
+        "grip": null
+      },
+      "authoredConvention": {
+        "status": "AUTHORED direct rear-view rig naming only, not measured source anatomy",
+        "left": "ChainA screen-left at this straight rear view, chosen for authored skeleton; no transferred NW convention",
+        "right": "ChainB screen-right chosen for authored skeleton; no source physical-side/contact inference",
+        "contactPhase": null
+      },
+      "sourceRuns": {
+        "left": {
+          "cap": [
+            [
+              43,
+              51,
+              56
+            ],
+            [
+              44,
+              51,
+              56
+            ],
+            [
+              45,
+              50,
+              56
+            ],
+            [
+              46,
+              50,
+              56
+            ],
+            [
+              47,
+              50,
+              56
+            ],
+            [
+              48,
+              49,
+              56
+            ],
+            [
+              49,
+              49,
+              56
+            ],
+            [
+              50,
+              49,
+              56
+            ],
+            [
+              51,
+              49,
+              56
+            ],
+            [
+              52,
+              49,
+              56
+            ],
+            [
+              53,
+              49,
+              56
+            ]
+          ],
+          "upper": [
+            [
+              54,
+              49,
+              55
+            ],
+            [
+              55,
+              49,
+              55
+            ],
+            [
+              56,
+              49,
+              55
+            ],
+            [
+              57,
+              49,
+              55
+            ],
+            [
+              58,
+              49,
+              55
+            ],
+            [
+              59,
+              48,
+              55
+            ],
+            [
+              60,
+              48,
+              55
+            ]
+          ],
+          "fore": [
+            [
+              61,
+              48,
+              55
+            ],
+            [
+              62,
+              48,
+              54
+            ],
+            [
+              63,
+              48,
+              54
+            ],
+            [
+              64,
+              48,
+              54
+            ],
+            [
+              65,
+              48,
+              54
+            ],
+            [
+              66,
+              48,
+              53
+            ]
+          ],
+          "hand": [
+            [
+              67,
+              48,
+              53
+            ],
+            [
+              68,
+              48,
+              54
+            ],
+            [
+              69,
+              48,
+              54
+            ],
+            [
+              70,
+              48,
+              54
+            ],
+            [
+              71,
+              48,
+              54
+            ],
+            [
+              72,
+              48,
+              54
+            ],
+            [
+              73,
+              49,
+              53
+            ],
+            [
+              74,
+              50,
+              53
+            ],
+            [
+              75,
+              52,
+              53
+            ]
+          ]
+        },
+        "right": {
+          "cap": [
+            [
+              43,
+              73,
+              79
+            ],
+            [
+              44,
+              73,
+              79
+            ],
+            [
+              45,
+              73,
+              79
+            ],
+            [
+              46,
+              73,
+              79
+            ],
+            [
+              47,
+              73,
+              79
+            ],
+            [
+              48,
+              73,
+              79
+            ],
+            [
+              49,
+              73,
+              79
+            ],
+            [
+              50,
+              73,
+              79
+            ],
+            [
+              51,
+              73,
+              79
+            ],
+            [
+              52,
+              73,
+              79
+            ],
+            [
+              53,
+              73,
+              79
+            ]
+          ],
+          "upper": [
+            [
+              54,
+              73,
+              80
+            ],
+            [
+              55,
+              73,
+              80
+            ],
+            [
+              56,
+              73,
+              80
+            ],
+            [
+              57,
+              73,
+              80
+            ],
+            [
+              58,
+              73,
+              80
+            ],
+            [
+              59,
+              73,
+              80
+            ],
+            [
+              60,
+              73,
+              80
+            ]
+          ],
+          "fore": [
+            [
+              61,
+              74,
+              80
+            ],
+            [
+              62,
+              74,
+              80
+            ],
+            [
+              63,
+              74,
+              80
+            ],
+            [
+              64,
+              74,
+              80
+            ],
+            [
+              65,
+              74,
+              80
+            ],
+            [
+              66,
+              75,
+              80
+            ]
+          ],
+          "hand": [
+            [
+              67,
+              75,
+              80
+            ],
+            [
+              68,
+              75,
+              80
+            ],
+            [
+              69,
+              75,
+              80
+            ],
+            [
+              70,
+              75,
+              80
+            ],
+            [
+              71,
+              75,
+              80
+            ],
+            [
+              72,
+              75,
+              80
+            ],
+            [
+              73,
+              75,
+              79
+            ],
+            [
+              74,
+              76,
+              78
+            ]
+          ]
+        }
+      },
+      "garmentPolygons": {
+        "shirt": [
+          [
+            49,
+            43
+          ],
+          [
+            79,
+            43
+          ],
+          [
+            79,
+            65
+          ],
+          [
+            49,
+            65
+          ]
+        ]
+      },
+      "hiddenRepair": [],
+      "jointsStatus": "AUTHORED design anchors only; source shoulder/elbow/wrist/grip measurement remains unknown",
+      "joints": {
+        "left": {
+          "shoulder": [
+            53,
+            49
+          ],
+          "elbow": [
+            54,
+            61
+          ],
+          "wrist": [
+            50,
+            68
+          ]
+        },
+        "right": {
+          "shoulder": [
+            75,
+            49
+          ],
+          "elbow": [
+            76,
+            61
+          ],
+          "wrist": [
+            77,
+            68
+          ]
+        }
+      },
+      "poses": [
+        {
+          "name": "authored-neutral-source0",
+          "left": {
+            "upperDeg": 0,
+            "foreRelativeDeg": 0
+          },
+          "right": {
+            "upperDeg": 0,
+            "foreRelativeDeg": 0
+          },
+          "behindTorso": [
+            "right"
+          ]
+        },
+        {
+          "name": "authored-A-outward-B-inward",
+          "left": {
+            "upperDeg": 0,
+            "foreRelativeDeg": 24
+          },
+          "right": {
+            "upperDeg": 0,
+            "foreRelativeDeg": 18
+          },
+          "behindTorso": [
+            "right"
+          ]
+        }
+      ],
+      "gearContract": {
+        "newNodes": 0,
+        "newPixels": 0,
+        "garmentMeshEnabled": false
+      },
+      "jointDesignRationale": "AUTHORED LEFT elbow54,61 within original arm source; first draft52,61 revised2px after retained source-cut pivot probe. Not measured source joint.",
+      "authoredJointOverlap": [],
+      "inspectionRegions": [
+        {
+          "name": "screen-left sleeve and upper",
+          "rect": [
+            47,
+            43,
+            58,
+            62
+          ]
+        },
+        {
+          "name": "screen-left fore-hand edge",
+          "rect": [
+            46,
+            59,
+            57,
+            76
+          ]
+        },
+        {
+          "name": "screen-right sleeve and upper",
+          "rect": [
+            71,
+            43,
+            81,
+            62
+          ]
+        },
+        {
+          "name": "screen-right fore-hand edge",
+          "rect": [
+            71,
+            59,
+            83,
+            76
+          ]
+        }
+      ],
+      "plateBoundaryAssignments": [
+        {
+          "pixel": [
+            53,
+            66
+          ],
+          "rgba": [
+            137,
+            116,
+            98,
+            255
+          ],
+          "status": "AMBIGUOUS original hand/garment boundary; conservative fixed remainder ownership after original8frame/cargo-vest comparison, not proven anatomy or automatic palette classification"
+        },
+        {
+          "pixel": [
+            53,
+            67
+          ],
+          "rgba": [
+            130,
+            110,
+            92,
+            255
+          ],
+          "status": "AMBIGUOUS original hand/garment boundary; conservative fixed remainder ownership after original8frame/cargo-vest comparison, not proven anatomy or automatic palette classification"
+        },
+        {
+          "pixel": [
+            74,
+            66
+          ],
+          "rgba": [
+            115,
+            116,
+            109,
+            255
+          ],
+          "status": "AMBIGUOUS original hand/garment boundary; conservative fixed remainder ownership after original8frame/cargo-vest comparison, not proven anatomy or automatic palette classification"
+        },
+        {
+          "pixel": [
+            74,
+            67
+          ],
+          "rgba": [
+            99,
+            101,
+            96,
+            255
+          ],
+          "status": "AMBIGUOUS original hand/garment boundary; conservative fixed remainder ownership after original8frame/cargo-vest comparison, not proven anatomy or automatic palette classification"
+        }
+      ],
+      "bodyContour": [
+        [
+          43,
+          56,
+          73
+        ],
+        [
+          44,
+          56,
+          73
+        ],
+        [
+          45,
+          56,
+          73
+        ],
+        [
+          46,
+          56,
+          73
+        ],
+        [
+          47,
+          56,
+          73
+        ],
+        [
+          48,
+          56,
+          73
+        ],
+        [
+          49,
+          56,
+          73
+        ],
+        [
+          50,
+          56,
+          73
+        ],
+        [
+          51,
+          56,
+          73
+        ],
+        [
+          52,
+          56,
+          73
+        ],
+        [
+          53,
+          56,
+          73
+        ],
+        [
+          54,
+          56,
+          73
+        ],
+        [
+          55,
+          56,
+          73
+        ],
+        [
+          56,
+          56,
+          73
+        ],
+        [
+          57,
+          56,
+          73
+        ],
+        [
+          58,
+          56,
+          73
+        ],
+        [
+          59,
+          56,
+          73
+        ],
+        [
+          60,
+          56,
+          73
+        ],
+        [
+          61,
+          56,
+          73
+        ],
+        [
+          62,
+          56,
+          73
+        ],
+        [
+          63,
+          56,
+          73
+        ],
+        [
+          64,
+          56,
+          73
+        ]
+      ]
+    },
+    "explorer": {
+      "sourceFrame": 0,
+      "sourceUpperRgbaSha256": "b7eda57868162b06237723645a026cc24f641fda36cfd5917bf180f897b262b5",
+      "sourceMeasurement": {
+        "anatomicalSide": "unknown",
+        "wrist": null,
+        "grip": null
+      },
+      "authoredConvention": {
+        "status": "AUTHORED direct rear-view rig naming only, not measured source anatomy",
+        "left": "ChainA screen-left at this straight rear view, chosen for authored skeleton; no transferred NW convention",
+        "right": "ChainB screen-right chosen for authored skeleton; no source physical-side/contact inference",
+        "contactPhase": null
+      },
+      "sourceRuns": {
+        "left": {
+          "cap": [
+            [
+              46,
+              51,
+              56
+            ],
+            [
+              47,
+              50,
+              56
+            ],
+            [
+              48,
+              50,
+              56
+            ],
+            [
+              49,
+              50,
+              56
+            ],
+            [
+              50,
+              49,
+              56
+            ],
+            [
+              51,
+              50,
+              56
+            ],
+            [
+              52,
+              50,
+              56
+            ],
+            [
+              53,
+              50,
+              56
+            ],
+            [
+              54,
+              50,
+              56
+            ]
+          ],
+          "upper": [
+            [
+              55,
+              50,
+              56
+            ],
+            [
+              56,
+              50,
+              56
+            ],
+            [
+              57,
+              50,
+              56
+            ],
+            [
+              58,
+              50,
+              56
+            ],
+            [
+              59,
+              50,
+              56
+            ],
+            [
+              59,
+              49,
+              50
+            ]
+          ],
+          "fore": [
+            [
+              60,
+              49,
+              56
+            ],
+            [
+              61,
+              49,
+              56
+            ],
+            [
+              62,
+              49,
+              56
+            ],
+            [
+              63,
+              49,
+              56
+            ],
+            [
+              64,
+              49,
+              56
+            ],
+            [
+              65,
+              49,
+              56
+            ]
+          ],
+          "hand": [
+            [
+              66,
+              48,
+              55
+            ],
+            [
+              67,
+              48,
+              55
+            ],
+            [
+              68,
+              48,
+              55
+            ],
+            [
+              69,
+              48,
+              54
+            ],
+            [
+              70,
+              48,
+              54
+            ],
+            [
+              71,
+              48,
+              55
+            ],
+            [
+              72,
+              48,
+              55
+            ],
+            [
+              73,
+              49,
+              54
+            ],
+            [
+              74,
+              50,
+              53
+            ],
+            [
+              68,
+              47,
+              48
+            ],
+            [
+              69,
+              47,
+              48
+            ],
+            [
+              70,
+              47,
+              48
+            ],
+            [
+              71,
+              47,
+              48
+            ]
+          ]
+        },
+        "right": {
+          "cap": [
+            [
+              46,
+              73,
+              79
+            ],
+            [
+              47,
+              73,
+              79
+            ],
+            [
+              48,
+              73,
+              79
+            ],
+            [
+              49,
+              73,
+              79
+            ],
+            [
+              50,
+              73,
+              79
+            ],
+            [
+              51,
+              73,
+              79
+            ],
+            [
+              52,
+              73,
+              79
+            ],
+            [
+              53,
+              73,
+              79
+            ],
+            [
+              54,
+              73,
+              79
+            ]
+          ],
+          "upper": [
+            [
+              55,
+              73,
+              80
+            ],
+            [
+              56,
+              73,
+              80
+            ],
+            [
+              57,
+              73,
+              80
+            ],
+            [
+              58,
+              73,
+              80
+            ],
+            [
+              59,
+              73,
+              80
+            ]
+          ],
+          "fore": [
+            [
+              60,
+              74,
+              80
+            ],
+            [
+              61,
+              74,
+              80
+            ],
+            [
+              62,
+              74,
+              80
+            ],
+            [
+              63,
+              74,
+              80
+            ],
+            [
+              64,
+              74,
+              80
+            ],
+            [
+              65,
+              74,
+              80
+            ]
+          ],
+          "hand": [
+            [
+              66,
+              74,
+              81
+            ],
+            [
+              67,
+              74,
+              81
+            ],
+            [
+              68,
+              74,
+              81
+            ],
+            [
+              69,
+              74,
+              81
+            ],
+            [
+              70,
+              75,
+              81
+            ],
+            [
+              71,
+              74,
+              81
+            ],
+            [
+              72,
+              74,
+              81
+            ],
+            [
+              73,
+              75,
+              80
+            ],
+            [
+              74,
+              76,
+              79
+            ],
+            [
+              68,
+              81,
+              82
+            ],
+            [
+              69,
+              81,
+              82
+            ],
+            [
+              70,
+              81,
+              82
+            ],
+            [
+              71,
+              81,
+              82
+            ]
+          ]
+        }
+      },
+      "garmentPolygons": {
+        "shirt": [
+          [
+            49,
+            45
+          ],
+          [
+            80,
+            45
+          ],
+          [
+            80,
+            56
+          ],
+          [
+            49,
+            56
+          ]
+        ],
+        "vest": [
+          [
+            56,
+            43
+          ],
+          [
+            73,
+            43
+          ],
+          [
+            74,
+            60
+          ],
+          [
+            74,
+            72
+          ],
+          [
+            55,
+            72
+          ],
+          [
+            55,
+            61
+          ]
+        ],
+        "belt": [
+          [
+            55,
+            60
+          ],
+          [
+            74,
+            60
+          ],
+          [
+            74,
+            64
+          ],
+          [
+            55,
+            64
+          ]
+        ]
+      },
+      "hiddenRepair": [],
+      "jointsStatus": "AUTHORED design anchors only; source shoulder/elbow/wrist/grip measurement remains unknown",
+      "joints": {
+        "left": {
+          "shoulder": [
+            53,
+            49
+          ],
+          "elbow": [
+            54,
+            61
+          ],
+          "wrist": [
+            51,
+            68
+          ]
+        },
+        "right": {
+          "shoulder": [
+            76,
+            49
+          ],
+          "elbow": [
+            76,
+            61
+          ],
+          "wrist": [
+            78,
+            68
+          ]
+        }
+      },
+      "poses": [
+        {
+          "name": "authored-neutral-source0",
+          "left": {
+            "upperDeg": 0,
+            "foreRelativeDeg": 0
+          },
+          "right": {
+            "upperDeg": 0,
+            "foreRelativeDeg": 0
+          },
+          "behindTorso": [
+            "right"
+          ]
+        },
+        {
+          "name": "authored-A-outward-B-inward",
+          "left": {
+            "upperDeg": 0,
+            "foreRelativeDeg": 24
+          },
+          "right": {
+            "upperDeg": 0,
+            "foreRelativeDeg": 18
+          },
+          "behindTorso": [
+            "right"
+          ]
+        }
+      ],
+      "gearContract": {
+        "newNodes": 0,
+        "newPixels": 0,
+        "garmentMeshEnabled": false
+      },
+      "jointDesignRationale": "AUTHORED LEFT elbow54,61 within original arm source; first draft52,61 revised2px after retained source-cut pivot probe. Not measured source joint.",
+      "authoredJointOverlap": [
+        {
+          "targetPart": "left/fore",
+          "originalOwner": "left/upper",
+          "pixel": [
+            55,
+            59
+          ],
+          "rgba": [
+            140,
+            103,
+            73,
+            255
+          ],
+          "status": "AUTHORED hidden fore-root overlap using original upper-owned coordinate/RGBA; separate duplicate surface, not exclusive original fore ownership. Fills output55,60 only at endpoint."
+        }
+      ],
+      "inspectionRegions": [
+        {
+          "name": "screen-left sleeve and upper",
+          "rect": [
+            47,
+            43,
+            58,
+            62
+          ]
+        },
+        {
+          "name": "screen-left fore-hand edge",
+          "rect": [
+            46,
+            59,
+            57,
+            76
+          ]
+        },
+        {
+          "name": "screen-right sleeve and upper",
+          "rect": [
+            71,
+            43,
+            81,
+            62
+          ]
+        },
+        {
+          "name": "screen-right fore-hand edge",
+          "rect": [
+            71,
+            59,
+            83,
+            76
+          ]
+        }
+      ],
+      "plateBoundaryAssignments": [
+        {
+          "pixel": [
+            54,
+            69
+          ],
+          "rgba": [
+            58,
+            53,
+            38,
+            255
+          ],
+          "status": "AMBIGUOUS original hand/garment boundary; conservative fixed remainder ownership after original8frame/cargo-vest comparison, not proven anatomy or automatic palette classification"
+        },
+        {
+          "pixel": [
+            54,
+            70
+          ],
+          "rgba": [
+            77,
+            64,
+            45,
+            255
+          ],
+          "status": "AMBIGUOUS original hand/garment boundary; conservative fixed remainder ownership after original8frame/cargo-vest comparison, not proven anatomy or automatic palette classification"
+        },
+        {
+          "pixel": [
+            74,
+            70
+          ],
+          "rgba": [
+            60,
+            48,
+            35,
+            255
+          ],
+          "status": "AMBIGUOUS original hand/garment boundary; conservative fixed remainder ownership after original8frame/cargo-vest comparison, not proven anatomy or automatic palette classification"
+        }
+      ],
+      "bodyContour": [
+        [
+          44,
+          56,
+          73
+        ],
+        [
+          45,
+          56,
+          73
+        ],
+        [
+          46,
+          56,
+          73
+        ],
+        [
+          47,
+          56,
+          73
+        ],
+        [
+          48,
+          56,
+          73
+        ],
+        [
+          49,
+          56,
+          73
+        ],
+        [
+          50,
+          56,
+          73
+        ],
+        [
+          51,
+          56,
+          73
+        ],
+        [
+          52,
+          56,
+          73
+        ],
+        [
+          53,
+          56,
+          73
+        ],
+        [
+          54,
+          56,
+          73
+        ],
+        [
+          55,
+          56,
+          73
+        ],
+        [
+          56,
+          56,
+          73
+        ],
+        [
+          57,
+          56,
+          73
+        ],
+        [
+          58,
+          56,
+          73
+        ],
+        [
+          59,
+          56,
+          73
+        ],
+        [
+          60,
+          56,
+          73
+        ],
+        [
+          61,
+          56,
+          73
+        ],
+        [
+          62,
+          56,
+          73
+        ],
+        [
+          63,
+          56,
+          73
+        ],
+        [
+          64,
+          56,
+          73
+        ],
+        [
+          65,
+          56,
+          73
+        ],
+        [
+          66,
+          56,
+          73
+        ],
+        [
+          67,
+          56,
+          73
+        ],
+        [
+          68,
+          56,
+          73
+        ],
+        [
+          69,
+          56,
+          73
+        ],
+        [
+          70,
+          56,
+          73
+        ],
+        [
+          71,
+          56,
+          73
+        ]
+      ]
+    }
+  }
+}
