@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "status": "AUTHORED source-specific NORTH daily/explorer elbow-loop proposals; not natural walking or atlas/runtime adoption",
+  "identity": "male_nusantara",
+  "view": "north",
+  "frameCount": 8,
+  "rigSpecSha256": "c24e0b705116c1f1e49642abf68739804a455fc5f8609882f46bb5d4ec6415d7",
+  "sourceMeasurement": {
+    "anatomicalSide": "unknown",
+    "wrist": null,
+    "grip": null
+  },
+  "phaseStatus": "AUTHORED independent cyclic phase only. No Lower/contact, locomotion distance, stop or turn connected.",
+  "contactPhase": null,
+  "sourceFrameStatus": "Original sourceFrame0 supplies each outfit pixels and cuts only; authored frame0 is not an accepted runtime/contact event.",
+  "previewFrameMs": 100,
+  "newOutputPixels": [],
+  "newGearPixels": 0,
+  "cases": {
+    "daily": {
+      "originalSourceFrame": 0,
+      "upperDeg": 0,
+      "behindTorso": [
+        "right"
+      ],
+      "motion": {
+        "left": {
+          "foreMeanDeg": 12,
+          "foreCosDeg": 12
+        },
+        "right": {
+          "foreMeanDeg": 9,
+          "foreCosDeg": -9
+        }
+      }
+    },
+    "explorer": {
+      "originalSourceFrame": 0,
+      "upperDeg": 0,
+      "behindTorso": [
+        "right"
+      ],
+      "motion": {
+        "left": {
+          "foreMeanDeg": 12,
+          "foreCosDeg": 12
+        },
+        "right": {
+          "foreMeanDeg": 9,
+          "foreCosDeg": -9
+        }
+      }
+    }
+  },
+  "scope": "Separate original masks/head/body/palette, all7 ambiguous fixed boundaries, authoredLEFT52\u219254 pivot revision and explorer1hidden fore-root overlap remain unchanged. Fixed shoulders,5unique rasters/8timed frames."
+}
