@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use Jalasmara in research or teaching, cite the software version and source commit."
+title: "Jalasmara: Menjaring Ingatan"
+type: software
+authors:
+  - family-names: Ryan
+    given-names: Ardian
+version: 0.1.0
+date-released: 2026-11-10
+url: "https://git.ppti.me/ardianryan/Jalasmara-The-Game"
+repository-code: "https://git.ppti.me/ardianryan/Jalasmara-The-Game"
+abstract: "An early-development coastal exploration and learning game prototype."

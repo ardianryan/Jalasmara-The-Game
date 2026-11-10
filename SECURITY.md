@@ -1,9 +1,13 @@
-# Pelaporan keamanan
+# Security policy
 
-Jangan membuka issue publik yang berisi token, data akun, langkah pengambilalihan yang siap digunakan, atau dump database. Gunakan kanal privat yang disediakan pemilik repository; jika kanal belum tersedia, buka issue tanpa rincian eksploit untuk meminta kontak privat.
+Jalasmara `0.1.0` is an early-development prototype. **No independent security audit or penetration test has been completed.** Passing CI, dependency checks, CodeQL, or a staging smoke test must not be read as a security certification. The staging service may change without a compatibility guarantee.
 
-Laporan sebaiknya menyertakan commit/versi, endpoint terdampak, prasyarat, dampak, serta reproduksi minimal menggunakan akun dan data uji milik pelapor. Pengujian tidak boleh mengganggu pemain atau layanan pihak ketiga.
+## Reporting a vulnerability
 
-Owner dibuat melalui terminal interaktif. Password disimpan dengan Argon2id. Token undangan/reset sekali pakai disimpan dalam bentuk hash. Cookie sesi menggunakan HttpOnly dan Secure pada produksi. Setiap endpoint admin memeriksa izin server.
+Do not publish exploit steps, tokens, account data, or database dumps in an issue or pull request. Contact the repository owner through a private channel shown on the owner's profile. If no private channel is available, open a public issue asking only for a secure contact method; omit technical details until a private channel is established.
 
-CI berjalan di GitLab. Temuan CodeQL terdapat di artefak SARIF; laporan di GitHub adalah salinan berkas, bukan upload ke GitHub Code Scanning. Tidak ada jaminan bebas kerentanan dari keberhasilan pemindaian.
+Include the affected commit/version and endpoint or component, prerequisites, impact, and a minimal reproduction using accounts and data you control. Avoid destructive tests, denial-of-service traffic, or accessing other players' data. The maintainer will acknowledge and triage reports as capacity allows; no response-time or bounty commitment is offered.
+
+## Current boundaries
+
+The API owns game progress and economy. Production sessions use secure cookie settings, and administrative actions require server-side authorization. These design measures do not replace an audit. Never put credentials into source, reports, screenshots, or logs. Use isolated fixtures for tests and follow the [release procedure](docs/operations.md) for backup and rollback.

@@ -1,5 +1,10 @@
 # Handoff aktif agent
 
+## Public documentation, WorldKit, and branch retirement
+
+[Current package](reviews/public-documentation-worldkit-2026-11-10.md): the public entry documentation was rewritten in English; WorldKit is published on Gitea/GitHub/GitLab with separately licensed game screenshots and Gitea CI run 13 success; 38 historical patch-equivalent branches were retired while 20 candidate branches remain. Game staging remains source `446abf4` / PCK `5c0253f`; this docs/kit package is not a new game deployment. Read the report and [branch inventory](reviews/branch-retirement-2026-11-10.md) before further merge or cleanup.
+
+
 ## Rilis staging terbaru: `main` 446abf4
 
 [Laporan aktivasi](reviews/staging-main-446abf4-2026-11-10.md): `main` `446abf4` kini aktif pada staging, image `b6c8edd`, PCK `5c0253f` (64.501.312 byte). Backup MongoDB diuji restore; 14 aset image cocok manifest; API/HTTP2 dan smoke browser publik enam pemeriksaan lulus, fixture dibersihkan nol. Image export5 `559451e` tetap rollback. Gait eksperimental Claude **tidak** masuk; pilot OFF. Pengujian fisik S23/Windows dan penerimaan visual masih terbuka. Riwayat di bawah menunjukkan keadaan sebelum aktivasi dan tidak menggantikan status rilis ini.

@@ -1,5 +1,8 @@
 # Status pengembangan
 
+**Documentation and repository cleanup, 10 November 2026:** Public English README/community/citation/roadmap/TODO/changelog files were added; WorldKit is now published as a separate public tool repository with rights-labeled game screenshots and Gitea CI run 13 success. Thirty-eight patch-equivalent historical branches were retired; 20 candidate branches remain for review. [Package report](reviews/public-documentation-worldkit-2026-11-10.md) and [branch inventory](reviews/branch-retirement-2026-11-10.md) distinguish the kit and docs from the active game build.
+
+
 **Rilis staging 10 November 2026:** source `main` `446abf4`, image `b6c8edd`, PCK `5c0253f` aktif. Backup/restore, hash 14 aset, health HTTPS/HTTP2, dan enam pemeriksaan smoke browser publik lulus; fixture bersih. [Laporan rilis](reviews/staging-main-446abf4-2026-11-10.md) memuat bukti serta rollback. Kandidat gait Claude tidak digabung dan pilot tetap OFF. Uji perangkat fisik serta penerimaan moodboard belum selesai. Checkpoint historis di bawah merekam keadaan sebelum rilis ini.
 
 Checkpoint 10 November 2026: source integrasi sudah menjadi `main` pada SHA `59e916b` di Gitea, GitHub, dan GitLab. [CI Gitea run 10](https://git.ppti.me/ardianryan/Jalasmara-The-Game/actions/runs/10) **SUCCESS** untuk SHA itu. Staging masih export5/PCK9a1; penggabungan source tidak mengaktifkan rilis baru. Kandidat gait Claude ditolak untuk integrasi karena flat32 gagal dan pemeriksaan kontak full16 belum lengkap, lalu branch-nya dibersihkan setelah arsip lokal dibuat. Pilot kaki fisik tetap OFF. Hasil dan batas staging dicatat pada [laporan konsolidasi](reviews/main-consolidation-2026-11-10.md). Bagian historis di bawah tidak menggantikan checkpoint ini.

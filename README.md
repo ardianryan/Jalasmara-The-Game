@@ -1,31 +1,27 @@
 <p align="center"><img src="assets/brand/horizontal.svg" width="420" alt="Jalasmara"></p>
 
-# Jalasmara · Menjaring Ingatan
+# Jalasmara
 
-Petualangan pixel art dengan daratan 3D tiga perempat dan penyelaman 2.5D di Kota Apung Bandar Hujung serta Palung Smara. Nala berenang, menjelajahi reruntuhan, menemukan pengetahuan, dan membantu warga melalui Kedai Waras. Pembelajaran hadir dari lingkungan, penemuan, dan tantangan kontekstual.
+**Jalasmara: Menjaring Ingatan** is a coastal exploration game set around Bandar Hujung and Palung Smara. Players guide Nala through a three-quarter-view village and forest, dive through layered marine environments, collect knowledge fragments, and help run Kedai Waras. Learning is tied to exploration, residents, and contextual challenges.
 
-Dibangun dengan **Godot 4.7.2** untuk permainan, **React + Vite** untuk akun dan panel admin, **Fastify** untuk API, **MongoDB** untuk progres, dan **Redis** untuk sesi. Ekspor browser memakai renderer Compatibility dan single thread.
+> **Development status — v0.1.0.** This is a playable early prototype, not a finished game or a security-audited release. The current staging build passed an automated public browser smoke test. Visual polish, natural gait across all directions, and performance on physical Windows and Samsung S23 devices remain open. See [development status](docs/development-status.md) and the [latest staging report](docs/reviews/staging-main-446abf4-2026-11-10.md).
 
-- Staging: https://staging-jalasmara.ardianryan.com
-- Sumber, CI dan paket delivery: [Gitea](https://git.ppti.me/ardianryan/Jalasmara-The-Game)
-- Backup Git: [GitHub](https://github.com/ardianryan/Jalasmara-The-Game) dan [GitLab](https://gitlab.com/ardianryan/jalasmara-the-game), keduanya tanpa CI aktif.
-- [Operasi Gitea dan push tiga remote](docs/operations-gitea.md); [Actions](https://git.ppti.me/ardianryan/Jalasmara-The-Game/actions). Laporan lama di branch `ci-reports` GitHub tetap merupakan arsip historis.
+[Play the staging build](https://staging-jalasmara.ardianryan.com) · [Development gallery](docs/visual/README.md) · [Architecture](docs/architecture.md) · [Roadmap](ROADMAP.md) · [Open work](TODO.md) · [Changelog](CHANGELOG.md)
 
-[Galeri visual pengembangan](docs/visual/README.md) menampilkan screenshot dunia, HUD/loading dan perbandingan animasi, lengkap dengan commit, asal bukti dan batas pengujian. Gambar kandidat yang belum dirilis diberi label tersendiri.
+## The project
 
-Lihat [status pengembangan dan bukti pengujian](docs/development-status.md). Versi ini masih prototipe; pemolesan visual, uji bermain manusia, dan pengujian HP fisik belum selesai.
+| Layer | Current implementation |
+| --- | --- |
+| Game | Godot 4.7.2 Compatibility renderer; single-threaded Web export; real 3D land terrain with pixel upscale and layered underwater scenes |
+| Web host | React and Vite for accounts, loading, settings, and administration |
+| State and API | Fastify with MongoDB for authoritative progress and Redis for sessions |
+| Authoring | Offline WorldKit map drafts, pixel-grid preparation, and palette previews; reviewed before integration |
 
-Untuk melanjutkan pengembangan dengan agent AI, mulai dari [AGENTS.md](AGENTS.md), [handoff aktif dan ringkasan progres](docs/agent-handoff.md), serta [PRD](docs/PRD.md). Handoff membedakan kandidat lokal dari rilis staging, tool yang benar-benar dipakai, kegagalan tes yang masih terbuka, dan urutan kerja berikutnya.
+The game uses a 36-minute active-time day. Story progression, economy, and saved state are server-owned. Game art and lore have different reuse terms from the MIT-licensed source code; read [LICENSE](LICENSE) and [third-party notices](THIRD_PARTY_LICENSES.md) before reusing material.
 
-[Progres paket06-B](docs/reviews/06b-progress.md) mencatat koreksi rumah–dermaga, kontak kaki/turn Ujang, perbaikan website serta port kamera Noxe yang terbatas; status kamera gameplay dan rilis dibedakan dari fixture/native.
+## Try it locally
 
-[Laporan integrasi kamera kiri dan UI](docs/reviews/06b-integrated-left-and-ui.md) mencatat adapter gameplay 3/4, perbaikan alat warga, dialog ringkas dan HUD portrait. Kandidat lokal, bukti browser dan rilis staging dibedakan.
-
-Nala dapat memasuki Griya Sasmita, menyimpan fragmen, merawat dua petak kangkung, membeli bibit, dan membawa panen ke kedai. Kalender akun memakai satu hari selama 36 menit aktif; tidur menyelesaikan pagi berikutnya tanpa melewati syarat cerita. Tiga warga memakai animasi tubuh berlapis dengan alat terpisah. Rincian serta batas implementasi ada di [Rencana 03](docs/plans/03-desa-hidup-dan-siklus-harian.md).
-
-## Menjalankan lokal
-
-Prasyarat: Node.js 22.12+, npm, Docker Compose v2, Godot 4.7.2 dan template ekspor Web single-threaded. MongoDB harus berjalan sebagai replica set agar transaksi dan audit konsisten.
+You need Node.js 22.12+, npm, Docker Compose v2, Godot 4.7.2, and its single-threaded Web export templates. MongoDB must run as a replica set. The development Compose file provides local services; use a dedicated test database for integration tests.
 
 ```sh
 npm ci
@@ -37,59 +33,37 @@ npm run build:game
 npm run dev
 ```
 
-Buka `http://localhost:5173`. Perintah `owner` meminta email, nama, dan password melalui terminal; tidak ada kredensial bawaan. Akun pemain diaktifkan melalui undangan owner.
+Open `http://localhost:5173`. The interactive `owner` command creates an account with credentials you choose; there is no default password. If Godot is not on `PATH`, set `GODOT_BIN` to the local executable. Generated Web export files under `apps/web/public/game/` are ignored by Git.
 
 ```sh
 npm run typecheck
 npm test
+npm run check:world
 npm run build
 ```
 
-Jika Godot tidak ada di PATH, isi `GODOT_BIN` dengan path executable. Hasil ekspor di `apps/web/public/game/` diabaikan Git dan dibuat kembali saat build. Untuk pengujian integrasi, gunakan database lokal khusus melalui `TEST_MONGO_URL` dan `TEST_REDIS_URL`; jangan arahkan tes ke database produksi.
+The complete CI pipeline adds Godot, browser, tooling, and dependency checks. See [contributing](CONTRIBUTING.md) for test isolation and evidence requirements.
 
-## Isi proyek
+## Repository map
 
-| Bagian                                          | Fungsi                                                           |
-| ----------------------------------------------- | ---------------------------------------------------------------- |
-| `client-godot/`                                 | Dunia permainan, karakter, gerakan, eksplorasi, dan HUD          |
-| `apps/web/`                                     | Akun, undangan, pengaturan, serta panel admin                    |
-| `apps/api/`                                     | Validasi permainan, autentikasi, ekonomi, dan audit              |
-| `packages/shared/`                              | Kontrak data, konten awal, dan definisi wilayah                  |
-| `assets/brand/`                                 | Kit identitas Jalasmara                                          |
-| `ci/`                                           | Build Godot, CodeQL, dan pengiriman laporan                      |
-| `scripts/package-web-release.py`                 | Context Docker tracked dengan manifest hash dan reuse aset terverifikasi |
-| `tools/npc-rig/`                                | Generator bagian tubuh NPC dari artwork orisinal proyek          |
-| `tools/worldkit/`                               | Adapter offline peta dan validator lantai, elevasi, serta portal |
-| `tools/pixel-snapper/`, `tools/image-to-pixel/` | Persiapan grid dan palet aset offline dengan atribusi upstream   |
+| Path | Role |
+| --- | --- |
+| `client-godot/` | World, actors, movement, shaders, game HUD, and Web export |
+| `apps/web/` | Browser host, authentication screens, and administration |
+| `apps/api/` | Authoritative gameplay API, persistence, and audit |
+| `packages/shared/` | Contracts, initial content, and world definitions |
+| `tools/worldkit/` | In-repository map-draft adapter |
+| `tools/pixel-snapper/`, `tools/image-to-pixel/` | Offline asset preparation with upstream attribution |
+| `docs/` | Product requirements, art direction, operations, reviews, and evidence |
 
-## Jalasmara WorldKit
+The separate [JalasmaraWorldKit](https://git.ppti.me/ardianryan/jalasmara-worldkit) repository packages the authoring tools; its [public GitHub mirror](https://github.com/ardianryan/jalasmara-worldkit) is available without a Gitea login. Its drafts do not publish maps or modify player data. [WorldKit guidance](tools/worldkit/README.md) and [integration references](docs/reference-integrations.md) explain scope and provenance.
 
-Repositori alat terpisah (privat): [GitHub](https://github.com/ardianryan/jalasmara-worldkit) · [GitLab](https://gitlab.com/ardianryan/jalasmara-worldkit). Salinan integrasi di `tools/` tetap diuji terhadap kontrak geometri game.
+## Development and evidence
 
-WorldKit adalah lapisan authoring dan pipa aset milik proyek; Godot tetap runtime permainan. Adapter peta menghasilkan draft untuk ditinjau, bukan publikasi otomatis ke dunia atau database. Pixel Snapper memakai kode upstream berlisensi MIT yang dikunci versinya; Image-to-Pixel memakai paket npm terpisah dari dependensi game.
+Gitea is the source and CI home: [repository](https://git.ppti.me/ardianryan/Jalasmara-The-Game) · [Actions](https://git.ppti.me/ardianryan/Jalasmara-The-Game/actions). [GitHub](https://github.com/ardianryan/Jalasmara-The-Game) and [GitLab](https://gitlab.com/ardianryan/jalasmara-the-game) are Git backups; their CI pipelines are disabled. A passing CI run creates a verified delivery candidate, while staging activation, backup, rollback, and public smoke are separate steps described in [operations](docs/operations.md).
 
-Lihat [panduan WorldKit](tools/worldkit/README.md), [Pixel Snapper](tools/pixel-snapper/README.md), [pengolah palet](tools/image-to-pixel/README.md), dan [backlog next-gen](docs/nextgen-world-authoring.md). Jalankan `npm run check:worldkit` untuk memeriksa adapter beserta kecocokan geometry server. `npm run check:worldkit-assets` membutuhkan instalasi/build alat sesuai README masing-masing.
+The [gallery](docs/visual/README.md) contains selected original-game screenshots with source/PCK hashes and acceptance limits. Reference moodboards are not distributed as game assets. For current decisions and remaining blockers, use the [active handoff](docs/agent-handoff.md) and [PRD](docs/PRD.md); older review reports remain historical evidence.
 
-[Fish Gen](docs/world/fish-gen-reference.md) sudah dipakai sebagai generator offline untuk atlas orisinal32bingkai dan tiga ikan dekoratif (satu pada profil ringan), dengan adapter animasi GDScript. Adapter masuk paket staging PCK73d; sepuluh spesies gameplay tetap. Pin, MIT/izin hasil dan provenance tersedia pada [pilot aktual](docs/reviews/overnight-fishgen-pilot.md). Ini bukan generator terrain/air atau perubahan ekonomi tangkapan.
+## Participate
 
-## Akun dan pengelolaan
-
-Login lokal adalah jalur utama. Owner dapat mengundang pemain, menerbitkan reset password, dan menetapkan admin. Admin dapat mengelola konten serta mengubah koin, fragmen, kemampuan, dan progres dengan alasan yang tercatat. Perubahan pemain membatalkan sesi permainan lama agar hasil sebelumnya tidak menimpa perubahan.
-
-OIDC opsional melalui ZITADEL. Pemain menautkan identitas eksternal dari akun lokal setelah autentikasi ulang. Identitas yang belum ditautkan tidak membuat akun baru; kesamaan email tidak menggabungkan akun otomatis.
-
-## Dokumentasi
-
-- [Rencana 06: finishing hutan/laut, aktivitas NPC, dan perluasan desa](docs/plans/06-finishing-dunia-npc-dan-perluasan-desa.md): keterbacaan hutan/laut dan dasar rutinitas warga sudah dirilis serta diperiksa melalui HTTPS staging. [Laporan awal](docs/reviews/06a-delivery.md) mencatat bukti dan status rilis; pilot tubuh, perluasan desa, serta Windows/S23 fisik tetap terbuka.
-- [Rencana 04: HUD, fullscreen, performa, dan gerak Nala](docs/plans/04-hud-fullscreen-performa-dan-gerak.md): implementasi aktif dari laporan Windows/Samsung S23, dengan bukti pengujian dan batas penerimaan.
-- [Jalur paralel HUD, daratan, laut dan website](docs/plans/05-jalur-kerja-paralel.md), dengan [pemeriksaan HUD Bahari dan loading](docs/reviews/parallel-hud-loading-delivery.md). Persentase loading memakai byte aset engine; gambar panorama/foreground dan prompt sumber tersimpan dalam repo.
-- [Rencana 03: desa hidup, rumah Nala, dan siklus harian](docs/plans/03-desa-hidup-dan-siklus-harian.md): animasi warga, Griya Sasmita, kalender, kebun, pasar/balai, dan finishing.
-- [Referensi teknis dan status integrasi](docs/reference-integrations.md): Polyfork, Strata, Procedural Pixel Creatures, img2threejs, SpriteCook, Ark Pixel Font, dan Pixelbolt.
-- [Operasi dan deployment](docs/operations.md), termasuk upstream reverse proxy **10.1.0.8:3000**.
-- [Kontrak API](docs/api.md).
-- [Identitas merek](docs/brand/identity.md) dan [arah budaya](docs/brand/cultural-direction.md).
-- [Asal aset](docs/assets/provenance.md), [kontribusi](CONTRIBUTING.md), dan [pelaporan keamanan](SECURITY.md).
-
-CI dijalankan di GitLab; GitHub Actions dinonaktifkan. JUnit, audit dependensi, dan CodeQL SARIF diterbitkan sebagai artefak GitLab dan disalin ke branch `ci-reports` GitHub. Pengiriman memakai deploy key khusus repository, bukan token pribadi pengguna.
-
-Referensi Dave the Diver digunakan sebagai moodboard privat, bukan aset distribusi. Direktori `moodboard/` dan `references/private/` diabaikan Git. Kode asli mengikuti MIT; aset kreatif mengikuti ketentuan terpisah pada [LICENSE](LICENSE). Kode, fon, dan aset pihak ketiga tetap mengikuti lisensi serta atribusi masing-masing pada [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
+Read the [contribution guide](CONTRIBUTING.md), [code of conduct](CODE_OF_CONDUCT.md), [security policy](SECURITY.md), and [support guidance](SUPPORT.md). For academic or software references, use [CITATION.cff](CITATION.cff) or [CITATION.bib](CITATION.bib). The [changelog](CHANGELOG.md) starts at `0.1.0`; a new version entry will be added when the project owner requests one.
