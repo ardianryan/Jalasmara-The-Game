@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "status": "AUTHORED NW explorer eight-pose upper loop proposal; not source walk recovery or natural/contact-coupled walking",
+  "identity": "male_nusantara",
+  "outfit": "explorer",
+  "view": "north_west",
+  "frameCount": 8,
+  "rigSpecSha256": "22fc470fe9f6132a3bba87c29cc2ac9048db8596b8fb0e8af3089655fe448cf0",
+  "previewFrameMs": 100,
+  "upperDeg": 0,
+  "motion": {
+    "left": {
+      "foreMeanDeg": 16,
+      "foreCosDeg": 16
+    },
+    "right": {
+      "foreMeanDeg": -12,
+      "foreCosDeg": 12
+    }
+  },
+  "behindTorso": [
+    "right"
+  ],
+  "phaseStatus": "AUTHORED independent cyclic phase only. No Lower/contact event, locomotion distance, stop or turn is connected.",
+  "contactPhase": null,
+  "sourceMeasurement": {
+    "anatomicalSide": "unknown",
+    "wrist": null,
+    "grip": null
+  },
+  "newOutputPixels": [],
+  "newGearPixels": 0,
+  "ownershipStatus": "Original exclusive masks and eight hidden garment fills unchanged; two separately labelled AUTHORED hidden fore-root overlaps retained.",
+  "sideStatus": "Stable AUTHORED LEFT/A visible screen-left and RIGHT/B occluded screen-right labels from NW rig; not measured source anatomy."
+}
