@@ -1,5 +1,9 @@
 # Handoff aktif agent
 
+## Checkpoint penutup 07.53 WIB, 10 November 2026
+
+**Baca [serah terima terbaru](reviews/overnight-0800-close.md) terlebih dahulu.** Rilis tetap export5/image559/PCK9a1; 13 shelter/dialogue lokal 18/18 dan full67 dunia lulus. NORTH offline rig10/loop9 lulus, 16 pasangan art tercatat jelas; belum runtime. Nala `831cf9b` FIRST7 gagal setelah enam kasus pada trailing LEFT drop8,841755>8 dan recovery view belum diterima; pilot tetap OFF, source eksperimen tidak digabung. Semua tujuh P0 Gemini f67 serta diving-SE merupakan positif palsu; audit HOLD. [Brief koreksi Gemini](plans/07b-gemini-character-audit-corrections.md) siap diberikan, hanya audit/source-read dan output miliknya. Galeri26/4.046.375byte; tidak ada ekspor baru atau hasil FPS perangkat fisik. Slot engine RELEASED. Catatan waktu di bawah adalah riwayat, bukan antrean aktif yang mengatasi laporan penutup.
+
 ## Pembaruan 07.24 WIB
 
 Staging tetap image559/PCK9a1; tidak ada perubahan runtime Nala yang digabung. Root browser41259 selesai **18/18 PASS**: fixturecf51efb3,468.786ms,1469 pulsa matrix/0legacy,323 operasi teramati,0error dan cleanup pemain uji berhasil. Satu rute membuktikan kedatangan13 warga ke shelter serta semua akses fisik, percakapan dan resume; layanan bersama lurah/izin memberi hanya benih yang ditentukan dan mempertahankan koin/progres. Identitas WebGL AppleM2/ANGLEMetal dicatat dan diassert; defaultSwiftShader tetap. Ini bukan FPS Windows/S23 atau smoke publik baru. [Laporan lengkap beserta timeout lama](reviews/overnight-export5-canonical-shelters.md). Slot GPU sudah RELEASE.
