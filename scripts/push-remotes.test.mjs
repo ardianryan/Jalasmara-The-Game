@@ -2,11 +2,14 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { pushBranch } from './push-remotes.mjs';
 
+const commit = 'a'.repeat(40);
+
 function fixture(failingRemote) {
   const pushes = [];
   return {
     pushes,
     run(args) {
+      if (args[0] === 'rev-parse') return commit;
       if (args[0] !== 'push') return '';
       pushes.push(args);
       if (args.includes(failingRemote)) throw new Error('Simulated rejected push');
@@ -20,10 +23,24 @@ test('the same explicit branch reaches primary first, with CI skip only on GitLa
   const results = pushBranch('work/example', { run: f.run });
   assert.deepEqual(results.map(r => r.remote), ['gitea', 'github', 'gitlab']);
   assert.deepEqual(f.pushes, [
-    ['push', 'gitea', 'refs/heads/work/example:refs/heads/work/example'],
-    ['push', 'github', 'refs/heads/work/example:refs/heads/work/example'],
-    ['push', '-o', 'ci.skip', 'gitlab', 'refs/heads/work/example:refs/heads/work/example'],
+    ['push', 'gitea', `${commit}:refs/heads/work/example`],
+    ['push', 'github', `${commit}:refs/heads/work/example`],
+    ['push', '-o', 'ci.skip', 'gitlab', `${commit}:refs/heads/work/example`],
   ]);
+});
+
+test('an in-flight branch advance cannot change the commit sent to later backups', () => {
+  const f = fixture();
+  let resolutions = 0;
+  const result = pushBranch('work/example', {
+    run(args) {
+      if (args[0] === 'rev-parse') return (++resolutions === 1 ? 'a' : 'b').repeat(40);
+      return f.run(args);
+    },
+  });
+  assert.equal(resolutions, 1);
+  assert.ok(result.every(r => r.commit === commit));
+  assert.ok(f.pushes.every(args => args.at(-1) === `${commit}:refs/heads/work/example`));
 });
 
 test('a primary failure prevents backup publication', () => {
