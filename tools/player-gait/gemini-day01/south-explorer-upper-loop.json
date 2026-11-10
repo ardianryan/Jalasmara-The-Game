@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "status": "AUTHORED SOUTH explorer upper-body loop proposal; no measured wrist, grip or foot-contact mapping",
+  "identity": "male_nusantara",
+  "outfit": "explorer",
+  "view": "south",
+  "sourceFrame": 0,
+  "explorerUpperSpecSha256": "757f811d8f0dd71d965861b2f32c642c6d205f95b920e6de4231b6e1ce77f8a5",
+  "frameCount": 8,
+  "previewFrameMs": 100,
+  "anatomicalConvention": "SOUTH anatomical LEFT is viewer-right; RIGHT is viewer-left. This is not a near/far convention for other views.",
+  "jointsStatus": "AUTHORED design anchors from visible sleeve/arm silhouette; not source wrist/grip measurements",
+  "phaseStatus": "AUTHORED independent cyclic phase only. No Lower/contact event, locomotion distance, stop or turn is connected.",
+  "motion": {
+    "left": {
+      "upperSinDeg": -2,
+      "foreMeanDeg": -21,
+      "foreCosDeg": 21
+    },
+    "right": {
+      "upperSinDeg": 2,
+      "foreMeanDeg": -31,
+      "foreCosDeg": -31
+    }
+  },
+  "behindTorso": [
+    "left"
+  ],
+  "authoredOutputPixels": [],
+  "newGearPixels": 0,
+  "gearContract": {
+    "newNodes": 0,
+    "newSatchelPixels": 0,
+    "atlasVestMeshEnabled": false,
+    "tankNetEnabled": false,
+    "satchel": "Existing separate attachment; no socket/position/visibility changed or validated here"
+  }
+}
