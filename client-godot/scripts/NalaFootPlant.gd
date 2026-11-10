@@ -35,6 +35,7 @@ var _turn_distance:=STEP_DISTANCE*.5
 var _turn_cosine:=.5
 var _physical_contract:=false
 var _transition_next:=true
+var _upper_exit_handover:=false
 var _body_facing_transitions:=0
 var _raw_contact_events:Array=[]
 var _trace_epoch:=0
@@ -99,7 +100,7 @@ func _record_contact(side:String,purpose:String,prior_plant:Vector3,body_at:Vect
 		if not actual.is_empty():
 			support={"type":str(profile.type),"id":str(profile.id),"ordinal":int(actual.stepIndex)+1 if str(profile.type)=="stairs" else -1,"height":actual.groundHeight,"progress":actual.progress}
 			break
-	_raw_contact_events.append({"stage":"raw_planner_transition","producer":str(get_instance_id()),"epoch":_trace_epoch,"sequence":_contact_count,"side":side,"purpose":purpose,"stepInitiation":str(entry.get("stepInitiation","unknown")),"previousPlant":prior_plant,"newPlant":Vector3(entry.plant),"plantDisplacement":prior_plant.distance_to(entry.plant),"logicalPlant":Vector2(entry.logical),"bodyLogical":body_at,"bodyHeight":_body_height,"acceptedDistance":accepted_at,"observedPhysicsFrame":Engine.get_physics_frames(),"observedProcessFrame":Engine.get_process_frames(),"exactContactPhysicsFrameKnown":false,"actualSupport":support,"plannedOrdinal":int(entry.get("treadPlan",{}).get("landingOrdinal",-1)),"sourceFootId":str(_landing_geometry.get(side,{}).get("id","unknown")),"supportedLandingAtTransition":bool(entry.get("landingGeometryValid",false)),"landingValidationScope":"original mask" if _landing_geometry.has(side) else "legacy support extents","contactPoseRendered":false})
+	_raw_contact_events.append({"stage":"raw_planner_transition","producer":str(get_instance_id()),"epoch":_trace_epoch,"sequence":_contact_count,"side":side,"purpose":purpose,"stepInitiation":str(entry.get("stepInitiation","unknown")),"previousPlant":prior_plant,"newPlant":Vector3(entry.plant),"plantDisplacement":prior_plant.distance_to(entry.plant),"logicalPlant":Vector2(entry.logical),"bodyLogical":body_at,"bodyHeight":_body_height,"acceptedDistance":accepted_at,"observedPhysicsFrame":Engine.get_physics_frames(),"observedProcessFrame":Engine.get_process_frames(),"exactContactPhysicsFrameKnown":false,"actualSupport":support,"plannedOrdinal":int(entry.get("treadPlan",{}).get("landingOrdinal",-1)),"plannedLandingClassification":str(entry.get("treadPlan",{}).get("landingClassification","ordinary")),"sourceFootId":str(_landing_geometry.get(side,{}).get("id","unknown")),"supportedLandingAtTransition":bool(entry.get("landingGeometryValid",false)),"landingValidationScope":"original mask" if _landing_geometry.has(side) else "legacy support extents","contactPoseRendered":false})
 
 func legal_support(point:Vector2) -> bool:
 	return _legal(point)
@@ -360,18 +361,25 @@ func _next_tread(side:String,at:Vector2,provisional:Vector2) -> Dictionary:
 			support_ordinal=count+1
 			support_class="upper_flat_approach"
 		var ordinal:=clampi(support_ordinal+(1 if along>0 else -1),0,count+1)
-		# The next new contact follows the opposite support, not this foot's old tread.
-		var center:Vector2=(end if upper_approach else start.lerp(end,(float(ordinal)-.5)/count))+across*lane
-		var height:=lerpf(float(profile.from),float(profile.to),float(clampi(ordinal,0,count))/count)
-		var target:=_safe(center,at,side,height)
-		if not _supported(target,side,height):
-			return {"valid":false,"connectorId":profile.id,"landingOrdinal":ordinal,"landingHeight":height}
 		var quarter:Vector2=(end-start)/float(count)*.25
 		var midpoint:Vector2=start.lerp(end,.5)+across*lane
 		var first:=_ground(midpoint-quarter)
 		var second:=_ground(midpoint+quarter)
 		var depth:=Vector2(second.x-first.x,second.y-first.y).length()*2.0
-		return {"valid":true,"target":target,"connectorId":profile.id,"landingOrdinal":ordinal,"landingHeight":height,"supportOrdinal":support_ordinal,"supportClassification":support_class,"actorOnConnector":not actor_ground.is_empty(),"supportOnConnector":not support_ground.is_empty(),"treadDistance":depth}
+		var upper_exit:bool=along>0 and support_class=="actual_tread" and support_ordinal==count and bool(_feet[support].grounded) and absf(Vector3(_feet[support].plant).z-float(profile.to))<.003 and absf(_ground(_feet[support].logical).z-Vector3(_feet[support].plant).z)<.003
+		# The next new contact follows the opposite support, not this foot's old tread.
+		var center:Vector2=(end if upper_approach else start.lerp(end,(float(ordinal)-.5)/count))+across*lane
+		if upper_exit:
+			if not is_finite(depth) or depth<=.001:
+				return {"valid":false,"connectorId":profile.id,"landingClassification":"upper_flat_exit","reason":"invalid physical tread depth"}
+			center=_forward_point(end+across*lane,depth)
+		var height:=lerpf(float(profile.from),float(profile.to),float(clampi(ordinal,0,count))/count)
+		var target:=_safe(center,at,side,height)
+		var target_progress:float=(target-start).dot(end-start)/float(profile.lengthSquared)
+		var exit_valid:bool=not upper_exit or (target_progress>1.0 and Traversal.connector_ground(profile,target).is_empty())
+		if not exit_valid or not _supported(target,side,height):
+			return {"valid":false,"connectorId":profile.id,"landingOrdinal":ordinal,"landingHeight":height,"landingClassification":"upper_flat_exit" if upper_exit else "tread","reason":"unsupported landing or exit remained on connector"}
+		return {"valid":true,"target":target,"connectorId":profile.id,"landingOrdinal":ordinal,"landingHeight":height,"supportOrdinal":support_ordinal,"supportClassification":support_class,"actorOnConnector":not actor_ground.is_empty(),"supportOnConnector":not support_ground.is_empty(),"treadDistance":depth,"landingClassification":"upper_flat_exit" if upper_exit else ("upper_flat_approach" if upper_approach else "tread"),"exitTargetRequested":center if upper_exit else Vector2.ZERO}
 	return {}
 
 func _terrain_duration(from:Vector3,to:Vector3,minimum:float,span:float) -> Dictionary:
@@ -438,7 +446,7 @@ func _begin(side:String,at:Vector2,hips:Dictionary,right:Vector3,resuming:bool=f
 	_swing=side
 	_distance=0.0
 	var entry:Dictionary=_feet[side]
-	entry["stepInitiation"]="resume_unfinished_settlement" if resuming else ("requested_short_handover" if _physical_contract and _transition_next else "steady_walk")
+	entry["stepInitiation"]="resume_unfinished_settlement" if resuming else ("upper_exit_handover" if _physical_contract and _upper_exit_handover else ("requested_short_handover" if _physical_contract and _transition_next else "steady_walk"))
 	if _physical_contract and _transition_next:
 		var heading:=_world_motion(at,_heading).normalized()
 		var target_base:=_base(at,float(hips[side]),right)
@@ -447,6 +455,7 @@ func _begin(side:String,at:Vector2,hips:Dictionary,right:Vector3,resuming:bool=f
 		# existing five-world continuity units for changing the lateral foot lane.
 		_landing_distance=maxf(_start_distance,ceilf(1.5*(_landing_lead-projection)/2.5))
 	_transition_next=false
+	_upper_exit_handover=false
 	entry.from=entry.logical
 	entry.lateralOffset=float(hips[side])
 	entry.to=_safe(_forward_point(_base(at,float(hips[side]),right),_landing_distance+_landing_lead),at,side)
@@ -506,6 +515,7 @@ func _reset(at:Vector2,hips:Dictionary,right:Vector3) -> void:
 	_distance=0.0
 	_landing_distance=_start_distance
 	_transition_next=true
+	_upper_exit_handover=false
 	_last_at=at
 	_body_height=_ground(at).z
 	_stair_transfer=_support_transfer_active(at)
@@ -625,6 +635,9 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 				entry.grounded=true
 				_contact_count+=1
 				_record_contact(_swing,"walking",prior_plant,sample,_accepted_distance-physical+consumed)
+				if _physical_contract and str(entry.get("treadPlan",{}).get("landingClassification",""))=="upper_flat_exit":
+					_transition_next=true
+					_upper_exit_handover=true
 				_next_side="left" if _swing=="right" else "right"
 				_landing_distance=_steady_distance
 				_swing=""
@@ -661,4 +674,4 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 	return snapshot()
 
 func snapshot() -> Dictionary:
-	return {"actorLogical":_last_at,"bodyHeight":_body_height,"bodyTransferRate":maxf(_body_rate,_continuous_ground_rate),"continuousGroundRate":_continuous_ground_rate,"feet":_feet.duplicate(true),"swingSide":_swing,"swingDistance":_distance,"acceptedDistance":_accepted_distance,"stepDistance":_steady_distance,"landingLead":_landing_lead,"physicalContract":_physical_contract,"bodyFacingTransitions":_body_facing_transitions,"shortHandoverPending":_transition_next,"landingDistance":_landing_distance,"contacts":_contact_count,"discontinuityResets":_discontinuities,"rawContactEvents":_raw_contact_events.duplicate(true),"rawTraceEpoch":_trace_epoch,"rawTraceOverflow":_trace_overflow,"actorRootMotion":false,"legacyFoleyChanged":false}
+	return {"actorLogical":_last_at,"bodyHeight":_body_height,"bodyTransferRate":maxf(_body_rate,_continuous_ground_rate),"continuousGroundRate":_continuous_ground_rate,"feet":_feet.duplicate(true),"swingSide":_swing,"swingDistance":_distance,"acceptedDistance":_accepted_distance,"stepDistance":_steady_distance,"landingLead":_landing_lead,"physicalContract":_physical_contract,"bodyFacingTransitions":_body_facing_transitions,"shortHandoverPending":_transition_next,"upperExitHandoverPending":_upper_exit_handover,"landingDistance":_landing_distance,"contacts":_contact_count,"discontinuityResets":_discontinuities,"rawContactEvents":_raw_contact_events.duplicate(true),"rawTraceEpoch":_trace_epoch,"rawTraceOverflow":_trace_overflow,"actorRootMotion":false,"legacyFoleyChanged":false}
