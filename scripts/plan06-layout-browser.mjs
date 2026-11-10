@@ -171,12 +171,12 @@ if (process.env.PLAN06_SHELTER_PREDECESSOR) {
   assert.equal(previous.ownTemporaryPlayerRemoved, true);
   assert(
     previous.checks.includes(
-      "seven-residents-reach-rain-shelter-stations-on-the-real-night-calendar",
+      "canonical-residents-reach-rain-shelter-stations-on-the-real-night-calendar",
     ),
   );
   const reached = previous.observations.find(
     (entry) =>
-      entry.name === "left-seven-shelters-player-clears-station-approaches",
+      entry.name === "left-canonical-shelters-player-clears-station-approaches",
   );
   assert(reached && Number.isFinite(reached.x) && Number.isFinite(reached.y));
   assert(
@@ -590,10 +590,20 @@ async function verifyShelters() {
       (value) => value.npc === "Bu Darmi",
     ).id,
   });
-  assert.equal(residents.length, 7);
+  const canonicalNames = [
+    ...WORLD.surface_hub.residents.map((resident) => resident.name),
+    "Bu Darmi",
+  ];
+  assert(canonicalNames.length >= 7);
+  assert.equal(new Set(canonicalNames).size, canonicalNames.length);
+  assert.deepEqual(
+    residents.map((resident) => resident.name).sort(),
+    [...canonicalNames].sort(),
+    "Running shelter residents must match the complete canonical village.",
+  );
   console.log(
     JSON.stringify({
-      phase: "waiting-seven-shelters",
+      phase: "waiting-canonical-shelters",
       residentStates: (await snapshot()).land?.actors?.residentStates,
     }),
   );
@@ -608,7 +618,7 @@ async function verifyShelters() {
     160000,
   );
   checks.push(
-    "seven-residents-reach-rain-shelter-stations-on-the-real-night-calendar",
+    "canonical-residents-reach-rain-shelter-stations-on-the-real-night-calendar",
   );
   for (const resident of residents.sort((a, b) => {
     if (shelterPredecessor) {
@@ -705,11 +715,11 @@ async function verifyShelters() {
 
 async function verifyRemainingShelters() {
   assertLeftView(await snapshot(), "hub");
-  await responsive(667, 375, "left-seven-shelters-start-667x375");
+  await responsive(667, 375, "left-canonical-shelters-start-667x375");
   // NPCs pause for nearby players; clear their authored station approaches first.
   validateShelterWait(world, await snapshot());
   await routeTo(shelterWaitPosition, "hub");
-  await shot("left-seven-shelters-player-clears-station-approaches");
+  await shot("left-canonical-shelters-player-clears-station-approaches");
   await verifyShelters();
   const state = await apiState();
   assert.equal(state.player.progress.day, 2);
@@ -1731,8 +1741,18 @@ try {
         migrated.surface.y - initialLegacy.y,
       ) >= 12,
     );
-    assert.equal((await snapshot()).land.components.AttachedShelterRoofs, 5);
-    assert.equal((await snapshot()).land.components.ShelterCollisionPosts, 10);
+    const authoredShelters = world.landMaps.hub.shelters.filter(
+      (shelter) => !shelter.existing,
+    );
+    assert(authoredShelters.length >= 5, "Canonical village shelter set is missing.");
+    assert.equal(
+      (await snapshot()).land.components.AttachedShelterRoofs,
+      authoredShelters.length,
+    );
+    assert.equal(
+      (await snapshot()).land.components.ShelterCollisionPosts,
+      authoredShelters.reduce((sum, shelter) => sum + shelter.posts.length, 0),
+    );
     assert.equal((await snapshot()).land.components.SasmitaPileFooting, 4);
     checks.push("legacy-layout8-post-position-migrates-to-current-canonical-floor");
     await verifyHome();
