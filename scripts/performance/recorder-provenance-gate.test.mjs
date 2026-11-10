@@ -23,15 +23,9 @@ const report = () => ({
     end: identity(),
   },
 });
-const manifest = {
-  version: 1,
-  sha256: sha,
-  bytes,
-  partSize: 1048576,
-  hashes: ["b".repeat(64), "c".repeat(64)],
-};
-const loader = (value = manifest) =>
-  `const jalasmaraAssetFetch = (function(){ /* jalasmaraPckIdentity all-parts-verified-manifest */ })(${JSON.stringify(value)}, globalThis.fetch.bind(globalThis), {identityTarget: globalThis});`;
+// Static source fixture: no serialized values are interpolated into JavaScript.
+const loader = () =>
+  `const jalasmaraAssetFetch = (function(){ /* jalasmaraPckIdentity all-parts-verified-manifest */ })({"version":1,"sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","bytes":1048593,"partSize":1048576,"hashes":["bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"]}, globalThis.fetch.bind(globalThis), {identityTarget: globalThis});`;
 test("future recorder gate is explicit and rejects known old identity before fixture creation", () => {
   assert.equal(recorderProvenanceMode(undefined, sha), false);
   assert.equal(recorderProvenanceMode("1", sha), true);
@@ -49,8 +43,8 @@ test("prefixture source capability must have the exact expected embedded manifes
   assert.equal(assertProvenanceLoader(loader(), sha, bytes).partCount, 2);
   for (const source of [
     "old-loader",
-    loader({ ...manifest, sha256: "d".repeat(64) }),
-    loader({ ...manifest, bytes: bytes + 1 }),
+    loader().replace(sha, "d".repeat(64)),
+    loader().replace('"bytes":1048593', '"bytes":1048594'),
     loader().replace("identityTarget: globalThis", "identityTarget: null"),
     loader() + loader(),
   ])

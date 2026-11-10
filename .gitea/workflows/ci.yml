@@ -38,14 +38,14 @@ jobs:
           node -e 'console.log("Runner memory MiB:", Math.round(require("os").totalmem()/1048576))'
       - name: Verify API, host, tooling and dependencies
         run: bash ci/verify.sh
+      - name: CodeQL security analysis
+        run: bash ci/codeql.sh
       - name: Export Godot and verify world
         run: bash ci/setup-godot.sh
       - name: Build web and API
         run: |
           npm run build -w @jalasmara/web
           npm run build -w @jalasmara/api
-      - name: CodeQL security analysis
-        run: bash ci/codeql.sh
       - name: Prepare verified delivery bundle
         run: |
           python3 scripts/package-web-release.py \
