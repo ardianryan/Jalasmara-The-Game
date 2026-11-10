@@ -1,5 +1,17 @@
 # Handoff aktif agent
 
+## Pembaruan antrean 07.05 WIB
+
+Staging tetap image559/PCK9a1 yang sudah diterima. [Browser desa kanonis](reviews/overnight-export5-canonical-shelters.md): Griya masuk/gerak/reload/keluar dan migrasi lantai selesai; fixture terpisah membuktikan13 warga tiba/diam di shelter serta percakapan direktur. Rute603.827ms gagal budget10menit;12percakapan lain belum diterima, cleanup fixture berhasil. Browser34617 sudah RELEASE.
+
+Nala frozena7e7ace: actualunit2.086s dan inheritedFIRST4/214geometry9.857s PASS; nyata turun96boundary→84→72→60→48 bergantian. Full16sourceyangsama selesai6kasus lalu ridgeUP ditolak drop8.90117>8. Contacttrace sengaja tidak dipublikasikan untuk pose gagal; perbaikan pelaporan fixture5e98db6 tidak melonggarkan guard. Character+peer memodelkan resumed ascending curve dari actualC/Q; belum source/runtime root atau native baru. Semua pilot tetap OFF.
+
+Root [lighting frame](reviews/overnight-actor-lighting-frame.md) source36b68af: perbatch CPU context, warna/11lampu/gear tidak berubah. Focusedtest PASS dan limaAB/BA checksumidentik, median39.178→14.508µs per240×24samplebatch; bukan FPS dan bukan solusi drawcall. Root memiliki slot full67suite session71002 saat checkpoint; character/website hanya CPU hingga RELEASE. [NWrig](reviews/overnight-nw-explorer-upper-rig.md) c543+0b42 telah digabung sebagai tool/proposal,10CPUrootPASS, exact2AUTHOREDoverlap memperbaiki3piksel notch. Website mengerjakan8frameCPU; peer review tidak berarti runtime acceptance.
+
+Brief Gemini [194baris](plans/07-gemini-character-source-audit.md) dan worktree khusus tetap berlaku. Pada pemeriksaan read-only06.59WIB terlihat hanya folder tool audit baru `tools/player-gait/gemini-source-audit/` yang belum dicommit; audit mulai berlangsung, belum ada hasil yang diterima. Jangan menyunting atau membersihkan workspace Gemini. Branch/worktree adalah isolasi integrasi, bukan sandbox filesystem; root tetap meninjau diff/sourcehash/allowlist sebelum cherry-pick. Tidak ada atlas/runtime/server yang diizinkan di paket Gemini.
+
+Catatan checkpoint sebelumnya berikut tetap sebagai riwayat; antrean di atas mengatasi status source/slot lama.
+
 Checkpoint 10 November 2026, 06.48 WIB. Pengguna mengizinkan pekerjaan sampai08.00WIB; lanjutkan inti melalui tiga subagent+integrator. Pengguna bersedia membantu Windows/Samsung S23; belum ada hasil perangkat fisik. **Ekspor5 image559/PCK9a1 aktif/sehat sejak05.48.23WIB, publicdefault6/6PASS.** [Laporan](reviews/overnight-export5-integration.md): sourceDockerbf55342/export72b173c, full66lokal150.822ms, browserforest/badge5/5, public378.388ms/568pulsa/0error/cleanupnol, clockrevision66→67/+4.994msaktif. Context dan imagea9 lama sudah dibersihkan; aktif559+rollback898. NalaLowerOFF: source7e14c09 menyelesaikan2dockcases lalu centralUP gagal9,047956>8 setelahLEFT84landed. Belum full16/freshflat32/nativebaru. Seluruh delapan jalur belum selesai.
 
 ## Workspace dan aturan bersama
