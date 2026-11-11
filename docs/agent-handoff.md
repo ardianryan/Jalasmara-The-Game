@@ -1,5 +1,9 @@
 # Handoff aktif agent
 
+## Candidate follow-up, 11 November 2026
+
+[Follow-up review](reviews/candidate-followup-2026-11-11.md): one source-only central-ascent ankle diagnosis from resident art was promoted to `main` as `9e75b27`. The gait branch `ab5574b` failed three fresh headless controller attempts despite exact source/world hashes matching its historical full16 PASS artifact: western inner reach 0.504<1.221, western outer requested drop20.123>8, and central outer drop10.699>8. The cause is not yet proven; no runtime gait or old village anchor was merged. Four candidate branches remain intact. The next gate is repeatable full16 with variable frame timing, then native moving review; physical pilot stays OFF. Staging remains the prior compressed-audio release.
+
 ## Candidate acceptance, 11 November 2026
 
 [Latest review](reviews/candidate-acceptance-2026-11-11.md): corrected Gemini character audit and offline SOUTH explorer upper proposal were cherry-picked into `main` as `83abb62`, `ebac3cd`, `65533ff`; review checkpoint `04b254f` was pushed to Gitea, GitHub and GitLab. The false P0 direction claims are revoked; production gait remains OFF. The current 68-script Godot world suite, audit 6/6, upper proposal 5/5, typecheck, build and 121/121 API tests pass. The first API run failed only because test MongoDB/Redis were absent; an isolated local rerun passed. Three other candidates plus the remaining Gemini coordinator history are held for individual review; no branch was deleted, no staging build changed.
