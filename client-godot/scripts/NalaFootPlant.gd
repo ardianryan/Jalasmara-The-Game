@@ -405,6 +405,12 @@ func _next_tread(side:String,at:Vector2,provisional:Vector2) -> Dictionary:
 			center=_forward_point(end+across*lane,depth)
 		var height:=lerpf(float(profile.from),float(profile.to),float(clampi(ordinal,0,count))/count)
 		var target:=_safe(center,at,side,height)
+		if not upper_exit and not upper_approach and ordinal>=1 and ordinal<=count:
+			for inset in range(1,13):
+				var candidate:=center-_heading*float(inset)*.5
+				var contact:=Traversal.connector_ground(profile,candidate)
+				if contact.is_empty() or int(contact.stepIndex)+1!=ordinal: break
+				if _supported(candidate,side,height): target=candidate
 		var target_progress:float=(target-start).dot(end-start)/float(profile.lengthSquared)
 		var exit_valid:bool=not upper_exit or (target_progress>1.0 and Traversal.connector_ground(profile,target).is_empty())
 		if not exit_valid or not _supported(target,side,height):
@@ -474,9 +480,9 @@ func _ramp_duration(from:Vector2,to:Vector2,from_world:Vector3,minimum:float,sid
 	return {"distance":distance,"curveSpeedBound":bound,"curveOnly":true,"valid":valid and bound<=4.9,"fromWorld":from_world,"toWorld":_ground(to),"fixedPathWorldXY":span,"curveType":"ramp_support_profile","fromGroundOffset":offset,"groundKnots":knots,"effectiveVerticalSpan":vertical_span,"fromSupportOffset":support_offset,"originalFootSupportEnvelope":true,"envelopeIncludedInBaseCurveBound":false}
 
 func commit_raw_support(side:String,world:Vector3,support_offset:float=NAN) -> void:
-	if _physical_contract and _feet.has(side) and not bool(_feet[side].grounded) and bool(_feet[side].get("fixedRampTarget",false)):
+	if _physical_contract and _feet.has(side) and not bool(_feet[side].grounded):
 		_feet[side].sole=world
-		if not is_nan(support_offset): _feet[side].rampCurvePlan.fromSupportOffset=support_offset
+		if not is_nan(support_offset) and bool(_feet[side].get("fixedRampTarget",false)): _feet[side].rampCurvePlan.fromSupportOffset=support_offset
 
 func _begin(side:String,at:Vector2,hips:Dictionary,right:Vector3,resuming:bool=false) -> void:
 	_swing=side
@@ -588,7 +594,7 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 			_transition_next=true
 			_begin(_swing,_last_at,hips,right,true)
 		elif _physical_contract and _swing=="" and _heading.dot(next_heading)<_turn_cosine: _transition_next=true
-		if not resuming and _swing!="" and _heading.dot(next_heading)<_turn_cosine:
+		if not resuming and _swing!="" and _heading.dot(next_heading)<_turn_cosine and str(_feet[_swing].get("stepInitiation",""))!="heading_turn_reanchor":
 			# Re-anchor the airborne path at its actual pose before changing heading.
 			_feet[_swing].from=_feet[_swing].logical
 			_feet[_swing].fromWorld=_feet[_swing].sole

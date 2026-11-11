@@ -132,16 +132,37 @@ func _anatomy(view:Dictionary,feet:Dictionary,at:Vector2,right:Vector3,vertical:
 func _body_shift_target(view:Dictionary,feet:Dictionary,at:Vector2,right:Vector3,vertical:float,height:float) -> Vector3:
 	var baseline:=_anatomy(view,feet,at,right,vertical,height)
 	var best:=Vector3.ZERO
-	var best_score:=maxf(0,float(baseline.drop)*vertical)
-	for side in ["left","right"]:
-		var hip:Vector3=baseline.hips[side]
-		var ankle:Vector3=baseline.ankles[side]
-		var bearing:=Vector3(ankle.x-hip.x,ankle.y-hip.y,0).normalized()
-		for radius in range(1,9):
-			var candidate:=bearing*float(radius)
-			var result:=_anatomy(view,feet,at,right,vertical,height,candidate)
-			if bool(result.horizontalInvalid): continue
-			var score:=maxf(0,float(result.drop)*vertical)+float(radius)*.35
+	var best_score:=INF
+	# The feasible region is the intersection of both original leg workspaces.
+	# Evaluate it in world XY without repeated terrain inversions per candidate.
+	for x in range(-8,9):
+		for y in range(-8,9):
+			var candidate:=Vector3(float(x),float(y),0)
+			if candidate.length_squared()>64.0: continue
+			var drop:=0.0
+			var valid:=true
+			for side in ["left","right"]:
+				var hip:Vector3=baseline.hips[side]+candidate
+				var ankle:Vector3=baseline.ankles[side]
+				var limb:Vector2=baseline.lengths[side]
+				var reach:=limb.x+limb.y-.1
+				var horizontal:=Vector2(hip.x-ankle.x,hip.y-ankle.y).length_squared()
+				if horizontal>=reach*reach:
+					valid=false
+					break
+				drop=maxf(drop,hip.z-ankle.z-sqrt(maxf(.001,reach*reach-horizontal)))
+			if not valid: continue
+			var drop_pixels:=maxf(0,drop)*vertical
+			if drop_pixels>8.0: continue
+			for side in ["left","right"]:
+				var hip:Vector3=baseline.hips[side]+candidate-Vector3(0,0,maxf(0,drop))
+				var ankle:Vector3=baseline.ankles[side]
+				var limb:Vector2=baseline.lengths[side]
+				if hip.distance_to(ankle)<absf(limb.x-limb.y)+.001:
+					valid=false
+					break
+			if not valid: continue
+			var score:=candidate.distance_to(_body_shift)+candidate.length()*.12+drop_pixels*.02
 			if score<best_score:
 				best_score=score
 				best=candidate
@@ -372,16 +393,20 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 					entry["supportPlanTranslation"]={"before":[before_plan.x,before_plan.y,before_plan.z],"after":[ankle.x,ankle.y,ankle.z],"deltaZ":adjustment}
 					_planner.commit_raw_support(side,entry.sole,float(entry.rampCurvePlan.fromSupportOffset))
 					entry["supportEnvelope"]={"ankleSupportHeight":support.height,"sineLift":lift,"carriedStartOffset":carried,"rawHeightAdjustment":adjustment,"originalPoints":support.points,"baseCurveBoundIncludesEnvelope":false,"minimumAirborneClearance":.02}
+				var contact_fit:=bool(entry.grounded) and FootPlane.valid_contact(renderer,entry.logical,mask,Callable(_planner,"legal_support"))
 				var current_clear:=FootPlane.airborne_clear(renderer,entry.logical,mask,ankle-_ankle_offset(side,foot_direction,right,vertical,current),current)
 				var backtracks:=0
-				var next_clear:=FootPlane.airborne_clear(renderer,entry.logical,mask,ankle-_ankle_offset(side,foot_direction,right,vertical,next),next)
+				var next_clear:=contact_fit if bool(entry.grounded) and next.angle_to(target)<.001 else FootPlane.airborne_clear(renderer,entry.logical,mask,ankle-_ankle_offset(side,foot_direction,right,vertical,next),next)
 				while backtracks<10 and not next_clear:
 					next=current.slerp(next,.5).normalized()
 					backtracks+=1
 					next_clear=FootPlane.airborne_clear(renderer,entry.logical,mask,ankle-_ankle_offset(side,foot_direction,right,vertical,next),next)
 				if not next_clear: next=current
 				entry["rotationClearance"]={"currentClear":current_clear,"selectedClear":next_clear or current_clear,"backtracks":backtracks,"originalOpaqueVertices":mask.vertices.size()}
-				if current.angle_to(next)>.000001:
+				if bool(entry.grounded) and contact_fit and next.angle_to(target)<.001:
+					_foot_planes[side]=target
+					correction=Vector3.ZERO
+				elif current.angle_to(next)>.000001:
 					var offset:=_ankle_offset(side,str(_foot_views[side]),right,vertical,current)
 					var pivot:Vector3=Vector3(entry.sole)+correction+offset
 					entry["rotationAnchorWorld"]=[pivot.x,pivot.y,pivot.z]
@@ -398,8 +423,24 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 					return _last.duplicate(true)
 				else:
 					_foot_planes[side]=target
-			var support:Vector3=_plane(side)*right
-			entry["footPlane"]={"rotation":[_plane(side).x,_plane(side).y,_plane(side).z,_plane(side).w],"supportAxis":[support.x,support.y,support.z],"angleRemaining":_plane(side).angle_to(target),"rigidOriginalPixels":true}
+			if not bool(entry.grounded) and not envelope_active:
+				var foot_direction:=str(_foot_views[side])
+				var foot_leg:Dictionary=_data.views[foot_direction].legs[side]
+				var opaque_mask:Dictionary={"leg":foot_leg,"vertices":_opaque_vertices[foot_direction+"/"+side],"right":right,"vertical":vertical}
+				var ankle:=Vector3(entry.sole)+correction+_ankle_offset(side,foot_direction,right,vertical,_plane(side))
+				var support:=FootPlane.ankle_support(renderer,entry.logical,opaque_mask,ankle,_plane(side))
+				if not bool(support.valid):
+					visible=false
+					proxy.visible=true
+					_last={"enabled":false,"rejected":true,"reason":"airborne opaque mask has no ground inverse","contacts":pose,"reachValid":false,"rootMotion":false}
+					return _last.duplicate(true)
+				var lift:=maxf(0.0,float(support.height)+.02-ankle.z)
+				if lift>.00001:
+					entry.sole=Vector3(entry.sole)+Vector3(0,0,lift)
+					_planner.commit_raw_support(side,entry.sole)
+					entry["opaqueEdgeLift"]={"world":lift,"supportHeight":support.height}
+			var support_axis:Vector3=_plane(side)*right
+			entry["footPlane"]={"rotation":[_plane(side).x,_plane(side).y,_plane(side).z,_plane(side).w],"supportAxis":[support_axis.x,support_axis.y,support_axis.z],"angleRemaining":_plane(side).angle_to(target),"rigidOriginalPixels":true}
 		_pivot_offsets[side]=correction
 		entry.sole=Vector3(entry.sole)+correction
 		entry["pivotCorrectionWorld"]=[correction.x,correction.y,correction.z]
@@ -439,7 +480,9 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 	var target_shift:=Vector3.ZERO
 	if physical_plane:
 		target_shift=_body_shift_target(view,pose.feet,actor.position,right,vertical,float(pose.bodyHeight))
-		_body_shift=_body_shift.move_toward(target_shift,maxf(0.0,moved_distance)*5.0+maxf(0.0,delta)*8.0)
+		var candidate_shift:=_body_shift.move_toward(target_shift,maxf(0.0,moved_distance)*5.0+maxf(0.0,delta)*8.0)
+		var candidate_anatomy:=_anatomy(view,pose.feet,actor.position,right,vertical,float(pose.bodyHeight),candidate_shift)
+		_body_shift=target_shift if bool(candidate_anatomy.horizontalInvalid) or float(candidate_anatomy.drop)*vertical>8.0 else candidate_shift
 	else: _body_shift=Vector3.ZERO
 	var root_hip:=ground+Vector3(0,0,28.0/vertical+support_body_offset)+_body_shift
 	var anatomy:=_anatomy(view,pose.feet,actor.position,right,vertical,float(pose.bodyHeight),_body_shift)
@@ -455,7 +498,7 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 	if unreachable:
 		visible=false
 		proxy.visible=true
-		_last={"enabled":false,"rejected":true,"reason":"fixed-length reach","direction":direction,"desiredDirection":desired,"contacts":pose,"reachValid":false,"requestedDropPixels":requested_drop*vertical,"bodyShift":[_body_shift.x,_body_shift.y],"targetBodyShift":[target_shift.x,target_shift.y] if physical_plane else [0,0],"supportBodyOffsetPixels":support_body_offset*vertical,"rootMotion":false}
+		_last={"enabled":false,"rejected":true,"reason":"fixed-length reach","direction":direction,"desiredDirection":desired,"contacts":pose,"reachValid":false,"requestedDropPixels":requested_drop*vertical,"bodyShift":[_body_shift.x,_body_shift.y],"targetBodyShift":[target_shift.x,target_shift.y] if physical_plane else [0,0],"sideDropsPixels":anatomy.drops,"hipWorld":anatomy.hips,"ankleWorld":anatomy.ankles,"legLengths":anatomy.lengths,"supportBodyOffsetPixels":support_body_offset*vertical,"rootMotion":false}
 		return _last.duplicate(true)
 	drop=clampf(drop,0,drop_limit)
 	root_hip.z-=drop
