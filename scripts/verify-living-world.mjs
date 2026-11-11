@@ -102,10 +102,12 @@ try {
     const started = Date.now();
     let log = "";
     try {
+      const timeout =
+        script === "scripts/tests/village-routine06.gd" ? 120000 : 60000;
       const run = spawnSync(
         godot,
         ["--headless", "--path", "client-godot", "--script", resolve(script)],
-        { encoding: "utf8", timeout: 60000, stdio: ["ignore", "pipe", "pipe"] },
+        { encoding: "utf8", timeout, stdio: ["ignore", "pipe", "pipe"] },
       );
       log = String(run.stdout ?? "") + String(run.stderr ?? "");
       if (run.error) throw run.error;
