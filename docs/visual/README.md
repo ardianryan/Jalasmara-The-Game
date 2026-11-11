@@ -1,5 +1,11 @@
 # Jalasmara visual evidence
 
+## Staging `main` 627116e: position reset
+
+![Nala fully visible at the safe Bandar Hujung dock spawn after using Reset posisi pemain and reloading the game.](staging-reset-position-20261111.png)
+
+Original Jalasmara Chromium/SwiftShader screenshot from the passing public staging smoke of source `627116ecb7caf9939164cc33455da47868bb75df`, image `sha256:aa450ddfa350a07c9d60825a33887ca583bf15b4bd40c9a4a348591394857375`, and PCK SHA-256 `b740a032ca3f8fd0cbe49de8512e681f186f515dfc510557307c01c106e55a0b`. Copied byte-identically from `artifacts/browser/staging-plan06-6330d11e-8771-4ee2-bf6d-a67e55a3b7e7/01b-public-after-menu-reset.png`: 203,067 bytes, SHA-256 `a61f39ed10a74e98d7768e9eb89cac3ac6ba441826dc98ba53fe4bc220dbd3c6`. The [release report](../reviews/reset-position-2026-11-11.md) records the menu interaction, seven passing checks and zero fixture residue. This screenshot is project documentation, not a distributable game/WorldKit asset or physical-device performance evidence.
+
 ## Staging `main` 4ba2f27: gait quality gate
 
 ![Nala fully visible on the Bandar Hujung dock after the public game finishes loading.](staging-gait-4ba2f27-hub-20261111.png)
