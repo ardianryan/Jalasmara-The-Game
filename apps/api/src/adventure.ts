@@ -301,7 +301,9 @@ export async function adventureRoutes(
         }
         const previous = await surfacePosition(p);
         const area = previous.area;
-        const anchor = area === "forest" ? WORLD.forest.entry : WORLD.surfaceSpawn;
+        // This dock point has been verified in the rendered scene. The generic
+        // spawn sits beside the crates and can leave smaller player sprites hidden.
+        const anchor = area === "forest" ? WORLD.forest.entry : { x: 1000, y: 1200 };
         const safe = nearestSafeLandPoint(WORLD.landMaps[area], anchor);
         const surface: SurfacePosition = {
           area,

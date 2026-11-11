@@ -1146,7 +1146,11 @@ test("reset posisi mengembalikan pemain ke titik aman tanpa mengubah progres", a
   assert.equal(hubReset.data.surface.area, "hub");
   assert.deepEqual(
     { x: hubReset.data.surface.x, y: hubReset.data.surface.y },
-    nearestSafeLandPoint(WORLD.landMaps.hub, WORLD.surfaceSpawn),
+    nearestSafeLandPoint(WORLD.landMaps.hub, { x: 1000, y: 1200 }),
+  );
+  assert.deepEqual(
+    { x: hubReset.data.surface.x, y: hubReset.data.surface.y },
+    { x: 1000, y: 1200 },
   );
   assert.equal(
     (await browser.request("/adventure/surface-position", {
