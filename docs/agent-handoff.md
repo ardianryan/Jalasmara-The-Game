@@ -2,7 +2,7 @@
 
 ## Branch consolidation, 11 November 2026
 
-[The branch integration report](reviews/branch-integration-2026-11-11.md) records four bounded cherry-picks into local `main`, 12 retired local branches/worktrees, 18/18 focused loader tests, and eight held branches awaiting separate art/gameplay acceptance. No runtime source or staging build changed in this package. Its remote sync and remote branch retirement status must be read from the report's subsequent checkpoint; the active release remains the compressed-audio staging build below. Prior references to 20 held branches are historical.
+[The branch integration report](reviews/branch-integration-2026-11-11.md) records four bounded cherry-picks into `main`, 12 retired local and remote branches/worktrees, 18/18 focused loader tests, and eight held branches awaiting separate art/gameplay acceptance. `main` `dcd6a47` was pushed to Gitea, GitHub, and GitLab; Gitea run 21 was still in progress at the checkpoint. No runtime source or staging build changed in this package. The active release remains the compressed-audio staging build below. Prior references to 20 held branches are historical.
 
 ## Active staging: compressed audio release, 11 November 2026
 

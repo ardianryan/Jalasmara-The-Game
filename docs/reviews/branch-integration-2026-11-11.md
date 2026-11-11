@@ -30,3 +30,7 @@ Eight branches remain: `work/gemini-character-source-audit`, `work/gemini-day01`
 `git diff --check` passed. `node --test scripts/godot-preloader-stream.test.mjs scripts/pck-stream.test.mjs` passed 18/18. This package changes documentation and one test assertion only; the active staging source remains `f600b62bdbcfdd3cb870ba47679e8fc53d611cee`, image `sha256:6679c096d317912a6867f26927f101303c1a0c7b8ed6d86e502e674da6685330`, and PCK `cdbfac713fd72506e8458a9cd4fdfc0983f48f2cd805acdd0c9d61fc4f52106a`. The next gameplay task is visual/physical acceptance of the held branches, especially gait and pen occlusion; S23/Windows measurements remain owner-assisted.
 
 Tools used: local Git, Python 3 for evidence-preserving worktree retirement, Node's test runner, and existing project scripts. No new asset, third-party code, license, or production image was added.
+
+## Remote checkpoint
+
+`main` commit `dcd6a47c56a270dd4752c1d7adb27dbc42d1986a` was pushed successfully to Gitea, GitHub, and GitLab. After confirming this SHA and each old branch tip on each remote, all 12 retired branches were deleted from all three without force. A fresh remote listing showed `main` plus the eight held `work/*` branches on Gitea and GitLab; GitHub has those plus its separate historical `ci-reports` branch. The local working tree is clean, with nine linked worktrees: `main` and the eight held branches. Gitea run 21 had started for `dcd6a47` and was still in progress at this checkpoint; no CI success claim is made for it.
