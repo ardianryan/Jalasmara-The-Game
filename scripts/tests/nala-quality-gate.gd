@@ -15,8 +15,12 @@ func run() -> void:
 	hub._gait_retry_after_ms=Time.get_ticks_msec()+30000
 	forest._gait_retry_after_ms=Time.get_ticks_msec()+30000
 	assert(not hub._gait_capacity(false) and not forest._gait_capacity(false))
+	hub._gait_retry_after_ms=0
+	forest._gait_retry_after_ms=0
+	assert(not hub._gait_capacity(false) and not hub._gait_capacity(true))
+	assert(not forest._gait_capacity(false) and not forest._gait_capacity(true))
 	quality.set_profile(original,false)
 	hub.free()
 	forest.free()
-	print("NALA QUALITY GATE PASS: low profile disables physical gait; balanced cooldown blocks immediate retry")
+	print("NALA QUALITY GATE PASS: release disables physical gait on low and balanced profiles")
 	quit()

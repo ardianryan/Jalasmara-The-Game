@@ -3,6 +3,7 @@ const PlayerScript = preload("res://scripts/Player.gd")
 const WorldScript = preload("res://scripts/World.gd")
 const EntitiesScript = preload("res://scripts/Entities.gd")
 const BODY_FONT = preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2")
+const PHYSICAL_GAIT_RELEASE_ENABLED := false
 var land_renderer: Node2D
 var nala: CharacterBody2D
 var terrain: Node2D
@@ -433,6 +434,7 @@ func _limit_gait_position(from: Vector2, to: Vector2, delta: float) -> Vector2:
 	return preload("res://scripts/NalaPhysicalMotion.gd").limit_position(land_renderer,from,to,delta)
 
 func _gait_capacity(current: bool) -> bool:
+	if not PHYSICAL_GAIT_RELEASE_ENABLED: return false
 	if str(RenderQuality.get_profile().get("effective","low"))!="balanced": return false
 	var fps:=Engine.get_frames_per_second()
 	if current:
