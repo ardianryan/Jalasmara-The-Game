@@ -169,8 +169,8 @@ func _load_audio_resources() -> void:
 		"coastal_dusk":["bgm_coastal_dusk.mp3"],
 		"village_hall":["bgm_village_hall.mp3"],
 		"underwater_cave_deep":["bgm_underwater_cave_deep.mp3"],
-		"coastal_day":["bgm_coastal_day.mp3","bgm_coastal_day.wav"],
-		"underwater_segaran":["bgm_underwater_segaran.mp3","bgm_underwater_ambient.wav"],
+		"coastal_day":["bgm_coastal_day.mp3"],
+		"underwater_segaran":["bgm_underwater_segaran.mp3"],
 		"kedai_waras_night":["bgm_kedai_waras_night.mp3"],
 		"boss_gajah_mina":["bgm_boss_gajah_mina.mp3"]}
 	for key in definitions:
