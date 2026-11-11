@@ -1,5 +1,11 @@
 # Jalasmara visual evidence
 
+## Staging `main` 4ba2f27: gait quality gate
+
+![Nala fully visible on the Bandar Hujung dock after the public game finishes loading.](staging-gait-4ba2f27-hub-20261111.png)
+
+Original Jalasmara Chromium/SwiftShader screenshot from the passing public staging smoke of source `4ba2f274669492bb500dc09455786f086bd9ebbe`, image `sha256:cf49128afd172aebe9fa4cea0d2addf85df586401f06ae699da546c37493f3b6`, and PCK SHA-256 `b740a032ca3f8fd0cbe49de8512e681f186f515dfc510557307c01c106e55a0b`. Copied byte-identically from `artifacts/browser/staging-plan06-37f35346-5f6b-43ef-8276-685ae770dd7c/01-public-ready-hub.png`: 202,934 bytes, SHA-256 `8033cb3e1ca41124891f978bfb0e038073c3e9c895792dc3b9cdeb527edec4d7`. The fixture was removed. This is [release evidence](../reviews/gait-main-staging-2026-11-11.md), not a physical-device FPS result or a distributable game/WorldKit asset.
+
 ## Staging `main` f600b62: compressed-audio release
 
 ![Nala fully visible on the Bandar Hujung dock in the current public staging build.](staging-audio-f600-dock-20261111.png)
