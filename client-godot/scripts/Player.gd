@@ -24,6 +24,12 @@ var wet_marks: Array[Dictionary] = []
 var outfit := "daily"
 var equipment: Dictionary = {}
 var _traversal_bob := 0.0
+var _gait_samples: Array[Dictionary] = []
+
+func consume_gait_samples() -> Array[Dictionary]:
+	var samples := _gait_samples
+	_gait_samples = []
+	return samples
 func _ready() -> void:
 	var collision := CollisionShape2D.new()
 	var shape := CapsuleShape2D.new()
@@ -108,8 +114,13 @@ func _physics_process(delta: float) -> void:
 		surface_traversal.set_reduced_motion(EnvironmentState.reduced_motion)
 		traversal_state = surface_traversal.sample(position,moved_velocity,delta,frozen or ViewportLayout.host_paused or EnvironmentState.clock_paused)
 		land_path.record(position)
+		if bool(get_meta("nala_physical_walk_pilot",false)):
+			if not _gait_samples.is_empty() and Vector2(_gait_samples.back().position).distance_to(position)>80.0: _gait_samples.clear()
+			_gait_samples.append({"position":position,"delta":delta,"frozen":frozen or ViewportLayout.host_paused or EnvironmentState.clock_paused,"moving":moved_velocity.length()>10.0})
+			if _gait_samples.size()>32: _gait_samples.pop_front()
 	else:
 		traversal_state = {}
+		_gait_samples.clear()
 	if swim_sprite:
 		swim_sprite.position.y -= _traversal_bob
 		_traversal_bob = 0.0

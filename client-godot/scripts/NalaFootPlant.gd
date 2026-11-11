@@ -311,7 +311,7 @@ func _ramp_landing(from:Vector2,to:Vector2) -> bool:
 func _transfer_body(at:Vector2,distance:float,side:String) -> void:
 	if not _support_transfer_active(at):
 		var ordinary:=_ground(at).z
-		_body_height=move_toward(_body_height,ordinary,maxf(0,distance)*_body_rate) if _stair_transfer else ordinary
+		_body_height=move_toward(_body_height,ordinary,maxf(0,distance)*_body_rate) if _stair_transfer or absf(_body_height-ordinary)>.001 else ordinary
 		if absf(_body_height-ordinary)<.001: _stair_transfer=false
 		return
 	_stair_transfer=true
@@ -679,12 +679,15 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 	if not accepted_moving: _transition_next=true
 	if _swing=="" and not _support_transfer_active(at):
 		var ordinary:=_ground(at).z
-		if _stair_transfer:
+		if _stair_transfer or absf(_body_height-ordinary)>.001:
 			if not body_advanced and (not moving or physical<.00001): _body_height=move_toward(_body_height,ordinary,maxf(0,delta)*24.0*_body_rate)
 			if absf(_body_height-ordinary)<.001: _stair_transfer=false
 		else: _body_height=ordinary
 	_last_at=at
 	return snapshot()
+
+func note_render_span(from:Vector2,to:Vector2) -> void:
+	_continuous_ground_rate=_ramp_body_rate(from,to)
 
 func snapshot() -> Dictionary:
 	return {"actorLogical":_last_at,"bodyHeight":_body_height,"bodyTransferRate":maxf(_body_rate,_continuous_ground_rate),"continuousGroundRate":_continuous_ground_rate,"feet":_feet.duplicate(true),"swingSide":_swing,"swingDistance":_distance,"acceptedDistance":_accepted_distance,"stepDistance":_steady_distance,"landingLead":_landing_lead,"physicalContract":_physical_contract,"bodyFacingTransitions":_body_facing_transitions,"shortHandoverPending":_transition_next,"upperExitHandoverPending":_upper_exit_handover,"landingDistance":_landing_distance,"contacts":_contact_count,"discontinuityResets":_discontinuities,"rawContactEvents":_raw_contact_events.duplicate(true),"rawTraceEpoch":_trace_epoch,"rawTraceOverflow":_trace_overflow,"actorRootMotion":false,"legacyFoleyChanged":false}

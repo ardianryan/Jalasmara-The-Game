@@ -224,7 +224,20 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 				settlement_budget=maxf(0,delta)*24.0*pivot_distance/total
 			var target_plane:Quaternion=FootPlane.contact_rotation(renderer,entry.get("settlingTarget",entry.logical),right)
 			settlement_ready=pivot_distance<=settlement_budget+.001 and _plane(side).angle_to(target_plane)<=.001
-	var pose:Dictionary=_planner.update(actor.position,moved,frozen,sole_offsets,right,planner_delta,_support_extents,geometry,settlement_ready)
+	var render_span_start:Vector2=Vector2(stored.get("actorLogical",actor.position))
+	var samples:Array[Dictionary]=actor.consume_gait_samples() if physical_plane and actor.has_method("consume_gait_samples") else []
+	var replayed_motion:=false
+	for index in range(maxi(0,samples.size()-1)):
+		var sample:Dictionary=samples[index]
+		if Vector2(sample.position).distance_to(Vector2(_planner.snapshot().actorLogical))>.00001:
+			_planner.update(Vector2(sample.position),bool(sample.moving),bool(sample.frozen),sole_offsets,right,float(sample.delta),_support_extents,geometry,false)
+			replayed_motion=true
+	# A render frame that already consumed movement cannot spend idle-settlement time again.
+	var deferred_settlement:=not frozen and replayed_motion and Vector2(samples[samples.size()-2].position).distance_to(actor.position)<.00001 and float(_planner.snapshot().acceptedDistance)>float(stored.get("acceptedDistance",0.0))+.00001
+	var pose:Dictionary=_planner.snapshot() if deferred_settlement else _planner.update(actor.position,moved,frozen,sole_offsets,right,planner_delta,_support_extents,geometry,settlement_ready)
+	if physical_plane and not frozen and samples.size()>1 and render_span_start.distance_to(actor.position)>.00001 and render_span_start.distance_to(actor.position)<=80.0:
+		_planner.note_render_span(render_span_start,actor.position)
+		pose=_planner.snapshot()
 	pose["visualSettlement"]={"active":settling,"rawSeconds":planner_delta,"pivotDistanceBudget":settlement_budget,"contactReady":settlement_ready}
 	for entry in pose.feet.values():
 		if (entry.has("treadPlan") and not bool(entry.treadPlan.valid)) or (entry.has("rampCurvePlan") and not bool(entry.rampCurvePlan.valid)) or not bool(entry.get("landingGeometryValid",true)):
