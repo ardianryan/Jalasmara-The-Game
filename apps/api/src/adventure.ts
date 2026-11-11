@@ -283,6 +283,39 @@ export async function adventureRoutes(
     },
   );
   app.post(
+    "/api/adventure/reset-position",
+    { preHandler: g.authenticated },
+    async (req) => {
+      z.object({}).strict().parse(req.body);
+      return lock(s, req.user!.id, async () => {
+        const p = await s.users.findOne({ id: req.user!.id });
+        if (!p || p.status !== "active")
+          return fail("Akun tidak aktif.", 403);
+        if (p.homestead?.inside)
+          return fail("Keluar dari rumah terlebih dahulu.", 409, "HOME_INSIDE");
+        const rawDive = await s.redis.get(`dive:${p.id}`);
+        if (rawDive) {
+          const dive = JSON.parse(rawDive);
+          if (dive.playerVersion === p.version && dive.expiresAt > Date.now())
+            return fail("Selesaikan penyelaman terlebih dahulu.", 409, "ACTIVE_DIVE");
+        }
+        const previous = await surfacePosition(p);
+        const area = previous.area;
+        const anchor = area === "forest" ? WORLD.forest.entry : WORLD.surfaceSpawn;
+        const safe = nearestSafeLandPoint(WORLD.landMaps[area], anchor);
+        const surface: SurfacePosition = {
+          area,
+          ...safe,
+          layoutVersion: WORLD.landMaps[area].layoutVersion,
+          playerVersion: p.version,
+          positionAt: Math.max(Date.now(), previous.positionAt + 1),
+        };
+        await saveSurface(p, surface);
+        return { surface };
+      });
+    },
+  );
+  app.post(
     "/api/adventure/travel",
     { preHandler: g.authenticated },
     async (req) => {

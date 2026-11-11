@@ -1135,6 +1135,48 @@ test("perjalanan hutan memerlukan gerbang dan gerakan daratan divalidasi server"
   );
 });
 
+test("reset posisi mengembalikan pemain ke titik aman tanpa mengubah progres", async () => {
+  const user = await account(),
+    browser = await new Browser().login(user);
+  const original = (await browser.request("/adventure/state")).data.player;
+  await fixtureSurface(user, "hub", WORLD.forest.gate);
+  const previousHub = (await browser.request("/adventure/state")).data.surface;
+  const hubReset = await browser.request("/adventure/reset-position", {});
+  assert.equal(hubReset.status, 200, JSON.stringify(hubReset.data));
+  assert.equal(hubReset.data.surface.area, "hub");
+  assert.deepEqual(
+    { x: hubReset.data.surface.x, y: hubReset.data.surface.y },
+    nearestSafeLandPoint(WORLD.landMaps.hub, WORLD.surfaceSpawn),
+  );
+  assert.equal(
+    (await browser.request("/adventure/surface-position", {
+      area: "hub",
+      x: previousHub.x,
+      y: previousHub.y,
+      fromPositionAt: previousHub.positionAt,
+      version: original.version,
+      path: [],
+    })).status,
+    409,
+  );
+  await fixtureSurface(user, "forest", { x: 350, y: 1300 });
+  const forestReset = await browser.request("/adventure/reset-position", {});
+  assert.equal(forestReset.status, 200, JSON.stringify(forestReset.data));
+  assert.equal(forestReset.data.surface.area, "forest");
+  assert.deepEqual(
+    { x: forestReset.data.surface.x, y: forestReset.data.surface.y },
+    nearestSafeLandPoint(WORLD.landMaps.forest, WORLD.forest.entry),
+  );
+  const after = (await browser.request("/adventure/state")).data;
+  assert.equal(after.player.version, original.version);
+  assert.equal(after.player.coins, original.coins);
+  assert.deepEqual(after.player.progress, original.progress);
+  assert.equal(after.surface.area, "forest");
+  const anonymous = new Browser();
+  await anonymous.request("/auth/session");
+  assert.equal((await anonymous.request("/adventure/reset-position", {})).status, 401);
+});
+
 test("penemuan hutan memerlukan kedekatan dan hadiah hanya tersimpan sekali", async () => {
   const u = await account(),
     b = await new Browser().login(u),

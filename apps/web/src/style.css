@@ -1686,6 +1686,7 @@ dd {
 .immersive-player button:focus-visible,
 .immersive-player a:focus-visible { outline: 3px solid #b46a24; outline-offset: 3px; }
 .immersive-player .play-fullscreen-notice { margin: 2px 0; font-size: 16px; line-height: 1.5; }
+.immersive-player .play-position-help { margin: -4px 0 4px; font-size: 14px; line-height: 1.4; }
 .immersive-player .game-loading { z-index: 2; padding-top: 64px; }
 .immersive-player .landscape-hint {
   bottom: max(12px, env(safe-area-inset-bottom, 0px));

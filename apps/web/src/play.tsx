@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { GameLoading } from "./GameLoading";
 import { INITIAL_LOADING, parseLoadingMessage } from "./loading";
+import { api } from "./api";
 import menuFrame from "../../../client-godot/resources/art/hud-bahari-v1/button-normal.png";
 import {
   downloadPerformance,
@@ -41,6 +42,7 @@ export function Play({ canManage = false, onLogout }: PlayProps) {
   const [fullscreen, setFullscreen] = useState(false);
   const [notice, setNotice] = useState("");
   const [loggingOut, setLoggingOut] = useState(false);
+  const [resettingPosition, setResettingPosition] = useState(false);
   const [graphicsQuality, setGraphicsQuality] = useState<GraphicsQuality>(
     storedGraphicsQuality,
   );
@@ -231,6 +233,25 @@ export function Play({ canManage = false, onLogout }: PlayProps) {
     menuButton.current?.focus();
   }
 
+  async function resetPlayerPosition() {
+    if (resettingPosition || !ready) return;
+    setResettingPosition(true);
+    setNotice("");
+    try {
+      await api("/adventure/reset-position", {});
+      setMenuOpen(false);
+      retryLoading();
+    } catch (error) {
+      setNotice(
+        error instanceof Error
+          ? error.message
+          : "Posisi belum dapat direset. Periksa koneksi lalu coba lagi.",
+      );
+    } finally {
+      setResettingPosition(false);
+    }
+  }
+
   async function toggleFullscreen() {
     setNotice("");
     game.current?.contentWindow?.postMessage(
@@ -378,6 +399,16 @@ export function Play({ canManage = false, onLogout }: PlayProps) {
                 <option value="balanced">Seimbang</option>
               </select>
             </div>
+            <button
+              disabled={!ready || resettingPosition}
+              onClick={() => void resetPlayerPosition()}
+            >
+              {resettingPosition ? "Memindahkan Nala…" : "Reset posisi pemain"}
+            </button>
+            <p className="play-position-help">
+              Jika Nala tersangkut, pindahkan ke titik aman di wilayah ini.
+              Koin, barang, dan progres tetap tersimpan.
+            </p>
             <fieldset className="play-capture">
               <legend>Uji performa perangkat</legend>
               <p>
