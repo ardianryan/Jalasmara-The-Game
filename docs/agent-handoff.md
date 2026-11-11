@@ -1,5 +1,9 @@
 # Handoff aktif agent
 
+## Candidate acceptance, 11 November 2026
+
+[Latest review](reviews/candidate-acceptance-2026-11-11.md): corrected Gemini character audit and offline SOUTH explorer upper proposal were cherry-picked into local `main` as `83abb62`, `ebac3cd`, `65533ff`. The false P0 direction claims are revoked; production gait remains OFF. The current 68-script Godot world suite, audit 6/6, upper proposal 5/5, typecheck, build and 121/121 API tests pass. The first API run failed only because test MongoDB/Redis were absent; an isolated local rerun passed. Three other candidates plus the remaining Gemini coordinator history are held for individual review; no branch was deleted, no staging build changed.
+
 ## Candidate branch consolidation, 11 November 2026
 
 [Latest consolidation](reviews/candidate-branch-consolidation-2026-11-11.md): four duplicate candidate branches/worktrees were retired after exact patch-equivalence or ancestry proof, with ignored evidence preserved locally. Four branches now remain: `work/gemini-day01`, `work/gemini-day01-gait`, `work/overnight-resident-art`, and `work/overnight-village`; five linked worktrees including `main`. Gitea/GitLab mirror those names, while GitHub also has historical `ci-reports`. None of the four candidates was silently merged into `main`; their visual/physical acceptance is still required. Staging remains the compressed-audio release below. The eight-branch inventory in the previous section is historical.
