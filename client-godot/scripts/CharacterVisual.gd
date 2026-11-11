@@ -215,7 +215,6 @@ func animate(moving: bool, in_water: bool, facing: int, elapsed: float) -> void:
 	_in_water = in_water
 	if in_water: _foot_contacts.clear()
 	if not in_water and directional_pilot_active():
-		if _pose_frozen: return
 		var walking:=_pose_walking
 		texture=_directional_walk if walking else _directional_idle
 		hframes=8

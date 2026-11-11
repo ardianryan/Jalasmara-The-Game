@@ -291,6 +291,28 @@ func _restart_window_checks() -> void:
 			checks+=1
 	print("NALA RESTART WINDOW PASS: ",checks," daily/explorer settled phases across raw3, including immediate actual32 handover; no fabricated travel/contact")
 
+func _cold_pause_checks() -> void:
+	var clock:=root.get_node("EnvironmentState")
+	var layout:=root.get_node("ViewportLayout")
+	for id in ["male_default","male_nusantara","female_default","female_nusantara"]:
+		for outfit in ["daily","explorer","diving"]:
+			for pause_source in ["clock","host"]:
+				var visual: Sprite2D=load("res://scripts/CharacterVisual.gd").new()
+				root.add_child(visual)
+				visual.set_appearance(id)
+				visual.set_outfit(outfit)
+				clock.clock_paused=pause_source=="clock"
+				layout.host_paused=pause_source=="host"
+				visual.set_locomotion(Vector2.ZERO,.016)
+				visual.animate(false,false,1,0)
+				assert(visual.locomotion_state().poseFrozen)
+				assert(visual.texture.resource_path.ends_with("-%s-idle-8way-v1.png"%outfit),"Cold-paused avatar must install its directional texture before the first land render")
+				assert(visual.hframes==8 and visual.vframes==1 and visual.get_land_pivot()==Vector2(64,104))
+				visual.free()
+				clock.clock_paused=false
+				layout.host_paused=false
+	print("NALA COLD PAUSE PASS: 4 appearances x 3 outfits x 2 pause sources keep atlas and ground pivot aligned")
+
 func _run() -> void:
 	_capture=OS.get_environment("NALA_GAIT_CAPTURE")=="1"
 	if _capture:
@@ -363,6 +385,7 @@ func _run() -> void:
 	assert(visual.hframes==3 and visual.frame>=3)
 	visual.free()
 	await _transition_checks()
+	_cold_pause_checks()
 	await _restart_checks()
 	await _restart_window_checks()
 	await _controller_restart_check()
