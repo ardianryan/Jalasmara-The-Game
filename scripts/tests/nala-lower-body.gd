@@ -73,6 +73,8 @@ func _check(valid:bool,message:String) -> bool:
 
 func _index_meshes() -> void:
 	for instance in renderer.get("_geometry").find_children("*","MeshInstance3D",true,false):
+		# Petals are visual foliage, not a walkable floor or an ankle obstacle.
+		if instance.material_override!=null and instance.material_override.resource_name=="foliage_nonwalkable": continue
 		for surface in range(instance.mesh.get_surface_count()):
 			var arrays:Array=instance.mesh.surface_get_arrays(surface)
 			var vertices:PackedVector3Array=arrays[Mesh.ARRAY_VERTEX]

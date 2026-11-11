@@ -18,6 +18,7 @@ var _foot_planes:Dictionary={}
 var _support_extents:Dictionary={}
 var _opaque_vertices:Dictionary={}
 var _last_distance:=0.0
+var _body_shift:=Vector3.ZERO
 const DIRECTIONS:=["east","south_east","south","south_west","west","north_west","north","north_east"]
 const FootPlane=preload("res://scripts/NalaFootPlane.gd")
 
@@ -97,13 +98,15 @@ func _rotated_shoe_clear(side:String,direction:String,logical:Vector2,world_sole
 		if not _planner.airborne_clear(logical,world): return false
 	return true
 
-func _anatomy(view:Dictionary,feet:Dictionary,at:Vector2,right:Vector3,vertical:float,body_height:float=NAN) -> Dictionary:
+func _anatomy(view:Dictionary,feet:Dictionary,at:Vector2,right:Vector3,vertical:float,body_height:float=NAN,body_shift:Vector3=Vector3.ZERO) -> Dictionary:
 	var ground:Vector3=renderer.ground_point(at)
-	var root_hip:Vector3=ground+Vector3(0,0,28.0/vertical+(body_height-ground.z if not is_nan(body_height) else 0.0))
+	var root_hip:Vector3=ground+Vector3(0,0,28.0/vertical+(body_height-ground.z if not is_nan(body_height) else 0.0))+body_shift
 	var ankles:Dictionary={}
 	var lengths:Dictionary={}
 	var drop:=0.0
 	var horizontal_invalid:=false
+	var drops:Dictionary={}
+	var hip_world:Dictionary={}
 	for side in ["left","right"]:
 		var leg:Dictionary=view.legs[side]
 		var sole_pixel:=_vec(leg.solePixel)
@@ -117,11 +120,32 @@ func _anatomy(view:Dictionary,feet:Dictionary,at:Vector2,right:Vector3,vertical:
 		var second:=_vec(leg.knee).distance_to(_vec(leg.ankle))/vertical
 		lengths[side]=Vector2(first,second)
 		var hip:=root_hip+right*(float(leg.hip[0])-64.0)
+		hip_world[side]=hip
 		var horizontal:=Vector2(hip.x-ankle.x,hip.y-ankle.y).length_squared()
 		var reach:=first+second-.1
 		if horizontal>=reach*reach: horizontal_invalid=true
-		drop=maxf(drop,hip.z-ankle.z-sqrt(maxf(.001,reach*reach-horizontal)))
-	return {"ankles":ankles,"lengths":lengths,"drop":drop,"horizontalInvalid":horizontal_invalid}
+		var required:=hip.z-ankle.z-sqrt(maxf(.001,reach*reach-horizontal))
+		drops[side]=required*vertical
+		drop=maxf(drop,required)
+	return {"ankles":ankles,"lengths":lengths,"drop":drop,"drops":drops,"hips":hip_world,"horizontalInvalid":horizontal_invalid}
+
+func _body_shift_target(view:Dictionary,feet:Dictionary,at:Vector2,right:Vector3,vertical:float,height:float) -> Vector3:
+	var baseline:=_anatomy(view,feet,at,right,vertical,height)
+	var best:=Vector3.ZERO
+	var best_score:=maxf(0,float(baseline.drop)*vertical)
+	for side in ["left","right"]:
+		var hip:Vector3=baseline.hips[side]
+		var ankle:Vector3=baseline.ankles[side]
+		var bearing:=Vector3(ankle.x-hip.x,ankle.y-hip.y,0).normalized()
+		for radius in range(1,9):
+			var candidate:=bearing*float(radius)
+			var result:=_anatomy(view,feet,at,right,vertical,height,candidate)
+			if bool(result.horizontalInvalid): continue
+			var score:=maxf(0,float(result.drop)*vertical)+float(radius)*.35
+			if score<best_score:
+				best_score=score
+				best=candidate
+	return best
 
 func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 	if not supported(visual):
@@ -412,8 +436,13 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 			pose["currentFootprintBodyTransfer"]=transfer
 	var ground:Vector3=renderer.ground_point(actor.position)
 	var support_body_offset:=float(pose.bodyHeight)-ground.z
-	var root_hip:=ground+Vector3(0,0,28.0/vertical+support_body_offset)
-	var anatomy:=_anatomy(view,pose.feet,actor.position,right,vertical,float(pose.bodyHeight))
+	var target_shift:=Vector3.ZERO
+	if physical_plane:
+		target_shift=_body_shift_target(view,pose.feet,actor.position,right,vertical,float(pose.bodyHeight))
+		_body_shift=_body_shift.move_toward(target_shift,maxf(0.0,moved_distance)*5.0+maxf(0.0,delta)*8.0)
+	else: _body_shift=Vector3.ZERO
+	var root_hip:=ground+Vector3(0,0,28.0/vertical+support_body_offset)+_body_shift
+	var anatomy:=_anatomy(view,pose.feet,actor.position,right,vertical,float(pose.bodyHeight),_body_shift)
 	var ankles:Dictionary=anatomy.ankles
 	var lengths:Dictionary=anatomy.lengths
 	var drop:float=anatomy.drop
@@ -426,7 +455,7 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 	if unreachable:
 		visible=false
 		proxy.visible=true
-		_last={"enabled":false,"rejected":true,"reason":"fixed-length reach","direction":direction,"desiredDirection":desired,"contacts":pose,"reachValid":false,"requestedDropPixels":requested_drop*vertical,"supportBodyOffsetPixels":support_body_offset*vertical,"rootMotion":false}
+		_last={"enabled":false,"rejected":true,"reason":"fixed-length reach","direction":direction,"desiredDirection":desired,"contacts":pose,"reachValid":false,"requestedDropPixels":requested_drop*vertical,"bodyShift":[_body_shift.x,_body_shift.y],"targetBodyShift":[target_shift.x,target_shift.y] if physical_plane else [0,0],"supportBodyOffsetPixels":support_body_offset*vertical,"rootMotion":false}
 		return _last.duplicate(true)
 	drop=clampf(drop,0,drop_limit)
 	root_hip.z-=drop
@@ -479,6 +508,6 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 	upper.modulate=proxy.modulate
 	visible=true
 	proxy.visible=false
-	_last={"enabled":true,"identity":"male_nusantara","outfit":outfit,"direction":direction,"desiredDirection":desired,"heldFacing":direction!=desired,"contacts":pose,"calibration":1.0/vertical,"supportBodyOffsetPixels":support_body_offset*vertical,"pelvisDropPixels":drop*vertical,"requestedDropPixels":requested_drop*vertical,"reachValid":not unreachable,"maxLengthError":max_length_error,"attachmentOffset":root_hip+up*12-proxy.position,"rootMotion":false,"status":"opt-in lower-body pilot, full natural gait unaccepted"}
+	_last={"enabled":true,"identity":"male_nusantara","outfit":outfit,"direction":direction,"desiredDirection":desired,"heldFacing":direction!=desired,"contacts":pose,"calibration":1.0/vertical,"supportBodyOffsetPixels":support_body_offset*vertical,"pelvisDropPixels":drop*vertical,"requestedDropPixels":requested_drop*vertical,"bodyShift":[_body_shift.x,_body_shift.y],"reachValid":not unreachable,"maxLengthError":max_length_error,"attachmentOffset":root_hip+up*12-proxy.position,"rootMotion":false,"status":"opt-in lower-body pilot, full natural gait unaccepted"}
 	if physical_plane: _last["contactTrace"]=_planner.publish_contact_trace()
 	return _last.duplicate(true)

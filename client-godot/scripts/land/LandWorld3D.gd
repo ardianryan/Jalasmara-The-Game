@@ -1120,6 +1120,7 @@ func _build_ground_details() -> void:
 			frame.filter_clip=true
 			ground_foliage.append(frame)
 	var flower_material:=StandardMaterial3D.new()
+	flower_material.resource_name="foliage_nonwalkable"
 	flower_material.albedo_color=Color("bc9c7e")
 	flower_material.roughness=1
 	var clusters: Array[Vector2]=[]
@@ -1150,7 +1151,7 @@ func _build_ground_details() -> void:
 				plant.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 				_geometry.add_child(plant)
 			for litter in range(3):
-				var leaf_offset:=Vector3(litter*7-7,tuft%3*3-3,.4)
+				var leaf_offset:=Vector3(litter*7-7,tuft%3*3-3,-1.2)
 				_box("LeafLitter",at+leaf_offset,Vector3(4+tuft%3,2,0.8),_materials.get_material("leaves"))
 			if area=="hub":
 				var flower:=at+Vector3(7,0,9+tuft)

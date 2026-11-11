@@ -329,6 +329,36 @@ func _trailing_side(at:Vector2) -> String:
 	if absf(left-right)<.5: return _next_side
 	return "left" if left<right else "right"
 
+func _support_drop_pixels(side:String,at:Vector2) -> float:
+	if not _landing_geometry.has(side): return INF
+	var geometry:Dictionary=_landing_geometry[side]
+	var leg:Dictionary=geometry.bodyLeg
+	var vertical:float=geometry.vertical
+	var sole:Vector3=_feet[side].sole
+	var ankle:Vector3=sole+Vector3(geometry.pivot)+FootPlane.ankle_offset(geometry,geometry.plane)
+	var ground:Vector3=_ground(at)
+	var hip:Vector3=ground+Vector3(0,0,28.0/vertical+_body_height-ground.z)+Vector3(geometry.right)*(float(leg.hip[0])-64.0)
+	var first:=Vector2(float(leg.hip[0])-float(leg.knee[0]),float(leg.hip[1])-float(leg.knee[1])).length()/vertical
+	var second:=Vector2(float(leg.knee[0])-float(leg.ankle[0]),float(leg.knee[1])-float(leg.ankle[1])).length()/vertical
+	var reach:=first+second-.1
+	var horizontal:=Vector2(hip.x-ankle.x,hip.y-ankle.y).length_squared()
+	if horizontal>=reach*reach: return INF
+	return maxf(0.0,hip.z-ankle.z-sqrt(reach*reach-horizontal))*vertical
+
+func _supported_turn_distance(at:Vector2,heading:Vector2,side:String) -> float:
+	if not _physical_contract or _landing_geometry.is_empty(): return _turn_distance
+	var support:String="left" if side=="right" else "right"
+	if absf(_ground(at).z-_feet[support].plant.z)>.01: return _turn_distance
+	var world_heading:=_world_motion(at,heading).normalized()
+	if world_heading.length()<.001: return _turn_distance
+	var distance:=_turn_distance
+	while distance>_start_distance:
+		var future:=at+_logical_offset(at,world_heading*distance)
+		if absf(_ground(future).z-_ground(at).z)>.01: return _turn_distance
+		if _support_drop_pixels(support,future)<=7.0: return distance
+		distance-=.5
+	return maxf(_start_distance,distance)
+
 func _next_tread(side:String,at:Vector2,provisional:Vector2) -> Dictionary:
 	if not _physical_contract: return {}
 	var support:String="left" if side=="right" else "right"
@@ -563,7 +593,7 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 			_feet[_swing].from=_feet[_swing].logical
 			_feet[_swing].fromWorld=_feet[_swing].sole
 			_distance=0.0
-			_landing_distance=_turn_distance
+			_landing_distance=_supported_turn_distance(_last_at,next_heading,_swing)
 			var entry:Dictionary=_feet[_swing]
 			entry["stepInitiation"]="heading_turn_reanchor"
 			if _physical_contract and (bool(entry.get("fixedTreadTarget",false)) or bool(entry.get("fixedRampTarget",false))):
@@ -630,6 +660,10 @@ func update(at:Vector2,moving:bool,paused:bool,hips:Dictionary,right:Vector3,del
 						advance=clampf(u/(1.0-delay),0,1)
 						elevation=clampf((u-(1.0-window))/window,0,1)
 				var smooth:=advance*advance*(3.0-2.0*advance)
+				# A recovery step starts with an already trailing foot. Zero initial
+				# cubic velocity lets the body outrun that foot before it can lift.
+				if _physical_contract and not bool(entry.get("fixedTreadTarget",false)) and not bool(entry.get("fixedRampTarget",false)) and str(entry.get("stepInitiation","")) in ["requested_short_handover","heading_turn_reanchor"]:
+					smooth=advance
 				var rise_smooth:=elevation*elevation*(3.0-2.0*elevation)
 				entry.logical=_stair_path_point(entry.from,target,smooth) if absf(rise)>.01 or bool(entry.get("fixedRampTarget",false)) else Vector2(entry.from).lerp(target,smooth)
 				var floor_world:=_ground(entry.logical)
