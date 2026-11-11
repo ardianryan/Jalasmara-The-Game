@@ -1,5 +1,11 @@
 # Jalasmara visual evidence
 
+## Staging `main` f600b62: compressed-audio release
+
+![Nala fully visible on the Bandar Hujung dock in the current public staging build.](staging-audio-f600-dock-20261111.png)
+
+Original-game Chromium screenshot at 844 × 390 from source `f600b62bdbcfdd3cb870ba47679e8fc53d611cee`, PCK SHA-256 `cdbfac713fd72506e8458a9cd4fdfc0983f48f2cd805acdd0c9d61fc4f52106a`. The temporary login fixture was removed after the full-route smoke. PNG: 202,978 bytes, SHA-256 `4dc62d67b809e4f05920b7440f7e7ae779c1e396551bf33ca4a30ea6f6dc1f5a`. This is [release evidence](../reviews/main-staging-audio-compression-2026-11-11.md), not a distributable game/WorldKit asset or a physical-device performance result.
+
 ## Staging `main` 4980d6b: player visible beside dock crates
 
 ![Nala's whole body visible at a saved dock position during rain on public staging.](dock-player-visible-staging-20261110.png)
