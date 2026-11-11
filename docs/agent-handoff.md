@@ -1,5 +1,9 @@
 # Handoff aktif agent
 
+## Worktree audit, 11 November 2026
+
+[The latest branch inventory](reviews/worktree-audit-2026-11-11.md) confirms eight candidate branches with unique patches and nine linked worktrees including `main`. No candidate was deleted or cherry-picked without its visual/physical acceptance gate. Three shared `node_modules` symlinks and two generated Python cache files were removed from the old overnight worktrees; all worktrees now have clean Git status. Gitea/GitLab retain `main` plus eight candidates; GitHub also retains historical `ci-reports`. Staging is unchanged.
+
 ## Offline authoring tool checkpoint, 11 November 2026
 
 [Tool review](reviews/offline-authoring-tools-2026-11-11.md): Cinetic is installed as a pinned ignored checkout for future film authoring, and Xprite Pixelate 0.1.2 is installed in an isolated npm directory for automatic pixel-grid recovery. unfake.js and the Unity/GPL TerrainGenerator were inspected but not installed. Xprite's synthetic grid check passed; Cinetic's full rendering dependencies and a film have not been tested. No game runtime, terrain, production sprite or staging release changed. The eight held branches below still require their own acceptance work.
