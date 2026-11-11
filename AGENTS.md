@@ -49,6 +49,8 @@ Gunakan aset library proyek dahulu. Raster baru boleh dibuat sesuai otorisasi pe
 
 Port Noxe terbatas pada helper kamera saat ini; simpan pin dan notice MIT. Tidak ada runtime Three.js kedua. PixelDoll masih referensi authoring hingga adapter dan aset benar-benar diuji. WorldKit adalah adapter/workflow sendiri, bukan cara menghapus atribusi upstream. Jangan menyimpan key/API token dalam Markdown, command history, source atau laporan.
 
+Tool authoring baru tersedia secara terpisah: [Cinetic](tools/cinetic/README.md) untuk trailer/cutscene pra-render dan [Xprite Pixelate](tools/xprite-pixelate/README.md) untuk pemulihan grid pixel art otomatis. Keduanya tidak terhubung ke runtime. Periksa lisensi renderer/musik Cinetic serta hasil visual Xprite sebelum mengangkat output menjadi aset game. [unfake.js dan TerrainGenerator](docs/reviews/offline-authoring-tools-2026-11-11.md) hanya referensi yang ditinjau, bukan tool yang dipasang atau pengganti terrain Godot.
+
 [Fish Gen](docs/world/fish-gen-reference.md) dipatok pada `0faa79003ca50a7d422b618cb59179d9834094f1`. [Pilot overnight](docs/reviews/overnight-fishgen-pilot.md) menghasilkan atlas asli dan adapter runtime untuk tiga ikan dekoratif, dengan tes animasi dan native render; adapter masuk ekspor593/PCK1315 pada rilis798. Sepuluh spesies gameplay tetap. Pertahankan lisensi MIT/provenance, tool offline terisolasi dan batas populasi; jangan menyamakan ikan dekoratif dengan tangkapan atau spesies endemik.
 
 ## Wajib setelah tiap paket/progres bermakna

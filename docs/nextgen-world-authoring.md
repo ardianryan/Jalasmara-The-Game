@@ -8,6 +8,13 @@ Prioritas pengguna, 9 November 2026: selesaikan perubahan desa, hutan, laut, pak
 
 Sesudah rilis tersebut diverifikasi, pengguna mengizinkan integrasi alat yang dapat digunakan. **Jalasmara WorldKit** sekarang menyediakan adapter draft OpenWorld, wrapper offline Pixel Snapper, serta konversi palet Image-to-Pixel. Kode upstream tetap diatribusikan; nama WorldKit merujuk pada lapisan integrasi kita. Panduan penggunaan ada pada [README proyek](../README.md#jalasmara-worldkit).
 
+## Additional offline authoring tools, 11 November 2026
+
+- [Cinetic](../tools/cinetic/README.md) is installed as a pinned local checkout for future trailers and pre-rendered cutscenes. Its film stack is not installed into Godot or validated end to end. Film renderers and music have separate licenses.
+- [Xprite Pixelate](../tools/xprite-pixelate/README.md) is installed in an isolated npm directory for automatic native-grid recovery. A synthetic 12×12-grid smoke check passed. Existing Pixel Snapper and Image-to-Pixel remain available for manual grid cleanup and palette work. Neither Xprite nor the alternatives makes pixel art photorealistic.
+- [unfake.js](https://github.com/jenissimo/unfake.js/tree/663686899e8394dfda25efd7f2a947f008c6f676) was inspected but not installed: its pixel cleanup overlaps the installed tools; its browser vectorizer is outside the current asset need. Its MIT source remains a future reference.
+- [TerrainGenerator](https://github.com/aidan-clyens/TerrainGenerator/tree/02799328a7b321d4ca5b22f603dfdabd12db2eeb) is a Unity generator under GPL-3.0. It is not a drop-in replacement for the current Godot terrain/grounding/collision system. No source or assets were copied into the project.
+
 ## Referensi tersimpan
 
 | Referensi                                                                           | Status dan kemungkinan penggunaan                                                                                                                                                            |

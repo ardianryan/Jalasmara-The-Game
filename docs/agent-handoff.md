@@ -1,5 +1,9 @@
 # Handoff aktif agent
 
+## Offline authoring tool checkpoint, 11 November 2026
+
+[Tool review](reviews/offline-authoring-tools-2026-11-11.md): Cinetic is installed as a pinned ignored checkout for future film authoring, and Xprite Pixelate 0.1.2 is installed in an isolated npm directory for automatic pixel-grid recovery. unfake.js and the Unity/GPL TerrainGenerator were inspected but not installed. Xprite's synthetic grid check passed; Cinetic's full rendering dependencies and a film have not been tested. No game runtime, terrain, production sprite or staging release changed. The eight held branches below still require their own acceptance work.
+
 ## Branch consolidation, 11 November 2026
 
 [The branch integration report](reviews/branch-integration-2026-11-11.md) records four bounded cherry-picks into `main`, 12 retired local and remote branches/worktrees, 18/18 focused loader tests, and eight held branches awaiting separate art/gameplay acceptance. `main` `dcd6a47` was pushed to Gitea, GitHub, and GitLab; Gitea run 21 was still in progress at the checkpoint. No runtime source or staging build changed in this package. The active release remains the compressed-audio staging build below. Prior references to 20 held branches are historical.

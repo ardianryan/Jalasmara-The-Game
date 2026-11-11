@@ -1,0 +1,13 @@
+{
+  "name": "jalasmara-xprite-authoring",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Isolated offline pixel-grid recovery tool",
+  "type": "module",
+  "scripts": {
+    "check": "node check.mjs"
+  },
+  "dependencies": {
+    "@xprite/pixelate": "0.1.2"
+  }
+}
