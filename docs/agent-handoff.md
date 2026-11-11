@@ -1,5 +1,9 @@
 # Handoff aktif agent
 
+## Repaired physical gait candidate, 11 November 2026
+
+[Current repair report](reviews/gait-repair-2026-11-11.md): local `work/gemini-day01-gait` commit `333d846` repaired repeated turn re-anchoring, two-leg pelvis search, authored foot-support tagging through batches, bridge board contact height, original-mask edge clearance, stair landing placement, and final dock contact rotation. Two ordinary-cadence flat32 runs passed (3,104 samples each), two final terrain16 runs passed (770/771 checks), analog/joystick four-case subset passed (1,108 samples), native daily/explorer/stair/dock sequences rendered, typecheck/world/API 100/100/build passed. **This is geometry-green, not natural-walking or device accepted. It remains local, OFF, and unmerged; `main`/staging are unchanged.** Arm/gear phase, dense moving native review, S23/Windows performance, and safe integration onto newer `main` land-renderer source remain. Do not direct-merge the older candidate branch over newer world changes. The older acceptance-attempt section below records the failures that prompted this repair.
+
 ## Physical gait acceptance attempt, 11 November 2026
 
 [Current acceptance report](reviews/gait-acceptance-attempt-2026-11-11.md): `af97654` passed flat32 at fixed 60 FPS but still fails at ordinary cadence. Reach-duration, recovery-velocity, foliage/leaf and bounded visual-pelvis proposals are preserved in local WIP commit `8b82c77` on `work/gemini-day01-gait`; ordinary eight-case runs still reject fixed-leg reach or shoe/terrain contact. A roof false positive exposed the need for an explicit walkable-support triangle set; the arbitrary height cutoff was reverted. **Do not merge, enable, push, export, or deploy this gait candidate.** Main/staging are unchanged. Next: terrain triangle semantics, two-leg turn/restart solver, physics-sample shoe rotation, then repeated full32/full16 and dense native moving review.
