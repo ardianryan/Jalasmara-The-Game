@@ -225,7 +225,8 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 			var target_plane:Quaternion=FootPlane.contact_rotation(renderer,entry.get("settlingTarget",entry.logical),right)
 			settlement_ready=pivot_distance<=settlement_budget+.001 and _plane(side).angle_to(target_plane)<=.001
 	var render_span_start:Vector2=Vector2(stored.get("actorLogical",actor.position))
-	var samples:Array[Dictionary]=actor.consume_gait_samples() if physical_plane and actor.has_method("consume_gait_samples") else []
+	var samples:Array[Dictionary]=[]
+	if physical_plane and actor.has_method("consume_gait_samples"): samples=actor.consume_gait_samples()
 	var replayed_motion:=false
 	for index in range(maxi(0,samples.size()-1)):
 		var sample:Dictionary=samples[index]
