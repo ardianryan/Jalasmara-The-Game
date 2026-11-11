@@ -22,7 +22,7 @@ The coordinator's standalone Gate 2 CPU model was also run against its preserved
 
 ## Other branches
 
-`work/gemini-day01` still contains historical checkpoint documents and the Gate 2 model; its accepted audit and SOUTH upper art are already in `main`. `work/overnight-resident-art` retains historical browser/benchmark notes and prototype work; its production rig and browser script are already present in `main`. `work/overnight-village` contains the older `(360,1030,-11)` fish-pen anchor, superseded by the tested `(275,990,-11)` anchor. All four linked candidate branches remain available; none was rewritten, merged wholesale, archived, or deleted.
+The three historical Gemini day01 bootstrap/progress/final reports were copied into `main` with a prominent current-status note on the two reports that claimed gait acceptance. `work/gemini-day01` still contains the standalone Gate 2 model; its accepted audit and SOUTH upper art are already in `main`. `work/overnight-resident-art` retains historical browser/benchmark notes and prototype work; its production rig and browser script are already present in `main`. `work/overnight-village` contains the older `(360,1030,-11)` fish-pen anchor, superseded by the tested `(275,990,-11)` anchor. All four linked candidate branches remain available; none was rewritten, merged wholesale, archived, or deleted.
 
 ## Next acceptance gate
 
