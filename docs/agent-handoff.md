@@ -1,5 +1,9 @@
 # Handoff aktif agent
 
+## Candidate branch consolidation, 11 November 2026
+
+[Latest consolidation](reviews/candidate-branch-consolidation-2026-11-11.md): four duplicate candidate branches/worktrees were retired after exact patch-equivalence or ancestry proof, with ignored evidence preserved locally. Four branches now remain: `work/gemini-day01`, `work/gemini-day01-gait`, `work/overnight-resident-art`, and `work/overnight-village`; five linked worktrees including `main`. Gitea/GitLab mirror those names, while GitHub also has historical `ci-reports`. None of the four candidates was silently merged into `main`; their visual/physical acceptance is still required. Staging remains the compressed-audio release below. The eight-branch inventory in the previous section is historical.
+
 ## Worktree audit, 11 November 2026
 
 [The latest branch inventory](reviews/worktree-audit-2026-11-11.md) confirms eight candidate branches with unique patches and nine linked worktrees including `main`. No candidate was deleted or cherry-picked without its visual/physical acceptance gate. Three shared `node_modules` symlinks and two generated Python cache files were removed from the old overnight worktrees; all worktrees now have clean Git status. Gitea/GitLab retain `main` plus eight candidates; GitHub also retains historical `ci-reports`. Staging is unchanged.
