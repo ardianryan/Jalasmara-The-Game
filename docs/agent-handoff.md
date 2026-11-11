@@ -1,5 +1,9 @@
 # Handoff aktif agent
 
+## Physical gait acceptance attempt, 11 November 2026
+
+[Current acceptance report](reviews/gait-acceptance-attempt-2026-11-11.md): `af97654` passed flat32 at fixed 60 FPS but still fails at ordinary cadence. Local reach-duration, recovery-velocity, foliage/leaf proposals in `work/gemini-day01-gait` remain uncommitted and unaccepted: ordinary eight-case runs still reject fixed-leg reach or shoe/terrain contact. A roof false positive exposed the need for an explicit walkable-support triangle set; the arbitrary height cutoff was reverted. **Do not merge, enable, push, export, or deploy this gait candidate.** Main/staging are unchanged. Next: terrain triangle semantics, two-leg turn/restart solver, physics-sample shoe rotation, then repeated full32/full16 and dense native moving review.
+
 ## Physical gait replay checkpoint, 11 November 2026
 
 [Latest gait review](reviews/gait-replay-followup-2026-11-11.md): isolated candidate commits `52f88fe` and `af97654` replay accepted physics positions, prevent duplicate idle settlement, and fix an explorer typed-array runtime error. Three fresh full16 terrain runs passed (817/843/831 checks), but a later ordinary-cadence rerun on `af97654` rejected unfinished foot-plane rotation at a dock contact, so **full16 is not repeatably accepted**. A native Metal dock subset passed two cases/64 checks with five sparse frames. Physical flat32 still rejects `daily/false/1 walk` at fixed-leg drop 8.149 px >8; a fixed-60-FPS run completed daily then an isolated explorer probe rejected an original heel/toe pixel missing terrain. Local stride/pelvis/duration experiments were reverted after new failures. **Do not merge, enable the pilot, push or deploy this candidate yet.** Next: geometry-driven contact timing and original shoe clearance, then repeated full32/full16 plus dense native moving review. `main` and staging remain unchanged by the gait source work.

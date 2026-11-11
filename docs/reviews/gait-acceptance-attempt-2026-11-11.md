@@ -1,0 +1,20 @@
+# Physical gait acceptance attempt — 11 November 2026
+
+The opt-in Nala lower-body pilot on `work/gemini-day01-gait` is **not accepted**. The worktree still has local, uncommitted experiments on top of `af97654`; none was merged, pushed, exported, or deployed. `main` and staging continue to run the accepted legacy gait with the physical pilot OFF.
+
+## Evidence
+
+The unchanged `af97654` candidate passed the full 32-case headless production-gait diagnostic at fixed 60 FPS: 3,104 samples and 256 input probes in `.runtime/gait-af97654-flat60b/`. This is a controlled-cadence geometry result, not proof for ordinary render cadence, native motion, arms, or device performance. At ordinary cadence an isolated `daily/false/1 walk` rejected a fixed-leg drop of 8.396 pixels, above the retained 8-pixel limit (`.runtime/gait-flat-case1-now/`). The earlier fresh full16 terrain rerun had rejected an unfinished shoe-plane rotation at dock contact (`.runtime/gait-review-af97654-terrain/`).
+
+The local experiment chooses a flat-ground turn duration from the planted leg's original reach and starts recovery steps without the cubic curve's zero initial shoe velocity. An isolated ordinary-cadence `daily/false/1` then passed 97 samples, and isolated `daily/false/2` passed 97 samples after moving decorative leaf litter closer to the floor and distinguishing non-walkable flower petals from floor triangles. These focused passes do **not** establish an eight-case pass. A subsequent ordinary-cadence eight-case run rejected `daily/false/1 restart turn` at 10.352 pixels; after the recovery-velocity change, another eight-case run progressed to `daily/false/3` and rejected an airborne sole/terrain overlap. Isolated case 3 also rejected fixed-leg drop 11.157 pixels. Evidence: `.runtime/gait-turn-budget-01/`, `gait-flower-case2/`, `gait-candidate-daily8b/`, `gait-recovery-linear-daily8/`, and `gait-recovery-case3-floor/`.
+
+The visual triangle probe currently indexes all static meshes. A case-3 probe reported a roof triangle at 217.8 world units over a shoe at 96; this is an overhead surface, not a foot support. An arbitrary 64-unit vertical cutoff was tried for diagnosis and **reverted** because it is not a defensible terrain classifier. A separate flower-petal material marker remains a local test experiment; it must not be treated as accepted broad triangle coverage. The leaf-litter top was 1.8 units above the authored floor and is now a local proposal at 0.2 units. These discoveries do not justify relaxing the actual opaque-heel/toe, fixed-bone, or terrain acceptance requirements.
+
+## Next implementation gate
+
+1. Represent walkable support triangles separately from decorative foliage and overhead roofs in the renderer's batched geometry. Use that exact terrain set for both shoe planning and the fixture. Keep stone obstacles and 32-unit steps in collision scope.
+2. Solve the two-leg workspace during turns and restarts using both planted and airborne original ankles. Preserve the 8-pixel drop, fixed source bone lengths, shoe-speed bound, and original opaque-pixel clearance. The current reach-only turn duration and linear recovery are incomplete.
+3. Advance shoe-plane rotation at accepted physics samples or delay contact with a proven clearance/reach budget. Do not snap a penetrating shoe to the ramp.
+4. Re-run ordinary-cadence full32 and full16 at least three times each, then raw analog/joystick and pause/restart, followed by dense native moving capture and visual review. Only after these pass should the pilot be considered for merge. Staging and Windows/S23 acceptance are separate.
+
+Tools used: Git, Python 3 for failure JSON and source geometry inspection, and the pinned Godot 4.7.2 Compatibility executable in headless mode. No new asset, third-party dependency, API token, VPS process, or deployment was involved. Godot assertions were judged from `ERROR:` and `rejected.json`, not exit code alone.
