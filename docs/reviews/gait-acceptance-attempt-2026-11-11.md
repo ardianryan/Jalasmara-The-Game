@@ -1,6 +1,6 @@
 # Physical gait acceptance attempt — 11 November 2026
 
-The opt-in Nala lower-body pilot on `work/gemini-day01-gait` is **not accepted**. The worktree still has local, uncommitted experiments on top of `af97654`; none was merged, pushed, exported, or deployed. `main` and staging continue to run the accepted legacy gait with the physical pilot OFF.
+The opt-in Nala lower-body pilot on `work/gemini-day01-gait` is **not accepted**. The experiments on top of `af97654` are recorded in local WIP commit `8b82c77`; this commit was not merged, pushed, exported, or deployed. `main` and staging continue to run the accepted legacy gait with the physical pilot OFF.
 
 ## Evidence
 
@@ -9,6 +9,8 @@ The unchanged `af97654` candidate passed the full 32-case headless production-ga
 The local experiment chooses a flat-ground turn duration from the planted leg's original reach and starts recovery steps without the cubic curve's zero initial shoe velocity. An isolated ordinary-cadence `daily/false/1` then passed 97 samples, and isolated `daily/false/2` passed 97 samples after moving decorative leaf litter closer to the floor and distinguishing non-walkable flower petals from floor triangles. These focused passes do **not** establish an eight-case pass. A subsequent ordinary-cadence eight-case run rejected `daily/false/1 restart turn` at 10.352 pixels; after the recovery-velocity change, another eight-case run progressed to `daily/false/3` and rejected an airborne sole/terrain overlap. Isolated case 3 also rejected fixed-leg drop 11.157 pixels. Evidence: `.runtime/gait-turn-budget-01/`, `gait-flower-case2/`, `gait-candidate-daily8b/`, `gait-recovery-linear-daily8/`, and `gait-recovery-case3-floor/`.
 
 The visual triangle probe currently indexes all static meshes. A case-3 probe reported a roof triangle at 217.8 world units over a shoe at 96; this is an overhead surface, not a foot support. An arbitrary 64-unit vertical cutoff was tried for diagnosis and **reverted** because it is not a defensible terrain classifier. A separate flower-petal material marker remains a local test experiment; it must not be treated as accepted broad triangle coverage. The leaf-litter top was 1.8 units above the authored floor and is now a local proposal at 0.2 units. These discoveries do not justify relaxing the actual opaque-heel/toe, fixed-bone, or terrain acceptance requirements.
+
+A further local pose probe searched for a visual pelvis position within eight world units while leaving actor coordinates untouched. Offline calculation showed both a 10.352-pixel restart failure and an 11.157-pixel turn failure had feasible two-leg poses within that radius. The bounded runtime implementation passed an isolated 97-sample case 1, but an ordinary-cadence eight-case run still rejected case 3 at 8.537 pixels (`.runtime/gait-opt-floor64-daily8/`). That run used the **temporary roof cutoff** and is diagnostic only; the cutoff was reverted before `8b82c77`. The local optimizer and its movement remain unaccepted, including visual continuity and mobile CPU cost.
 
 ## Next implementation gate
 

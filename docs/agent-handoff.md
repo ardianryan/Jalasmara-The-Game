@@ -2,7 +2,7 @@
 
 ## Physical gait acceptance attempt, 11 November 2026
 
-[Current acceptance report](reviews/gait-acceptance-attempt-2026-11-11.md): `af97654` passed flat32 at fixed 60 FPS but still fails at ordinary cadence. Local reach-duration, recovery-velocity, foliage/leaf proposals in `work/gemini-day01-gait` remain uncommitted and unaccepted: ordinary eight-case runs still reject fixed-leg reach or shoe/terrain contact. A roof false positive exposed the need for an explicit walkable-support triangle set; the arbitrary height cutoff was reverted. **Do not merge, enable, push, export, or deploy this gait candidate.** Main/staging are unchanged. Next: terrain triangle semantics, two-leg turn/restart solver, physics-sample shoe rotation, then repeated full32/full16 and dense native moving review.
+[Current acceptance report](reviews/gait-acceptance-attempt-2026-11-11.md): `af97654` passed flat32 at fixed 60 FPS but still fails at ordinary cadence. Reach-duration, recovery-velocity, foliage/leaf and bounded visual-pelvis proposals are preserved in local WIP commit `8b82c77` on `work/gemini-day01-gait`; ordinary eight-case runs still reject fixed-leg reach or shoe/terrain contact. A roof false positive exposed the need for an explicit walkable-support triangle set; the arbitrary height cutoff was reverted. **Do not merge, enable, push, export, or deploy this gait candidate.** Main/staging are unchanged. Next: terrain triangle semantics, two-leg turn/restart solver, physics-sample shoe rotation, then repeated full32/full16 and dense native moving review.
 
 ## Physical gait replay checkpoint, 11 November 2026
 
