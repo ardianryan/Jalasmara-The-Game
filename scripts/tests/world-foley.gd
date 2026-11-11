@@ -16,7 +16,8 @@ func run() -> void:
 	for name in ["footstep_dock","footstep_bridge","footstep_sand","footstep_stone","footstep_water_shallow","footstep_dirt","punch_swing","punch_hit","hit_wood","hit_stone","machete_cut_bush","wood_break_barricade","boulder_push_slide","path_reveal_chime","coastal_wave_lap","coastal_wave_surge","wave_crash_rock","ambient_coastal_waves"]:
 		assert(audio.sfx_streams.has(name), "Supplied SFX was not imported/loaded: "+name)
 		var stream: AudioStreamWAV = audio.sfx_streams[name]
-		assert(stream.mix_rate==44100 and stream.get_length()>0.08 and stream.get_length()<=12.5, "Godot must load playable supplied SFX at the authored rate/duration")
+		var expected_rate := 22050 if name=="ambient_coastal_waves" else 44100
+		assert(stream.mix_rate==expected_rate and stream.get_length()>0.08 and stream.get_length()<=12.5, "Godot must load playable supplied SFX at the authored rate/duration: "+name)
 	var actor := Walker.new()
 	root.add_child(actor)
 	var surfaces := [{"id":"base","material":"grass","priority":0,"elevation":0,"polygon":[[0,0],[1200,0],[1200,900],[0,900]]}]

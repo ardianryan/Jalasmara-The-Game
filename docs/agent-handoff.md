@@ -1,5 +1,9 @@
 # Handoff aktif agent
 
+## Compressed-audio candidate — 11 November 2026
+
+The owner committed 112 kbps runtime MP3s and archived the original masters in `00c344c`. [Validation report](reviews/audio-compression-validation-2026-11-11.md): local Godot 4.7.2 export PCK `cdbfac713fd72506e8458a9cd4fdfc0983f48f2cd805acdd0c9d61fc4f52106a` is 69,648,468 bytes, 17,237,232 bytes below active staging. FFmpeg decoded all changed audio, 68/68 world checks, 121/121 API tests with disposable SSH-hosted fixtures, typecheck and Web/API builds passed. `world-foley.gd` now expects 22,050 Hz for the resampled ambience only. A direct static browser page lacked the required API and did not reach READY; authenticated browser playback/listening is still open. Temporary DB/Redis containers and SSH tunnel were removed. **This is a local candidate; staging remains `4980d6b` / PCK `cb5bd527`.** The master archive grows Git storage but is excluded from the Web PCK. Do not claim the compressed audio is deployed or device performance improved.
+
 ## Startup and payload checkpoint — 11 November 2026
 
 [Public staging startup audit](reviews/staging-startup-payload-2026-11-11.md) verified the active `4980d6b`/`cb5bd527` release without changing it. The six-check real-host smoke passed with fixture cleanup. Its two browser navigations each fetched all 83 verified PCK parts again; game READY/HUD took about 42 seconds in each. The current 86,885,700-byte PCK contains 38,565,574 bytes of imported MP3 streams and 44,007,882 bytes of textures. Browser cache pressure is a plausible explanation for repeat transfers, not a proven device-wide policy. Next: isolated, tested Web BGM externalization candidate, then cold/reload comparison and actual S23/Windows tests. Do not call this optimization shipped or infer GPU FPS. Active staging, image, rollback and branch holds remain as recorded below.
