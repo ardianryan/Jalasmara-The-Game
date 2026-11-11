@@ -1,0 +1,193 @@
+extends "res://../scripts/tests/nala-production-gait.gd"
+
+var terrain_cases:Array=[]
+var declared_setups:=0
+var terrain_profile:Dictionary={}
+var previous_terrain_position:=Vector2.INF
+
+func _measure(label:String) -> void:
+	var actual_pose:Dictionary=renderer.actors_3d.counts.get("nalaLowerBody",{})
+	if not bool(actual_pose.get("enabled",false)):
+		super._measure(label)
+		return
+	var expected:=1.0
+	if str(terrain_profile.get("type",""))=="ramp":
+		var a:Vector2=terrain_profile.start
+		var b:Vector2=terrain_profile.end
+		var tangent:=(b-a).normalized()
+		var perpendicular:=Vector2(-tangent.y,tangent.x)
+		var active:=false
+		for point in [player.position,previous_terrain_position]:
+			if not Vector2(point).is_finite(): continue
+			var along:float=(Vector2(point)-a).dot(tangent)
+			if along>=0 and along<=a.distance_to(b) and absf((Vector2(point)-a).dot(perpendicular))<=float(terrain_profile.width): active=true
+		if not active and previous_terrain_position.is_finite():
+			var side:=perpendicular*float(terrain_profile.width)
+			var corners:Array[Vector2]=[a-side,a+side,b+side,b-side]
+			for index in range(4):
+				if Geometry2D.segment_intersects_segment(previous_terrain_position,player.position,corners[index],corners[(index+1)%4])!=null: active=true
+		if active:
+			var first:Vector3=renderer.ground_point(a)
+			var last:Vector3=renderer.ground_point(b)
+			expected=maxf(1.0,absf(last.z-first.z)/Vector2(last.x-first.x,last.y-first.y).length())
+	var contact:Dictionary=renderer.actors_3d.counts.get("nalaLowerBody",{}).get("contacts",{})
+	var contact_trace:Dictionary=renderer.actors_3d.counts.get("nalaLowerBody",{}).get("contactTrace",{})
+	if not _check(bool(contact_trace.get("finalPoseValidated",false)) and not bool(contact_trace.get("intermediateContactPosesValidated",true)) and not bool(contact_trace.get("audioWired",true)),"Diagnostic trace overclaims transient validation/audio "+label): return
+	if not _check(int(contact_trace.get("overflow",0))==0 and JSON.stringify(contact_trace.get("events",[]))==JSON.stringify(contact.get("rawContactEvents",[])),"Diagnostic trace lost or invented raw transitions "+label): return
+	var previous_event_distance:float=-INF
+	var previous_sequence:=-1
+	for event in contact_trace.get("events",[]):
+		if not _check(str(event.stage)=="raw_planner_transition" and str(event.purpose) in ["walking","settling"] and not bool(event.contactPoseRendered) and not bool(event.exactContactPhysicsFrameKnown),"Diagnostic trace invented purpose/render/timestamp "+label): return
+		if not _check(int(event.sequence)>previous_sequence and int(event.sequence)<=int(contact.contacts) and float(event.acceptedDistance)>=previous_event_distance and float(event.acceptedDistance)<=float(contact.acceptedDistance)+.003,"Diagnostic trace event order differs from planner phase "+label): return
+		if not _check(Vector3(event.newPlant).distance_to(renderer.ground_point(event.logicalPlant))<.003,"Diagnostic contact is not its actual supported ground "+label): return
+		previous_event_distance=float(event.acceptedDistance)
+		previous_sequence=int(event.sequence)
+	for entry in contact.get("feet",{}).values():
+		var tread:Dictionary=entry.get("treadPlan",{})
+		if str(tread.get("curveType",""))=="stair_swept_support":
+			var arc:=0.0
+			for index in range(tread.knots.size()-1): arc+=Vector3(tread.knots[index]).distance_to(tread.knots[index+1])
+			if not _check(absf(arc-float(tread.arcXYZ))<.003,"Swept stair arc disagrees with actual frozen knots "+label): return
+			var reserve:=0.0
+			if bool(tread.get("carriedResume",false)):
+				var initial_pivot:Vector3=tread.initialPivot
+				reserve=initial_pivot.length()+4.0*.02+absf(initial_pivot.z)
+				if not _check(str(tread.floorStitch)=="continuous_quadratic" and not bool(tread.futureViewChangesIncludedInCertificate),"Carried stair curve overclaims view or stitch scope "+label): return
+			var bound:float=(1.5*arc+3.0*PI+reserve)/float(tread.distance)
+			if not _check(bound<=4.9 and absf(bound-float(tread.curveSpeedBound))<.00001,"Swept stair base certificate changed "+label): return
+			if not _check(not bool(tread.intermediateWaypointsAreContacts) and str(tread.actorPhaseUnits)=="accepted continuous world XY","Swept stair changed contact/actor-distance semantics "+label): return
+			if not entry.has("settlingTarget") and not _check(Vector3(tread.toWorld).distance_to(Vector3(entry.toWorld))<.003,"Swept stair moved frozen landing "+label): return
+		var plan:Dictionary=entry.get("rampCurvePlan",{})
+		if not plan.has("bodyDurationPreview"): continue
+		var preview:Dictionary=plan.bodyDurationPreview
+		if not _check(bool(preview.valid) and bool(preview.conditionalPreview) and not bool(preview.fullMaskProof),"Restart duration preview must remain conditional "+label): return
+		if not _check(int(preview.markerQueries)==64 and int(preview.samples)==32 and int(preview.candidates)==65,"Restart preview exceeded its bounded original-marker work "+label): return
+		if not _check(float(plan.distance)>=float(preview.originalDistance) and absf(float(plan.distance)*4.0-roundf(float(plan.distance)*4.0))<.00001,"Restart duration changed outside quarter grid "+label): return
+		if not _check(not bool(preview.frozenLandingChanged) and Vector3(plan.toWorld).distance_to(Vector3(preview.frozenTarget))<.003,"Restart preview moved frozen landing "+label): return
+		if not entry.has("settlingTarget") and not _check(Vector3(plan.toWorld).distance_to(Vector3(entry.toWorld))<.003,"Restart preview flight moved frozen landing "+label): return
+	if not _check(absf(float(contact.get("continuousGroundRate",1.0))-expected)<.00001,"Continuous ground rate disagrees with actual active ramp geometry "+label): return
+	var stair_rate:=1.0
+	for profile in renderer.get("_stair_queries"):
+		if str(profile.type)=="stairs": stair_rate=maxf(stair_rate,absf(float(profile.to)-float(profile.from))/float(profile.steps)/32.0*1.5)
+	if not _check(absf(float(contact.get("bodyTransferRate",1.0))-maxf(stair_rate,expected))<.00001,"Body transfer rate inflated beyond authored stair/ramp geometry "+label): return
+	var prior:=checks
+	super._measure(label)
+	if checks>prior: previous_terrain_position=player.position
+
+func _terrain_case(profile:Dictionary,reverse:bool,reduced:bool,label:String) -> bool:
+	terrain_profile=profile
+	previous_terrain_position=Vector2.INF
+	clock.reduced_motion=reduced
+	var a:Vector2=profile.end if reverse else profile.start
+	var b:Vector2=profile.start if reverse else profile.end
+	var heading:Vector2=(b-a).normalized()
+	var origin:=a-heading*20.0
+	if not _check(collision.is_walkable(origin),"Terrain setup outside actual authoritative floor "+label): return false
+	_reset_case(origin,"daily")
+	declared_setups+=1
+	input_driver.set("logical_heading",heading)
+	_input(Vector2.ZERO)
+	_controller_enabled(true)
+	await physics_frame
+	await process_frame
+	_controller_enabled(false)
+	renderer.call("_process",0.0)
+	last_delta=0.0
+	var prior:=checks
+	_measure(label+" idle")
+	if checks==prior: return false
+	sample_log.store_line(JSON.stringify({"case":label+" idle","fixtureInitial":true,"physicsFrame":Engine.get_physics_frames(),"position":[player.position.x,player.position.y],"pose":renderer.actors_3d.counts.nalaLowerBody.duplicate(true)}))
+	sample_log.flush()
+	player.get("land_path").call("reset",origin)
+	player.get("swim_sprite").call("consume_foot_contacts")
+	elapsed_physics=0.0
+	logical_travel=0.0
+	physical_travel=0.0
+	legacy_contacts=0
+	prior_planner_contacts=0
+	windows.clear()
+	began_usec=Time.get_ticks_usec()
+	last_physics_frame=Engine.get_physics_frames()
+	var entered:=false
+	var crossed:=false
+	var stopped:=false
+	var observations:=0
+	_controller_enabled(true)
+	for index in range(240):
+		if not await _production_tick(Vector2.RIGHT,label+" travel"): return false
+		observations+=1
+		var progress:float=(player.position-a).dot(b-a)/(b-a).length_squared()
+		if progress>=0.0 and progress<=1.0: entered=true
+		if not stopped and progress>=.45 and progress<=.8:
+			for stop_frame in range(10):
+				if not await _production_tick(Vector2.ZERO,label+" stop-on-connector"): return false
+			var before_pause:Dictionary=renderer.actors_3d.counts.nalaLowerBody.duplicate(true)
+			player.frozen=true
+			clock.clock_paused=true
+			for pause_frame in range(2):
+				if not await _production_tick(Vector2.ZERO,label+" paused-on-connector"): return false
+			var after_pause:Dictionary=renderer.actors_3d.counts.nalaLowerBody.duplicate(true)
+			if not _check(after_pause.contactTrace.events.is_empty() and after_pause.contacts.rawContactEvents.is_empty(),"Actual terrain pause replayed contact diagnostics "+label): return false
+			for paused_pose in [before_pause,after_pause]:
+				paused_pose.erase("contactTrace")
+				paused_pose.contacts.erase("rawContactEvents")
+				paused_pose.contacts.erase("rawTraceEpoch")
+				paused_pose.contacts.erase("rawTraceOverflow")
+			if not _check(after_pause==before_pause,"Actual terrain pause changed planted rig "+label): return false
+			player.frozen=false
+			clock.clock_paused=false
+			stopped=true
+		if entered and progress>1.2:
+			crossed=true
+			break
+	_controller_enabled(false)
+	terrain_cases.append({"case":label,"profileId":profile.id,"profileType":profile.type,"reverse":reverse,"reduced":reduced,"controller":"actual hub Player; its enforced daily outfit","entered":entered,"crossed":crossed,"stopPauseRestart":stopped,"observations":observations,"position":[player.position.x,player.position.y],"physicsSeconds":elapsed_physics,"windows":windows.duplicate(true),"noRootPlacementAfterDeclaredSetup":true})
+	FileAccess.open(output+"/terrain-cases.json",FileAccess.WRITE).store_string(JSON.stringify(terrain_cases,"  "))
+	return _check(entered and crossed and stopped,"Terrain route did not enter/cross/stop/restart "+label)
+
+func run() -> void:
+	root.size=Vector2i(1440,810)
+	physical_pilot=true
+	capture=OS.get_environment("NALA_LOWER_CAPTURE")=="1"
+	capture_stride=clampi(int(OS.get_environment("NALA_LOWER_CAPTURE_STRIDE")) if OS.has_environment("NALA_LOWER_CAPTURE_STRIDE") else 2,1,24)
+	output=OS.get_environment("NALA_LOWER_OUTPUT") if OS.has_environment("NALA_LOWER_OUTPUT") else "res://../artifacts/godot/nala-production-terrain-"+str(int(Time.get_unix_time_from_system()))
+	if not _check(not DirAccess.dir_exists_absolute(ProjectSettings.globalize_path(output)),"Preserve prior terrain evidence; select fresh output"): return
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(output))
+	sample_log=FileAccess.open(output+"/samples.jsonl",FileAccess.WRITE)
+	capture_log=FileAccess.open(output+"/frames.jsonl",FileAccess.WRITE)
+	var state:=root.get_node("GameState")
+	state.world=JSON.parse_string(FileAccess.get_file_as_string("res://../.runtime/world-map.json"))
+	state.player={"appearance":"male_nusantara","progress":{"day":2,"stage":"dive"}}
+	state.dive={}
+	var unchanged:=JSON.stringify({"world":state.world,"player":state.player})
+	clock=root.get_node("EnvironmentState")
+	clock.set_process(false)
+	clock.clock_paused=false
+	for action in ["left","right","up","down","interact","journal","inventory","map","character"]:
+		if not InputMap.has_action(action): InputMap.add_action(action)
+		Input.action_release(action)
+	var hashes:Dictionary={}
+	for path in ["res://scripts/Player.gd","res://scripts/NalaPhysicalMotion.gd","res://scripts/NalaFootPlant.gd","res://scripts/NalaFootPlane.gd","res://scripts/NalaRestartBodyBudget.gd","res://scripts/NalaStairSupportCurve.gd","res://scripts/SurfaceTraversal.gd","res://scripts/WorldFoley.gd","res://scripts/land/LandSurfaceQueryCache.gd","res://scripts/NalaLowerBody3D.gd","res://scripts/CharacterVisual.gd","res://scripts/land/LandWorld3D.gd","res://scripts/land/LandGeometry.gd","res://../scripts/tests/nala-production-gait.gd","res://../scripts/tests/nala-production-terrain.gd","res://../scripts/tests/nala-lower-body.gd"]: hashes[path]=FileAccess.get_sha256(path)
+	var filter:=OS.get_environment("NALA_TERRAIN_PROFILE")
+	var first:=maxi(0,int(OS.get_environment("NALA_TERRAIN_FIRST")))
+	var limit:=maxi(1,int(OS.get_environment("NALA_TERRAIN_CASES"))) if OS.has_environment("NALA_TERRAIN_CASES") else 16
+	FileAccess.open(output+"/source.json",FileAccess.WRITE).store_string(JSON.stringify({"files":hashes,"fixtureWorldSha256":FileAccess.get_sha256("res://../.runtime/world-map.json"),"profileFilter":filter,"firstCase":first,"caseLimit":limit,"actualController":"Player","outfit":"daily enforced by actual hub Player","physicalContract":PhysicalMotion.gait_contract(),"postAccelerationLimiter":true,"acceptedPositionLimiter":true,"fixturePathInput":true,"continuousXYMetricIgnoresTreadZ":true,"geometryAcceptance":"pending actual triangle/pixel checks","nativeAcceptance":false,"naturalWalkingAccepted":false},"  "))
+	_open("daily")
+	var scheduled:=0
+	for reduced in [false,true]:
+		for profile in renderer.get("_stair_queries"):
+			if not filter.is_empty() and str(profile.id)!=filter: continue
+			for reverse in [false,true]:
+				if scheduled<first:
+					scheduled+=1
+					continue
+				if terrain_cases.size()>=limit: break
+				var label:=str(profile.id)+"/"+str(reverse)+"/"+str(reduced)
+				if not await _terrain_case(profile,bool(reverse),bool(reduced),label): return
+				scheduled+=1
+	FileAccess.open(output+"/results.json",FileAccess.WRITE).store_string(JSON.stringify(frames,"  "))
+	FileAccess.open(output+"/terrain-results.json",FileAccess.WRITE).store_string(JSON.stringify({"cases":terrain_cases,"geometrySamples":checks,"declaredSetups":declared_setups,"complete16Cases":filter.is_empty() and first==0 and terrain_cases.size()==16,"allEightFlatHeadings":"separate production-gait fixture; not eight stair-side crossings","naturalWalkingAccepted":false,"armOppositionAccepted":false},"  "))
+	if not _check(JSON.stringify({"world":state.world,"player":state.player})==unchanged,"Terrain fixture changed authoritative source data"): return
+	controller.free()
+	print("NALA PHYSICAL TERRAIN PASS ",checks," actual triangle/opaque-foot samples/",terrain_cases.size()," daily controller cases; native/arms unaccepted.")
+	quit(0)

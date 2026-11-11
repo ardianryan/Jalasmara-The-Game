@@ -1,0 +1,131 @@
+{
+  "sourceCommit": "b05a211",
+  "capture": "artifacts/godot/nala-terrain-dock-up-down-current-foot-body-b05a211/rejected.json",
+  "captureSha256": "a2b64e8a77b068c764c9d2928f3c5e59ab3995392d7450fff85d43d74cb71331",
+  "fixtureWorldSha256": "28455e6f7ec053d8e090457cae6e747d848aa3fd994e797e32608a0710dd5743",
+  "dataSha256": "f46253f21b32fc5e4ff027c4dce5e36c9be317ade6feffb1a7174fd1774b8d48",
+  "scope": "Frozen actual stopped/resumed dock failure; helper-only replay, not a complete runtime motion proof",
+  "bodyDirection": "south_east",
+  "bodyHeight": 14.7888323255851,
+  "calibration": 1.22077456956372,
+  "at": [
+    1120.0,
+    1159.9853515625
+  ],
+  "heading": [
+    0,
+    -1,
+    0
+  ],
+  "bodyRate": 1.07207590381155,
+  "side": "right",
+  "expectedPreviewDistance": 11.25,
+  "plan": {
+    "curveOnly": true,
+    "curveSpeedBound": 4.06199273824613,
+    "curveType": "ramp_support_profile",
+    "distance": 10.0,
+    "effectiveVerticalSpan": 15.2740479429794,
+    "envelopeIncludedInBaseCurveBound": false,
+    "fixedPathWorldXY": 14.114141702652,
+    "fromGroundOffset": 0.144833564758301,
+    "fromSupportOffset": 0.0824804306030273,
+    "fromWorld": [
+      1116.667,
+      -2064.123,
+      11.48561
+    ],
+    "groundKnots": [
+      {
+        "logical": [
+          1116.667,
+          1174.643
+        ],
+        "world": [
+          1116.667,
+          -2064.123,
+          11.34078
+        ]
+      },
+      {
+        "logical": [
+          1116.488,
+          1190.0
+        ],
+        "world": [
+          1116.488,
+          -2074.702,
+          0.0
+        ]
+      },
+      {
+        "logical": [
+          1116.464,
+          1192.027
+        ],
+        "world": [
+          1116.464,
+          -2078.236,
+          0.0
+        ]
+      }
+    ],
+    "originalFootSupportEnvelope": true,
+    "toWorld": [
+      1116.464,
+      -2078.236,
+      0.0
+    ],
+    "valid": true
+  },
+  "feet": {
+    "left": {
+      "footDirection": "south",
+      "renderedSole": [
+        1115.05,
+        -2049.11,
+        27.43576
+      ],
+      "pivot": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation": [
+        0.15123724937439,
+        0.15123724937439,
+        0.162160113453865,
+        0.963306128978729
+      ],
+      "actualAnkle": [
+        1116.30212402344,
+        -2050.205078125,
+        33.3932495117188
+      ]
+    },
+    "right": {
+      "footDirection": "south_east",
+      "renderedSole": [
+        1116.639,
+        -2064.106,
+        11.4439
+      ],
+      "pivot": [
+        -0.027871273458004,
+        0.0172957628965378,
+        -0.0417105704545975
+      ],
+      "rotation": [
+        0.15123724937439,
+        0.15123724937439,
+        0.162160113453865,
+        0.963306128978729
+      ],
+      "actualAnkle": [
+        1118.71716308594,
+        -2065.58520507812,
+        16.9893226623535
+      ]
+    }
+  }
+}

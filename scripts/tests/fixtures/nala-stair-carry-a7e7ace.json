@@ -1,0 +1,70 @@
+{
+  "source": "a7e7ace",
+  "worldSha256": "28455e6f7ec053d8e090457cae6e747d848aa3fd994e797e32608a0710dd5743",
+  "dataSha256": "f46253f21b32fc5e4ff027c4dce5e36c9be317ade6feffb1a7174fd1774b8d48",
+  "atlasSha256": "6b5e6f8b3bf19acbd5dbfe1a84429894d2f4de4fd985dc16c024a6bf1f44c054",
+  "connectorId": "forest_ridge_steps",
+  "side": "left",
+  "footDirection": "north",
+  "bodyDirection": "north_west",
+  "initialPivot": [
+    -0.967796683311462,
+    0.967796683311462,
+    -0.0377456247806549
+  ],
+  "initialAnkle": [
+    1780.62133789062,
+    -914.736938476562,
+    130.096878051758
+  ],
+  "fromLogical": [
+    1780.882,
+    438.9222
+  ],
+  "fromWorld": [
+    1780.882,
+    -914.9976,
+    124.0308
+  ],
+  "toLogical": [
+    1776.464,
+    400.0
+  ],
+  "toWorld": [
+    1776.464,
+    -891.6069,
+    144.0
+  ],
+  "expectedKnots": [
+    [
+      1780.882,
+      -914.9976,
+      124.0308
+    ],
+    [
+      1780.8569804460703,
+      -914.8651362426198,
+      128.03774562478065
+    ],
+    [
+      1778.5869315565333,
+      -902.8465684380716,
+      144.03774562478065
+    ],
+    [
+      1776.464,
+      -891.6069,
+      144.0
+    ]
+  ],
+  "expectedDistance": 13.25,
+  "expectedArcXYZ": 35.5871653921202,
+  "expectedBound": 4.852261377361787,
+  "scope": "Frozen real airborne NORTH/Qidentity/Cnonzero start and unchanged144target; helper/math proof only, no coupled movement acceptance.",
+  "rawEvidenceHashes": {
+    "rejected.json": "872583890870fca739e5fb64e401bf2ee57992120d49fb78c91d10870cc31797",
+    "source.json": "7e78a71b3392b1807c86a36378471de71277d80b80029974afe1be3eafb2022f",
+    "samples.jsonl": "aacd46060a8a385359d00a6170ec809a434f6103c8c48b30625fc5476c135d05"
+  },
+  "pausedPhysicsFrame": 745
+}

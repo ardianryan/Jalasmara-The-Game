@@ -1,5 +1,9 @@
 # Handoff aktif agent
 
+## Owner-authorized gait integration, 11 November 2026
+
+The owner explicitly waived the remaining visual/device acceptance gate and requested merge to `main` plus staging activation. [Integration report](reviews/gait-main-staging-2026-11-11.md) records the merge, tests and release identity. The older prohibitions below describe prior candidate status and are superseded by this decision. The physical lower-body pilot is enabled in hub/forest only for `male_nusantara` daily/explorer; other appearances and diving retain their existing render path. Natural upper-arm motion and S23/Windows GPU performance remain unmeasured. Do not describe the staging release as device-verified.
+
 ## Repaired physical gait candidate, 11 November 2026
 
 [Current repair report](reviews/gait-repair-2026-11-11.md): local `work/gemini-day01-gait` commit `333d846` repaired repeated turn re-anchoring, two-leg pelvis search, authored foot-support tagging through batches, bridge board contact height, original-mask edge clearance, stair landing placement, and final dock contact rotation. Two ordinary-cadence flat32 runs passed (3,104 samples each), two final terrain16 runs passed (770/771 checks), analog/joystick four-case subset passed (1,108 samples), native daily/explorer/stair/dock sequences rendered, typecheck/world/API 100/100/build passed. **This is geometry-green, not natural-walking or device accepted. It remains local, OFF, and unmerged; `main`/staging are unchanged.** Arm/gear phase, dense moving native review, S23/Windows performance, and safe integration onto newer `main` land-renderer source remain. Do not direct-merge the older candidate branch over newer world changes. The older acceptance-attempt section below records the failures that prompted this repair.

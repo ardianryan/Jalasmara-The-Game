@@ -35,6 +35,8 @@ var sync_clock := 0.0
 var footstep_clock := 0.0
 var animation_clock := 0.0
 var touch_direction := Vector2.ZERO
+var land_velocity_transform := Callable()
+var land_position_transform := Callable()
 var last_facing := Vector2.DOWN
 var character_sheet: Texture2D
 var walkable_paths: Array = []
@@ -405,10 +407,22 @@ func _draw() -> void:
 	draw_polyline(stream,Color(0.32,0.55,0.53,0.0 if background != null else 1.0),67,false)
 	draw_polyline(stream,Color(0.60,0.81,0.71,0.0 if background != null else 0.4),7,false)
 
+func _limit_gait_velocity(at: Vector2, speed: Vector2, delta: float) -> Vector2:
+	return preload("res://scripts/NalaPhysicalMotion.gd").limit_velocity(land_renderer,at,speed,delta)
+
+func _limit_gait_position(from: Vector2, to: Vector2, delta: float) -> Vector2:
+	return preload("res://scripts/NalaPhysicalMotion.gd").limit_position(land_renderer,from,to,delta)
+
 func _physics_process(delta: float) -> void:
 	EnvironmentState.clock_paused = modal_open or ViewportLayout.host_paused
 	if avatar == null:
 		return
+	var physical_gait: bool = is_instance_valid(land_renderer) and land_renderer.active and str(GameState.player.get("appearance",""))=="male_nusantara"
+	if physical_gait!=bool(avatar.get_meta("nala_physical_walk_pilot",false)):
+		avatar.set_meta("nala_lower_body_pilot",physical_gait)
+		avatar.set_meta("nala_physical_walk_pilot",physical_gait)
+		land_velocity_transform=Callable(self,"_limit_gait_velocity") if physical_gait else Callable()
+		land_position_transform=Callable(self,"_limit_gait_position") if physical_gait else Callable()
 	if modal_open and is_instance_valid(field_panel) and field_panel.get_meta("world_map",false) and Input.is_action_just_pressed("map"):
 		_close_dialog()
 		return
@@ -425,6 +439,7 @@ func _physics_process(delta: float) -> void:
 		avatar.velocity = avatar.velocity.move_toward(Vector2.ZERO,delta*1700)
 	var previous_position := avatar.position
 	if land_path.full(): avatar.velocity = Vector2.ZERO
+	if land_velocity_transform.is_valid(): avatar.velocity=land_velocity_transform.call(avatar.position,avatar.velocity,delta)
 	avatar.move_and_slide()
 	path_notice_cooldown = maxf(0.0,path_notice_cooldown-delta)
 	if not _is_walkable(avatar.position):
@@ -443,6 +458,11 @@ func _physics_process(delta: float) -> void:
 				game_hud.message("Vegetasi lebat menutup jalur. Ikuti jalan tanah atau telusuri cabangnya.")
 				path_notice_cooldown = 4.0
 	avatar.position = avatar.position.clamp(Vector2(12,12),Vector2(2388,1588))
+	if land_position_transform.is_valid():
+		var limited:Vector2=land_position_transform.call(previous_position,avatar.position,delta)
+		if limited!=avatar.position:
+			avatar.position=limited if _is_walkable(limited) else previous_position
+			avatar.velocity=(avatar.position-previous_position)/maxf(delta,.001)
 	var moved_velocity := (avatar.position-previous_position)/maxf(delta,0.001)
 	if moved_velocity.length() < 8.0:
 		avatar.velocity = Vector2.ZERO

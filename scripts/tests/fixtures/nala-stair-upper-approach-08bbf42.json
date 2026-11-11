@@ -1,0 +1,34 @@
+{
+  "source": "08bbf42",
+  "rejectionSha256": "9848fcef4edfb1e72314ddd49c7d3eadd7ef87ccc4b7ad7518c5a6b31bd4bb3e",
+  "worldSha256": "28455e6f7ec053d8e090457cae6e747d848aa3fd994e797e32608a0710dd5743",
+  "dataSha256": "f46253f21b32fc5e4ff027c4dce5e36c9be317ade6feffb1a7174fd1774b8d48",
+  "connectorId": "central_stone_steps",
+  "side": "right",
+  "bodyDirectionAtBegin": "west",
+  "footDirection": "north_west",
+  "supportLogical": [
+    1365.05,
+    727.074
+  ],
+  "supportWorld": [
+    1365.05,
+    -1404.717,
+    96.0
+  ],
+  "fromLogical": [
+    1373.889,
+    717.2306
+  ],
+  "fromWorld": [
+    1373.889,
+    -1387.556,
+    96.0
+  ],
+  "oldTarget": [
+    1368.586,
+    765.0
+  ],
+  "oldLandingHeight": 84,
+  "scope": "Captured grounded support and free-foot start; actor at begin reconstructed from initial setup plus exact first10 acceptedXY. New boundary target is profile-derived, not frozen literal coordinates."
+}

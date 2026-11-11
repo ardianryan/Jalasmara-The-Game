@@ -338,7 +338,7 @@ func _polygon(points: Array) -> PackedVector2Array:
 	for point in points: result.append(_v2(point))
 	return result
 
-func _mesh(label: String, vertices: PackedVector3Array, triangles: PackedInt32Array, material: Material, parent: Node3D=null, colors: PackedColorArray=PackedColorArray()) -> MeshInstance3D:
+func _mesh(label: String, vertices: PackedVector3Array, triangles: PackedInt32Array, material: Material, parent: Node3D=null, colors: PackedColorArray=PackedColorArray(), foot_support: bool=false) -> MeshInstance3D:
 	_components[label]=int(_components.get(label,0))+1
 	var tool:=SurfaceTool.new()
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
@@ -359,12 +359,13 @@ func _mesh(label: String, vertices: PackedVector3Array, triangles: PackedInt32Ar
 	tool.index()
 	mesh.mesh=tool.commit()
 	mesh.material_override=material
+	mesh.set_meta("foot_support",foot_support)
 	(parent if parent!=null else _geometry).add_child(mesh)
 	_meshes+=1
 	return mesh
 
-func _face(label: String, points: Array[Vector3], material: Material) -> MeshInstance3D:
-	return _mesh(label,PackedVector3Array(points),PackedInt32Array([0,1,2,0,2,3]),material)
+func _face(label: String, points: Array[Vector3], material: Material, foot_support: bool=false) -> MeshInstance3D:
+	return _mesh(label,PackedVector3Array(points),PackedInt32Array([0,1,2,0,2,3]),material,null,PackedColorArray(),foot_support)
 
 func _box(label: String, center: Vector3, dimensions: Vector3, material: Material) -> MeshInstance3D:
 	_components[label]=int(_components.get(label,0))+1
@@ -505,7 +506,7 @@ func _build_surface_geometry(surface: Dictionary) -> void:
 			var swap:=indices[i+1]
 			indices[i+1]=indices[i+2]
 			indices[i+2]=swap
-	_mesh(str(surface.id),vertices,indices,_materials.get_material(str(surface.material)))
+	_mesh(str(surface.id),vertices,indices,_materials.get_material(str(surface.material)),null,PackedColorArray(),bool(surface.get("walkable",true)))
 	if str(surface.id) in ["sasmita_deck","sasmita_garden_raft"]:
 		for point in polygon:
 			var at:=map_point(point,height)
@@ -1165,6 +1166,7 @@ func _build_ground_details() -> void:
 			frame.filter_clip=true
 			ground_foliage.append(frame)
 	var flower_material:=StandardMaterial3D.new()
+	flower_material.resource_name="foliage_nonwalkable"
 	flower_material.albedo_color=Color("bc9c7e")
 	flower_material.roughness=1
 	var clusters: Array[Vector2]=[]
@@ -1195,7 +1197,7 @@ func _build_ground_details() -> void:
 				plant.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 				_geometry.add_child(plant)
 			for litter in range(3):
-				var leaf_offset:=Vector3(litter*7-7,tuft%3*3-3,.4)
+				var leaf_offset:=Vector3(litter*7-7,tuft%3*3-3,-1.2)
 				_box("LeafLitter",at+leaf_offset,Vector3(4+tuft%3,2,0.8),_materials.get_material("leaves"))
 			if area=="hub":
 				var flower:=at+Vector3(7,0,9+tuft)
@@ -1259,11 +1261,12 @@ func _batch_geometry(parent: Node3D,skip_plots: bool) -> int:
 		var material:=mesh.material_override
 		if material==null: continue
 		var format_key:=str((mesh.mesh as ArrayMesh).surface_get_format(0)) if mesh.mesh is ArrayMesh else mesh.mesh.get_class()
-		var key:=str(material.get_instance_id())+":"+format_key
+		var foot_support:bool=bool(mesh.get_meta("foot_support",false))
+		var key:=str(material.get_instance_id())+":"+format_key+":"+str(foot_support)
 		if not batches.has(key):
 			var tool:=SurfaceTool.new()
 			tool.begin(Mesh.PRIMITIVE_TRIANGLES)
-			batches[key]={"tool":tool,"material":material}
+			batches[key]={"tool":tool,"material":material,"foot_support":foot_support}
 		var tool: SurfaceTool=batches[key].tool
 		var transform_to_geometry: Transform3D=parent.global_transform.affine_inverse()*mesh.global_transform
 		for surface in range(mesh.mesh.get_surface_count()): tool.append_from(mesh.mesh,surface,transform_to_geometry)
@@ -1274,6 +1277,7 @@ func _batch_geometry(parent: Node3D,skip_plots: bool) -> int:
 		combined.name="StaticMaterialBatch_"+str(key)
 		combined.mesh=tool.commit()
 		combined.material_override=batches[key].material
+		combined.set_meta("foot_support",batches[key].foot_support)
 		parent.add_child(combined)
 	for mesh in originals:
 		mesh.get_parent().remove_child(mesh)
@@ -1359,11 +1363,11 @@ func _build_bridge(surface: Dictionary) -> void:
 		var plank:=PackedVector2Array([start-side*width*.5+gap,end-side*width*.5-gap,end+side*width*.5-gap,start+side*width*.5+gap])
 		for piece in Geometry2D.intersect_polygons(plank,polygon):
 			var top:=PackedVector3Array()
-			for point in piece: top.append(map_point(point,height)+Vector3(0,0,.75))
-			_mesh("BridgePlank",top,Geometry2D.triangulate_polygon(piece),board)
+			for point in piece: top.append(map_point(point,height)+Vector3(0,0,.15))
+			_mesh("BridgePlank",top,Geometry2D.triangulate_polygon(piece),board,null,PackedColorArray(),true)
 			for edge in range(piece.size()):
-				var p:=map_point(piece[edge],height)+Vector3(0,0,.75)
-				var q:=map_point(piece[(edge+1)%piece.size()],height)+Vector3(0,0,.75)
+				var p:=map_point(piece[edge],height)+Vector3(0,0,.15)
+				var q:=map_point(piece[(edge+1)%piece.size()],height)+Vector3(0,0,.15)
 				_face("BridgePlankEdge",[p,q,q-Vector3(0,0,18),p-Vector3(0,0,18)],wood)
 			_bridges[id].planks=int(_bridges[id].planks)+1
 	for sign_value in [-1.0,1.0]:

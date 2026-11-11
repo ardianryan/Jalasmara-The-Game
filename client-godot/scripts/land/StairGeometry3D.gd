@@ -60,7 +60,7 @@ static func build(renderer: Node,stair: Dictionary) -> Dictionary:
 		var left_end:=_boundary(renderer,end-side,top,top)
 		var right_end:=_boundary(renderer,end+side,top,top)
 		var vertices: Array[Vector3]=[left_start,right_start,right_end,left_end]
-		renderer._face("Tread",vertices,material)
+		renderer._face("Tread",vertices,material,true)
 		var serialized: Array=[]
 		for point in vertices: serialized.append(_xyz(point))
 		treads.append({"index":index,"height":top,"vertices":serialized})

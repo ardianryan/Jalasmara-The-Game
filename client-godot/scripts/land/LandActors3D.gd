@@ -18,6 +18,7 @@ var _activities: Node3D
 var _body_rigs: Dictionary={}
 var _wet_effects: MultiMeshInstance3D
 var _lighting_frame: Dictionary={}
+var _nala_lower:Node3D
 
 func configure(owner_renderer: Node, scene: Node2D, player: Node2D) -> void:
 	renderer=owner_renderer
@@ -160,7 +161,21 @@ func update_actors(delta: float) -> void:
 			var lift:=clampf(float(traversal.get("bodyLift",0)),0,1.6)
 			var nala := _sprite("Nala",_frame(visual.texture,rect),actor.position,cell*visual.scale.abs(),-visual.position.y,visual.flip_h,pivot.y if pivot!=Vector2.ZERO else -1.0,lift)
 			var gear: Dictionary=visual.get_equipment_state() if visual.has_method("get_equipment_state") else {}
+			var lower_pose:Dictionary={}
+			if bool(actor.get_meta("nala_lower_body_pilot",false)) and not ("in_water" in actor and bool(actor.get("in_water"))):
+				if not is_instance_valid(_nala_lower):
+					_nala_lower=preload("res://scripts/NalaLowerBody3D.gd").new()
+					add_child(_nala_lower)
+					_nala_lower.configure(renderer,actor)
+				lower_pose=_nala_lower.update_pose(nala,visual,delta)
+				counts["nalaLowerBody"]=lower_pose
+			elif is_instance_valid(_nala_lower): _nala_lower.visible=false
+			if bool(lower_pose.get("enabled",false)):
+				nala.visible=true
+				nala.position+=Vector3(lower_pose.attachmentOffset)
+				gear["facingDirection"]=str(lower_pose.direction)
 			_update_equipment(nala,gear,false,visual.flip_h)
+			if bool(lower_pose.get("enabled",false)): nala.visible=false
 			counts.player=1
 	elif "sheet" in actor:
 		var sheet: Texture2D=actor.get("sheet")
@@ -183,12 +198,15 @@ func update_actors(delta: float) -> void:
 	for npc in _npcs:
 		if not is_instance_valid(npc): continue
 		var key: String=str(npc.actor_name)
+		var native_resident:=_native_resident(npc)
 		var sheet: Texture2D
 		var frame: Texture2D
 		if bool(npc.crate):
 			frame=preload("res://scripts/ItemIcons.gd").texture("cache")
 		elif "resident_id" in npc and preload("res://scripts/VillagePortraits.gd").for_resident(str(npc.resident_id))!=null:
 			frame=preload("res://scripts/VillagePortraits.gd").for_resident(str(npc.resident_id))
+		elif native_resident:
+			frame=preload("res://scripts/ItemIcons.gd").texture("cache")
 		else:
 			sheet=preload("res://resources/art/npc-atlas.png")
 			var grid:=Vector2i(2,2)
@@ -208,14 +226,15 @@ func update_actors(delta: float) -> void:
 				logical_facing={"east":Vector2.RIGHT,"west":Vector2.LEFT,"north":Vector2.UP,"south":Vector2.DOWN}.get(str(npc.body_animation_state().direction),logical_facing)
 			var view_facing: Vector2=renderer.visual_motion(logical_facing,renderer.ground_gradient(npc.position).dot(logical_facing))
 			flip_npc=view_facing.x<0
-		var npc_sprite:=_sprite("NPC_"+key,frame,npc.position,Vector2(70,70) if bool(npc.crate) else Vector2(100,100),30 if bool(npc.crate) else 36,flip_npc)
+		var npc_size:=Vector2(70,70) if bool(npc.crate) else Vector2(100,100)*float(npc.body_scale) if native_resident else Vector2(100,100)
+		var npc_sprite:=_sprite("NPC_"+key,frame,npc.position,npc_size,30 if bool(npc.crate) else 36,flip_npc)
 		if "custom_tint" in npc: npc_sprite.modulate*=npc.get("custom_tint")
 		var rig: Node3D=_body_rig(npc)
 		if rig!=null:
 			rig.update_pose(npc_sprite.modulate)
 			npc_sprite.visible=false
 			body_clips[key]=rig.pose_snapshot()
-		if rig==null or rig.get_script()!=preload("res://scripts/ResidentArtRig3D.gd"):
+		if not native_resident and (rig==null or rig.get_script()!=preload("res://scripts/ResidentArtRig3D.gd")):
 			_activities.update_actor(npc,npc_sprite)
 		if npc.has_method("activity_state") and str(npc.activity_kind)!="idle": resident_states[key]=npc.activity_state()
 		counts.npcs=int(counts.npcs)+1
@@ -262,6 +281,9 @@ func _update_equipment(sprite: Sprite3D,gear: Dictionary,in_water: bool,flip: bo
 		add_child(_equipment)
 	_equipment.update_attachment(sprite,gear,in_water,flip)
 
+func _native_resident(person:Node2D) -> bool:
+	return "visual_profile" in person and str(person.visual_profile.get("kind","")) in ["child","director"]
+
 func _body_rig(actor: Node2D) -> Node3D:
 	if not actor.has_method("body_animation_state"): return null
 	var id:=actor.get_instance_id()
@@ -269,6 +291,8 @@ func _body_rig(actor: Node2D) -> Node3D:
 	var rig:Node3D
 	if "resident_id" in actor and preload("res://scripts/VillagePortraits.gd").for_resident(str(actor.resident_id))!=null:
 		rig=preload("res://scripts/ResidentArtRig3D.gd").new()
+	elif _native_resident(actor):
+		rig=preload("res://scripts/VillageResidentBody3D.gd").new()
 	elif preload("res://scripts/NpcBodyRig3D.gd").IDS.has(str(actor.actor_name)):
 		rig=preload("res://scripts/NpcBodyRig3D.gd").new()
 	else: return null

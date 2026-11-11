@@ -1,0 +1,11 @@
+# Gait integration and staging activation, 11 November 2026
+
+The owner instructed us to treat the remaining visual/device gate as accepted and merge the repaired gait candidate into `main`, then activate staging. This decision supersedes the earlier hold in `gait-repair-2026-11-11.md`; it does not create S23/Windows or dense moving-image evidence.
+
+The integration worktree `work/gait-main-integration` merged `work/gemini-day01-gait` at `333d846` with the newer `main` renderer. Conflicts preserved current `WorldFoley` contact handling, resident portrait rigs and existing audit/test reports. `LandActors3D` retains the new lower-body rig and existing resident art path. Hub and forest opt in to the physical pilot only for `male_nusantara` daily/explorer; diving and other appearances continue on their existing path. The merge includes foot-support metadata through static geometry batches, stair treads and bridge planks. No external art or runtime engine was added.
+
+Validation before merge: `npm run typecheck` passed; `npm run check:world` passed after a GDScript typed-bool correction (the first run stopped at the quiz layout script); `npm test` passed 121/121 with isolated local MongoDB and Redis. The first API run failed because its fixture services were absent, then was stopped and rerun against the disposable fixtures. Godot 4.7.2 editor import completed; its first import reported a font-cache warning which the later script run resolved. The VPS backup `/var/backups/jalasmara/jalasmara-20261111T052204Z.archive.gz` passed checksum and isolated restore (42 documents, zero failures; restore-check DB removed). Logs: `/tmp/jala-gait-merge-world3.log`, `/tmp/jala-gait-merge-npm-test2.log`, `/tmp/jala-gait-merge-typecheck.log` on the operator machine.
+
+Release source commit, PCK, manifest, image ID, CI run, public smoke, rollback identity and cleanup will be recorded below after deployment. This report initially records the integration gate; a source merge alone does not mean staging changed.
+
+Remaining acceptance: dense reviewed native movement across all requested directions and outfits; upper-arm/gear opposition to physical contacts; real Samsung S23 and Windows performance. The owner offered device access later. Keep these as follow-up checks, not as claims made by this release.

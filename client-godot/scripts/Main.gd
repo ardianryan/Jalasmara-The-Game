@@ -425,10 +425,22 @@ func _story_intro() -> void:
 		await GameState.refresh()
 		_update_hud()
 	)
+func _limit_gait_velocity(at: Vector2, speed: Vector2, delta: float) -> Vector2:
+	return preload("res://scripts/NalaPhysicalMotion.gd").limit_velocity(land_renderer,at,speed,delta)
+
+func _limit_gait_position(from: Vector2, to: Vector2, delta: float) -> Vector2:
+	return preload("res://scripts/NalaPhysicalMotion.gd").limit_position(land_renderer,from,to,delta)
+
 func _process(delta: float) -> void:
 	EnvironmentState.clock_paused = modal_open or ViewportLayout.host_paused or GameState.dive.has("challenge")
 	if not nala:
 		return
+	var physical_gait: bool = is_instance_valid(land_renderer) and land_renderer.active and GameState.dive.is_empty() and nala.swim_sprite.appearance=="male_nusantara" and nala.outfit in ["daily","explorer"]
+	if physical_gait!=bool(nala.get_meta("nala_physical_walk_pilot",false)):
+		nala.set_meta("nala_lower_body_pilot",physical_gait)
+		nala.set_meta("nala_physical_walk_pilot",physical_gait)
+		nala.land_velocity_transform=Callable(self,"_limit_gait_velocity") if physical_gait else Callable()
+		nala.land_position_transform=Callable(self,"_limit_gait_position") if physical_gait else Callable()
 	terrain.camera_point = nala.position
 	if not GameState.player.is_empty():
 		EnvironmentState.update_story(int(GameState.player.progress.day),str(GameState.player.progress.stage))
