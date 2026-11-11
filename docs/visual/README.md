@@ -1,10 +1,16 @@
 # Jalasmara visual evidence
 
-## Staging `main` 8a4b4b0: dock recovery for the owner's character variant
+## Staging `main` 0743339: balanced Nala visible after reset
+
+![The complete male_nusantara Nala sprite standing at the dock recovery point after the real Menu reset.](staging-nala-balanced-reset-20261111.png)
+
+Original Jalasmara Chromium/SwiftShader screenshot after real login and Menu → Reset posisi pemain. The temporary player used `male_nusantara`; the Godot diagnostics confirmed **balanced** quality and saved `(1000,1200)`. Runtime source `63cb3dad965d22e2ef2bf788c751bdf0ff1e80c5`, release source `0743339404d4121c5bee45ecc13270d942c59de8`, image `sha256:88c7fb6e7b1a9670f721e7525504393175e7ba7b3033d43d6efa895b611da9df`, PCK SHA-256 `b3ff1a4f165f6ec12bd133d1222400f6f9e358ca7a4bd853663f07b699ab77d3`. Copied byte-identically from `artifacts/browser/staging-plan06-ee521052-5360-4c5c-b757-e7f221d549c0/01b-male-nusantara-balanced-after-reset.png`: 236,156 bytes, SHA-256 `278f88b47ad0fef38190afa7bd13df6da511e4f4d28b8d4526e9d65b969aaf12`. A separate full physical route passed 7/7; see the [release report](../reviews/nala-dock-occlusion-2026-11-11.md). This is project documentation, not a game/WorldKit asset or physical-device proof.
+
+## Historical staging `main` 8a4b4b0: male_default dock recovery
 
 ![Nala's full body visible at the corrected recovery point at 21:37 with 110 coins.](staging-reset-dock-visible-20261111.png)
 
-Original Jalasmara Chromium/SwiftShader screenshot after the real Menu → Reset posisi pemain interaction on staging source `8a4b4b033108ed997c19f419ab8959d81d51384d`, image `sha256:9c7d938b61e604489110a94ecb44c07f0d64cff4c235ee71e6614be1396fd904`, PCK SHA-256 `b740a032ca3f8fd0cbe49de8512e681f186f515dfc510557307c01c106e55a0b`. Copied byte-identically from `artifacts/browser/staging-plan06-d40e71bd-57cc-4ad9-a226-b6bbf2fd0d85/01b-reset-male-default-night-dock.png`: 181,990 bytes, SHA-256 `6b593b46f6070a79ce115d2bbdd1500fe7a368fb070e10d2137b0f4761fa70dd`. The [release follow-up](../reviews/reset-position-dock-followup-2026-11-11.md) records seven passing public checks and zero fixture residue. This original-game screenshot is documentation, not a distributable game/WorldKit asset or physical-device performance evidence.
+Original Jalasmara Chromium/SwiftShader screenshot after the real Menu → Reset posisi pemain interaction on staging source `8a4b4b033108ed997c19f419ab8959d81d51384d`, image `sha256:9c7d938b61e604489110a94ecb44c07f0d64cff4c235ee71e6614be1396fd904`, PCK SHA-256 `b740a032ca3f8fd0cbe49de8512e681f186f515dfc510557307c01c106e55a0b`. Copied byte-identically from `artifacts/browser/staging-plan06-d40e71bd-57cc-4ad9-a226-b6bbf2fd0d85/01b-reset-male-default-night-dock.png`: 181,990 bytes, SHA-256 `6b593b46f6070a79ce115d2bbdd1500fe7a368fb070e10d2137b0f4761fa70dd`. The [release follow-up](../reviews/reset-position-dock-followup-2026-11-11.md) records seven passing public checks and zero fixture residue, but the owner's subsequent screenshot showed the issue remained. This original-game screenshot is documentation, not a distributable game/WorldKit asset or physical-device performance evidence.
 
 ## Staging `main` 627116e: position reset
 
