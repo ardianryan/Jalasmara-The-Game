@@ -53,6 +53,7 @@ const scripts = [
   "scripts/tests/actor-lighting-frame.gd",
   "scripts/tests/performance-capture.gd",
   "scripts/tests/player-locomotion.gd",
+  "scripts/tests/nala-quality-gate.gd",
   "scripts/tests/locomotion-collision-foley.gd",
   "scripts/tests/quiz-layout.gd",
   "scripts/tests/legacy-forest-ui.gd",

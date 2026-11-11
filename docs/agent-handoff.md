@@ -2,7 +2,7 @@
 
 ## Owner-authorized gait integration, 11 November 2026
 
-The owner explicitly waived the remaining visual/device acceptance gate and requested merge to `main` plus staging activation. [Integration report](reviews/gait-main-staging-2026-11-11.md) records the merge, tests and release identity. The older prohibitions below describe prior candidate status and are superseded by this decision. The physical lower-body pilot is enabled in hub/forest only for `male_nusantara` daily/explorer; other appearances and diving retain their existing render path. Natural upper-arm motion and S23/Windows GPU performance remain unmeasured. Do not describe the staging release as device-verified.
+The owner explicitly waived the remaining visual/device acceptance gate and requested merge to `main` plus staging activation. [Integration report](reviews/gait-main-staging-2026-11-11.md) records the merge, tests and release identity. The older prohibitions below describe prior candidate status and are superseded by this decision. The first staging image `ee0c0f2` was rolled back after its full public route exceeded eight minutes with physical gait active on low quality; startup and PCK had passed. A follow-up quality/FPS gate is being tested before re-release. The lower-body pilot applies only to `male_nusantara` daily/explorer on capable balanced renderers; low quality, other appearances and diving retain their existing render path. Natural upper-arm motion and S23/Windows GPU performance remain unmeasured. Do not describe the release as device-verified.
 
 ## Repaired physical gait candidate, 11 November 2026
 

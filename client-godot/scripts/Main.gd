@@ -45,6 +45,7 @@ var surface_actors: Array[Node2D] = []
 var hybrid: Node2D
 var world_foley: Node
 var previous_outfit := "daily"
+var _gait_retry_after_ms := 0
 var homestead_ui: CanvasLayer
 var field_panel: Control
 func _ready() -> void:
@@ -431,11 +432,21 @@ func _limit_gait_velocity(at: Vector2, speed: Vector2, delta: float) -> Vector2:
 func _limit_gait_position(from: Vector2, to: Vector2, delta: float) -> Vector2:
 	return preload("res://scripts/NalaPhysicalMotion.gd").limit_position(land_renderer,from,to,delta)
 
+func _gait_capacity(current: bool) -> bool:
+	if str(RenderQuality.get_profile().get("effective","low"))!="balanced": return false
+	var fps:=Engine.get_frames_per_second()
+	if current:
+		if fps<38:
+			_gait_retry_after_ms=Time.get_ticks_msec()+30000
+			return false
+		return true
+	return Time.get_ticks_msec()>=_gait_retry_after_ms and fps>=55
+
 func _process(delta: float) -> void:
 	EnvironmentState.clock_paused = modal_open or ViewportLayout.host_paused or GameState.dive.has("challenge")
 	if not nala:
 		return
-	var physical_gait: bool = is_instance_valid(land_renderer) and land_renderer.active and GameState.dive.is_empty() and nala.swim_sprite.appearance=="male_nusantara" and nala.outfit in ["daily","explorer"]
+	var physical_gait: bool = is_instance_valid(land_renderer) and land_renderer.active and GameState.dive.is_empty() and nala.swim_sprite.appearance=="male_nusantara" and nala.outfit in ["daily","explorer"] and _gait_capacity(bool(nala.get_meta("nala_physical_walk_pilot",false)))
 	if physical_gait!=bool(nala.get_meta("nala_physical_walk_pilot",false)):
 		nala.set_meta("nala_lower_body_pilot",physical_gait)
 		nala.set_meta("nala_physical_walk_pilot",physical_gait)
