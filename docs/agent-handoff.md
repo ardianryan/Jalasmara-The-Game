@@ -1,5 +1,9 @@
 # Handoff aktif agent
 
+## Branch consolidation, 11 November 2026
+
+[The branch integration report](reviews/branch-integration-2026-11-11.md) records four bounded cherry-picks into local `main`, 12 retired local branches/worktrees, 18/18 focused loader tests, and eight held branches awaiting separate art/gameplay acceptance. No runtime source or staging build changed in this package. Its remote sync and remote branch retirement status must be read from the report's subsequent checkpoint; the active release remains the compressed-audio staging build below. Prior references to 20 held branches are historical.
+
 ## Active staging: compressed audio release, 11 November 2026
 
 The latest validated `main` source `f600b62bdbcfdd3cb870ba47679e8fc53d611cee` is identical on Gitea, GitHub, and GitLab and is active on staging. Gitea run 19 attempt 2 succeeded; its first attempt and run 18 had separate 60-second Godot runner timeouts, both preserved in the [release report](reviews/main-staging-audio-compression-2026-11-11.md). The active image is `sha256:6679c096d317912a6867f26927f101303c1a0c7b8ed6d86e502e674da6685330`, PCK `cdbfac713fd72506e8458a9cd4fdfc0983f48f2cd805acdd0c9d61fc4f52106a` (69,648,468 bytes), and the single rollback image is `sha256:10bcbab5484c0943a970f8d83819609138c016b5445c57d704414f7358d44a79`. Verified backup: `/var/backups/jalasmara/jalasmara-20261111T002957Z.archive.gz`, 42-document restore check passed. The public host and full physical-route browser smokes each passed 6/6 with zero fixture residue; post-cleanup health and hashes remained correct. VPS cleanup recovered 1,232,261,120 bytes between measurements. Twenty `work/*` branches retain unique patches, including five dirty linked worktrees, so none was merged/deleted. Next: real-build audio listening and rights check, owner-assisted S23/Windows performance, then individual review of the held branches. The older staging and local-candidate sections below are historical.
