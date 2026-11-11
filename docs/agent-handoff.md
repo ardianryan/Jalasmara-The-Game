@@ -1,5 +1,9 @@
 # Handoff aktif agent
 
+## Physical gait replay checkpoint, 11 November 2026
+
+[Latest gait review](reviews/gait-replay-followup-2026-11-11.md): isolated candidate commit `52f88fe` replays accepted physics positions and prevents duplicate idle settlement in one render frame. Three fresh full16 terrain runs passed (817/843/831 checks), and a native Metal dock subset passed two cases/64 checks with five sparse frames. The physical flat32 fixture still rejects `daily/false/1 walk` at fixed-leg drop 8.149 px >8, and local stride/pelvis experiments were reverted after new failures. **Do not merge, enable the pilot, push or deploy this candidate yet.** Next: geometry-driven turn/landing duration satisfying both legs and original shoe clearance, then repeated full32/full16 plus dense native moving review. `main` and staging remain unchanged by the gait source work.
+
 ## Candidate follow-up, 11 November 2026
 
 [Follow-up review](reviews/candidate-followup-2026-11-11.md): one source-only central-ascent ankle diagnosis from resident art was promoted to `main` as `9e75b27`; three Gemini day01 historical reports were copied in with current-status notes. The gait branch `ab5574b` failed three fresh headless controller attempts despite exact source/world hashes matching its historical full16 PASS artifact: western inner reach 0.504<1.221, western outer requested drop20.123>8, and central outer drop10.699>8. The cause is not yet proven; no runtime gait or old village anchor was merged. Four candidate branches remain intact. The next gate is repeatable full16 with variable frame timing, then native moving review; physical pilot stays OFF. Staging remains the prior compressed-audio release.
