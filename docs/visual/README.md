@@ -1,5 +1,13 @@
 # Jalasmara visual evidence
 
+## Staging `main` 7c7bf22: Nala visible when the host starts unfocused
+
+| Before | After |
+| --- | --- |
+| ![Only Nala's head appears in the dock under the old PCK.](staging-nala-unfocused-head-before-20261111.png) | ![Nala stands in full at the same dock on the corrected PCK.](staging-nala-unfocused-full-after-20261111.png) |
+
+These original Jalasmara Chromium captures deliberately forced `document.hasFocus()` false before the host loaded. The old build reproduced the owner's embedded-head report, including after the Menu reset; the new build renders the full `female_nusantara` body while paused and after reset. Old PCK `b3ff1a4f165f6ec12bd133d1222400f6f9e358ca7a4bd853663f07b699ab77d3`/69,774,364 bytes; corrected source `7c7bf22bb408d2e8598923a1d25b5ae46e53f886`, PCK `6afa6ef00905c6491e8e5b9dbee91977cd8566525ebd2afe0c42be7225a1f4d2`/69,774,348 bytes, image `sha256:1d7526beea022e539c341dc76a756826c34aff79e6603d1bd029ebacfb1a9c90`. PNGs are copied byte-for-byte from `artifacts/browser/staging-plan06-fc25cc40-496b-4e30-8e4e-ec5660a14ac7/01-public-ready-hub.png` (229,535 bytes, SHA-256 `0afff9170edbd0d924eddaae18af678571de4b85f7d0be35c46ca197cd3dbbe5`) and `artifacts/browser/staging-plan06-b2ea3aa0-2919-4b9f-bc29-72ac6a57a84c/01-public-ready-hub.png` (230,580 bytes, SHA-256 `0cd39356b3c00ea6a509cb90df7facd48011f91351acfa787b1cafe1c7d8ec95`). Both used disposable accounts with zero residual players, receipts, shifts or keys. [Release and root-cause report](../reviews/nala-cold-pause-atlas-2026-11-11.md). These screenshots document software-browser behavior; they are neither game assets nor proof of physical S23/Windows performance or owner-account acceptance.
+
 ## Staging `main` 0743339: balanced Nala visible after reset
 
 ![The complete male_nusantara Nala sprite standing at the dock recovery point after the real Menu reset.](staging-nala-balanced-reset-20261111.png)
