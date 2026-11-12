@@ -136,7 +136,9 @@ func _ready() -> void:
 		status.text = str(get_tree().get_meta("surface_change_notice"))
 		hud.message(status.text)
 		get_tree().remove_meta("surface_change_notice")
-	if not GameState.player.has("appearance") and GameState.dive.is_empty() and GameState.shift.is_empty():
+	if not GameState.shift.is_empty() and GameState.dive.is_empty():
+		_kedai_customer()
+	elif not GameState.player.has("appearance") and GameState.dive.is_empty():
 		_show_character(true)
 	elif not GameState.player.progress.get("tutorial",false):
 		_story_intro()
@@ -378,6 +380,9 @@ func _layout_quiz_answers(answers: GridContainer,width: float) -> void:
 		var measured:=BODY_FONT.get_multiline_string_size(option_label.text,HORIZONTAL_ALIGNMENT_LEFT,maxf(80,column_width-padding.x*2),_ui_font())
 		answer.custom_minimum_size=Vector2(0,maxf(_ui_target(),measured.y+padding.y*2))
 func _close() -> void:
+	if not GameState.shift.is_empty() and GameState.dive.is_empty() and not _can_resume_kedai("Mbah Wira"):
+		_kedai_customer()
+		return
 	if is_instance_valid(field_panel):
 		field_panel.queue_free()
 		field_panel = null
@@ -1213,6 +1218,9 @@ func _open_kedai() -> void:
 func _kedai_customer() -> void:
 	var box := _open("Meja Racik · Kedai Waras")
 	modal.set_meta("service_tray",true)
+	var stranded := not _can_resume_kedai("Mbah Wira")
+	if stranded:
+		_label(box,"Giliran kedai masih aktif. Tutup sementara untuk kembali berjalan; pesanan yang sudah selesai tetap tersimpan.",14)
 	var current: Dictionary = {}
 	var pantry_first:Button
 	for customer in GameState.shift.get("customers",[]):
@@ -1309,7 +1317,8 @@ func _kedai_customer() -> void:
 		if not any:
 			_label(box,"Tas kosong. Tutup kedai sementara untuk kembali menyelam.")
 		_button(box,"Tutup sementara · cari stok",func(): await _close_shift(true))
-	_button(box,"Tutup panel · tetap di kedai",_close)
+	if not stranded:
+		_button(box,"Tutup panel · tetap di kedai",_close)
 	_pin_service_context()
 	if is_instance_valid(pantry_first) and not pantry_first.disabled:
 		pantry_first.grab_focus.call_deferred()

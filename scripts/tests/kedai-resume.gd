@@ -61,6 +61,29 @@ func run() -> void:
 	scene.nala.frozen=false
 	scene._restore_player_movement()
 	assert(scene.nala.frozen,"Restoring controls after loading/refresh must preserve the active shift lock")
+	var dock:=Vector2(1000,1200)
+	state.surface.x=dock.x
+	state.surface.y=dock.y
+	scene.nala.position=dock
+	scene.nala.land_path.reset(dock)
+	assert(not scene._can_resume_kedai("Mbah Wira"))
+	scene._kedai_customer()
+	assert(scene.modal.get_meta("service_tray",false),"A stranded active shift must expose its service controls")
+	var temporary_close:=false
+	var dismiss_button:=false
+	for button in scene.modal.find_children("*","Button",true,false):
+		if button.text.begins_with("Tutup sementara"): temporary_close=true
+		if button.text.begins_with("Tutup panel"): dismiss_button=true
+	assert(temporary_close and not dismiss_button,"A stranded shift must offer recovery and hide the dead-end dismiss action")
+	scene._close()
+	assert(scene.modal.get_meta("service_tray",false) and scene.nala.frozen,"Escape cannot strand a locked player without recovery controls")
+	scene._close()
+	assert(scene.modal.get_meta("service_tray",false),"Repeated dismissals must retain recovery controls")
+	state.surface.x=wira.x
+	state.surface.y=wira.y
+	scene.nala.position=wira
+	scene.nala.land_path.reset(wira)
+	scene._close()
 	var active_shift:Dictionary=state.shift
 	state.shift={}
 	scene.set_interaction_modal(true)
@@ -126,5 +149,5 @@ func run() -> void:
 	hud.free()
 	scene.free()
 	api.set_script(original)
-	print("KEDAI RESUME PASS: actual Main resumes only an acknowledged stationary Wira shift through authenticated start; active-shift close/restore lock, actual Player input suppression and empty-shift unlock; server denial, nine exclusion guards and travel rejection preserved; API capture only, no transaction")
+	print("KEDAI RESUME PASS: active shift recovery controls persist at a stranded dock; stationary Wira resume, movement lock and empty-shift unlock; server denial, nine exclusion guards and travel rejection preserved; API capture only, no transaction")
 	quit()

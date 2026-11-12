@@ -1181,6 +1181,36 @@ test("reset posisi mengembalikan pemain ke titik aman tanpa mengubah progres", a
   assert.equal((await anonymous.request("/adventure/reset-position", {})).status, 401);
 });
 
+test("reset posisi saat giliran kedai aktif memulihkan titik Wira tanpa menghapus giliran", async () => {
+  const u = await account(),
+    b = await new Browser().login(u);
+  await s.users.updateOne(
+    { id: u.id },
+    { $set: { "progress.stage": "night" } },
+  );
+  const started = await b.request("/kedai/start", {});
+  assert.equal(started.status, 200, JSON.stringify(started.data));
+  const before = (await b.request("/adventure/state")).data;
+  const shiftId = started.data.shift.id;
+  await fixtureSurface(u, "forest", WORLD.forest.entry);
+  const reset = await b.request("/adventure/reset-position", {});
+  assert.equal(reset.status, 200, JSON.stringify(reset.data));
+  const wira = WORLD.surface_hub.districts.find((d) => d.npc === "Mbah Wira")!;
+  assert.equal(reset.data.surface.area, "hub");
+  assert.deepEqual(
+    { x: reset.data.surface.x, y: reset.data.surface.y },
+    { x: wira.x, y: wira.y },
+  );
+  const after = (await b.request("/adventure/state")).data;
+  assert.equal(after.shift.id, shiftId);
+  assert.equal(after.player.version, before.player.version);
+  assert.equal(after.player.coins, before.player.coins);
+  assert.deepEqual(after.player.progress, before.player.progress);
+  const closed = await b.request("/kedai/close-shift", { shiftId, abandon: true });
+  assert.equal(closed.status, 200, JSON.stringify(closed.data));
+  assert.equal((await b.request("/adventure/state")).data.shift, null);
+});
+
 test("penemuan hutan memerlukan kedekatan dan hadiah hanya tersimpan sekali", async () => {
   const u = await account(),
     b = await new Browser().login(u),

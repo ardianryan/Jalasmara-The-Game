@@ -300,10 +300,18 @@ export async function adventureRoutes(
             return fail("Selesaikan penyelaman terlebih dahulu.", 409, "ACTIVE_DIVE");
         }
         const previous = await surfacePosition(p);
-        const area = previous.area;
+        const activeShift = await s.db.collection("shifts").findOne({
+          userId: p.id,
+          active: true,
+          playerVersion: p.version,
+        });
+        const area: SurfaceArea = activeShift ? "hub" : previous.area;
         // This dock point has been verified in the rendered scene. The generic
         // spawn sits beside the crates and can leave smaller player sprites hidden.
-        const anchor = area === "forest" ? WORLD.forest.entry : { x: 1000, y: 1200 };
+        const wira = WORLD.surface_hub.districts.find((district) => district.npc === "Mbah Wira")!;
+        const anchor = activeShift
+          ? { x: wira.x, y: wira.y }
+          : area === "forest" ? WORLD.forest.entry : { x: 1000, y: 1200 };
         const safe = nearestSafeLandPoint(WORLD.landMaps[area], anchor);
         const surface: SurfacePosition = {
           area,
