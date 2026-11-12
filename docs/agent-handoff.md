@@ -2,7 +2,7 @@
 
 ## GitHub Actions is the CI home, 12 November 2026
 
-The owner restored GitHub Actions and directed that all CI and its reports live there; Gitea/GitLab are code mirrors without pipelines. [The migration report](reviews/github-actions-migration-2026-11-12.md) and [active runbook](operations-github.md) record the workflow, settings and verification. This is a CI/delivery-candidate change only: staging remains image `55da5dd`/PCK `0725713d` until separately released. The owner's two untracked Cloudflare audit notes are left for their own review. Next: finish the GitHub run, confirm its artifacts and all three remote heads, then return to the physical-device and HUD acceptance gates.
+The owner restored GitHub Actions and directed that all CI and its reports live there; Gitea/GitLab are code mirrors without pipelines. [The migration report](reviews/github-actions-migration-2026-11-12.md) and [active runbook](operations-github.md) record the workflow, settings and verification. The first GitHub run failed on checkout ownership; the fix passed [run 43177417189](https://github.com/ardianryan/Jalasmara-The-Game/actions/runs/43177417189) for `237de95`, including both reports and delivery artifacts. All three remote heads matched; GitHub Actions is enabled, Gitea Actions and GitLab CI are disabled. This is a CI/delivery-candidate change only: staging remains image `55da5dd`/PCK `0725713d` until separately released. The owner's two untracked Cloudflare audit notes are left for their own review. Next: confirm the final documentation-commit CI run, then return to physical-device and HUD acceptance gates.
 
 ## Persiapan security audit Cloudflare, 12 November 2026
 
