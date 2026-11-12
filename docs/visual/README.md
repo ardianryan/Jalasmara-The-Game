@@ -1,5 +1,13 @@
 # Jalasmara visual evidence
 
+## Village motion staging release, 12 November 2026
+
+| Public dock, 844×390 | Public forest, 667×375 |
+| --- | --- |
+| ![Nala and a resident stand fully visible on the Bandar Hujung dock in the staging browser.](staging-village-boss-2026-11-12/hub-844x390.png) | ![Nala reaches the forest canopy through the physical route in a touch-emulated staging browser.](staging-village-boss-2026-11-12/forest-667x375.png) |
+
+Original Jalasmara public Chromium/SwiftShader captures from the 6/6 smoke on source `75b562d92fab3285241c5d79591d6b2b2a6c2911`, image `sha256:463019d59d1f101ed3d7f1e4b70c3ffa19072b31352284c4a7138051da8f9f82`, CI PCK `6d43cad78760f1d33661953726e6c6b38b4546a0e8c26de1d897db525940c216`. Copied byte-identically from `artifacts/browser/staging-plan06-d7329640-aa54-4cb0-bc58-44d1cbd207ae/01-public-ready-hub.png` and `02-public-physical-canopy-667x375.png`; PNG SHA-256 respectively `2a9a588ce7de4c3a4c511a4018de5e216155b9c6329487a32ce1ef9396b47837` and `f455dbc7172ac8581c68cb74b345ba33dc9669e019653d662ccb8dde2ffdec63`. See the [release report](../reviews/village-boss-motion-staging-2026-11-12.md). These are project documentation, not game/WorldKit assets under the code license or physical-device performance evidence.
+
 ## Village steps and Gajah Mina candidate, 12 November 2026
 
 | Seven original-art step strips | Gajah Mina phase one | Gajah Mina phase two |
