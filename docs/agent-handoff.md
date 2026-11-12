@@ -1,5 +1,9 @@
 # Handoff aktif agent
 
+## Next: visible village steps and land pixel density, 12 November 2026
+
+The owner clarified that villagers **do not visibly step**: portrait-only NPCs look like still images sliding, and a simple gait is acceptable. [The source/tool audit](reviews/village-gait-pixel-audit-2026-11-12.md) identifies the static full-body atlas fallback, a broad 165-unit proximity travel stop, and the 480×270 3D land budget at 16:9 (about 529×244 on a wide 1170×540 logical view). Xprite Pixelate 0.1.2 passed its fixture but gave no reliable full-atlas grid and very low confidence on one portrait cell; no asset was changed. Next implement and visually verify a small alternating step on portrait-only residents, narrow travel pause to dialogue, and compare an opt-in sharper render profile against current mobile performance. This is an audit/plan checkpoint, not a released visual fix. Audio acceptance and the active staging image below remain unchanged.
+
 ## Web audio accepted on Windows and Samsung S23, 12 November 2026
 
 The owner listened to the current staging build on both devices and confirmed that music and menu-button SFX are audible and that music remains smooth after 1–2 minutes. This closes the reported silence/stutter regression under those conditions. [The audio report](reviews/web-audio-silent-bus-2026-11-12.md) separates owner listening from CI, browser Web Audio graph evidence and the limits of short-session testing. Active game remains source `acd70c3`, image `044b9ea36587`, CI PCK `38c5aaa95cef`; no new audio code or deploy was needed for acceptance. The later `7387935` commit only documents the graph probe and passed [GitHub Actions 43196090133](https://github.com/ardianryan/Jalasmara-The-Game/actions/runs/43196090133). Next product work should return to the remaining HUD, visual/gameplay and device-performance gates, with audio retested if those changes alter the player or export.
