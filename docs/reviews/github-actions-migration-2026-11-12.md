@@ -10,7 +10,9 @@ The owner restored GitHub Actions capacity and chose GitHub Actions as the sole 
 
 ## Verification and release status
 
-Pending run: record the exact source commit, focused local checks, GitHub Actions URL/conclusion/artifact names, and three remote heads here after the workflow completes. Gitea repository Actions must be confirmed disabled and GitHub repository Actions enabled before pushing. Staging activation is a separate operation and is not part of this migration.
+The first GitHub [run 43177248796](https://github.com/ardianryan/Jalasmara-The-Game/actions/runs/43177248796) failed at source recording before tests: Git rejected the container checkout as dubious ownership. MongoDB itself started. The workflow now marks only `$GITHUB_WORKSPACE` as a safe Git directory before reading its SHA. `verification-reports` uploaded on that failed run; `verified-delivery` correctly did not. Focused local push-helper tests (5/5), TypeScript typecheck, shell syntax and `git diff --check` passed. Python YAML parsing was unavailable locally; Ruby parsed the workflow and job keys. Gitea repository Actions were set to `false`, GitHub repository Actions to `true`; the first commit `aa6e74a` reached all three remotes.
+
+Pending rerun: record the final source commit, GitHub Actions conclusion/artifact names, and three remote heads after the workflow completes. Staging activation is a separate operation and is not part of this migration.
 
 ## Remaining work
 
