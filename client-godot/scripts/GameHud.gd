@@ -140,6 +140,8 @@ func _ready() -> void:
 	_status_panel = _panel(Rect2(320,118,320,45),false)
 	status_label = _label(_status_panel,"",Vector2(10,8),Vector2(300,30),12)
 	status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	status_label.clip_text = false
+	status_label.text_overrun_behavior = TextServer.OVERRUN_NO_TRIMMING
 	_status_panel.hide()
 	_layout()
 	update_state(_state)
@@ -510,16 +512,28 @@ func _layout() -> void:
 	_warning_plate.position=_warning.position-Vector2(6,3)
 	_warning_plate.size=_warning.size+Vector2(12,6)
 	_warning_plate.visible=_warning.visible
+	var minimap_side:=0.0
 	if is_instance_valid(_minimap_shell):
-		var mini_scale:=78*ratio/128 if touch_enabled else ratio
+		var short_landscape:=physical.x>physical.y and physical.y<=480
+		var mini_side:=80*ratio if short_landscape else (78*ratio if touch_enabled else 128*ratio)
+		var mini_scale:=mini_side/128
 		_minimap_shell.scale=Vector2.ONE*mini_scale
 		_minimap_shell.position=Vector2(viewport.x/2-64*mini_scale,bottom-128*mini_scale)
-	_status_panel.position=viewport/2-Vector2(210,60)*unit
-	_status_panel.size=Vector2(420,120)*unit
-	status_label.position=Vector2(10,8)*unit
-	status_label.size=Vector2(400,100)*unit
+		minimap_side=mini_side
+	var status_width:=minf(360*ratio,viewport.x-margin.x*2)
+	var status_font:=maxi(16,ceili(16*ratio))
+	var status_text_width:=status_width-24*ratio
 	status_label.add_theme_font_override("font",preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2"))
-	status_label.add_theme_font_size_override("font_size",body)
+	status_label.add_theme_font_size_override("font_size",status_font)
+	var status_text_height:=status_label.get_theme_font("font").get_multiline_string_size(status_label.text,HORIZONTAL_ALIGNMENT_LEFT,status_text_width,status_font).y
+	var status_height:=maxf(48*ratio,status_text_height+16*ratio)
+	var status_y:=utilities_y+cell+line+10
+	if minimap_side>0: status_y=minf(status_y,bottom-minimap_side-status_height-8)
+	var status_x:=right-status_width if bool(_state.get("diving",false)) else (viewport.x-status_width)/2
+	_status_panel.position=Vector2(status_x,status_y)
+	_status_panel.size=Vector2(status_width,status_height)
+	status_label.position=Vector2(12,8)*ratio
+	status_label.size=Vector2(status_text_width,status_height-16*ratio)
 
 func _layout_portrait_instrument(ratio:float,instrument_scale:float,available_width:float) -> void:
 	var unit:=ratio/instrument_scale
@@ -663,6 +677,7 @@ func message(text: String) -> void:
 	status_label.text = text
 	_status_panel.visible = not text.is_empty()
 	_message_until = Time.get_ticks_msec()/1000.0+4.0
+	_layout()
 
 func _process(delta: float) -> void:
 	if is_instance_valid(_status_panel) and _status_panel.visible and Time.get_ticks_msec()/1000.0>_message_until:
@@ -705,4 +720,9 @@ func debug_layout() -> Dictionary:
 	var center := _dpad.get_global_rect().get_center()
 	layout["joystick"] = {"center":[center.x,center.y],"radius":_dpad.size.x*.32,"direction":[_dpad.direction.x,_dpad.direction.y],"pointer":_dpad.pointer}
 	layout["logicalSize"] = [get_viewport().get_visible_rect().size.x,get_viewport().get_visible_rect().size.y]
+	if is_instance_valid(_minimap_shell):
+		var mini_rect:=_minimap_shell.get_global_rect()
+		layout["minimap"]={"position":[mini_rect.position.x,mini_rect.position.y],"size":[mini_rect.size.x,mini_rect.size.y],"visible":_minimap_shell.visible}
+	var status_rect:=_status_panel.get_global_rect()
+	layout["status"]={"position":[status_rect.position.x,status_rect.position.y],"size":[status_rect.size.x,status_rect.size.y],"visible":_status_panel.visible}
 	return layout

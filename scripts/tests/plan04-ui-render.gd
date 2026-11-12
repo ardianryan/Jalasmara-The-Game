@@ -37,6 +37,8 @@ func run() -> void:
 		hud_state.merge({"area":"Dangkalan Segaran","diving":true,"oxygen":31,"maxOxygen":120,"canNet":true,"depth":24,"action":"Amati Taman Sel"},true)
 		hud.update_state(hud_state)
 		await capture(tag+"-hud-dive")
+		hud.message("Ikan Lentera Alkalin tertangkap · 3 bintang · 2/24 kg")
+		await capture(tag+"-hud-dive-notice")
 		hud.set_modal(true)
 		var layer:=CanvasLayer.new()
 		layer.layer=20
@@ -62,5 +64,5 @@ func run() -> void:
 		layer.free()
 		hud.free()
 		await settle()
-	print("PLAN04 UI RENDER PASS: 15 native component captures over owned reference screenshot; UI fixtures, not live-level performance measurements")
+	print("PLAN04 UI RENDER PASS: 18 native component captures over owned reference screenshot; UI fixtures, not live-level performance measurements")
 	quit()

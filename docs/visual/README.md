@@ -1,5 +1,11 @@
 # Jalasmara visual evidence
 
+## Short-landscape dive HUD candidate, 12 November 2026
+
+![Native 667×375 HUD fixture with a compact minimap, readable oxygen gauge and right-side capture notice.](hud-compact-dive-notice-20261112.png)
+
+Original Jalasmara Godot 4.7.2 native component fixture over an existing project screenshot. [The report](../reviews/hud-short-landscape-2026-11-12.md) records the layout assertions and limits. Candidate PCK `0725713d9985320f7111d6990ad8c5b031a16dce9b10f8514359ef94ad6f461d`/69,775,500 bytes; PNG SHA-256 `e5551e5fe921102498f5b3c36bfeccb7c4719c406fe656bafc96b0006e76d429`. This is a local UI fixture, not public staging or physical-device gameplay. The screenshot is documentation, not a game or WorldKit asset under the code license.
+
 ## One-account full-day journey, 12 November 2026
 
 | Forest crossing | Kedai shift closed | Day-two morning after reload |
