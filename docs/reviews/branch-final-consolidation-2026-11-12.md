@@ -1,0 +1,23 @@
+# Final branch consolidation — 12 November 2026
+
+The owner asked to review the remaining branches before starting another feature and approved removing superseded candidates after this report. The active game release remains source `ef84e55ec1e3fa23ba61d02753420959f4e54528`, staging image `sha256:55da5dd15c306e8d8910da8f4f78d2e6ac90f9d56b23635412b422e3a699d9ae`, and PCK `0725713d9985320f7111d6990ad8c5b031a16dce9b10f8514359ef94ad6f461d`. This is repository housekeeping, not a new build or deployment.
+
+## Review before retirement
+
+| Ref | Exact review | Decision |
+| --- | --- | --- |
+| `work/gemini-day01-gait` (`ab5574b`) | The remote tip and detached worktree tip `333d846` are both ancestors of `main`; `git cherry main ab5574b` has zero unique patches. The runtime gait now in `main` has its own later acceptance and release record. | Remove redundant ref and worktree; preserve ignored test evidence. |
+| `work/gemini-day01` (`ba98c19`) | Eight patch-unique commits are historical progress/handoff documentation. Its original audit, model and art tools already exist in `main`. `main` adds explicit warnings to the old full16 gait report because that result was not repeatable in the subsequent review. A branch merge would remove these warnings and many newer files. | Do not merge old history; retire after preserving the current corrected reports. |
+| `work/overnight-resident-art` (`eafc030`) | Nine patch-unique commits mostly record old reviews, benchmark scope, release instructions and the garden/pen browser harness. The harness and accepted resident rig are already in `main`; the current operations guide also has later Gitea and image-reuse instructions absent from this branch. | Do not merge stale documentation or regress operations; retire. |
+| `work/overnight-village` (`15e01f8`) | Its sole unique commit moves the visual fish-pen anchor to `(360,1030)` and fish depth by one unit. A cherry-pick conflicted with later `main` commit `699bc5b`, which deliberately selected `(275,990)` and verified that the pen is clear of the deck with native ray/bounds checks; see [final pen review](overnight-pen-roof-final.md). The cherry-pick was aborted; `main` is clean. | Do not replace the accepted position with the rejected intermediate one; retire. |
+| GitHub-only `ci-reports` (`c76f8db`) | A historical GitLab CI artifact commit for pipeline `3045337293`, not game source. Current CI/delivery is Gitea; the old report branch would remove nearly the entire current repository if merged. | Remove obsolete GitHub-only ref; retain Gitea Actions history. |
+
+All four linked worktrees had clean tracked status before removal. The three named game candidate branch tips were identical on Gitea, GitHub and GitLab; `ci-reports` existed only on GitHub. No source candidate was cherry-picked and no game test is claimed for this branch-only operation. The failed village cherry-pick produced a conflict in `packages/shared/src/world.ts`; it was fully aborted before any other action. The comparison used `git cherry`, ancestry checks, commit-level file lists, current-tree diffs, native pen acceptance notes, worktree status, and live `ls-remote` heads. Godot, browser, device and CI checks were not rerun because no runtime or test source was changed.
+
+## Retirement outcome
+
+The four worktree refs and GitHub-only `ci-reports` were removed after exact live remote-tip checks. `work/gemini-day01-gait` had already been removed from all three remotes after ancestry proof. The three other candidate refs were deleted from Gitea, GitHub and GitLab without force. Final `ls-remote --heads` shows **only `main`** at `a1454323d7a13d18617e9893fa4de17232d9ecf7` on each remote; `git branch -a` and `git worktree list` likewise show only `main`. `git worktree prune --dry-run --verbose` found no stale registration.
+
+Ignored evidence was moved under `.runtime/retired-worktrees/2026-11-12-*` before worktree removal: gait 396 MiB, resident art 4.2 MiB, village 1.9 MiB, and empty Gemini coordinator evidence. These are ignored local records, not runtime assets or newly published source. The local filesystem reported 13,057,620 KiB free before removing the last three worktrees and 14,529,140 KiB after final verification; this is a host-wide observation, not an exact per-directory deletion measurement. No `.env`, database, source asset, current export, staging image or rollback image was changed.
+
+The report and handoff update are documentation-only. They do not update the staging image or PCK; physical Samsung S23/Windows performance and dialogue/quiz HUD acceptance remain the next product gates.
