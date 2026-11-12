@@ -1,5 +1,13 @@
 # Jalasmara visual evidence
 
+## One-account full-day journey, 12 November 2026
+
+| Forest crossing | Kedai shift closed | Day-two morning after reload |
+| --- | --- | --- |
+| ![One disposable player on the forest path after crossing the village gate.](full-day-forest-20261112.png) | ![The same player's Kedai shift closed after serving three customers.](full-day-kedai-20261112.png) | ![The same player outside Griya on day two after sleeping, exiting and reloading.](full-day-morning-20261112.png) |
+
+Original Jalasmara screenshots copied byte-identically from one completed local browser fixture. [The report](../reviews/full-day-single-player-2026-11-12.md) records its 9/9 journey, cleanup and limits. Runtime source `128fc592f9fe15cc2803a1a734a8200f39ee1422`, PCK SHA-256 `a2206c8993cc55469d45627417891b1e9290fc757c49c6b871749f27fb1e43f6` (69,774,796 bytes). PNG SHA-256/size respectively: `92b3e9dc61d77bed1d56307659063407a7023dc0cd4d42f6ba32982647a39512`/292,545 bytes; `26c4ce59ff041c34cd5ddc3a364c7e749fd3f299adcbec2d715404eefe626eed`/238,994 bytes; `218074695afa9c67d7c9c370d0c867b7751c9c50ba5fff6e5b5a828440554a50`/242,341 bytes. The disposable account was removed. This is software-browser development evidence, not physical-device FPS or final HUD/art acceptance, and the images are not game/WorldKit assets under the code license.
+
 ## Day-loop segment checks, 12 November 2026
 
 | Local three-star capture | Local morning after Kedai/rest | Public staging forest |
