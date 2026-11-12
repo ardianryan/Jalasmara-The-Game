@@ -1,5 +1,13 @@
 # Jalasmara visual evidence
 
+## Staging `main` 128fc59: active Kedai shift recovered from the dock
+
+| Automatic recovery panel | Movement after temporary close |
+| --- | --- |
+| ![Kedai recovery panel opens automatically when an active shift strands Nala on the dock.](staging-shift-recovery-active-20261112.png) | ![Nala moves after closing the shift temporarily, with coins and story day unchanged.](staging-shift-recovery-moving-20261112.png) |
+
+Original Jalasmara Chromium/SwiftShader screenshots from a disposable `female_nusantara` account, copied byte-for-byte from `artifacts/browser/shift-recovery-active-20261112.png` and `artifacts/browser/shift-recovery-moving-20261112.png`. Source `128fc592f9fe15cc2803a1a734a8200f39ee1422`, PCK `a2206c8993cc55469d45627417891b1e9290fc757c49c6b871749f27fb1e43f6`, image `sha256:5f906ce5b53937d378073f2c219ca5163c70f3c158891488d0f61669eed19d52`. PNG hashes: `169583c63e86728bf83bb0a067a9e49bc4b41ed2d1acdd2f38a1edd76e0861cf` (269,336 bytes), `5050ddda44050c2147f533bea752a9a26936502ff201745418fe5c35cd327186` (209,349 bytes). The fixture was removed with zero remaining players or shifts. [Release report](../reviews/kedai-shift-recovery-2026-11-12.md). These are development evidence, not game/WorldKit assets or proof from the owner's account or physical devices.
+
 ## Staging `main` 7c7bf22: Nala visible when the host starts unfocused
 
 | Before | After |
