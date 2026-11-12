@@ -77,8 +77,9 @@ func _setup_buses() -> void:
 func _ensure_bus(bus_name: String) -> int:
 	var index := AudioServer.get_bus_index(bus_name)
 	if index<0:
-		AudioServer.add_bus()
-		index = AudioServer.bus_count-1
+		index = AudioServer.bus_count
+		# Godot 4.7 Web sample audio misroutes Master when add_bus() appends at -1.
+		AudioServer.bus_count = index+1
 		AudioServer.set_bus_name(index,bus_name)
 	AudioServer.set_bus_send(index,"Master")
 	return index

@@ -1,5 +1,7 @@
 # Web music playback repair, 12 November 2026
 
+**Post-release outcome:** the owner reports no sound on Windows/S23. This release's audio acceptance failed despite passing automated game checks. [The follow-up bus report](web-audio-silent-bus-2026-11-12.md) records the stronger Godot 4.7.2 Web routing diagnosis and next correction.
+
 The owner reports that movement on Windows and Samsung S23 is mostly smooth, but music breaks up or sometimes does not start. This is the first real-device audio observation; the earlier compressed-audio checks only proved file decoding and build structure.
 
 ## Diagnosis and change

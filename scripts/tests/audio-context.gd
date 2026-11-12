@@ -6,6 +6,20 @@ func _initialize() -> void:
 func _run() -> void:
     await process_frame
     var audio = root.get_node("AudioManager")
+    var expected_buses := ["Master", audio.ENVIRONMENT_BUS, audio.BGM_BUS, audio.UI_BUS]
+    if AudioServer.bus_count != expected_buses.size():
+        push_error("Audio bus count changed; Web sample routing must be reviewed")
+        quit(1)
+        return
+    for index in range(expected_buses.size()):
+        if AudioServer.get_bus_name(index) != expected_buses[index]:
+            push_error("Audio bus order changed at " + str(index))
+            quit(1)
+            return
+    if AudioServer.get_bus_send(1) != "Master" or AudioServer.get_bus_send(2) != audio.ENVIRONMENT_BUS or AudioServer.get_bus_send(3) != "Master":
+        push_error("Audio bus sends do not reach Master")
+        quit(1)
+        return
     for music in audio._bgm_players:
         if music.playback_type != AudioServer.PLAYBACK_TYPE_DEFAULT:
             push_error("BGM must use platform playback: native stream, Web sample")
