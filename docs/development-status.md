@@ -1,5 +1,7 @@
 # Status pengembangan
 
+**Web music candidate, 12 November 2026:** After the owner's Windows/S23 report of stuttering or missing music, forced Web Stream playback was replaced with the platform default. [Audio report](reviews/web-audio-playback-2026-11-12.md) records the diagnosis, 68 world checks and build pass; actual listening and staging release remain pending. Staging still uses image `55da5dd`/PCK `0725713d`.
+
 **CI migration, 12 November 2026:** GitHub Actions is the sole verification and report location; Gitea/GitLab are code mirrors with pipelines disabled. The corrected workflow passed [run 43177417189](https://github.com/ardianryan/Jalasmara-The-Game/actions/runs/43177417189) with reports and verified-delivery artifacts for `237de95`. [Migration evidence](reviews/github-actions-migration-2026-11-12.md) and [runbook](operations-github.md) carry the hashes and limits. The staging game remains image `55da5dd`/PCK `0725713d`; no release is implied by this workflow change.
 
 Short-landscape HUD release (12 November 2026): the Godot minimap is about 80 physical pixels at 844×390/667×375, and status notices clear the minimap and dive gauge. Native and public-browser evidence are in [the HUD report](reviews/hud-short-landscape-2026-11-12.md). Source `ef84e55`, Gitea run 54 success, image `55da5dd`/PCK `0725713d` are active on staging; public smoke passed 6/6 with zero fixture residue. Final world/build/typecheck and 123 API tests passed. Physical S23/Windows acceptance remains open.

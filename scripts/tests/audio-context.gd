@@ -6,6 +6,13 @@ func _initialize() -> void:
 func _run() -> void:
     await process_frame
     var audio = root.get_node("AudioManager")
+    for music in audio._bgm_players:
+        if music.playback_type != AudioServer.PLAYBACK_TYPE_DEFAULT:
+            push_error("BGM must use platform playback: native stream, Web sample")
+            quit(1)
+    if audio.ambience_player.playback_type != AudioServer.PLAYBACK_TYPE_DEFAULT or audio.victory_player.playback_type != AudioServer.PLAYBACK_TYPE_DEFAULT:
+        push_error("Long ambience and victory audio must use platform playback")
+        quit(1)
     var state = root.get_node("GameState")
     var env = root.get_node("EnvironmentState")
     for key in ["title_theme", "mangrove_forest", "coastal_dusk", "village_hall", "underwater_cave_deep"]:

@@ -1,5 +1,9 @@
 # Handoff aktif agent
 
+## Web music playback candidate, 12 November 2026
+
+The owner reports mostly smooth movement on Windows/S23 but broken or absent music. [The audio report](reviews/web-audio-playback-2026-11-12.md) documents the supported likely cause: Web no-thread export had forced Stream playback for BGM and other sounds. The local candidate restores Godot's platform default (Web sample, native stream), keeps the MP3 bytes and contextual selection, and passes the focused audio test, full 70-check world suite and Web/API build. It is **not yet on staging**; the active image/PCK remain `55da5dd`/`0725713d`. Next: GitHub CI, a versioned candidate release with backup/rollback, then real-device listening to title/day/forest/night/dive and mute. If still broken, investigate browser-managed Web BGM with versioned external assets. Do not infer audible quality from headless tests.
+
 ## GitHub Actions is the CI home, 12 November 2026
 
 The owner restored GitHub Actions and directed that all CI and its reports live there; Gitea/GitLab are code mirrors without pipelines. [The migration report](reviews/github-actions-migration-2026-11-12.md) and [active runbook](operations-github.md) record the workflow, settings and verification. The first GitHub run failed on checkout ownership; the fix passed [run 43177417189](https://github.com/ardianryan/Jalasmara-The-Game/actions/runs/43177417189) for `237de95`, including both reports and delivery artifacts. All three remote heads matched; GitHub Actions is enabled, Gitea Actions and GitLab CI are disabled. This is a CI/delivery-candidate change only: staging remains image `55da5dd`/PCK `0725713d` until separately released. The owner's two untracked Cloudflare audit notes are left for their own review. Next: confirm the final documentation-commit CI run, then return to physical-device and HUD acceptance gates.

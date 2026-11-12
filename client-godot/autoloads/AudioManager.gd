@@ -87,37 +87,37 @@ func _setup_audio_players() -> void:
 	for i in range(max_sfx_players):
 		var sound := AudioStreamPlayer.new()
 		sound.bus = ENVIRONMENT_BUS
-		sound.playback_type = AudioServer.PLAYBACK_TYPE_STREAM
+		sound.playback_type = AudioServer.PLAYBACK_TYPE_DEFAULT
 		add_child(sound)
 		sfx_players.append(sound)
 	for i in range(max_water_sfx_players):
 		var water_sound := AudioStreamPlayer.new()
 		water_sound.bus = ENVIRONMENT_BUS
-		water_sound.playback_type = AudioServer.PLAYBACK_TYPE_STREAM
+		water_sound.playback_type = AudioServer.PLAYBACK_TYPE_DEFAULT
 		add_child(water_sound)
 		water_sfx_players.append(water_sound)
 	for i in range(2):
 		var music := AudioStreamPlayer.new()
 		music.bus = BGM_BUS
-		music.playback_type = AudioServer.PLAYBACK_TYPE_STREAM
+		music.playback_type = AudioServer.PLAYBACK_TYPE_DEFAULT
 		music.volume_db = SILENCE_DB
 		add_child(music)
 		_bgm_players.append(music)
 	bgm_player = _bgm_players[0]
 	victory_player = AudioStreamPlayer.new()
 	victory_player.bus = UI_BUS
-	victory_player.playback_type = AudioServer.PLAYBACK_TYPE_STREAM
+	victory_player.playback_type = AudioServer.PLAYBACK_TYPE_DEFAULT
 	victory_player.volume_db = -7.0
 	add_child(victory_player)
 	victory_player.finished.connect(_restore_bgm_after_jingle)
 	panic_player = AudioStreamPlayer.new()
 	panic_player.bus = ENVIRONMENT_BUS
-	panic_player.playback_type = AudioServer.PLAYBACK_TYPE_STREAM
+	panic_player.playback_type = AudioServer.PLAYBACK_TYPE_DEFAULT
 	panic_player.volume_db = -18.0
 	add_child(panic_player)
 	ambience_player = AudioStreamPlayer.new()
 	ambience_player.bus = ENVIRONMENT_BUS
-	ambience_player.playback_type = AudioServer.PLAYBACK_TYPE_STREAM
+	ambience_player.playback_type = AudioServer.PLAYBACK_TYPE_DEFAULT
 	ambience_player.volume_db = SILENCE_DB
 	add_child(ambience_player)
 
@@ -223,7 +223,7 @@ func play_sfx(sound_name: String,pitch_scale: float=1.0,volume_db: float=0.0) ->
 		"path_reveal_chime"
 	]
 	sound.bus = UI_BUS if is_ui else ENVIRONMENT_BUS
-	sound.playback_type = AudioServer.PLAYBACK_TYPE_SAMPLE if is_ui else AudioServer.PLAYBACK_TYPE_STREAM
+	sound.playback_type = AudioServer.PLAYBACK_TYPE_SAMPLE if is_ui else AudioServer.PLAYBACK_TYPE_DEFAULT
 	sound.stream = sfx_streams[sound_name]
 	sound.pitch_scale = clampf(pitch_scale,0.5,2.0)
 	sound.volume_db = clampf(SFX_VOLUME_DB+volume_db,-60.0,0.0)
@@ -259,7 +259,7 @@ func play_water_sfx(sound_name: String,pitch_scale: float=1.0,volume_db: float=0
 	current_water_sfx_idx = (current_water_sfx_idx+1)%max_water_sfx_players
 	sound.stop()
 	sound.bus = ENVIRONMENT_BUS
-	sound.playback_type = AudioServer.PLAYBACK_TYPE_STREAM
+	sound.playback_type = AudioServer.PLAYBACK_TYPE_DEFAULT
 	sound.stream = sfx_streams[sound_name]
 	sound.pitch_scale = clampf(pitch_scale,0.5,2.0)
 	sound.volume_db = clampf(SFX_VOLUME_DB+volume_db,-60.0,0.0)
@@ -531,6 +531,7 @@ func debug_status() -> Dictionary:
 		"muted":muted,
 		"track":current_bgm_track,
 		"playing":is_instance_valid(bgm_player) and bgm_player.playing,
+		"playbackType":bgm_player.playback_type if is_instance_valid(bgm_player) else -1,
 		"underwater":is_underwater,
 		"heartbeat":is_instance_valid(panic_player) and panic_player.playing,
 		"sfxPlayed":_played_sfx,
