@@ -217,6 +217,9 @@ func update_actors(delta: float) -> void:
 			if "appearance_index" in npc and int(npc.get("appearance_index"))>=0: index=int(npc.get("appearance_index"))
 			var cell:=sheet.get_size()/Vector2(grid)
 			frame=_frame(sheet,Rect2(Vector2(index%grid.x,floori(float(index)/grid.x))*cell,cell))
+		if not bool(npc.crate) and not native_resident:
+			var step_frame: Texture2D = preload("res://scripts/NpcSimpleSteps.gd").frame(key,npc.body_animation_state())
+			if step_frame != null: frame = step_frame
 		var flip_npc := false
 		if not bool(npc.crate):
 			var logical_facing:=Vector2(float(npc.get("_facing")),0)

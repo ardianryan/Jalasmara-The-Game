@@ -183,8 +183,9 @@ func _mirror_props(entities: Node, origin: Vector2) -> void:
 		var urchin := str(item.kind)=="urchin"
 		_prop(entities,"hazard:"+str(item.id),4 if urchin else 5,at if urchin else at+Vector2(-13,12),Vector2.ONE*float(item.radius)*2.0 if urchin else Vector2(122,132))
 	if int(GameState.player.get("progress",{}).get("day",1))>=3:
-		var at := Vector2(3820,3140)
-		var boss: Texture2D = entities.get("boss_texture")
+		var motion: RefCounted = source.get("boss_motion")
+		var at: Vector2 = motion.position if motion != null else Vector2(3820,3140)
+		var boss: Texture2D = motion.frame() if motion != null else entities.get("boss_texture")
 		if at.distance_to(origin)<1300 and boss != null:
 			_sprite("boss",boss,at-Vector2(0,5),Vector2(420,280),10,Color(1,1,1,0.6) if bool(GameState.player.get("progress",{}).get("bossDefeated",false)) else Color.WHITE)
 			debug_counts.boss = 1

@@ -3,6 +3,7 @@ const PlayerScript = preload("res://scripts/Player.gd")
 const WorldScript = preload("res://scripts/World.gd")
 const EntitiesScript = preload("res://scripts/Entities.gd")
 const BODY_FONT = preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2")
+const BossMotionScript = preload("res://scripts/BossMotion.gd")
 const PHYSICAL_GAIT_RELEASE_ENABLED := false
 var land_renderer: Node2D
 var nala: CharacterBody2D
@@ -32,8 +33,8 @@ var net_time := 0.0
 var chain_lines: Array = []
 var chain_end: Callable
 var phase_seen := ""
-var attack_clock := 0.0
 var attacks: Array = []
+var boss_motion = BossMotionScript.new()
 var touch_enabled := false
 var flash := 0.0
 var last_status := ""
@@ -500,6 +501,9 @@ func _process(delta: float) -> void:
 	queue_redraw()
 	if GameState.player.is_empty():
 		return
+	if not GameState.dive.is_empty() and int(GameState.player.get("progress",{}).get("day",1))>=3:
+		var boss_active := str(GameState.dive.get("mode",""))=="boss"
+		boss_motion.advance(delta,str(GameState.dive.get("id","")),int(GameState.dive.get("hits",0)),_required_hits() if boss_active else 0,modal_open or ViewportLayout.host_paused,boss_active and nala.position.distance_to(BossMotionScript.ANCHOR)<650,bool(GameState.player.get("progress",{}).get("bossDefeated",false)))
 	if nala.outfit!=previous_outfit:
 		previous_outfit = nala.outfit
 		if not submerged:
@@ -582,13 +586,17 @@ func _process(delta: float) -> void:
 					flash = 3.1
 					_hazard_hit()
 					break
-		if not modal_open and not ViewportLayout.host_paused and GameState.dive.get("mode","")=="boss" and nala.position.distance_to(Vector2(3820,3140))<650:
+		if not modal_open and not ViewportLayout.host_paused and GameState.dive.get("mode","")=="boss" and nala.position.distance_to(BossMotionScript.ANCHOR)<650:
 			_boss_tick(delta)
 		else:
 			for shot in attacks:
 				shot.node.queue_free()
 			attacks.clear()
 func _draw() -> void:
+	if boss_motion.telegraph and not GameState.dive.is_empty():
+		var source: Vector2 = boss_motion.attack_origin()
+		draw_arc(source,34,0,TAU,24,Color("ffd166"),2)
+		draw_line(source,source+Vector2(-210,0),Color("ef805f",0.72),3)
 	if is_instance_valid(hybrid) and hybrid.is_active() and not modal_open and nearby.get("kind","")=="biota":
 		var target: Vector2 = entities.target_position(nearby)
 		for side in [-1,1]:
@@ -1387,20 +1395,18 @@ func _show_map() -> void:
 func _boss_tick(delta: float) -> void:
 	if int(GameState.dive.get("hits",0))>=_required_hits():
 		return
-	attack_clock += delta
 	var second_phase := int(GameState.dive.get("hits",0))>=ceili(_required_hits()/2.0)
 	status.text = "Gajah Mina · %d/300 vitalitas racun · %s" % [300-int(int(GameState.dive.get("hits",0))*300.0/_required_hits()),"Tarik Inti Smara" if second_phase else "Lepaskan lapisan asam"]
-	if attack_clock>(2.6 if second_phase else 3.5):
-		attack_clock = 0
+	if boss_motion.attack_event:
 		var projectile := Polygon2D.new()
 		projectile.polygon = PackedVector2Array([Vector2(-12,-5),Vector2(12,-5),Vector2(18,0),Vector2(12,5),Vector2(-12,5)])
 		projectile.color = Color("a6b175")
-		projectile.position = Vector2(3570,2900+randf()*480)
+		projectile.position = boss_motion.attack_origin()
 		add_child(projectile)
 		attacks.append({"node":projectile,"velocity":Vector2(-180,0)})
 		if second_phase:
 			var sludge := projectile.duplicate() as Polygon2D
-			sludge.position = Vector2(3300+randf()*900,2900)
+			sludge.position = boss_motion.position+Vector2(45,-125)
 			add_child(sludge)
 			attacks.append({"node":sludge,"velocity":Vector2(0,140)})
 	for i in range(attacks.size()-1,-1,-1):

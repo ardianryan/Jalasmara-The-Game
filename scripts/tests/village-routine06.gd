@@ -92,7 +92,8 @@ func _commute_pause(actor:Node2D,profile:Dictionary) -> void:
 	root.add_child(player)
 	actor.player=player
 	for tick in range(10): _tick(actor)
-	assert(actor.position==stopped,"A player must be able to catch and address a travelling resident")
+	assert(actor.position.distance_to(stopped)>0,"A nearby player alone must not freeze a travelling resident")
+	assert(actor.position.distance_to(stopped)<165,"The resident remains within dialogue reach over this short interval")
 	actor.player=null
 	player.free()
 	_reach(actor,_at(profile,"rest"))

@@ -94,11 +94,13 @@ func _draw() -> void:
 				draw_line(p + Vector2(side * 39, -15), p + Vector2(side * 30, -15), bracket, 2)
 				draw_line(p + Vector2(side * 39, 15), p + Vector2(side * 30, 15), bracket, 2)
 	if state.player.get("progress",{}).get("day",1)>=3:
-		var bp := Vector2(3820,3140)
+		var motion: RefCounted = get_parent().get("boss_motion") if get_parent()!=null else null
+		var bp: Vector2 = motion.position if motion!=null else Vector2(3820,3140)
 		if bp.distance_to(at)<1000:
 			var recovered: bool = state.player.get("progress",{}).get("bossDefeated",false)
-			if boss_texture:
-				draw_texture_rect(boss_texture,Rect2(bp-Vector2(210,145),Vector2(420,280)),false,Color(1,1,1,.6 if recovered else 1))
+			var visual: Texture2D = motion.frame() if motion!=null else boss_texture
+			if visual:
+				draw_texture_rect(visual,Rect2(bp-Vector2(210,145),Vector2(420,280)),false,Color(1,1,1,.6 if recovered else 1))
 			else:
 				draw_ellipse_shape(bp,recovered)
 func _draw_prop(index: int,at: Vector2,dimensions: Vector2,tint := Color.WHITE) -> void:

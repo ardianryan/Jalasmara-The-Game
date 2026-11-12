@@ -92,7 +92,7 @@ func _activity_update(delta: float,nearby: bool) -> void:
 	if arrived:
 		_blocked_seconds=0
 		return
-	if nearby or _body_animation.movement_locked: return
+	if _body_animation.movement_locked: return
 	if _activity_path.is_empty():
 		_blocked_seconds+=delta
 		_route_retry_in=maxf(0,_route_retry_in-delta)
@@ -140,7 +140,7 @@ func _process(delta: float) -> void:
 		_activity_update(delta,nearby)
 		_anchor=position
 	elif not route.is_empty() and not crate:
-		if not nearby and not EnvironmentState.clock_paused:
+		if not EnvironmentState.clock_paused:
 			rest_time = maxf(0,rest_time-delta)
 			if rest_time<=0:
 				var target: Vector2 = route[route_index]

@@ -82,7 +82,9 @@ func _run() -> void:
 		player.position=actor.position
 		actor.player=player
 		actor.call("_process",1.0)
-		assert(actor.position==paused,"Approaching dialogue must pause walking")
+		assert(actor.position.distance_to(paused)>0,"Nearby presence alone must not freeze scheduled travel")
+		assert(actor.position.distance_to(paused)<=26.001,"Nearby travel must retain its collision-checked speed")
+		paused=actor.position
 		actor.player=null
 		player.queue_free()
 		clock.elapsed_seconds=180
@@ -92,5 +94,5 @@ func _run() -> void:
 		clock.elapsed_seconds=0
 		actor.queue_free()
 	assert(before==JSON.stringify({"player":state.player,"dive":state.dive}),"Cosmetic village simulation must not mutate economy or progress")
-	print("VILLAGE ACTIVITIES PASS:",profiles.size()," workers, ",steps," continuous collision-checked travel steps, opening/closing boundaries, rain shelter, reading/nearby pauses and reduced-motion travel, no teleport or gameplay mutation")
+	print("VILLAGE ACTIVITIES PASS:",profiles.size()," workers, ",steps," continuous collision-checked travel steps, opening/closing boundaries, rain shelter, reading pause and nearby travel, reduced-motion travel, no teleport or gameplay mutation")
 	quit()

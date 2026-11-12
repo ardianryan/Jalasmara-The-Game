@@ -1,0 +1,61 @@
+{
+  "method": "original portrait cutouts and four short alternating foot-contact poses",
+  "people": {
+    "Ki Lurah Wirabhumi": {
+      "file": "ki_lurah_wirabhumi.png",
+      "source": "village-residents-v1.png",
+      "sourceCell": 0,
+      "sourceSha256": "09fd3e55f16b7a17c5077a1b693d4284e04437c7c19ab90ccbca8f210bc5afde",
+      "frames": 5,
+      "cellSize": 64
+    },
+    "Mbok Ratih": {
+      "file": "mbok_ratih.png",
+      "source": "village-residents-v1.png",
+      "sourceCell": 1,
+      "sourceSha256": "09fd3e55f16b7a17c5077a1b693d4284e04437c7c19ab90ccbca8f210bc5afde",
+      "frames": 5,
+      "cellSize": 64
+    },
+    "Kang Tedi": {
+      "file": "kang_tedi.png",
+      "source": "village-residents-v1.png",
+      "sourceCell": 3,
+      "sourceSha256": "09fd3e55f16b7a17c5077a1b693d4284e04437c7c19ab90ccbca8f210bc5afde",
+      "frames": 5,
+      "cellSize": 64
+    },
+    "Saras": {
+      "file": "saras.png",
+      "source": "village-residents-v1.png",
+      "sourceCell": 5,
+      "sourceSha256": "09fd3e55f16b7a17c5077a1b693d4284e04437c7c19ab90ccbca8f210bc5afde",
+      "frames": 5,
+      "cellSize": 64
+    },
+    "Mbah Wira": {
+      "file": "mbah_wira.png",
+      "source": "npc-atlas.png",
+      "sourceCell": 0,
+      "sourceSha256": "82d946a0df5ecb98eb5d4daa48856e8cf36644103b39f80d39d17e361ff56aec",
+      "frames": 5,
+      "cellSize": 64
+    },
+    "Beno": {
+      "file": "beno.png",
+      "source": "npc-atlas.png",
+      "sourceCell": 1,
+      "sourceSha256": "82d946a0df5ecb98eb5d4daa48856e8cf36644103b39f80d39d17e361ff56aec",
+      "frames": 5,
+      "cellSize": 64
+    },
+    "Inspektur Raka": {
+      "file": "inspektur_raka.png",
+      "source": "npc-atlas.png",
+      "sourceCell": 3,
+      "sourceSha256": "82d946a0df5ecb98eb5d4daa48856e8cf36644103b39f80d39d17e361ff56aec",
+      "frames": 5,
+      "cellSize": 64
+    }
+  }
+}

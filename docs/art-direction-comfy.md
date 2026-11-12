@@ -1,5 +1,9 @@
 # Comfy world palette
 
+## Object pixel scale, 12 November 2026
+
+For new or repaired bitmap details, use 16×16 source pixels for tiny details, 32×32 for props, and up to 64×64 for a character or a large object part as an authoring guide. Inspect each asset at its actual in-game size and preserve crisp nearest-neighbor edges. This is not a tile-size mandate for buildings, shorelines or the 3D terrain, and does not change the 480×270 land rendering budget. The [village and Gajah Mina motion package](reviews/village-boss-motion-2026-11-12.md) applies the guide only to its repaired actors.
+
 ## 9 November: cheerful local candidate
 
 The user's newer target is the existing login/loading artwork: cheerful greens and teal, cool ambient light, warm sun and lamps. The 06-B2 candidate uses grass`#8CAF61`, earth`#B68F58`, sand`#E0C58C`, stone`#A8B5AA`, timber`#A57B50` and thatch`#C5A16D`. Material texture contrast is reduced before grading; changing global saturation alone is insufficient. These are chosen project colors, not sampled reference values. Native matched day/night comparisons are recorded in [the active finishing report](reviews/06b2-world-finishing-progress.md); this is not a released palette yet.
