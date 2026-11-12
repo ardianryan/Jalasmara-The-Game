@@ -276,6 +276,11 @@ func visual_locomotion(previous: Vector2,current: Vector2,delta: float) -> Vecto
 	var movement: Vector2=(current-previous)/maxf(.001,delta)
 	return visual_motion(movement,ground_gradient((previous+current)*.5).dot(movement))
 
+func ground_travel_distance(previous: Vector2,current: Vector2) -> float:
+	var from:Vector3=ground_point(previous)
+	var to:Vector3=ground_point(current)
+	return Vector2(to.x-from.x,to.y-from.y).length()
+
 func project_host(point: Vector2,height := NAN) -> Vector2:
 	var world: Vector3=ground_point(point) if is_nan(height) else map_point(point,height)
 	return view_projection.render_to_host(view_projection.project_world(world),Rect2(display.position,display.size))

@@ -63,7 +63,7 @@ func _initialize() -> void: call_deferred("run")
 func _check(valid:bool,message:String) -> bool:
 	if not valid:
 		if is_instance_valid(renderer):
-			var record:={"message":message,"checks":checks,"position":[player.position.x,player.position.y],"pose":renderer.actors_3d.counts.get("nalaLowerBody",{}),"recentTrace":trace}
+			var record:={"message":message,"checks":checks,"position":[player.position.x,player.position.y],"pose":renderer.actors_3d.counts.get("nalaLowerBody",{}),"recentTrace":trace,"actorPilot":player.get_meta("nala_lower_body_pilot",null),"physicalPilot":player.get_meta("nala_physical_walk_pilot",null),"rendererActive":renderer.active,"rendererBuilt":renderer.get("_built"),"actorTexture":player.get("swim_sprite").texture.resource_path}
 			FileAccess.open("res://../.runtime/nala-lower-failure.json",FileAccess.WRITE).store_string(JSON.stringify(record,"  "))
 			if not output.is_empty() and DirAccess.dir_exists_absolute(ProjectSettings.globalize_path(output)):
 				FileAccess.open(output+"/rejected.json",FileAccess.WRITE).store_string(JSON.stringify(record,"  "))

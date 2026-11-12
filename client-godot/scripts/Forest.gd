@@ -489,7 +489,8 @@ func _physics_process(delta: float) -> void:
 		avatar.swim_sprite.set_outfit("explorer")
 		avatar.swim_sprite.set_equipment(avatar.equipment)
 		var visual_velocity: Vector2=land_renderer.visual_locomotion(previous_position,avatar.position,delta) if is_instance_valid(land_renderer) else moved_velocity
-		avatar.swim_sprite.set_locomotion(moved_velocity,delta,visual_velocity)
+		var ground_distance:float=land_renderer.ground_travel_distance(previous_position,avatar.position) if is_instance_valid(land_renderer) else NAN
+		avatar.swim_sprite.set_locomotion(moved_velocity,delta,visual_velocity,ground_distance)
 		avatar.swim_sprite.animate(avatar.walking,false,-1 if avatar.facing.x<0 else 1,avatar.clock)
 		avatar.swim_sprite.visible = not is_instance_valid(land_renderer)
 	light_clock += delta

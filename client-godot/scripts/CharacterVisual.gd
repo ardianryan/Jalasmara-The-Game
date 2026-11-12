@@ -99,7 +99,7 @@ func get_land_pivot() -> Vector2:
 func _stride() -> float:
 	return 64.0 if directional_pilot_active() else STRIDE
 
-func set_locomotion(velocity: Vector2,delta: float,visual_velocity := Vector2.INF) -> void:
+func set_locomotion(velocity: Vector2,delta: float,visual_velocity := Vector2.INF,ground_distance := NAN) -> void:
 	_locomotion_driven=true
 	var previous_speed:=_speed
 	var was_frozen:=_pose_frozen
@@ -137,7 +137,7 @@ func set_locomotion(velocity: Vector2,delta: float,visual_velocity := Vector2.IN
 	_settle_elapsed=0.0
 	var stride:=_stride()
 	var before:=floori(_travel/(stride*.5))
-	_travel+=_speed*delta
+	_travel+=maxf(0.0,ground_distance) if is_finite(ground_distance) else _speed*delta
 	var after:=floori(_travel/(stride*.5))
 	for contact in range(before+1,mini(after,before+4)+1):
 		_foot_contacts.append({"side":"left" if contact%2==0 else "right","distance":contact*stride*.5,"phase":0.0 if contact%2==0 else .5})

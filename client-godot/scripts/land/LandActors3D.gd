@@ -174,6 +174,8 @@ func update_actors(delta: float) -> void:
 				nala.visible=true
 				nala.position+=Vector3(lower_pose.attachmentOffset)
 				gear["facingDirection"]=str(lower_pose.direction)
+				if float(lower_pose.get("upperContactPhase",-1.0))>=0.0:
+					gear["gaitPhase"]=float(lower_pose.upperContactPhase)
 			_update_equipment(nala,gear,false,visual.flip_h)
 			if bool(lower_pose.get("enabled",false)): nala.visible=false
 			counts.player=1

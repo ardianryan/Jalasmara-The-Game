@@ -12,6 +12,7 @@ var touch := Vector2.ZERO
 var land_mask := Callable()
 var input_transform := Callable()
 var visual_motion_transform := Callable()
+var land_distance_transform := Callable()
 var land_velocity_transform := Callable()
 var land_position_transform := Callable()
 var swim_sprite: Sprite2D
@@ -137,7 +138,8 @@ func _physics_process(delta: float) -> void:
 		swim_sprite.set_outfit(outfit)
 		swim_sprite.set_equipment(equipment)
 		var visual_velocity: Vector2=visual_motion_transform.call(previous,position,delta) if not in_water and visual_motion_transform.is_valid() else moved_velocity
-		swim_sprite.set_locomotion(moved_velocity,delta,visual_velocity)
+		var ground_distance:float=float(land_distance_transform.call(previous,position)) if not in_water and land_distance_transform.is_valid() else NAN
+		swim_sprite.set_locomotion(moved_velocity,delta,visual_velocity,ground_distance)
 		swim_sprite.animate(moved_velocity.length()>10,in_water,direction,walk_time)
 		if not in_water:
 			_traversal_bob = float(traversal_state.get("footBob",0.0))

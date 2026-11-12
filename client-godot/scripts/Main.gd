@@ -124,6 +124,7 @@ func _ready() -> void:
 	land_renderer.setup(self,nala,camera,"hub")
 	nala.input_transform=land_renderer.input_motion
 	nala.visual_motion_transform=land_renderer.visual_locomotion
+	nala.land_distance_transform=land_renderer.ground_travel_distance
 	homestead_ui=preload("res://scripts/HomesteadUI.gd").new()
 	add_child(homestead_ui)
 	homestead_ui.configure(self,false)

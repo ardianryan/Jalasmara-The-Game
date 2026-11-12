@@ -14,6 +14,7 @@ var last_physics_frame:=0
 var began_usec:=0
 var windows:Dictionary={}
 var prior_planner_contacts:=0
+var source_distance_origin:=0.0
 var physical_pilot:=false
 var delivered_input:=Vector2.ZERO
 var input_driver:Node
@@ -56,7 +57,7 @@ func _controller_enabled(enabled:bool) -> void:
 func _open(outfit:String) -> void:
 	triangles.clear()
 	triangle_grid.clear()
-	controller=load("res://scripts/Forest.gd").new() if outfit=="explorer" else Node2D.new()
+	controller=load("res://../scripts/tests/nala-gait-forest-fixture.gd").new() if outfit=="explorer" else Node2D.new()
 	root.add_child(controller)
 	controller.set_process(false)
 	if outfit=="explorer":
@@ -84,11 +85,13 @@ func _open(outfit:String) -> void:
 		player.set("land_mask",collision.is_walkable)
 		player.set("input_transform",renderer.input_motion)
 		player.set("visual_motion_transform",renderer.visual_locomotion)
+		player.set("land_distance_transform",renderer.ground_travel_distance)
 		player.get("surface_traversal").configure(root.get_node("GameState").world.landMaps.hub)
 	player.set_meta("nala_lower_body_pilot",true)
 	player.set_meta("nala_physical_walk_pilot",physical_pilot)
 	player.get("swim_sprite").call("set_appearance","male_nusantara")
 	renderer.set_process(false)
+	renderer.call("_process",0.0)
 	if physical_pilot:
 		var hook:=func(at:Vector2,velocity:Vector2,delta:float) -> Vector2: return PhysicalMotion.limit_velocity(renderer,at,velocity,delta)
 		var position_hook:=func(from:Vector2,to:Vector2,delta:float) -> Vector2: return PhysicalMotion.limit_position(renderer,from,to,delta)
@@ -169,6 +172,7 @@ func _production_tick(value:Vector2,label:String) -> bool:
 	var events:Array=visual.call("consume_foot_contacts")
 	legacy_contacts+=events.size()
 	var source:Dictionary=visual.call("locomotion_state")
+	if label.ends_with(" walk") and not _check(absf(float(source.distance)-source_distance_origin-physical_travel)<maxf(.06,physical_travel*.01),"Atlas phase no longer follows accepted 3D ground distance "+label+" atlas="+str(float(source.distance)-source_distance_origin)+" sampled="+str(physical_travel)+" before="+str(before)+" after="+str(player.position)): return false
 	var pose:Dictionary=renderer.actors_3d.counts.nalaLowerBody
 	if physical_pilot:
 		if not _check(bool(pose.contacts.get("physicalContract",false)),"Physical input pilot did not select its explicit gait contract"): return false
@@ -186,7 +190,12 @@ func _production_tick(value:Vector2,label:String) -> bool:
 	var rig:Node3D=renderer.actors_3d.get("_nala_lower")
 	var upper:Sprite3D=rig.get("_parts").upper
 	var region:Rect2=(upper.texture as AtlasTexture).region
+	if physical_pilot and float(pose.get("upperContactPhase",-1.0))>=0.0:
+		var contact_phase:=fposmod((0.0 if str(pose.contacts.swingSide)=="right" else 0.5)+clampf(float(pose.contacts.swingDistance)/maxf(.001,float(pose.contacts.landingDistance)),0.0,1.0)*0.5,1.0)
+		var expected_frame:=posmod(floori(contact_phase*8.0)+4,8)
+		if not _check(int(region.position.x/128.0)==expected_frame,"Upper-body atlas lost planted-foot phase "+label): return false
 	var equipment:Node3D=renderer.actors_3d.get("_equipment")
+	if physical_pilot and float(pose.get("upperContactPhase",-1.0))>=0.0 and not _check(absf(float(equipment.get("state").get("gaitPhase",-1.0))-float(pose.upperContactPhase))<.00001,"Separate equipment fell out of phase with planted-foot torso "+label): return false
 	var swing:=str(pose.contacts.swingSide)
 	var planner_phase:Variant=null
 	if swing!="": planner_phase=(0.0 if swing=="right" else .5)+float(pose.contacts.swingDistance)/maxf(.001,float(pose.contacts.landingDistance))*.5
@@ -218,7 +227,7 @@ func run() -> void:
 	sample_log=FileAccess.open(output+"/samples.jsonl",FileAccess.WRITE)
 	capture_log=FileAccess.open(output+"/frames.jsonl",FileAccess.WRITE)
 	var hashes:Dictionary={}
-	for path in ["res://scripts/Player.gd","res://scripts/Forest.gd","res://scripts/CharacterVisual.gd","res://scripts/NalaFootPlant.gd","res://scripts/NalaFootPlane.gd","res://scripts/SurfaceTraversal.gd","res://scripts/WorldFoley.gd","res://scripts/land/LandSurfaceQueryCache.gd","res://scripts/NalaLowerBody3D.gd","res://scripts/NalaPhysicalMotion.gd","res://scripts/AnalogJoystick.gd","res://scripts/land/LandActors3D.gd","res://scripts/land/LandWorld3D.gd","res://scripts/land/LandGeometry.gd","res://../scripts/tests/nala-production-gait.gd","res://../scripts/tests/nala-lower-body.gd"]: hashes[path]=FileAccess.get_sha256(path)
+	for path in ["res://scripts/Player.gd","res://scripts/Forest.gd","res://scripts/CharacterVisual.gd","res://scripts/NalaFootPlant.gd","res://scripts/NalaFootPlane.gd","res://scripts/SurfaceTraversal.gd","res://scripts/WorldFoley.gd","res://scripts/land/LandSurfaceQueryCache.gd","res://scripts/NalaLowerBody3D.gd","res://scripts/NalaPhysicalMotion.gd","res://scripts/AnalogJoystick.gd","res://scripts/land/LandActors3D.gd","res://scripts/land/LandWorld3D.gd","res://scripts/land/LandGeometry.gd","res://../scripts/tests/nala-production-gait.gd","res://../scripts/tests/nala-gait-forest-fixture.gd","res://../scripts/tests/nala-lower-body.gd"]: hashes[path]=FileAccess.get_sha256(path)
 	FileAccess.open(output+"/source.json",FileAccess.WRITE).store_string(JSON.stringify({"fixtureWorldSha256":FileAccess.get_sha256("res://../.runtime/world-map.json"),"files":hashes,"firstCase":first_case,"requestedCases":case_limit,"physicalPilot":physical_pilot,"analogProbe":analog_probe,"joystickProbe":joystick_probe,"additionalPhysicalDeadzone":false,"postAccelerationSegmentLimiter":physical_pilot,"acceptedPositionLimiter":physical_pilot,"physicsHz":Engine.physics_ticks_per_second,"captureStride":capture_stride,"acceptance":"Geometry diagnostic; cadence and arm opposition require sequence review. No default adoption."},"  "))
 	var state:=root.get_node("GameState")
 	if not _check(float(load("res://scripts/Player.gd").LAND_WALK_SPEED)==PhysicalMotion.LOGICAL_CAP,"Physical input contract differs from actual controller authority cap"): return
@@ -269,6 +278,7 @@ func run() -> void:
 				physical_travel=0
 				legacy_contacts=0
 				prior_planner_contacts=0
+				source_distance_origin=float(player.get("swim_sprite").call("locomotion_state").distance)
 				windows.clear()
 				began_usec=Time.get_ticks_usec()
 				last_physics_frame=Engine.get_physics_frames()

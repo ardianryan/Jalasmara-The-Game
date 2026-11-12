@@ -12,6 +12,36 @@ static func opaque_vertices(image:Image,column:int,rect:Array) -> PackedVector2A
 	for point in unique: vertices.append(point)
 	return vertices
 
+static func _surface_inverse(renderer:Node,logical:Vector2,world:Vector3) -> Dictionary:
+	# Connector XY is projected from a continuous slope even when stair Z jumps.
+	# A local derivative at a connector seam can point into the other surface.
+	var closest:=INF
+	var resolved:Dictionary={}
+	var tilt:float=renderer.TILT
+	for profile in renderer.get("_stair_queries"):
+		var start:Vector2=profile.start
+		var end:Vector2=profile.end
+		var gradient:Vector2=(end-start)*(float(profile.to)-float(profile.from))/float(profile.lengthSquared)
+		var denominator:=1.0/cos(tilt)+tan(tilt)*gradient.y
+		if absf(denominator)<.000001: continue
+		var y:=-(world.y+tan(tilt)*(float(profile.from)+gradient.x*(world.x-start.x)-gradient.y*start.y))/denominator
+		var candidate:=Vector2(world.x,y)
+		if Traversal.connector_ground(profile,candidate).is_empty(): continue
+		var ground:Vector3=renderer.ground_point(candidate)
+		var error:=Vector2(world.x-ground.x,world.y-ground.y).length()
+		if error<.005 and candidate.distance_squared_to(logical)<closest:
+			closest=candidate.distance_squared_to(logical)
+			resolved={"valid":true,"logical":candidate,"ground":ground}
+	for surface in renderer.get("_surface_queries"):
+		var candidate:=Vector2(world.x,-(world.y+float(surface.height)*tan(tilt))*cos(tilt))
+		if not Geometry2D.is_point_in_polygon(candidate,surface.polygon): continue
+		var ground:Vector3=renderer.ground_point(candidate)
+		var error:=Vector2(world.x-ground.x,world.y-ground.y).length()
+		if error<.005 and candidate.distance_squared_to(logical)<closest:
+			closest=candidate.distance_squared_to(logical)
+			resolved={"valid":true,"logical":candidate,"ground":ground}
+	return resolved if not resolved.is_empty() else {"valid":false}
+
 static func ground_below(renderer:Node,logical:Vector2,world:Vector3) -> Dictionary:
 	var point:=logical
 	for iteration in range(8):
@@ -33,7 +63,7 @@ static func ground_below(renderer:Node,logical:Vector2,world:Vector3) -> Diction
 				break
 			step*=.5
 		if not improved: break
-	return {"valid":false}
+	return _surface_inverse(renderer,logical,world)
 
 static func valid_contact(renderer:Node,logical:Vector2,geometry:Dictionary,legal:Callable) -> bool:
 	var leg:Dictionary=geometry.leg

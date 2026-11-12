@@ -1,5 +1,7 @@
 # PRD Jalasmara: dunia, kontrol dan presentasi
 
+**Nala gait checkpoint, 12 November 2026:** The owner ordered Nala walking work before full playthrough and visual/UI polish. The [source candidate](reviews/nala-natural-gait-2026-11-12.md) ties daily/explorer land movement for four appearances to accepted 3D travel and synchronizes the opt-in torso/gear with planted-foot phase. The shared atlas interface passes 12 appearance/outfit combinations; underwater cadence is unchanged. Its 32-case flat and 16-case terrain checks pass, but the physical release switch is still OFF pending unobstructed moving and real Windows/S23 review. This does not replace the natural-walking acceptance criterion below.
+
 Status aktif 10 November 07.53 WIB: [laporan penutup](reviews/overnight-0800-close.md). Penerimaan13dialogue lokal/full67 dunia tidak berarti natural gait selesai: Nala831 masih gagal ridgeUP/recovery dan tetapOFF. Audit Gemini f67 ditahan; tujuh klaim P0 dan mismatch SE terbukti salah. [Tugas koreksi](plans/07b-gemini-character-audit-corrections.md) hanya membenahi audit. Syarat produk berikut tetap berlaku, tanpa pelonggaran untuk kandidat yang gagal.
 
 Pemilik arah produk: pengguna proyek. Dokumen ini merangkum keputusan yang sudah diberikan, bukan penawaran fitur baru. Status implementasi terbaru selalu pada [handoff](agent-handoff.md) dan [laporan paket](reviews/06a-delivery.md); kebutuhan di bawah tidak otomatis berarti fitur sudah selesai.

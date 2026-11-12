@@ -1,5 +1,11 @@
 # Jalasmara visual evidence
 
+## Nala gait source candidate, 12 November 2026
+
+![A 32-frame native contact sequence shows Nala's advancing and stopping poses on the Bandar Hujung path.](nala-gait/native-contact-sequence-2026-11-12.png)
+
+Original Godot 4.7.2 Apple M2 Compatibility 480×270 sequence from `work/nala-natural-gait` based on source `04e5c9e`; PNG SHA-256 `e641024bd069d91f9c4e4153dbac3491ec577eaac3881ddbe60f7a6c186e9377`. The sequence predates the final separate-equipment phase synchronization; [the report](../reviews/nala-natural-gait-2026-11-12.md) records final-source tests and the separate final-source occlusion image. The physical gait is still OFF in release code. This is documentation, not a staging screenshot, real-device performance proof, or a game/WorldKit asset.
+
 ## Village motion staging release, 12 November 2026
 
 | Public dock, 844×390 | Public forest, 667×375 |

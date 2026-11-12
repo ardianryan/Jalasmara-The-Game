@@ -543,14 +543,20 @@ func update_pose(proxy:Sprite3D,visual:Sprite2D,delta:float) -> Dictionary:
 		pose.feet[side]["kneeWorld"]=[knee.x,knee.y,knee.z]
 		pose.feet[side]["ankleWorld"]=[ankle.x,ankle.y,ankle.z]
 		pose.feet[side]["lengths"]=[size.x,size.y]
-	var cell:=visual.texture.get_size()/Vector2(visual.hframes,visual.vframes)
-	var origin:=Vector2(int(state.frame)*128,DIRECTIONS.find(direction)*128) if bool(state.poseWalking) else Vector2(DIRECTIONS.find(direction)*128,0)
+	var upper_frame:=int(state.frame)
+	var upper_contact_phase:=-1.0
+	if physical_plane and moved and str(pose.swingSide)!="":
+		var swing_progress:=clampf(float(pose.swingDistance)/maxf(.001,float(pose.landingDistance)),0.0,1.0)
+		upper_contact_phase=fposmod((0.0 if str(pose.swingSide)=="right" else 0.5)+swing_progress*0.5,1.0)
+		# The source atlas starts at contact; each planted-foot swing starts four frames later.
+		upper_frame=posmod(floori(upper_contact_phase*8.0)+4,8)
+	var origin:=Vector2(upper_frame*128,DIRECTIONS.find(direction)*128) if bool(state.poseWalking) else Vector2(DIRECTIONS.find(direction)*128,0)
 	var upper:Sprite3D=_parts.upper
 	upper.texture=_texture(visual.texture,Rect2(origin,Vector2(128,76)))
 	upper.transform=Transform3D(basis,root_hip+up*38)
 	upper.modulate=proxy.modulate
 	visible=true
 	proxy.visible=false
-	_last={"enabled":true,"identity":"male_nusantara","outfit":outfit,"direction":direction,"desiredDirection":desired,"heldFacing":direction!=desired,"contacts":pose,"calibration":1.0/vertical,"supportBodyOffsetPixels":support_body_offset*vertical,"pelvisDropPixels":drop*vertical,"requestedDropPixels":requested_drop*vertical,"bodyShift":[_body_shift.x,_body_shift.y],"reachValid":not unreachable,"maxLengthError":max_length_error,"attachmentOffset":root_hip+up*12-proxy.position,"rootMotion":false,"status":"opt-in lower-body pilot, full natural gait unaccepted"}
+	_last={"enabled":true,"identity":"male_nusantara","outfit":outfit,"direction":direction,"desiredDirection":desired,"heldFacing":direction!=desired,"contacts":pose,"upperFrame":upper_frame,"upperContactPhase":upper_contact_phase,"calibration":1.0/vertical,"supportBodyOffsetPixels":support_body_offset*vertical,"pelvisDropPixels":drop*vertical,"requestedDropPixels":requested_drop*vertical,"bodyShift":[_body_shift.x,_body_shift.y],"reachValid":not unreachable,"maxLengthError":max_length_error,"attachmentOffset":root_hip+up*12-proxy.position,"rootMotion":false,"status":"opt-in lower-body pilot, full natural gait unaccepted"}
 	if physical_plane: _last["contactTrace"]=_planner.publish_contact_trace()
 	return _last.duplicate(true)
