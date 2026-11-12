@@ -1,5 +1,9 @@
 # Handoff aktif agent
 
+## GitHub Actions is the CI home, 12 November 2026
+
+The owner restored GitHub Actions and directed that all CI and its reports live there; Gitea/GitLab are code mirrors without pipelines. [The migration report](reviews/github-actions-migration-2026-11-12.md) and [active runbook](operations-github.md) record the workflow, settings and verification. This is a CI/delivery-candidate change only: staging remains image `55da5dd`/PCK `0725713d` until separately released. The owner's two untracked Cloudflare audit notes are left for their own review. Next: finish the GitHub run, confirm its artifacts and all three remote heads, then return to the physical-device and HUD acceptance gates.
+
 ## Persiapan security audit Cloudflare, 12 November 2026
 
 [Laporan audit](reviews/cloudflare-security-audit-2026-11-12.md) mencatat postur keamanan aktual staging dan rencana integrasi Cloudflare. Cloudflare **belum aktif** — ini persiapan, bukan implementasi. Pemeriksaan live header menemukan dua temuan sebelum Cloudflare dipasang: (1) header `Strict-Transport-Security` duplikat — nginx mengirim `max-age=31836000` tanpa `includeSubDomains`, Helmet mengirim versi lengkap; (2) `x-ratelimit-*` headers mengekspos batas internal ke semua klien. Perbaikan keduanya tercatat di laporan. Urutan integrasi Cloudflare: ekspor DNS → Full (Strict) SSL/TLS → orange-cloud aktif → restrict firewall aaPanel ke Cloudflare IP ranges → WAF/cache rules. `TRUST_PROXY=10.1.0.18` di `.env` **tidak berubah**. Tidak ada perubahan kode, DNS, atau konfigurasi produksi dalam sesi ini. Langkah berikutnya membutuhkan akses DNS registrar dan aaPanel dari owner.

@@ -16,9 +16,9 @@ export function pushBranch(branch, { run = git, dryRun = false } = {}) {
   run(['show-ref', '--verify', ref]);
   const commit = run(['rev-parse', '--verify', `${ref}^{commit}`]);
   if (!/^[a-f0-9]{40}(?:[a-f0-9]{24})?$/.test(commit)) throw new Error('Cannot freeze the branch commit.');
-  for (const remote of ['gitea', 'github', 'gitlab']) run(['remote', 'get-url', remote]);
+  for (const remote of ['github', 'gitea', 'gitlab']) run(['remote', 'get-url', remote]);
   const results = [];
-  for (const remote of ['gitea', 'github', 'gitlab']) {
+  for (const remote of ['github', 'gitea', 'gitlab']) {
     const args = ['push'];
     if (dryRun) args.push('--dry-run');
     if (remote === 'gitlab') args.push('-o', 'ci.skip');
@@ -29,7 +29,7 @@ export function pushBranch(branch, { run = git, dryRun = false } = {}) {
     } catch (error) {
       results.push({ remote, commit, status: 'failed', error: error.message });
       // A failed primary push must not publish a new backup-only candidate.
-      if (remote === 'gitea') break;
+      if (remote === 'github') break;
     }
   }
   return results;

@@ -1,5 +1,9 @@
 # Gitea utama, GitHub dan GitLab sebagai backup
 
+> Historical operating guide for the 10–12 November 2026 Gitea CI period. The
+> active repository and CI procedure is now [GitHub Actions](operations-github.md).
+> Gitea receives source only and its repository Actions are disabled.
+
 Keputusan pengguna, 10 November 2026: repository dan pipeline dipusatkan di Gitea. GitHub serta GitLab tetap menerima riwayat Git, tanpa menjalankan CI. GitLab CE yang pernah dibatalkan bukan layanan yang digunakan sekarang; host `git.ppti.me` saat ini menyediakan Gitea API.
 
 ## Repository dan autentikasi

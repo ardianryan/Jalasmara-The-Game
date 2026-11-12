@@ -1,10 +1,10 @@
-# GitLab is a backup remote. Gitea owns CI and delivery artifacts.
+# GitLab mirrors source only. GitHub Actions owns CI and delivery artifacts.
 workflow:
   rules:
     - when: never
 
 backup_only:
   script:
-    - echo 'Run .gitea/workflows/ci.yml on Gitea instead.'
+    - echo 'Run .github/workflows/ci.yml on GitHub instead.'
   rules:
     - when: never

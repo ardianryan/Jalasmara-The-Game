@@ -1,6 +1,6 @@
 # Operasi Jalasmara
 
-**Pembaruan 10 November 2026:** [Gitea](operations-gitea.md) menjadi pusat repository, CI dan paket delivery. GitHub/GitLab tetap backup dengan CI dinonaktifkan. Tahap aktivasi VPS di bawah tetap terpisah dari build dan tidak otomatis dijalankan oleh workflow baru.
+**Pembaruan 12 November 2026:** [GitHub Actions](operations-github.md) menjalankan CI dan menyimpan laporan serta kandidat delivery. Gitea/GitLab hanya mirror kode. Tahap aktivasi VPS di bawah tetap terpisah dari build dan tidak otomatis dijalankan oleh workflow.
 
 ## Topologi staging
 
@@ -190,9 +190,7 @@ Rujukan: [Compose resmi ZITADEL](https://zitadel.com/docs/self-hosting/deploy/co
 
 ## CI dan akses repository
 
-Semua eksekusi build, pengujian, audit dependensi, dan CodeQL berada di `.gitlab-ci.yml`. GitHub Actions dinonaktifkan. GitLab menyimpan JUnit dan SARIF sebagai artefak; job report menyalin sumber ke `main` GitHub dan laporan ke branch `ci-reports` dengan deploy key write khusus repository.
-
-Variabel `GITHUB_DEPLOY_KEY_B64` harus masked dan protected. Jangan memasukkan token pribadi `gh`/`glab` ke CI. Branch utama GitLab harus protected agar variabel tersedia. Pipeline merge request tidak menerima deploy key protected. Deploy key tidak memiliki hak GitHub Code Scanning; SARIF dikirim sebagai berkas laporan, bukan anotasi native GitHub.
+Semua eksekusi build, pengujian, audit dependensi, dan CodeQL berada di [GitHub Actions](operations-github.md). JUnit, audit JSON, SARIF, log dunia, dan SHA source disimpan sebagai artifact `verification-reports`; paket context/manifest terverifikasi sebagai `verified-delivery`. Gitea Actions dinonaktifkan pada repository; `.gitlab-ci.yml` tetap menolak semua pipeline. Tidak ada deploy key CI atau branch `ci-reports`.
 
 Job `verify` juga menjalankan lima uji CPU packager (`python3 scripts/test_package_web_release.py -v`); ini memeriksa archive/manifest/gzip/overwrite, bukan penerimaan image atau deployment.
 

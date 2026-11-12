@@ -1,5 +1,9 @@
 # Addendum Gemini: primary Gitea dan backup tiga remote
 
+> Historical day01 addendum. The delegation is closed and the active CI home is
+> [GitHub Actions](../operations-github.md). Do not apply its Gitea-only push/CI
+> instructions to current work.
+
 Keputusan pengguna setelah handoff day01: Gitea menjadi pusat repo/CI/CD; GitHub dan GitLab tetap menerima backup Git. Addendum ini mengatasi larangan push menyeluruh pada dokumen day01 **hanya untuk checkpoint branch milik Gemini**. Larangan merge/main/deploy, ownership file, batas audit dan gate pengujian tetap berlaku.
 
 1. Tetap bekerja di worktree day01 sendiri. Jangan mengedit worktree CI integrator atau memindahkan runtime game agar memperoleh pipeline.

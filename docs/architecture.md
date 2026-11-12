@@ -23,7 +23,7 @@ flowchart LR
 
 ## Build and release
 
-Gitea CI verifies source and creates a hashed delivery bundle. A separate operator step backs up and tests MongoDB restore, verifies bundle and image bytes, activates only the application service, and runs public browser smoke with an isolated fixture. The previous image remains tagged for rollback. GitHub and GitLab mirror Git history but do not run the project CI. See [operations](operations.md), [Gitea workflow](operations-gitea.md), and the [latest release report](reviews/staging-main-446abf4-2026-11-10.md).
+GitHub Actions verifies source and creates a hashed delivery bundle. A separate operator step backs up and tests MongoDB restore, verifies bundle and image bytes, activates only the application service, and runs public browser smoke with an isolated fixture. The previous image remains tagged for rollback. Gitea and GitLab mirror Git history without running project CI. See [operations](operations.md), [GitHub workflow](operations-github.md), and the [latest release report](reviews/hud-short-landscape-2026-11-12.md).
 
 ## Evidence levels
 

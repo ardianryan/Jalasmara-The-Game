@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# The job container owns this disposable server; no production connection is used.
-if [ "${GITEA_ACTIONS:-}" != true ]; then
-  echo 'Run this bootstrap only inside a Gitea Actions job.' >&2
+# The GitHub job container owns this disposable server; no production connection is used.
+if [ "${GITHUB_ACTIONS:-}" != true ] || [ "${GITHUB_REPOSITORY:-}" != ardianryan/Jalasmara-The-Game ]; then
+  echo 'Run this bootstrap only inside the Jalasmara GitHub Actions job.' >&2
   exit 1
 fi
 if [ "$(id -u)" != 0 ] || [ "$(dpkg --print-architecture)" != amd64 ]; then

@@ -60,7 +60,7 @@ The separate [JalasmaraWorldKit](https://git.ppti.me/ardianryan/jalasmara-worldk
 
 ## Development and evidence
 
-Gitea is the source and CI home: [repository](https://git.ppti.me/ardianryan/Jalasmara-The-Game) · [Actions](https://git.ppti.me/ardianryan/Jalasmara-The-Game/actions). [GitHub](https://github.com/ardianryan/Jalasmara-The-Game) and [GitLab](https://gitlab.com/ardianryan/jalasmara-the-game) are Git backups; their CI pipelines are disabled. A passing CI run creates a verified delivery candidate, while staging activation, backup, rollback, and public smoke are separate steps described in [operations](docs/operations.md).
+[GitHub](https://github.com/ardianryan/Jalasmara-The-Game) is the source and [Actions](https://github.com/ardianryan/Jalasmara-The-Game/actions) CI home. [Gitea](https://git.ppti.me/ardianryan/Jalasmara-The-Game) and [GitLab](https://gitlab.com/ardianryan/jalasmara-the-game) mirror code without running CI. Verification reports and a hashed delivery candidate are retained as GitHub Actions artifacts; staging activation, backup, rollback, and public smoke are separate steps described in [operations](docs/operations-github.md).
 
 The [gallery](docs/visual/README.md) contains selected original-game screenshots with source/PCK hashes and acceptance limits. Reference moodboards are not distributed as game assets. For current decisions and remaining blockers, use the [active handoff](docs/agent-handoff.md) and [PRD](docs/PRD.md); older review reports remain historical evidence.
 

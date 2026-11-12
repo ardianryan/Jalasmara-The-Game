@@ -21,10 +21,10 @@ function fixture(failingRemote) {
 test('the same explicit branch reaches primary first, with CI skip only on GitLab', () => {
   const f = fixture();
   const results = pushBranch('work/example', { run: f.run });
-  assert.deepEqual(results.map(r => r.remote), ['gitea', 'github', 'gitlab']);
+  assert.deepEqual(results.map(r => r.remote), ['github', 'gitea', 'gitlab']);
   assert.deepEqual(f.pushes, [
-    ['push', 'gitea', `${commit}:refs/heads/work/example`],
     ['push', 'github', `${commit}:refs/heads/work/example`],
+    ['push', 'gitea', `${commit}:refs/heads/work/example`],
     ['push', '-o', 'ci.skip', 'gitlab', `${commit}:refs/heads/work/example`],
   ]);
 });
@@ -44,13 +44,13 @@ test('an in-flight branch advance cannot change the commit sent to later backups
 });
 
 test('a primary failure prevents backup publication', () => {
-  const f = fixture('gitea');
+  const f = fixture('github');
   assert.equal(pushBranch('work/example', { run: f.run }).length, 1);
   assert.equal(f.pushes.length, 1);
 });
 
 test('a backup failure still attempts the other backup and reports the failure', () => {
-  const f = fixture('github');
+  const f = fixture('gitea');
   const result = pushBranch('work/example', { run: f.run });
   assert.equal(result[1].status, 'failed');
   assert.equal(result[2].status, 'pushed');

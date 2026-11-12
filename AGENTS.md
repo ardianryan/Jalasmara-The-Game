@@ -1,12 +1,12 @@
 # Petunjuk kerja agent Jalasmara
 
-## Primary Gitea dan backup remote, keputusan terbaru
+## Primary GitHub dan mirror source, keputusan terbaru (12 November 2026)
 
-Repo/CI/delivery kini dipusatkan di Gitea `https://git.ppti.me/ardianryan/Jalasmara-The-Game`; GitHub dan GitLab adalah backup dengan CI dimatikan. Baca [operasi Gitea](docs/operations-gitea.md) serta [addendum Gemini](docs/plans/08c-gitea-ci-addendum.md). Untuk branch sendiri yang siap direkam gunakan `npm run push:all -- <branch>`; jangan force/mirror/delete atau mengaktifkan CI backup. Keputusan pengguna ini mengatasi larangan push menyeluruh pada handoff day01 hanya untuk checkpoint branch Gemini miliknya; main, worktree lain dan deploy tetap dilarang. Push bukan bukti CI/art/physics diterima.
+GitHub `https://github.com/ardianryan/Jalasmara-The-Game` kini memegang CI dan paket delivery. Gitea dan GitLab hanya mirror kode, dengan Actions/CI dinonaktifkan. Laporan ada sebagai artifact GitHub Actions; jangan menghidupkan ulang `ci-reports` atau menjalankan pipeline di mirror. Baca [operasi GitHub](docs/operations-github.md). Untuk commit yang siap direkam gunakan `npm run push:all -- <branch>`; helper mengirim SHA yang sama ke GitHub dahulu, lalu Gitea dan GitLab tanpa force. Push bukan bukti CI/art/physics diterima. Aktivasi staging tetap tahap terpisah. Keputusan ini menggantikan instruksi CI Gitea pada [operasi lama](docs/operations-gitea.md) dan [addendum Gemini historis](docs/plans/08c-gitea-ci-addendum.md).
 
-## Delegasi Gemini satu hari, 10 November 2026
+## Delegasi Gemini satu hari, 10 November 2026 (historis, sudah ditutup)
 
-Pengguna meminta Gemini bekerja pada branch/worktree sendiri. Untuk sesi tersebut baca [kontrak day01](docs/plans/08-gemini-day01-handoff.md), [prompt lengkap](docs/plans/08-gemini-day01-prompt.md), dan [kontrak Imagen](docs/plans/08-gemini-day01-imagen.md). Worktree utama `/Users/ardianryan/Documents/Jalasmara-gemini-day01`, branch `work/gemini-day01`; checkout utama dan worktree lama read-only. Audit/gait lab baru dibuat hanya bila diperlukan, sesuai kontrak. Semua hasil commit lokal; tidak merge/push/deploy dalam delegasi ini. Ini izin mengerjakan paket bounded sehari, bukan sekadar audit-only, dan bukan izin menulis ke worktree agent lain. Aturan umum berikut tetap berlaku.
+Kontrak [day01](docs/plans/08-gemini-day01-handoff.md), [prompt](docs/plans/08-gemini-day01-prompt.md), dan [Imagen](docs/plans/08-gemini-day01-imagen.md) adalah catatan delegasi lama, bukan instruksi aktif. Branch/worktree tersebut sudah ditutup dalam [konsolidasi final](docs/reviews/branch-final-consolidation-2026-11-12.md). Jangan membuatnya kembali hanya karena laporan lama menyebut namanya.
 
 ## Baca sebelum mengubah source
 
