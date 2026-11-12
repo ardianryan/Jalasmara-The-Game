@@ -1,5 +1,13 @@
 # Jalasmara visual evidence
 
+## Nala land-cadence staging release, 12 November 2026
+
+| Public dock | Public forest |
+| --- | --- |
+| ![Nala and residents stand fully visible on the released Bandar Hujung dock.](nala-gait/staging-hub-7f8d0cd-2026-11-12.png) | ![The released build reaches the forest canopy on a physical route.](nala-gait/staging-forest-7f8d0cd-2026-11-12.png) |
+
+Original public Chromium/SwiftShader captures from source `7f8d0cd07667f5714a9b3c1207b44ee808368369`, image `sha256:50aa0520fe7b07395d133bd416623c0008d64a82fee341460e279c42deaa4375`, PCK `eaa90ae68a8af30a7bf530a6b33f0053d092b742197eb72be24776e1846663aa`. Copied byte-identically from the isolated 6/6 smoke; PNG SHA-256 values `717980b4066639f962a81e089a737fc06f1599e2e231e601307e11fc85b17098` and `390be84e88b13753f5bc4fb83154723da9b49a1aff603269be5a61d0d307fbe8`. See the [release report](../reviews/nala-gait-staging-2026-11-12.md). This is screenshot evidence, not a moving gait or Windows/S23 FPS proof, and not a game/WorldKit asset.
+
 ## Nala gait source candidate, 12 November 2026
 
 ![A 32-frame native contact sequence shows Nala's advancing and stopping poses on the Bandar Hujung path.](nala-gait/native-contact-sequence-2026-11-12.png)
