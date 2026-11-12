@@ -1,5 +1,13 @@
 # Jalasmara visual evidence
 
+## Day-loop segment checks, 12 November 2026
+
+| Local three-star capture | Local morning after Kedai/rest | Public staging forest |
+| --- | --- | --- |
+| ![Two captured biota and oxygen HUD during local dive testing.](day-loop-local-capture-20261112.png) | ![Story day two after a real Kedai shift, bed sleep, exit and reload.](day-loop-local-morning-20261112.png) | ![Disposable staging player in the forest after crossing the real gate.](day-loop-staging-forest-20261112.png) |
+
+Original Jalasmara browser screenshots copied byte-identically from the three test fixtures in [the report](../reviews/day-loop-check-2026-11-12.md). Source `5f124fc72a0abbc0566d786f2b3b424929b14231`, released runtime source `128fc592f9fe15cc2803a1a734a8200f39ee1422`, PCK SHA-256 `a2206c8993cc55469d45627417891b1e9290fc757c49c6b871749f27fb1e43f6`. PNG SHA-256 respectively `803febd6e35dc385570d9282cee9cfce6962eee58cf58724812272fd36f68280` (361,303 bytes), `6663750caed09bddd38199f73d97793bba4f11dd97b4a70b23255ef14fbf9a60` (350,304 bytes), and `2d1d895cde90665fd7e0b06c9b020ce04746678f1f1bafa41453cb69e36b6e69` (253,920 bytes). These are separate fixtures and development evidence, not one uninterrupted full-day proof, physical-device FPS evidence, or game/WorldKit assets under the code license. Each fixture was removed.
+
 ## Staging `main` 128fc59: active Kedai shift recovered from the dock
 
 | Automatic recovery panel | Movement after temporary close |
