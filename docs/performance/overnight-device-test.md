@@ -1,6 +1,6 @@
 # Pengujian Windows dan Samsung S23
 
-Status 12 November 2026: pengguna sudah mencoba Windows dan Samsung S23; gerakan cukup lancar dengan sedikit lag, tetapi audio kemudian dilaporkan tidak berbunyi. Koreksi bus Web kini aktif di staging. Dokumen ini memandu pengujian ulang pada perangkat asli, bukan klaim bahwa bunyi sudah baik.
+Status 12 November 2026: pengguna sudah mencoba Windows dan Samsung S23; gerakan cukup lancar dengan sedikit lag. Setelah koreksi bus Web aktif di staging, pengguna memastikan musik dan SFX tombol menu terdengar serta musik lancar selama 1–2 menit di kedua perangkat. Pengujian sesi panjang dan seluruh zona belum dilakukan.
 
 ## Identitas kandidat
 
@@ -11,7 +11,7 @@ Status 12 November 2026: pengguna sudah mencoba Windows dan Samsung S23; gerakan
 | SHA-256 PCK dan ukuran | `38c5aaa95cef751f6cedee7b439df1e1b936c12def36a8afd43d02d187462a3a`, 69.775.548 byte |
 | Image staging | `sha256:044b9ea36587bfcd768ab886f1480f4a9443c6c27e5dbdc2bf767cb62cb7f214` |
 | Tanggal aktivasi | 12 November 2026 |
-| Hasil startup browser publik | Rute fisik penuh 6/6 lulus, termasuk login/READY, desa→hutan, jurnal, jam dan save/reload; [laporan koreksi bus](../reviews/web-audio-silent-bus-2026-11-12.md). Bunyi pada perangkat belum diverifikasi. |
+| Hasil startup browser publik | Rute fisik penuh 6/6 lulus, termasuk login/READY, desa→hutan, jurnal, jam dan save/reload; [laporan koreksi bus](../reviews/web-audio-silent-bus-2026-11-12.md). Pengguna mengonfirmasi musik dan SFX tombol terdengar serta musik lancar 1–2 menit di Windows/S23. |
 
 Integrator telah memverifikasi pin dan startup publik. Recorder menyertakan identitas PCK dari loader di awal/akhir rekaman; hasil lama tanpa identitas tetap ditandai tidak tersedia. Hasil recorder lokal memakai SwiftShader dan tidak menjadi pengukuran Windows atau S23.
 
