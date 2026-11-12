@@ -1,5 +1,13 @@
 # Jalasmara visual evidence
 
+## Village steps and Gajah Mina candidate, 12 November 2026
+
+| Seven original-art step strips | Gajah Mina phase one | Gajah Mina phase two |
+| --- | --- | --- |
+| ![Seven NPC idle and four short-step poses rendered at the actual 480×270 Godot scale.](village-simple-steps-native-20261112.png) | ![Gajah Mina swims in the right arena during the first fight phase.](gajah-mina-motion-phase1-20261112.png) | ![The faster Gajah Mina second phase retains a connected transparent silhouette.](gajah-mina-motion-phase2-20261112.png) |
+
+Original Jalasmara Godot 4.7.2 native Compatibility fixtures from candidate source `a47b32b011a4110616c5b0b97fcfddc06c91eb00`, local PCK `d667da760fec40b9b6cb132b4c5b3bc7fcf2d61b1096a960e6a73fb4a5e71dcc` (69,980,732 bytes). The first image renders fallback strips; four of those residents normally use their richer existing rig. PNG SHA-256 respectively: `d09b02d755a68637aa004040879893261eca63c53d9a37e267d7a92c2b66d1e0`, `95328d0d87661421b49f879fdd4dac6c9efd9a8c3475560bccb5aeda35df8cfb`, `c43cb6786ddc2c7e62679002015799fb302027b39de1df22d2c1cdc72b25cfde`. [Motion report](../reviews/village-boss-motion-2026-11-12.md). These are native development captures, not staging, full-playthrough, Windows/S23 FPS or game/WorldKit assets under the code license.
+
 ## Short-landscape HUD release, 12 November 2026
 
 | Public staging dock, 844×390 | Public staging forest, 667×375 |
