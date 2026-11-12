@@ -5,6 +5,8 @@ This list is intentionally short and updated from [the active handoff](docs/agen
 ## Priority 1 — playable core
 
 - [ ] Rebuild and verify Nala's physical gait with tracked fixtures, flat-ground and terrain cases, native moving evidence, and browser input. Keep the current pilot off until all gates pass.
+  - [x] Advance land atlas from accepted 3D travel; align opt-in torso and separate gear to planted-foot phase; pass flat32 and terrain16 source fixtures. See [12 November checkpoint](docs/reviews/nala-natural-gait-2026-11-12.md).
+  - [ ] Review unobstructed native motion in all directions and on stairs, then check real Windows/S23 browser input, visual contacts, frame pacing and audio before enabling the pilot.
 - [ ] Review the latest staging build on actual Windows and Samsung S23 hardware with the user's help; record frame time, input, loading, fullscreen, and HUD readability. The user has already offered device access.
 - [ ] Complete a human start-to-finish playthrough and record progression, save/reload, economy, and accessibility issues.
 
