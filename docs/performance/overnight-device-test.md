@@ -1,18 +1,19 @@
 # Pengujian Windows dan Samsung S23
 
-Status 10 November 2026: pengguna bersedia menjalankan pengujian pada perangkat asli setelah kandidat siap. Dokumen ini adalah panduan pelaksanaan, bukan hasil pengujian. Kandidat overnight kini aktif dan smoke publik default lulus; pin di bawah mengikat pengujian perangkat yang akan dilakukan.
+Status 12 November 2026: pengguna sudah mencoba Windows dan Samsung S23; gerakan cukup lancar dengan sedikit lag, tetapi musik patah-patah atau kadang tidak dimuat. Perbaikan playback Web kini aktif di staging. Dokumen ini memandu pengujian ulang pada perangkat asli, bukan klaim bahwa bunyi sudah baik.
 
 ## Identitas kandidat
 
 | Data | Nilai sebelum pengujian |
 |---|---|
 | URL kandidat | https://staging-jalasmara.ardianryan.com |
-| Commit sumber runtime | `bf55342d82b439119f48aee3a5a7189a33b26357` (image/API/host), ekspor Godot `72b173c5f04d986e365fa34fd19daea62fb65125` |
-| SHA-256 PCK dan ukuran | `9a1ca274b88cf65e819f1c117da2ede7992420e2128b454ef6bc3cf7f19cbb1a`, 64.500.848 byte/62 bagian |
-| Tanggal dan jam aktivasi | 10 November 2026, 05.48.23 WIB |
-| Hasil startup browser publik | Image559/PCK9a1 lulus6/6 pemeriksaan baru pada HTTP/2 default: login/READY, rute desa–hutan, jurnal, save/reload dan pemulihan jam server; [laporan publik](../reviews/overnight-export5-integration.md) |
+| Commit sumber runtime | `7792cff6e06f1a607d3d647c2bd8896abae53d96` |
+| SHA-256 PCK dan ukuran | `91acb311d896f6597ee04270c13bb858e422e57ba603a3175e3df705c5d59039`, 69.775.548 byte |
+| Image staging | `sha256:d267a8ce3aa364d50febf2cceaad473be4ea649c9953eea23bc245fa1af3db70` |
+| Tanggal aktivasi | 12 November 2026 |
+| Hasil startup browser publik | Host-only dan rute fisik penuh masing-masing 6/6 lulus, termasuk login/READY, desa→hutan, jurnal, jam dan save/reload; [laporan rilis audio](../reviews/web-audio-playback-2026-11-12.md). |
 
-Integrator telah memverifikasi pin dan startup publik. Recorder pada kandidat ini menyertakan identitas PCK dari loader di awal/akhir rekaman; hasil lama tanpa identitas tetap ditandai tidak tersedia, bukan diisi dengan kandidat saat ini. Hasil recorder lokal pada PCK `1d3c94a5…` memakai SwiftShader dan tidak menjadi pengukuran Windows atau S23.
+Integrator telah memverifikasi pin dan startup publik. Recorder menyertakan identitas PCK dari loader di awal/akhir rekaman; hasil lama tanpa identitas tetap ditandai tidak tersedia. Hasil recorder lokal memakai SwiftShader dan tidak menjadi pengukuran Windows atau S23.
 
 ## Sesi singkat, sekitar lima menit per perangkat
 
@@ -25,6 +26,7 @@ Gunakan akun pemain sendiri dan Chrome yang biasa dipakai. Catat versi browser, 
 5. Setelah rekaman selesai, buka Menu dan pilih **Unduh laporan JSON**. Nama berkas dimulai dengan `jalasmara-performa-`. Simpan hasilnya; aplikasi tidak mengunggah laporan secara otomatis.
 6. Ulangi rekaman 30 detik di area dan rute yang sama dengan **Ringan**. Jika tersedia dalam progres pemain, ambil rekaman tambahan di hutan atau laut. Tidak perlu membuka area terkunci. Gunakan durasi lima menit hanya untuk menilai panas atau penurunan kelancaran yang muncul belakangan.
 7. Buka percakapan dan jurnal. Periksa teks terbaca, tombol lanjut terjangkau, dan dunia tidak menerima gerakan pemain ketika panel terbuka. Jika sudah berada pada fase malam, periksa pelanggan dan resep kedai dapat dibaca serta digulir tanpa menutupi konteks pelanggan.
+8. Dengarkan musik sejak layar judul, lalu desa siang. Jika progres memungkinkan, dengarkan pula hutan, senja, kedai malam, dan gua/laut. Coba mute lalu unmute, pindah tab sebentar, dan muat ulang sekali. Catat di area mana musik tidak mulai, terputus atau terdengar pecah; sebutkan apakah SFX tombol juga terpengaruh. Pengujian bunyi ini terpisah dari metrik frame recorder.
 
 Saat membuka Menu, rekaman menandai jeda dan mengecualikannya dari distribusi frame aktif. Membuka tab lain juga bukan bagian pengukuran gameplay. Gunakan rute dan kondisi yang serupa ketika membandingkan Auto dengan Ringan.
 
