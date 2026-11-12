@@ -1,17 +1,17 @@
 # Pengujian Windows dan Samsung S23
 
-Status 12 November 2026: pengguna sudah mencoba Windows dan Samsung S23; gerakan cukup lancar dengan sedikit lag, tetapi musik patah-patah atau kadang tidak dimuat. Perbaikan playback Web kini aktif di staging. Dokumen ini memandu pengujian ulang pada perangkat asli, bukan klaim bahwa bunyi sudah baik.
+Status 12 November 2026: pengguna sudah mencoba Windows dan Samsung S23; gerakan cukup lancar dengan sedikit lag, tetapi audio kemudian dilaporkan tidak berbunyi. Koreksi bus Web kini aktif di staging. Dokumen ini memandu pengujian ulang pada perangkat asli, bukan klaim bahwa bunyi sudah baik.
 
 ## Identitas kandidat
 
 | Data | Nilai sebelum pengujian |
 |---|---|
 | URL kandidat | https://staging-jalasmara.ardianryan.com |
-| Commit sumber runtime | `7792cff6e06f1a607d3d647c2bd8896abae53d96` |
-| SHA-256 PCK dan ukuran | `91acb311d896f6597ee04270c13bb858e422e57ba603a3175e3df705c5d59039`, 69.775.548 byte |
-| Image staging | `sha256:d267a8ce3aa364d50febf2cceaad473be4ea649c9953eea23bc245fa1af3db70` |
+| Commit sumber runtime | `acd70c342b4f8768386af7fc70e6f0e50531f9bf` |
+| SHA-256 PCK dan ukuran | `38c5aaa95cef751f6cedee7b439df1e1b936c12def36a8afd43d02d187462a3a`, 69.775.548 byte |
+| Image staging | `sha256:044b9ea36587bfcd768ab886f1480f4a9443c6c27e5dbdc2bf767cb62cb7f214` |
 | Tanggal aktivasi | 12 November 2026 |
-| Hasil startup browser publik | Host-only dan rute fisik penuh masing-masing 6/6 lulus, termasuk login/READY, desa→hutan, jurnal, jam dan save/reload; [laporan rilis audio](../reviews/web-audio-playback-2026-11-12.md). |
+| Hasil startup browser publik | Rute fisik penuh 6/6 lulus, termasuk login/READY, desa→hutan, jurnal, jam dan save/reload; [laporan koreksi bus](../reviews/web-audio-silent-bus-2026-11-12.md). Bunyi pada perangkat belum diverifikasi. |
 
 Integrator telah memverifikasi pin dan startup publik. Recorder menyertakan identitas PCK dari loader di awal/akhir rekaman; hasil lama tanpa identitas tetap ditandai tidak tersedia. Hasil recorder lokal memakai SwiftShader dan tidak menjadi pengukuran Windows atau S23.
 
