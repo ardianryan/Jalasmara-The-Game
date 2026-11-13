@@ -1,5 +1,11 @@
 # Jalasmara visual evidence
 
+## HUD release on public staging, 13 November 2026
+
+![The public 667×375 forest view with the compact minimap on the released HUD.](hud-staging-forest-667x375-20261113.png)
+
+Original public Chromium/SwiftShader capture from source `df97df7`, active image `5e90232c9a04`, PCK `7f5baf3d020315aefb572f920de42b3723ea1d970da2e2303a735d626b531756`; PNG SHA-256 `df28e4099ba5e3ea449b54e12642d87f1f7074d6d115661e66778e2b172aaed3`. The [release report](../reviews/hud-visibility-staging-2026-11-13.md) records the 6/6 smoke and limits. This is original development evidence, not a distributed asset or physical-device FPS proof.
+
 ## Short-landscape HUD layout, 13 November 2026
 
 ![Original Bahari HUD component at 667×375, showing the compact minimap and right-docked notice.](hud-visibility-667x375-20261113.png)
