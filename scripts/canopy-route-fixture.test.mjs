@@ -107,9 +107,19 @@ test("CPU projection assumptions stay tied to current renderer equations and swa
     "210+height*.25",
     "height*1.35",
     "camera_up()*width*.08",
-    "Vector3(sin(float(Time.get_ticks_msec())*.0009+float(leaf.phase))*sway,0,0)",
+    'preload("res://scripts/FoliageMotion.gd").land_offset(now,Vector2(home.x,home.y),wind,float(leaf.pixel),float(leaf.size))',
   ])
     assert(renderer.includes(expression), expression);
+  const foliage = readFileSync(
+    new URL("../client-godot/scripts/FoliageMotion.gd", import.meta.url),
+    "utf8",
+  );
+  for (const expression of [
+    "floorf(seconds*10.0)/10.0",
+    "roundf(distance/maxf(.2,pixel_step))*pixel_step",
+    "clampf(wind/22.0,.35,1.4)",
+  ])
+    assert(foliage.includes(expression), expression);
   const readability = readFileSync(
     new URL(
       "../client-godot/scripts/land/CanopyReadability3D.gd",
