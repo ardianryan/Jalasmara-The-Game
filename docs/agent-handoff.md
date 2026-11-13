@@ -1,5 +1,9 @@
 # Handoff aktif agent
 
+## Gajah Mina natural-motion source candidate, 13 November 2026
+
+The owner reported that the released Gajah Mina animation still looked unnatural. The isolated `work/boss-natural-motion` candidate replaces its very subtle eight-frame swim with twelve padded jointed poses, a smoother curved patrol, body pitch, and attack draw-back/recovery while retaining fixed resonance targets and server combat rules. [The candidate report](reviews/gajah-mina-natural-motion-2026-11-13.md) includes the native contact sheet, asset provenance and failed local API attempt caused by absent MongoDB/Redis. Focused motion, all 72 world scripts, typecheck, build and native HybridOcean rendering passed. **This source is not yet merged or active on staging.** Next: integrate on `main`, require GitHub Actions success, and activate the exact CI bundle with backup/restore and public smoke. A full six-hit browser fight and physical Windows/S23 frame pacing remain separate acceptance checks.
+
 ## Owner Gajah Mina access, 13 November 2026
 
 At the owner's explicit request, their existing staging account was advanced to story day 3/boss and oxygen/net level 3 without altering coins, inventory, missions, other ability levels, game source or active PCK. There was no active dive or shift. The change was guarded by the Redis player lock, committed in one MongoDB transaction, and recorded in the restricted audit collection. A fresh eligibility check passed and public health returned 200; the owner still needs to reload at the dock and confirm that a boss dive starts. No six-hit fight completion is claimed. See [the account-specific operation report](reviews/owner-boss-access-2026-11-13.md).

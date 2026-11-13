@@ -1,5 +1,11 @@
 # Jalasmara visual evidence
 
+## Gajah Mina swim revision candidate, 13 November 2026
+
+![Four native frames showing Gajah Mina's revised tail and fin strokes and curved patrol across both fight phases.](gajah-mina-natural-motion-native-20261113.png)
+
+Original Godot 4.7.2 native Compatibility capture from `work/boss-natural-motion`, local source candidate. Four frames from the production HybridOcean actor were reduced by nearest-neighbor sampling to a 960×540 contact sheet; PNG SHA-256 `0f65e9d83b8dc55618c9dcf3440a9c7939b7e42a300680a6780d664d0378ff86`. See [the review](../reviews/gajah-mina-natural-motion-2026-11-13.md). This is development evidence, not a staging screenshot, device benchmark, or separately licensed game asset.
+
 ## HUD release on public staging, 13 November 2026
 
 ![The public 667×375 forest view with the compact minimap on the released HUD.](hud-staging-forest-667x375-20261113.png)

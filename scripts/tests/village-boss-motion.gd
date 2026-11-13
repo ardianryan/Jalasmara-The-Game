@@ -20,16 +20,25 @@ func run() -> void:
 	motion.advance(0.0,"session",0,6,false,false,false)
 	var start: Vector2 = motion.position
 	var seen: Array=[]
+	var frame_indices := {}
+	var pitch_seen := false
 	var warnings:=0
 	var attacks:=0
+	var previous: Vector2 = motion.position
 	for i in range(160):
 		motion.advance(0.1,"session",0,6,false,true,false)
 		assert(motion.position.distance_to(motion.ANCHOR)<300,"Boss must remain inside the authored arena envelope")
+		assert(motion.position.distance_to(previous)<35,"Boss cannot jump between swim strokes or attacks")
+		previous=motion.position
 		if motion.telegraph: warnings+=1
 		if motion.attack_event: attacks+=1
+		frame_indices[motion.snapshot().frame]=true
+		if absf(motion.visual_angle())>0.005: pitch_seen=true
 		seen.append(motion.frame())
 	assert(start.distance_to(motion.position)>10 and warnings>0 and attacks>=3,"Boss must patrol and telegraph real attack cycles")
-	assert(seen[0]!=seen[7],"Boss parts must advance through different rendered frames")
+	assert(frame_indices.size()==motion.FRAME_COUNT and pitch_seen,"Boss must cycle all jointed frames and bank with vertical travel")
+	assert(seen[0]!=seen[7] and motion.frame().get_size()==motion.CELL,"Boss parts must advance through the padded source atlas")
+	assert(motion.attack_origin().distance_to(motion.position+Vector2(-170,38).rotated(motion.visual_angle()))<0.01,"Trunk projectile origin must follow body pitch")
 	var state:=root.get_node("GameState")
 	var old_dive: Dictionary=state.dive
 	state.dive={"id":"motion-test","mode":"boss","hits":0,"requiredHits":6}
@@ -54,16 +63,19 @@ func run() -> void:
 	var before_phase: Vector2=motion.position
 	for i in range(32):
 		motion.advance(.1,"session",3,6,false,true,false)
-		if i==0: assert(motion.position.distance_to(before_phase)<35,"Phase transition cannot teleport the boss")
+		if i==0:
+			assert(motion.position.distance_to(before_phase)<35,"Phase transition cannot teleport the boss")
+			assert(not motion.attack_event and not motion.telegraph,"Second phase must give a fresh warning before its first attack")
 		if motion.attack_event: break
 	assert(motion.attack_event)
 	main.call("_boss_tick",0.0)
 	assert(main.attacks.size()==2 and main.attacks[0].node.position==motion.attack_origin(),"Second phase must emit from the moving boss")
+	assert(main.attacks[1].node.position==motion.second_attack_origin(),"Second projectile must follow the pitched body")
 	main.free()
 	state.dive=old_dive
 	var frozen: Dictionary=motion.snapshot()
 	motion.advance(1.0,"session",0,6,true,true,false)
-	assert(motion.position==Vector2(float(frozen.x),float(frozen.y)) and motion.attack_clock==float(frozen.attackClock),"Quiz pause freezes boss patrol and attack timer")
+	assert(motion.position==Vector2(float(frozen.x),float(frozen.y)) and motion.attack_clock==float(frozen.attackClock) and motion.snapshot().frame==frozen.frame,"Quiz pause freezes boss patrol, attack timer and animation pose")
 	motion.advance(0.1,"session",3,6,false,true,false)
 	assert(motion.phase==2,"Second phase starts after half the recovery hits")
 	var second: Vector2=motion.position

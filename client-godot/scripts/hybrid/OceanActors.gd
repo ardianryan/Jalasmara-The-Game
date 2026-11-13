@@ -187,7 +187,8 @@ func _mirror_props(entities: Node, origin: Vector2) -> void:
 		var at: Vector2 = motion.position if motion != null else Vector2(3820,3140)
 		var boss: Texture2D = motion.frame() if motion != null else entities.get("boss_texture")
 		if at.distance_to(origin)<1300 and boss != null:
-			_sprite("boss",boss,at-Vector2(0,5),Vector2(420,280),10,Color(1,1,1,0.6) if bool(GameState.player.get("progress",{}).get("bossDefeated",false)) else Color.WHITE)
+			var sprite := _sprite("boss",boss,at-Vector2(0,5),Vector2(490,350) if motion!=null else Vector2(420,280),10,Color(1,1,1,0.6) if bool(GameState.player.get("progress",{}).get("bossDefeated",false)) else Color.WHITE)
+			sprite.rotation.z = -motion.visual_angle() if motion!=null else 0.0
 			debug_counts.boss = 1
 
 func _memory_texture() -> Texture2D:

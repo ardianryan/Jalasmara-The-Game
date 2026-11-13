@@ -100,7 +100,10 @@ func _draw() -> void:
 			var recovered: bool = state.player.get("progress",{}).get("bossDefeated",false)
 			var visual: Texture2D = motion.frame() if motion!=null else boss_texture
 			if visual:
-				draw_texture_rect(visual,Rect2(bp-Vector2(210,145),Vector2(420,280)),false,Color(1,1,1,.6 if recovered else 1))
+				var dimensions := Vector2(490,350) if motion!=null else Vector2(420,280)
+				draw_set_transform(bp,motion.visual_angle() if motion!=null else 0.0,Vector2.ONE)
+				draw_texture_rect(visual,Rect2(-dimensions/2.0,dimensions),false,Color(1,1,1,.6 if recovered else 1))
+				draw_set_transform(Vector2.ZERO,0.0,Vector2.ONE)
 			else:
 				draw_ellipse_shape(bp,recovered)
 func _draw_prop(index: int,at: Vector2,dimensions: Vector2,tint := Color.WHITE) -> void:

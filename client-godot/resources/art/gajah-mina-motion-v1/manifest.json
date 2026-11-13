@@ -1,12 +1,16 @@
 {
   "source": "client-godot/resources/art/gajah-mina.png",
   "sourceSha256": "29ac6c8f10caa139d0cf1290f4f161fb16c51d3a60fac64bc96cdc9d17da5d8b",
-  "method": "original transparent art, region cutouts, nearest-neighbor 192x128 frame atlas",
-  "cellSize": [
+  "method": "original transparent art, padded jointed cutouts, nearest-neighbor frame atlas",
+  "artSize": [
     192,
     128
   ],
-  "frames": 8,
+  "cellSize": [
+    224,
+    160
+  ],
+  "frames": 12,
   "parts": [
     "upper_fin",
     "rear_fin",

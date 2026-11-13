@@ -1407,7 +1407,7 @@ func _boss_tick(delta: float) -> void:
 		attacks.append({"node":projectile,"velocity":Vector2(-180,0)})
 		if second_phase:
 			var sludge := projectile.duplicate() as Polygon2D
-			sludge.position = boss_motion.position+Vector2(45,-125)
+			sludge.position = boss_motion.second_attack_origin()
 			add_child(sludge)
 			attacks.append({"node":sludge,"velocity":Vector2(0,140)})
 	for i in range(attacks.size()-1,-1,-1):
