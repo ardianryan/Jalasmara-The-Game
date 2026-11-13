@@ -1,5 +1,7 @@
 # Gajah Mina swim revision — 13 November 2026
 
+**Later status:** The final loop correction is merged and [active on staging](gajah-mina-natural-motion-staging-2026-11-13.md). Candidate wording below records the state at initial source review.
+
 The owner found the released Gajah Mina movement insufficiently natural. In the active build, its eight 192×128 poses changed only a few pixels and played at roughly two frames per second while the whole boss followed two mismatched sine waves. The boss could therefore read as a still cutout sliding through the cave. This package is isolated on `work/boss-natural-motion`; it is a source candidate until merged, verified by GitHub Actions and separately activated on staging.
 
 `tools/boss-motion/generate_boss_frames.py` now derives twelve 224×160 padded frames from the same original Jalasmara art. A stronger tail-fan sweep, offset fin strokes and fixed joint underlaps keep the silhouette connected; the existing body occupies the same 192×128 source area inside each cell. The two render paths preserve its 420×280 world-pixel body footprint and bank it mildly with vertical travel. `BossMotion.gd` uses one smooth curved patrol instead of two unrelated frequencies, eases phase transitions, advances animation at a swim cadence, draws back before firing and recovers through a short forward stroke. Projectile origins rotate with the displayed body. Quiz/host pause, six fixed resonance targets, health/damage/rewards, oxygen rules and server validation are unchanged.
