@@ -154,7 +154,16 @@ func _shape_node(renderer: Node, node: Dictionary, outline: PackedVector2Array, 
 	node.belly=width*(.69+float(node.wave)*.05)
 
 func _noise(point: Vector2) -> float:
-	return fposmod(sin(point.dot(Vector2(12.9898,78.233)))*43758.5453,1.0)
+	var at:=point*.68
+	var cell:=Vector2(floorf(at.x),floorf(at.y))
+	var fraction:=at-cell
+	fraction=Vector2(fraction.x*fraction.x*(3.0-2.0*fraction.x),fraction.y*fraction.y*(3.0-2.0*fraction.y))
+	var lower:=lerpf(_hash(cell),_hash(cell+Vector2.RIGHT),fraction.x)
+	var upper:=lerpf(_hash(cell+Vector2.DOWN),_hash(cell+Vector2.ONE),fraction.x)
+	return lerpf(lower,upper,fraction.y)
+
+func _hash(cell: Vector2) -> float:
+	return fposmod(sin(cell.dot(Vector2(12.9898,78.233)))*43758.5453,1.0)
 
 func _allowed(renderer: Node, surface: Dictionary, a: Dictionary, b: Dictionary) -> bool:
 	var id:=str(surface.get("id",""))

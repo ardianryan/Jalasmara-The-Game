@@ -315,7 +315,8 @@ export function Play({ canManage = false, onLogout }: PlayProps) {
           setNotice("");
         }}
       >
-        Menu
+        <img src="/icons/pixora-menu.svg" alt="" aria-hidden="true" />
+        <span>Menu</span>
       </button>
       {menuOpen && (
         <div className="play-menu-backdrop" onClick={closeMenu}>
@@ -355,6 +356,12 @@ export function Play({ canManage = false, onLogout }: PlayProps) {
               onClick={() => void toggleFullscreen()}
               aria-pressed={fullscreen}
             >
+              <img
+                className="play-menu-icon"
+                src="/icons/pixora-screen.svg"
+                alt=""
+                aria-hidden="true"
+              />
               {fullscreen ? "Keluar layar penuh" : "Layar penuh"}
             </button>
             {notice && (
@@ -403,6 +410,12 @@ export function Play({ canManage = false, onLogout }: PlayProps) {
               disabled={!ready || resettingPosition}
               onClick={() => void resetPlayerPosition()}
             >
+              <img
+                className="play-menu-icon"
+                src="/icons/pixora-reset.svg"
+                alt=""
+                aria-hidden="true"
+              />
               {resettingPosition ? "Memindahkan Nala…" : "Reset posisi pemain"}
             </button>
             <p className="play-position-help">
@@ -457,7 +470,15 @@ export function Play({ canManage = false, onLogout }: PlayProps) {
                 </>
               )}
             </fieldset>
-            <a href="/settings">Akun dan pengaturan</a>
+            <a href="/settings">
+              <img
+                className="play-menu-icon"
+                src="/icons/pixora-settings.svg"
+                alt=""
+                aria-hidden="true"
+              />
+              Akun dan pengaturan
+            </a>
             {canManage && <a href="/admin">Panel pengelola</a>}
             <button
               disabled={loggingOut}
@@ -471,6 +492,12 @@ export function Play({ canManage = false, onLogout }: PlayProps) {
                 }
               }}
             >
+              <img
+                className="play-menu-icon"
+                src="/icons/pixora-logout.svg"
+                alt=""
+                aria-hidden="true"
+              />
               {loggingOut ? "Keluar…" : "Keluar dari akun"}
             </button>
             <button
@@ -481,6 +508,12 @@ export function Play({ canManage = false, onLogout }: PlayProps) {
                 game.current?.contentWindow?.focus();
               }}
             >
+              <img
+                className="play-menu-icon"
+                src="/icons/pixora-resume.svg"
+                alt=""
+                aria-hidden="true"
+              />
               Lanjut bermain
             </button>
           </section>

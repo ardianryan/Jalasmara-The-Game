@@ -49,7 +49,8 @@ func _run() -> void:
 	var status: Dictionary=renderer.debug_status()
 	assert(status.active and status.renderer=="LandSubViewport3D")
 	assert(status.elevationDegrees==35 and status.azimuthDegrees==-45)
-	assert(status.viewport[0]*status.viewport[1]<=129600)
+	var budget=load("res://scripts/RenderBudget.gd")
+	assert(status.viewport[0]*status.viewport[1]<=budget.quality_budget(str(root.get_node("RenderQuality").get_profile().effective)))
 	assert(absf(float(status.viewport[0])/status.viewport[1]-renderer.get_viewport().get_visible_rect().size.aspect())<.015)
 	assert(not status.bitmapGround and status.houses==10 and status.glbModels>0)
 	if status.meshes>=60:

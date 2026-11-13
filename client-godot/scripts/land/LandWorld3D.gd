@@ -234,7 +234,8 @@ func camera_forward() -> Vector3:
 func _update_view(delta: float,immediate := false) -> void:
 	var logical_size:=get_viewport().get_visible_rect().size
 	display.size=logical_size
-	var render_size:=preload("res://scripts/RenderBudget.gd").viewport_size(logical_size)
+	var budget=preload("res://scripts/RenderBudget.gd")
+	var render_size:=budget.viewport_size(logical_size,budget.quality_budget(str(RenderQuality.get_profile().effective)))
 	if viewport_3d.size!=render_size: viewport_3d.size=render_size
 	# Follow accepted actor motion in world space; Camera2D's axis-aligned bounds
 	# describe the old view, not the rotated screen or a different terrace floor.
@@ -402,7 +403,10 @@ void fragment(){float wave=sin(UV.x*210.0+TIME)*sin(UV.y*170.0-TIME*.7);ALBEDO=m
 func _build_landmass() -> void:
 	var points: Array=map.get("landmass",[])
 	if points.size()>=3:
-		var surface:={"id":"OrganicCoastalBacking","polygon":points,"material":"grass","elevation":0,"heightPixels":-8.0,"priority":0}
+		var outline:=preload("res://scripts/land/CoastlineContour.gd").naturalize(_polygon(points))
+		var visual_points: Array=[]
+		for point in outline: visual_points.append([point.x,point.y])
+		var surface:={"id":"OrganicCoastalBacking","polygon":visual_points,"material":"grass","elevation":0,"heightPixels":-8.0,"priority":0}
 		_build_surface_geometry(surface)
 		if area=="hub":
 			_build_surface_geometry({"id":"HubGatewayBackingPatch","polygon":[[2160,15],[2390,20],[2385,95],[2160,95]],"material":"grass","elevation":3,"heightPixels":3.0*LEVEL_HEIGHT-2.0,"priority":1})
@@ -499,6 +503,13 @@ func _build_surface_geometry(surface: Dictionary) -> void:
 		return
 	var polygon:=_polygon(surface.polygon)
 	if polygon.size()<3: return
+	if str(surface.get("id",""))=="lower_court":
+		var anchors:=PackedVector2Array()
+		for stair in map.get("stairs",[]):
+			for pair in stair.get("path",[]): anchors.append(Vector2(float(pair[0]),float(pair[1])))
+		polygon=preload("res://scripts/land/CoastlineContour.gd").naturalize(polygon,true,anchors)
+	elif str(surface.get("id","")) in ["forest_west_land","forest_east_land"]:
+		polygon=preload("res://scripts/land/CoastlineContour.gd").naturalize(polygon,true)
 	var height:=float(surface.get("heightPixels",float(surface.get("elevation",0))*LEVEL_HEIGHT))+float(surface.get("priority",0))*.018
 	var vertices:=PackedVector3Array()
 	for point in polygon: vertices.append(map_point(point,height))
@@ -921,7 +932,7 @@ func _atlas_canopy(at: Vector3,width: float,index: int,track_occlusion := true) 
 	sprite.position=at+camera_up()*width*.08
 	_geometry.add_child(sprite)
 	if track_occlusion: _canopy_readability.register(sprite,frame,width)
-	_leaves.append({"node":sprite,"home":sprite.position,"phase":float(_trees)})
+	_leaves.append({"node":sprite,"home":sprite.position,"phase":float(_trees),"pixel":sprite.pixel_size,"size":1.0})
 	return true
 
 func _palm_fronds(crown: Vector3, radius: float) -> void:
@@ -977,7 +988,7 @@ void fragment(){vec4 leaf=texture(leaves,UV);float mask=smoothstep(.015,.05,leaf
 			tool.set_uv(outline[vertex_index]/texture.get_size())
 			tool.add_vertex(vertices[vertex_index])
 	instance.mesh=tool.commit()
-	_leaves.append({"node":instance,"home":at,"phase":float(seed_value)})
+	_leaves.append({"node":instance,"home":at,"phase":float(seed_value),"pixel":1.0,"size":1.0})
 
 func _rock(entry: Dictionary, rect: Rect2, center: Vector3) -> void:
 	var path:="res://resources/models/reef-rock.glb"
@@ -1201,6 +1212,7 @@ func _build_ground_details() -> void:
 				plant.position=at+camera_up()*plant_width*.36
 				plant.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 				_geometry.add_child(plant)
+				_leaves.append({"node":plant,"home":plant.position,"phase":float(tuft+cluster_index),"pixel":1.0,"size":.55})
 			for litter in range(3):
 				var leaf_offset:=Vector3(litter*7-7,tuft%3*3-3,-1.2)
 				_box("LeafLitter",at+leaf_offset,Vector3(4+tuft%3,2,0.8),_materials.get_material("leaves"))
@@ -1304,11 +1316,15 @@ func _process(delta: float) -> void:
 	_update_view(delta)
 	actors_3d.update_actors(delta)
 	var conditions:=EnvironmentState.snapshot()
-	var sway:=0.0 if bool(conditions.get("reduced_motion",false)) else 1.2+absf(float(conditions.get("wind_x",0)))*.035
+	var reduced:=bool(conditions.get("reduced_motion",false))
+	var now:=float(Time.get_ticks_msec())*.001
+	var wind:=absf(float(conditions.get("wind_x",0)))
+	var sway:=0.0 if reduced else 1.2+wind*.035
 	for leaf in _leaves:
 		var node: Node3D=leaf.node
 		var home: Vector3=leaf.home
-		node.position=home+Vector3(sin(float(Time.get_ticks_msec())*.0009+float(leaf.phase))*sway,0,0)
+		var drift:=0.0 if reduced else preload("res://scripts/FoliageMotion.gd").land_offset(now,Vector2(home.x,home.y),wind,float(leaf.pixel),float(leaf.size))
+		node.position=home+Vector3(drift,0,0)
 	for cloth in _cloth:
 		var panel: Node3D=cloth.node
 		panel.rotation.y=sin(float(Time.get_ticks_msec())*.0014+float(cloth.phase))*.035*sway
@@ -1483,6 +1499,7 @@ func _build_wet_banks() -> void:
 					plant.position=at+camera_up()*(6+index)
 					plant.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 					_geometry.add_child(plant)
+					_leaves.append({"node":plant,"home":plant.position,"phase":float(index),"pixel":1.0,"size":.45})
 				for pebble in range(4):
 					var offset:=Vector2(pebble*4-6,(pebble%2)*6-3)
 					_box("WetBankPebble",map_point(point+offset,0)-Vector3(0,0,8),Vector3(4+pebble%3,5,8),_materials.get_material("stone"))

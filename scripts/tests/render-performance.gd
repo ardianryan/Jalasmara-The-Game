@@ -9,6 +9,8 @@ func _initialize() -> void:
 func _run() -> void:
 	var budget=load("res://scripts/RenderBudget.gd")
 	assert(budget.viewport_size(Vector2(960,540))==Vector2i(480,270))
+	assert(budget.viewport_size(Vector2(960,540),budget.quality_budget("balanced"))==Vector2i(640,360))
+	assert(budget.quality_budget("low")==129600)
 	for logical in [Vector2(667,540),Vector2(1290,540),Vector2(960,2077),Vector2(3840,1080)]:
 		var size: Vector2i=budget.viewport_size(logical)
 		assert(size.x*size.y<=129600)
@@ -153,5 +155,5 @@ func _run() -> void:
 	state.dive={}
 	scene.free()
 	await process_frame
-	print("RENDER PERFORMANCE PASS: aspect-preserving129600pixelbudget, opt-in diagnostics, five crop stage changes without static/water/NPC rebuilds, unchanged-plot identity, bounded shorelinecache, inactivewater pause/resume")
+	print("RENDER PERFORMANCE PASS: aspect-preserving129600/230400pixelbudgets, opt-in diagnostics, five crop stage changes without static/water/NPC rebuilds, unchanged-plot identity, bounded shorelinecache, inactivewater pause/resume")
 	quit()

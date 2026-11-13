@@ -2,7 +2,11 @@
 
 ## Object pixel scale, 12 November 2026
 
-For new or repaired bitmap details, use 16×16 source pixels for tiny details, 32×32 for props, and up to 64×64 for a character or a large object part as an authoring guide. Inspect each asset at its actual in-game size and preserve crisp nearest-neighbor edges. This is not a tile-size mandate for buildings, shorelines or the 3D terrain, and does not change the 480×270 land rendering budget. The [village and Gajah Mina motion package](reviews/village-boss-motion-2026-11-12.md) applies the guide only to its repaired actors.
+For new or repaired bitmap details, use 16×16 source pixels for tiny details, 32×32 for props, and up to 64×64 for a character or a large object part as an authoring guide. Inspect each asset at its actual in-game size and preserve crisp nearest-neighbor edges. This is not a tile-size mandate for buildings, shorelines or the 3D terrain. The [village and Gajah Mina motion package](reviews/village-boss-motion-2026-11-12.md) applies the guide only to its repaired actors.
+
+## Shoreline and vegetation candidate, 13 November 2026
+
+The current source candidate renders the 3D world at up to 640×360 on the **balanced** profile and retains 480×270 on **low**. Both preserve the viewport aspect ratio and nearest-neighbor presentation; React text and the host menu remain separate from this internal world resolution. Visual coastline contours are generated from existing map polygons without changing server-owned walkability. Forest banks and the lower village court receive a bounded outward visual lip; the latter fades back to the authored edge around every stair landing. Bridges and wooden decks remain straight. Rock relief uses spatially smooth noise. Canopy, small plants and corals use sparse quantized wind/current motion; the player’s reduced-motion setting disables it. The [candidate review](reviews/coast-pixel-foliage-menu-2026-11-13.md) records native evidence, tests and performance limits.
 
 ## 9 November: cheerful local candidate
 

@@ -55,6 +55,7 @@ func setup(source: Node2D) -> void:
 	add_child(viewport_3d)
 	display.texture = viewport_3d.get_texture()
 	get_viewport().size_changed.connect(_resize_display)
+	RenderQuality.profile_changed.connect(_on_profile_changed)
 	_resize_display()
 	_living_layer = CanvasLayer.new()
 	_living_layer.layer = 4
@@ -67,7 +68,11 @@ func _resize_display() -> void:
 	if is_instance_valid(display):
 		display.size = get_viewport().get_visible_rect().size
 	if is_instance_valid(viewport_3d):
-		viewport_3d.size = preload("res://scripts/RenderBudget.gd").viewport_size(get_viewport().get_visible_rect().size)
+		var budget=preload("res://scripts/RenderBudget.gd")
+		viewport_3d.size = budget.viewport_size(get_viewport().get_visible_rect().size,budget.quality_budget(str(RenderQuality.get_profile().effective)))
+
+func _on_profile_changed(_profile: Dictionary) -> void:
+	_resize_display()
 
 # Helpers use pixel coordinates (x, -y, z). Their common parent applies the
 # camera's inverse Y foreshortening so the z=0 plane follows the 2D collision map.
@@ -255,7 +260,7 @@ func _count_nodes(node: Node, type_name: String) -> int:
 
 func debug_status() -> Dictionary:
 	var report := {
-		"quality": RenderQuality.get_profile(), "active": active, "enabled": enabled, "renderer": "SubViewport3D", "viewport": [480, 270],
+		"quality": RenderQuality.get_profile(), "active": active, "enabled": enabled, "renderer": "SubViewport3D", "viewport": [viewport_3d.size.x, viewport_3d.size.y] if is_instance_valid(viewport_3d) else [0,0],
 		"orthographic": is_instance_valid(camera_3d) and camera_3d.projection == Camera3D.PROJECTION_ORTHOGONAL,
 		"mesh_count": _count_nodes(world_root, "MeshInstance3D") if _built else 0,
 		"sprite_count": _count_nodes(world_root, "Sprite3D") if _built else 0,

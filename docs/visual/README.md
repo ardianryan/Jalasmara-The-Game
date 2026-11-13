@@ -1,5 +1,13 @@
 # Jalasmara visual evidence
 
+## Coastal contour candidate, 13 November 2026
+
+| Forest bridge shoreline | Bandar Hujung dock shore |
+| --- | --- |
+| ![Native forest bridge view with a curved grass bank and rooted rock edge.](coast-forest-bridge-20261113.png) | ![Native dock view with a nonrectangular grass and stone shore beside the wooden deck.](coast-hub-dock-20261113.png) |
+
+Original Godot 4.7.2 Compatibility frames from `work/coast-pixel-20261113` on Apple M2, before main merge and staging. PNG SHA-256: `27e0b8f241e99b567ab2bd19fb3fc6291a9e8892a32ab0c958cca1781c53902f` and `12b9e8c2eb0d0135f5b5df566565135b06f2a33bd465d5f359f7fa796223761d`. The [candidate review](../reviews/coast-pixel-foliage-menu-2026-11-13.md) records tests and limits. These screenshots are documentation, not game textures or physical device benchmarks.
+
 ## Gajah Mina swim revision, 13 November 2026
 
 ![Four native frames showing Gajah Mina's revised tail and fin strokes and curved patrol across both fight phases.](gajah-mina-natural-motion-native-20261113.png)

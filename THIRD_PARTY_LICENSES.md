@@ -16,6 +16,7 @@ Semua hak cipta, merek dagang, dan lisensi di bawah ini tetap menjadi milik peme
 | **Lora Font** | Cyreal, Alexei Vanyashin | **SIL OFL 1.1** | Fon tipografi judul dan identitas web |
 | **Nunito Sans Font** | Vernon Adams, Jacques Le Bailly, Manvel Shmavonyan, Alexei Vanyashin | **SIL OFL 1.1** | Fon antarmuka pengguna web |
 | **Polyfork 3D Assets** | Polyfork (https://polyfork.dev) | **CC BY 4.0** | Model *Bamboo Stalk*, *Fern Plant*, dan *Small Reef Rock* |
+| **Pixora Icons** | tsora1603 / Pixora contributors (https://github.com/tsora1603/pixora-icons) | **CC BY 4.0** | Unmodified pixel icons on the game host menu and its core actions |
 | **Procedural Pixel Creatures** | idlerunner00 | **MIT** | Alat generasi fauna prosedural offline |
 | **Pixelbolt** | skulitom / PixelForge contributors | **MIT** | Kompiler efek partikel piksel (*lantern-flame*, dll.) |
 | **Pillow** | Jeffrey A. Clark and contributors; PIL by Secret Labs AB/Fredrik Lundh | **MIT-CMU** | Pemrosesan atlas dan pemeriksaan alpha offline; tidak disematkan dalam runtime game |
@@ -73,6 +74,13 @@ SOFTWARE.
 ---
 
 ## 2. Model 3D & Aset Grafis (Creative Commons)
+
+### Pixora Icons
+
+- **Work:** `kmenuedit.svg`, `computer.svg`, `backup.svg`, `utilities-tweak-tool.svg`, `media-playback-start.svg`, and `system-log-out.svg` from [Pixora Icons](https://github.com/tsora1603/pixora-icons), pinned to `ea994cfa6dc9da1a468405d6bcb6aeffa80aa52e`.
+- **Creator:** tsora1603 / Pixora contributors. The upstream [attribution notice](https://github.com/tsora1603/pixora-icons/blob/ea994cfa6dc9da1a468405d6bcb6aeffa80aa52e/ATTRIBUTION.md) also identifies Tux on Pixels by maxtron95 as a CC0 foundational source.
+- **License:** [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); the upstream full license text is retained at `apps/web/public/icons/PIXORA-LICENSE.md`.
+- **Use and changes:** `apps/web/public/icons/pixora-*.svg` are unmodified copies, renamed to describe their game menu role. CSS scales them to 32 CSS pixels with nearest-neighbor rendering; the 16×16 source icons therefore use an integer 2× scale. No source pixels or colors were changed. Pixora does not endorse Jalasmara.
 
 ### Polyfork Free Low-Poly Assets
 - **Karya yang Digunakan:**

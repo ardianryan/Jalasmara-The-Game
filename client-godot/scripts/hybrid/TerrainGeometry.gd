@@ -15,6 +15,7 @@ var backing_instances := 0
 var geology: Node3D
 var _atlas: Texture2D
 var _materials: Array[Material] = []
+var _coral_pivots: Array[Dictionary] = []
 
 func configure(data: Dictionary) -> void:
 	world = data
@@ -26,6 +27,7 @@ func configure(data: Dictionary) -> void:
 	triangle_count = 0
 	model_instances = 0
 	backing_instances = 0
+	_coral_pivots.clear()
 	projected_bounds.clear()
 	_atlas = load("res://resources/art/ocean-terrain-atlas.png")
 	_materials.clear()
@@ -273,13 +275,26 @@ func _build_growth() -> void:
 		plant.alpha_scissor_threshold = 0.5
 		plant.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
 		plant.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		plant.position = _point(entry.at-Vector2(0,entry.size.y/2),36)
+		var original_position: Vector3 = _point(entry.at-Vector2(0,entry.size.y/2),36)
 		plant.scale = Vector3(entry.size.x/cell.x,entry.size.y/cell.y,1)
 		plant.flip_h = bool(entry.flip)
-		add_child(plant)
+		var pivot:=Node3D.new()
+		pivot.name="CoralRoot"
+		pivot.position=original_position-Vector3(0,0,entry.size.y*.5)
+		plant.position=Vector3(0,0,entry.size.y*.5)
+		add_child(pivot)
+		pivot.add_child(plant)
+		_coral_pivots.append({"node":pivot,"position":entry.at})
+
+func _process(_delta: float) -> void:
+	var now:=float(Time.get_ticks_msec())*.001
+	var motion=preload("res://scripts/FoliageMotion.gd")
+	for coral in _coral_pivots:
+		var pivot: Node3D=coral.node
+		pivot.rotation.y=0.0 if EnvironmentState.reduced_motion else motion.current_angle(now,coral.position)
 
 func update_camera(center: Vector2) -> void:
 	if is_instance_valid(geology): geology.update_camera(center)
 
 func debug_status() -> Dictionary:
-	return {"geology":geology.debug_status() if is_instance_valid(geology) else {},"terrainVolumes":terrain_count,"layeredBands":layered_band_count,"modelInstances":model_instances,"memoryBackingInstances":backing_instances,"triangles":triangle_count,"depthRange":volume_depth_range,"bounds":projected_bounds,"units":"world pixels; x,-y,z; front26/backnegative"}
+	return {"geology":geology.debug_status() if is_instance_valid(geology) else {},"terrainVolumes":terrain_count,"layeredBands":layered_band_count,"modelInstances":model_instances,"memoryBackingInstances":backing_instances,"coralPivots":_coral_pivots.size(),"triangles":triangle_count,"depthRange":volume_depth_range,"bounds":projected_bounds,"units":"world pixels; x,-y,z; front26/backnegative"}
