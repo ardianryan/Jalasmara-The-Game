@@ -4,6 +4,8 @@
 
 The owner asked for less blurry pixel graphics, less rectangular islands and more natural rock shores, then added wind/current motion for trees, shrubs and coral and clearer game menu icons using Pixora. This source candidate is on `work/coast-pixel-20261113`; it is not a staging release as of this report's first draft.
 
+**Release update, 14 November:** this candidate was merged, its stale canopy fixture was corrected, and source `c9cd608` passed GitHub Actions and is active on staging. See the [staging release report](coast-pixel-pixora-staging-2026-11-14.md) for exact hashes, backup, smoke and cleanup. The candidate-era statements below remain as the record of the initial review.
+
 - Balanced-quality land and ocean SubViewports now target at most **640×360** at a 960×540 logical view; low remains **480×270**. The budget scales with other aspect ratios. Godot still presents world pixels with nearest-neighbor filtering, while text/UI stays at screen resolution. Touch auto-quality remains low.
 - `CoastlineContour.gd` makes a deterministic visual mesh from the existing hub coastline and slightly extends forest banks and the lower village court toward water. Maximum extra lip is 12 world units. An initial broad court pass failed the real dock stair-foot test; the final lower-court contour fades to zero within 80 world units of stair anchors and begins blending only beyond that. Other village courts remain unchanged. The authoritative world JSON, server walkability, bridges, wooden decks, stair connectors and player physics are unchanged.
 - Stone shoulder variation now uses interpolated spatial noise rather than independent per-node random values. This reduces harsh adjacent facets while retaining real thickness and support beneath elevated floors.

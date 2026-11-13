@@ -1,5 +1,11 @@
 # Jalasmara visual evidence
 
+## Coast and Pixora Menu on public staging, 14 November 2026
+
+![The public 844×390 Bandar Hujung view with the Pixora Menu icon, the refined dock shore and the compact game HUD.](coast-pixora-staging-20261114.png)
+
+Original public Chromium/SwiftShader screenshot from source `c9cd608`, active image `065d49941457` and CI PCK `bffff79d266beb359641a51392a0431f05692034a5371bd585354758f699ccef`. PNG SHA-256 `8bf62966f7e3e4de0b58a425c16ebd1a8125a46a546ce6b7919e1d202187de3f`. See the [release report](../reviews/coast-pixel-pixora-staging-2026-11-14.md) for the 6/6 public smoke, attribution and limits. This is original development evidence, not a distributed game texture or physical-device FPS proof.
+
 ## Coastal contour candidate, 13 November 2026
 
 | Forest bridge shoreline | Bandar Hujung dock shore |
