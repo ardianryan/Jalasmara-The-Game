@@ -1,5 +1,11 @@
 # Jalasmara visual evidence
 
+## Post-gait full-day regression, 13 November 2026
+
+![The same disposable player outside Griya on day two after a complete forest, dive, Kedai and sleep journey.](full-day-gait-regression-morning-20261113.png)
+
+Original local Chromium/SwiftShader screenshot from current source `44203ab` and macOS-export PCK `1943b967938081c92283138fd37ef37aff0e3a24296eb4411e1bb0045ed7b15d` (69,982,364 bytes); PNG SHA-256 `d90bfe3ffe2e3e45f07348f5e999b593f88ec20463048ec93ee97b37e06a0130`. [The 9/9 regression report](../reviews/full-day-gait-regression-2026-11-13.md) records its scope and cleanup. This is original documentation evidence, not a distributed game asset, a public staging PCK capture or a device FPS measurement.
+
 ## Nala land-cadence staging release, 12 November 2026
 
 | Public dock | Public forest |
