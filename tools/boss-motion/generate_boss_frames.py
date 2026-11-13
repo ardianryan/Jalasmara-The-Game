@@ -68,17 +68,14 @@ def generate():
     strip = Image.new('RGBA', (SIZE[0] * FRAME_COUNT, SIZE[1]))
     for frame in range(FRAME_COUNT):
         phase = frame * math.tau / FRAME_COUNT
-        if frame == 0:
-            canvas = original.copy()
-        else:
-            canvas = Image.new('RGBA', SIZE)
-            canvas.alpha_composite(underlay)
-            canvas.alpha_composite(body)
-            canvas.alpha_composite(hinge)
-            for name, part, pivot, amount in parts:
-                offset = 0.0 if name == 'tail' else 1.3 if name == 'front_fin' else 2.1 if name == 'rear_fin' else 0.6 if name == 'upper_fin' else 0.2
-                angle = math.sin(phase + offset) * amount
-                canvas.alpha_composite(rotated(part, pivot, angle))
+        canvas = Image.new('RGBA', SIZE)
+        canvas.alpha_composite(underlay)
+        canvas.alpha_composite(body)
+        canvas.alpha_composite(hinge)
+        for name, part, pivot, amount in parts:
+            offset = 0.0 if name == 'tail' else 1.3 if name == 'front_fin' else 2.1 if name == 'rear_fin' else 0.6 if name == 'upper_fin' else 0.2
+            angle = math.sin(phase + offset) * amount
+            canvas.alpha_composite(rotated(part, pivot, angle))
         strip.alpha_composite(canvas, (frame * SIZE[0], 0))
     strip.save(OUT / 'swim.png', optimize=True)
     (OUT / 'manifest.json').write_text(json.dumps({
