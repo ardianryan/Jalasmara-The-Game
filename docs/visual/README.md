@@ -1,5 +1,11 @@
 # Jalasmara visual evidence
 
+## Short-landscape HUD layout, 13 November 2026
+
+![Original Bahari HUD component at 667×375, showing the compact minimap and right-docked notice.](hud-visibility-667x375-20261113.png)
+
+Original Godot 4.7.2 native component capture on `work/hud-visibility-20261113`, SHA-256 `59331b3e756f998cca4f93083c020ae128e4e27bec7eeea915f6fca1de802d6d`. [The review](../reviews/hud-visibility-2026-11-13.md) records measurements and tests. The blank backdrop is a fixture, not a gameplay or device screenshot; the source art remains governed by its separate provenance/license.
+
 ## Post-gait full-day regression, 13 November 2026
 
 ![The same disposable player outside Griya on day two after a complete forest, dive, Kedai and sleep journey.](full-day-gait-regression-morning-20261113.png)

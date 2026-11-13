@@ -1,5 +1,9 @@
 # Handoff aktif agent
 
+## Short-landscape HUD candidate, 13 November 2026
+
+After the [9/9 full-day regression](reviews/full-day-gait-regression-2026-11-13.md), item 4 now has a focused [HUD visibility candidate](reviews/hud-visibility-2026-11-13.md) on `work/hud-visibility-20261113`: interaction label 380→280 px, minimap 80→68 px and temporary notice 360→320 px/right-docked for physical landscape height ≤480 px. Native/headless 844×390, 667×375 and 960×540 fixtures, typecheck, 72 world scripts and build passed. This is **source candidate only** until merged, GitHub Actions succeeds and staging is activated. The new layout still needs public-browser and physical touch inspection; no device acceptance is inferred from the native fixture.
+
 ## Owner acceptance and full-playthrough regression, 13 November 2026
 
 The owner confirmed that Nala's released visible feet now alternate naturally on Windows/Samsung S23 while walking and turning at the dock/forest. Item 2 is accepted at the visible-gameplay level. The optional physical lower-body release flags remain OFF; no FPS, stair-contact or arm-opposition measurement is inferred. Item 3 then [passed 9/9 in a one-player local full-day regression](reviews/full-day-gait-regression-2026-11-13.md) on a fresh export of `44203ab`: village → forest → dive and three real catches → Kedai and three services → home sleep → reload, with zero browser/API failures and zero fixture residue. The exact local PCK differs from the active staging PCK, so this is not a public full-loop proof. Item 4, HUD visibility polish, is next. GitHub Actions [43263876125](https://github.com/ardianryan/Jalasmara-The-Game/actions/runs/43263876125) succeeded on `44203ab`. The older sections below are historical at this checkpoint.

@@ -348,7 +348,8 @@ func _build_dpad() -> void:
 func _layout() -> void:
 	if not is_instance_valid(_deck): return
 	var viewport := get_viewport().get_visible_rect().size
-	var ratio := viewport.x/maxf(1,Vector2(get_window().size).x)
+	var physical:=Vector2(get_window().size)
+	var ratio := viewport.x/maxf(1,physical.x)
 	var body := maxi(24,ceili(16*ratio)) if touch_enabled else maxi(8,ceili(18*ratio))
 	var unit := 1.0 if touch_enabled else ratio
 	var line := ceilf(body*1.5)
@@ -457,12 +458,19 @@ func _layout() -> void:
 	_deck.position=Vector2(_net.position.x-6,bottom-action_side-6) if _net.visible else _action.position-Vector2(6,6)
 	_deck.scale=Vector2.ONE if touch_enabled else Vector2.ONE*ratio
 	_deck.size=Vector2(right-_deck.position.x+6,action_side+12)/(1.0 if touch_enabled else ratio)
-	_action_label.position=Vector2(right-minf(380*unit,viewport.x-32),bottom-action_side-line*2-12)
-	_action_label.size=Vector2(minf(380*unit,viewport.x-32),line*2)
+	var prompt_width:=minf((280 if physical.y<=480 and physical.x>physical.y else 380)*unit,viewport.x-32)
+	_action_label.position=Vector2(right-prompt_width,bottom-action_side-line*2-12)
+	_action_label.size=Vector2(prompt_width,line*2)
 	_action_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	_action_label.add_theme_font_override("font",preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2"))
 	_action_label.add_theme_font_size_override("font_size",body)
-	var action_height:=clampf(_action_label.get_theme_font("font").get_multiline_string_size(_action_label.text,HORIZONTAL_ALIGNMENT_RIGHT,_action_label.size.x,body).y+4,line,line*2)
+	var action_height_needed:=_action_label.get_theme_font("font").get_multiline_string_size(_action_label.text,HORIZONTAL_ALIGNMENT_RIGHT,_action_label.size.x,body).y+4
+	if action_height_needed>line*2 and physical.y<=480 and physical.x>physical.y:
+		prompt_width=minf(380*unit,viewport.x-32)
+		_action_label.position.x=right-prompt_width
+		_action_label.size.x=prompt_width
+		action_height_needed=_action_label.get_theme_font("font").get_multiline_string_size(_action_label.text,HORIZONTAL_ALIGNMENT_RIGHT,_action_label.size.x,body).y+4
+	var action_height:=clampf(action_height_needed,line,line*2)
 	_action_label.size.y=action_height
 	_action_label.position.y=bottom-action_side-action_height-12
 	_action_plate.position=_action_label.position-Vector2(6,3)
@@ -499,7 +507,6 @@ func _layout() -> void:
 	_bag.size.x=bag_width
 	_instrument.size.x=maxf(296,_bag.position.x+bag_width+12)
 	_depth_caption.text="Kedalaman"
-	var physical:=Vector2(get_window().size)
 	if physical.x<physical.y or not touch_enabled:
 		_layout_portrait_instrument(ratio,instrument_scale,viewport.x-margin.x-16-inset.z)
 	var instrument_y:=margin.y+identity_height+12
@@ -515,12 +522,12 @@ func _layout() -> void:
 	var minimap_side:=0.0
 	if is_instance_valid(_minimap_shell):
 		var short_landscape:=physical.x>physical.y and physical.y<=480
-		var mini_side:=80*ratio if short_landscape else (78*ratio if touch_enabled else 128*ratio)
+		var mini_side:=68*ratio if short_landscape else (78*ratio if touch_enabled else 128*ratio)
 		var mini_scale:=mini_side/128
 		_minimap_shell.scale=Vector2.ONE*mini_scale
 		_minimap_shell.position=Vector2(viewport.x/2-64*mini_scale,bottom-128*mini_scale)
 		minimap_side=mini_side
-	var status_width:=minf(360*ratio,viewport.x-margin.x*2)
+	var status_width:=minf((320 if physical.y<=480 and physical.x>physical.y else 360)*ratio,viewport.x-margin.x*2)
 	var status_font:=maxi(16,ceili(16*ratio))
 	var status_text_width:=status_width-24*ratio
 	status_label.add_theme_font_override("font",preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2"))
@@ -529,7 +536,7 @@ func _layout() -> void:
 	var status_height:=maxf(48*ratio,status_text_height+16*ratio)
 	var status_y:=utilities_y+cell+line+10
 	if minimap_side>0: status_y=minf(status_y,bottom-minimap_side-status_height-8)
-	var status_x:=right-status_width if bool(_state.get("diving",false)) else (viewport.x-status_width)/2
+	var status_x:=right-status_width if (physical.y<=480 and physical.x>physical.y) or bool(_state.get("diving",false)) else (viewport.x-status_width)/2
 	_status_panel.position=Vector2(status_x,status_y)
 	_status_panel.size=Vector2(status_width,status_height)
 	status_label.position=Vector2(12,8)*ratio
