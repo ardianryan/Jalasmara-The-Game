@@ -6,7 +6,7 @@
 
 Original public Chromium/SwiftShader screenshot from source `a5b1bdac0c20d03833d7fa270b2c856c0d7cc3ca`, active image `cf523a7d4186`, and CI PCK `e872b7ba9bbc4e4753fac80fedda8216c0b3e12800b96ddfb3228968bef5647e`. PNG SHA-256 `6b1846602fc1e8ea6020f0310cc1336d3d7187b6859f308d1c30fd90df826926`. This confirms public startup, not actual cinematic playback: the smoke fixture completed the tutorial. The native cutscene captures below show the art composition. See the [release report](../reviews/phase-one-cinematic-art-2026-11-14.md).
 
-## Phase 1 cinematic art candidate, 14 November 2026
+## Phase 1 cinematic art native captures, 14 November 2026
 
 ![Native 844×390 original Bandar Hujung cinematic background beneath Godot's cutscene frame.](phase1-cinematic-prologue-20261114.png)
 
@@ -14,7 +14,7 @@ Original public Chromium/SwiftShader screenshot from source `a5b1bdac0c20d03833d
 
 ![Native 844×390 Griya Sasmita epilogue with a warm veranda and glowing garden.](phase1-cinematic-epilogue-20261114.png)
 
-Original Godot 4.7.2 Apple M2 Compatibility component captures from `work/phase1-cinematic-art-20261114`, before release. The PNG SHA-256 values and source asset provenance are in the [candidate report](../reviews/phase-one-cinematic-art-2026-11-14.md). These prove native shot composition at the stated sizes; they do not prove public-browser progression, physical-device performance, or a completed screenplay animation. Documentation images are separate from the runtime artwork and its terms.
+Original Godot 4.7.2 Apple M2 Compatibility component captures from source `a5b1bda`, taken before release; the same source is now active on staging. The PNG SHA-256 values and source asset provenance are in the [release report](../reviews/phase-one-cinematic-art-2026-11-14.md). These prove native shot composition at the stated sizes; they do not prove public-browser progression, physical-device performance, or a completed screenplay animation. Documentation images are separate from the runtime artwork and its terms.
 
 ## Phase 1 cinematic release startup on public staging, 14 November 2026
 
