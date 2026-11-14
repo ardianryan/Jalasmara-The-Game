@@ -1,5 +1,9 @@
 # Handoff aktif agent
 
+## Phase 1 cinematic art active on staging, 14 November 2026
+
+The original Bandar Hujung, Tamansari and Griya Sasmita cutscene backgrounds are active. Source `a5b1bdac0c20d03833d7fa270b2c856c0d7cc3ca` is on `main` and all three Git remotes; [GitHub Actions 43567238365](https://github.com/ardianryan/Jalasmara-The-Game/actions/runs/43567238365) passed and the exact CI PCK `e872b7ba9bbc4e4753fac80fedda8216c0b3e12800b96ddfb3228968bef5647e` is active as image `cf523a7d4186`. [Release report](reviews/phase-one-cinematic-art-2026-11-14.md) records the 51-document backup/restore, public 6/6 smoke, zero fixture residue and one rollback. [Native cinematic evidence](visual/README.md) at 960×540/844×390/667×375 shows composition; the [public ready-game screenshot](visual/phase1-cinematic-release-ready-hub-20261114.png) proves startup only. The prior candidate entry below is historical. Next: real-browser new-player cutscene playback, day 1–3 and six-resonance review, skip/audio/layout checks and owner Windows/S23 pacing; bespoke boat, crowd, pipe and hologram animations remain open.
+
 ## Phase 1 cinematic art candidate, 14 November 2026
 
 Isolated `work/phase1-cinematic-art-20261114` adds original pixel-art backgrounds for the Bandar Hujung prologue, Tamansari boss and Griya Sasmita epilogue. The boss remains a separate moving sprite and the original soundtrack is reused. [Candidate report](reviews/phase-one-cinematic-art-2026-11-14.md), [provenance](assets/cinematic-backgrounds-v1.md), and [native captures](visual/phase1-cinematic-prologue-20261114.png) record what has actually been made. This is not yet a staging release; complete local checks and the GitHub CI/exact-bundle release gate before changing that status. The earlier active cutscene release below remains the staging pin.
