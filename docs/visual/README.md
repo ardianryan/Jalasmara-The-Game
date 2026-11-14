@@ -1,5 +1,11 @@
 # Jalasmara visual evidence
 
+## Compact HUD and three-line Menu on public staging, 14 November 2026
+
+![Public 844×390 Bandar Hujung dock with the icon-only hamburger Menu, compact land badge, Nala and clear playfield.](hud-phase1-staging-20261114.png)
+
+Original public Chromium/SwiftShader screenshot from source `70b2d4bb843e413ff2ef558f098246702b53a6cf`, active image `ce3bacae0f06` and CI PCK `3876454393e86b34e909b60c77e4af6f7a51d20f2065611bffa9d44dca67641f`. PNG SHA-256 `1f5942895b954129cca70079a34ad2c771d56781ada638cec1e69d15dc66695c`. The [release report](../reviews/hud-phase1-story-staging-2026-11-14.md) records public 6/6 smoke and limits. This is development evidence, not a game texture or physical-device FPS proof.
+
 ## Compact Phase 1 HUD source fixture, 14 November 2026
 
 ![Native 390×844 dive HUD fixture showing the simplified utility icons, oxygen instrument, joystick and action buttons.](hud-phase1-portrait-20261114.png)
