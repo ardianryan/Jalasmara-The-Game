@@ -1,5 +1,9 @@
 # Comfy world palette
 
+## Character motion authoring, 14 November 2026
+
+Character walk, swim, gesture and cutscene poses should be authored as controlled pixel frames or lightweight code-driven transforms of existing parts. Draw and inspect the moving silhouette frame by frame at the actual game scale; keep feet, hands, equipment sockets and loop transitions stable. Retain editable source, frame timing, provenance and license for every changed atlas, and compare runtime memory/frame pacing before release. Do not use an indiscriminately generated character sheet as a finished animation. Procedural environmental motion may use bounded shaders or transforms and must respect reduced-motion mode. This direction follows the owner's explicit preference for animation that remains light and easy to edit.
+
 ## Graphics clarity candidate, 14 November 2026
 
 The earlier 640×360 Balanced and 480×270 Low render targets left the world coarse on large displays and touch devices. The new Sharp profile draws the 3D world at the 960×540 logical view; Auto begins there on desktop and at Balanced on touch, then falls one step after sustained low FPS. UI text is not reduced with the world. Existing 32×32 terrain textures now contribute centered, bounded contrast instead of almost no visible detail. Daylight grass and dirt are slightly cooler and less neon. See [source review](reviews/graphics-clarity-source-2026-11-14.md) and [native evidence](visual/README.md). The candidate still needs browser/physical-device acceptance; the game remains deliberately pixelated rather than photorealistic.

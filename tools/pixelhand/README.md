@@ -1,0 +1,7 @@
+# PixelHand authoring tool
+
+[PixelHand](https://github.com/SirLichDevCraft/PixelHand) is installed locally at `.runtime/tools/pixelhand`, pinned to `e14af5884bd1a7ceaac33f8725c1a25dcd2cfbdb` (upstream `0.2.0-rc.1`). The checkout is ignored by Git. On another machine, run `bash tools/pixelhand/install.sh` from this repository. Node 20.3+ is required; no npm dependencies or API key are required for its local authoring workflow.
+
+Use it **offline** to make editable, palette-indexed pixel frames and contact sheets. The upstream eight-direction example includes authored poses, layered limbs, and planted contacts. Keep Nala's or residents' actual source pixels and silhouette; use one controlled pose/loop at a time and inspect feet, equipment sockets, and transitions at native game size. Review and optimize the exported PNG atlas before adding any asset to Godot. PixelHand is **not** a Jalasmara runtime dependency, and no PixelHand art has been shipped yet. Do not use the repository's example characters as Jalasmara assets without separate provenance.
+
+From the checkout, `npm test` passed on 14 November 2026 (27 smoke tests, integration checks, and 24 production tests). Run `node src/cli.js help draw_named_map` for a tool contract or follow upstream `docs/guide.md`. The [MIT notice](LICENSE.upstream) covers the installed tool; new Jalasmara drawings still require project asset provenance and visual approval.
