@@ -12,6 +12,8 @@ var boss_art: TextureRect
 var boss_atlas: AtlasTexture
 var boss_phase := 0.0
 var backdrop: Texture2D
+var living_plate: TextureRect
+var living_material: ShaderMaterial
 var backdrop_key := ""
 var backdrop_time := 0.0
 var motif_id := ""
@@ -27,6 +29,16 @@ func _ready() -> void:
 	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(shade)
+	living_plate = TextureRect.new()
+	living_plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	living_plate.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	living_plate.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	living_plate.stretch_mode = TextureRect.STRETCH_SCALE
+	living_material = ShaderMaterial.new()
+	living_material.shader = preload("res://shaders/cinematic_living_plate.gdshader")
+	living_plate.material = living_material
+	add_child(living_plate)
+	move_child(living_plate, 0)
 	upper = ColorRect.new()
 	upper.color = Color("161129")
 	upper.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -85,9 +97,16 @@ func _ready() -> void:
 	visible = false
 
 func _process(delta: float) -> void:
-	if not visible or EnvironmentState.reduced_motion: return
+	if not visible: return
+	if EnvironmentState.reduced_motion:
+		if living_plate.visible:
+			living_plate.hide()
+			queue_redraw()
+		return
 	motif_time += delta
 	backdrop_time += delta
+	living_material.set_shader_parameter("elapsed", backdrop_time)
+	_update_living_plate()
 	queue_redraw()
 	if boss_art.visible:
 		boss_phase += delta
@@ -115,6 +134,11 @@ func _draw() -> void:
 				var x:=fposmod(float(i)*79.0+motion*9.0,view.x)
 				var y:=view.y*(.22+.028*float(i%12))+sin(float(i)*2.1+motion*.4)*8.0
 				draw_rect(Rect2(x,y,32+float(i%3)*16,6),Color(.54,.24,.65,.12+float(i%3)*.025))
+		# Foreground pollen and reflected lanterns move at different speeds.
+		for i in range(14):
+			var x:=fposmod(float(i)*137.0+motion*(4.0+float(i%3)*2.0),view.x)
+			var y:=view.y*(0.18+float((i*7)%13)*0.053)+sin(motion*0.8+float(i)*2.7)*3.0
+			draw_rect(Rect2(x,y,2.0,2.0),Color(1.0,0.82,0.42,0.36))
 	if motif_id in ["first_dive","cave_warning","boss_intro","boss_phase_two"]:
 		for i in range(6):
 			var x:=view.x*(.12+float(i)*.16)
@@ -144,6 +168,24 @@ func _draw() -> void:
 			draw_line(center,point,Color(.24,.91,.99,.28),1)
 			draw_circle(point,2.5,Color(.43,.98,1.0,.75))
 		draw_arc(center,radius*.78,0,TAU,48,Color(.24,.91,.99,.34),1)
+	if motif_id=="epilogue":
+		for i in range(18):
+			var x:=view.x*(0.50+float((i*19)%47)*0.010)
+			var y:=view.y*(0.15+float((i*7)%48)*0.010)
+			var pulse:=0.4+0.6*absf(sin(motion*(0.8+float(i%3)*0.2)+float(i)*1.9))
+			draw_rect(Rect2(x,y,2.0,2.0),Color(0.39,0.96,0.93,0.28*pulse))
+
+func _update_living_plate() -> void:
+	if backdrop==null:
+		living_plate.hide()
+		return
+	var source:=Vector2(backdrop.get_size())
+	var scale:=maxf(size.x/source.x,size.y/source.y)*1.08
+	var painted:=source*scale
+	var pan:=Vector2.ZERO if EnvironmentState.reduced_motion else Vector2(sin(backdrop_time*.22)*10.0,cos(backdrop_time*.17)*5.0)
+	living_plate.position=(size-painted)*.5+pan
+	living_plate.size=painted
+	living_plate.visible=not EnvironmentState.reduced_motion
 
 func _label(parent: Control, font_size: int, color: Color) -> Label:
 	var label := Label.new()
@@ -167,6 +209,10 @@ func present(title: String, beat: Dictionary, index: int, total: int, cinematic_
 		backdrop_key = scene_key
 		backdrop = load("res://resources/art/cinematics-v1/"+scene_key+".png") if not scene_key.is_empty() else null
 		backdrop_time = 0.0
+	living_plate.texture = backdrop
+	living_material.set_shader_parameter("plate",{"prologue":1,"tamansari":2,"epilogue":3}.get(scene_key,0))
+	living_material.set_shader_parameter("elapsed",backdrop_time)
+	_update_living_plate()
 	motif_id = cinematic_id
 	motif_beat = index
 	motif_time = 0.0
