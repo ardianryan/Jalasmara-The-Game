@@ -17,6 +17,6 @@ Three guaranteed discoveries grant permanent unique gear evidence: the Photosynt
 
 ## Source, tools, and next gate
 
-Source branch/worktree: `work/neutralizer-combat-20261114` in `../Jalasmara-neutralizer-combat`, based on `7c15453`. Main and staging remain unchanged until review, merge, GitHub Actions verified delivery, exact-bundle activation, backup/restore and public smoke. Only existing project art and SFX were reused; the launcher meshes, capsule effect and HUD glyph are original code geometry. Godot 4.7.2, Node 26, and ImageMagick were used. No upstream asset or additional runtime library was introduced, so no new third-party license entry is needed.
+Implementation commit `d40d850` was fast-forward merged into local `main` from isolated `work/neutralizer-combat-20261114`, based on `7c15453`. Staging remains unchanged pending GitHub Actions verified delivery, exact-bundle activation, backup/restore and public smoke. Only existing project art and SFX were reused; the launcher meshes, capsule effect and HUD glyph are original code geometry. Godot 4.7.2, Node 26, and ImageMagick were used. No upstream asset or additional runtime library was introduced, so no new third-party license entry is needed.
 
-Before release: merge the tested SHA, wait for GitHub CI, deploy the exact CI PCK per `docs/operations-github.md`, and perform the public six-resonance playthrough with the owner on Windows and Samsung S23.
+Before release: record the final source SHA on GitHub and mirrors, wait for GitHub CI, deploy the exact CI PCK per `docs/operations-github.md`, and perform the public six-resonance playthrough with the owner on Windows and Samsung S23.
