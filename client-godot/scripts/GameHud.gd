@@ -275,7 +275,7 @@ func _build_utilities() -> void:
 		key.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		button.tooltip_text = str(item[1])+" ["+str(item[2])+"]"
 		_utilities.append(button)
-		key.visible = not touch_enabled
+		key.hide()
 		index += 1
 	_sound_button = _button("",Rect2(start+cell*4,14,cell,cell),func():
 		AudioManager.toggle_mute()
@@ -374,12 +374,10 @@ func _layout() -> void:
 		button.visible=not _modal
 		for child in button.get_children():
 			if child is HudIcon:
-				child.position=Vector2.ONE*(cell-32)/2 if touch_enabled else Vector2(12,4)
+				child.position=Vector2.ONE*(cell-32)/2 if touch_enabled else Vector2(12,12)
 				child.size=Vector2.ONE*(32 if touch_enabled else 24)
-			elif child is Label and not touch_enabled:
-				child.position=Vector2(0,34)
-				child.size=Vector2(48,12)
-				child.add_theme_font_size_override("font_size",8)
+			elif child is Label:
+				child.hide()
 	_sound_button.add_theme_font_size_override("font_size",body)
 	_sound_button.add_theme_font_override("font",preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2"))
 	_sound_button.text=""
@@ -608,8 +606,6 @@ func update_state(state: Dictionary) -> void:
 	_region_name = str(state.get("area","Bandar Hujung"))
 	_region.tooltip_text = _region_name
 	_resources.text = "%d koin" % int(state.get("coins",0))
-	if not diving:
-		_resources.text += " · %s/%s kg" % [String.num(float(state.get("weight",0)),1).trim_suffix(".0"),String.num(float(state.get("capacity",0)),1).trim_suffix(".0")]
 	_weather.text = (str(state.get("clock",""))+"  "+str(state.get("weather",""))).strip_edges()
 	if state.get("authoritative",false):
 		_weather.text="H%d · %s" % [int(state.get("calendarDay",1)),_weather.text]

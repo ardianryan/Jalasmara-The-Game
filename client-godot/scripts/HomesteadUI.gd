@@ -494,7 +494,8 @@ func _perform(action: String,extra: Dictionary={}) -> void:
 		_last_position=host.player.position
 		_page("Pagi di Griya Sasmita")
 		_text("Hari %d · %s. Kegiatan dan pertumbuhan yang sah telah disimpan." % [int(GameState.calendar.get("calendarDay",1)),str(EnvironmentState.snapshot().clock)])
-		_text("Siklus cerita %d. Keluar rumah untuk melihat keadaan desa dan kebun." % int(GameState.player.get("progress",{}).get("day",1)))
+		_text(preload("res://scripts/PhaseOneStory.gd").wake_note({"player":GameState.player}))
+		_text("Tujuan berikutnya: " + preload("res://scripts/PhaseOneStory.gd").goal({"player":GameState.player,"adventure":GameState.adventure,"homestead":GameState.homestead,"dive":GameState.dive}))
 		_button("Bangun dan lanjutkan",close).grab_focus()
 	else:
 		open_for(_current_id)

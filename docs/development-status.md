@@ -1,5 +1,9 @@
 # Status pengembangan
 
+## Kandidat HUD ringkas dan panduan cerita Fase 1, 14 November 2026
+
+Jalur server tiga hari, Kedai Waras, peningkatan alat dan Gajah Mina sudah mencapai `stage=done` dalam tes integrasi. Kandidat [HUD dan cerita](reviews/hud-phase1-story-2026-11-14.md) menyambungkan lima babak ke tujuan HUD, SmaraPedia, dialog hari ketiga dan layar bangun tidur, serta mengecilkan Menu atas menjadi ikon hamburger saja. Paket ini telah lulus tes lokal tetapi belum aktif di staging. Penerimaan publik memerlukan CI GitHub, paket terikat SHA, smoke browser dan tinjauan tampilan game sebenarnya.
+
 **Graphics clarity active, 14 November 2026:** Source `98b4d29` passed [GitHub Actions 43532311339](https://github.com/ardianryan/Jalasmara-The-Game/actions/runs/43532311339) and is active on staging as image `15ed8a134cdd` with CI PCK `2c3066cec4bd` (70,063,380 bytes). The [release report](reviews/graphics-clarity-staging-2026-11-14.md) records exact bundle/image verification, 51-document backup/restore, public 6/6 browser smoke, zero fixture residue and cleanup. The [844×390 staging screenshot](visual/graphics-clarity-staging-20261114.png) shows sharper terrain/deck edges and cooler grass than the prior release. Physical Windows/S23 pacing and the old character atlas appearance still need owner review. Older candidate and release entries below are historical.
 
 **Graphics clarity source candidate, 14 November 2026:** The owner reported that the coast/Pixora staging release still looked coarse. A [new isolated candidate](reviews/graphics-clarity-source-2026-11-14.md) adds Sharp 960×540, improves Auto resolution with sustained-low-FPS fallback, increases existing terrain texture contrast and cools neon daylight grass. Typecheck, world suite, native frames and build passed; it is not yet merged or active on staging. Device visual/FPS acceptance and exact CI release remain.

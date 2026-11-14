@@ -309,14 +309,14 @@ export function Play({ canManage = false, onLogout }: PlayProps) {
               : "Menu permainan"
         }
         aria-expanded={menuOpen}
+        aria-label={menuOpen ? "Tutup menu permainan" : "Buka menu permainan"}
         aria-controls="play-browser-menu"
         onClick={() => {
           setMenuOpen(!menuOpen);
           setNotice("");
         }}
       >
-        <img src="/icons/pixora-menu.svg" alt="" aria-hidden="true" />
-        <span>Menu</span>
+        <span className="play-menu-glyph" aria-hidden="true"><i /><i /><i /></span>
       </button>
       {menuOpen && (
         <div className="play-menu-backdrop" onClick={closeMenu}>
