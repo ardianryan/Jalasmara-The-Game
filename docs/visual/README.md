@@ -1,5 +1,11 @@
 # Jalasmara visual evidence
 
+## Compact Phase 1 HUD source fixture, 14 November 2026
+
+![Native 390×844 dive HUD fixture showing the simplified utility icons, oxygen instrument, joystick and action buttons.](hud-phase1-portrait-20261114.png)
+
+Original Godot 4.7.2 Apple M2 Compatibility component capture from `work/hud-story-phase1-20261114`, before staging. PNG SHA-256 `a1a861f60566d29d7af5896da24d8efc45ea66c59b12017297bd917bdef6357e`; local PCK `b9d1eb89b4a534e8ca725c49ac2bc1cae5ce98ed5417e7b6a490aff390286323`. The blank background is the fixture canvas. This is UI layout evidence, not a live-world screenshot, host Menu proof or physical-phone benchmark. See the [source review](../reviews/hud-phase1-story-2026-11-14.md).
+
 ## Graphics clarity on public staging, 14 November 2026
 
 ![The public 844×390 Bandar Hujung hub with the Sharp desktop world render profile and refined terrain texture.](graphics-clarity-staging-20261114.png)

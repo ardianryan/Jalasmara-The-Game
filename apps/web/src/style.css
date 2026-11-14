@@ -1594,14 +1594,13 @@ dd {
   top: max(4px, env(safe-area-inset-top, 0px));
   left: 50%;
   transform: translateX(-50%);
-  width: 106px;
-  min-width: 106px;
+  width: 48px;
+  min-width: 48px;
   min-height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  padding: 4px;
+  padding: 3px;
   border: 8px solid transparent;
   border-image-slice: 8 fill;
   border-image-repeat: stretch;
@@ -1612,11 +1611,20 @@ dd {
   font-size: 16px;
   line-height: 1.2;
 }
-.immersive-player .play-menu-toggle img {
-  width: 32px;
-  height: 32px;
-  flex: none;
-  image-rendering: pixelated;
+.immersive-player .play-menu-glyph {
+  display: flex;
+  width: 24px;
+  height: 24px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+}
+.immersive-player .play-menu-glyph i {
+  display: block;
+  width: 24px;
+  height: 3px;
+  background: #f1e1bc;
+  box-shadow: 1px 1px 0 #39251c;
 }
 .immersive-player .play-menu-toggle:hover { filter: brightness(1.12); }
 .immersive-player .play-menu-toggle:active { transform: translateX(-50%) translateY(1px); }

@@ -70,6 +70,7 @@ func run() -> void:
 	state.diving=false
 	hud.update_state(state)
 	assert(not hud.debug_layout().oxygen.visible)
+	assert(not hud.get("_resources").text.contains("kg"),"Land HUD must not show an empty dive bag")
 	hud.touch_enabled=true
 	state.merge({"canInteract":true,"canNet":true,"action":"Amati Taman Sel","coins":525,"weight":4,"capacity":12,"objective":"Amati kebun apung lalu bandingkan dengan hutan dan laut.","clock":"08:35","weather":"Hujan ringan"},true)
 	for physical in [Vector2i(667,375),Vector2i(844,390),Vector2i(390,844)]:

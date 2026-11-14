@@ -223,6 +223,7 @@ static func entries_for(state: Dictionary,tab: String) -> Array:
 		for item in world.get("surface_hub",{}).get("residents",[]):
 			output.append({"title":str(item.get("name","Warga")),"subtitle":str(item.get("title","Warga Bandar Hujung")),"text":str(item.get("line","")),"unlocked":int(progress.get("day",1))>=int(item.get("cycle",1))})
 	elif tab=="Misi":
+		output.append_array(preload("res://scripts/PhaseOneStory.gd").chapters(state))
 		output.append({"title":"Kebun Apung Bu Darmi","subtitle":"Perawatan dimulai" if missions.has("akar") and int(progress.get("day",1))<3 else "Pulih bertahap" if missions.has("akar") else "Menelusuri akar masalah","text":mission_text(state),"unlocked":true})
 		output.append({"title":"Rumah dan kebun Nala","subtitle":"Griya Sasmita","text":"Izin berkebun: %s. Dua petak kebun mengikuti hari kalender tersimpan. Menutup Kedai menyiapkan kelanjutan cerita; tidur di rumah mengantarkan hari berikutnya." % ("sudah diperoleh" if state.get("homestead",{}).get("permit",false) else "belum diperoleh; bantu misi akar lalu temui balai"),"unlocked":true})
 		for recipe in catalog.get("recipes",[]):

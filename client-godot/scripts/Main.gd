@@ -4,6 +4,7 @@ const WorldScript = preload("res://scripts/World.gd")
 const EntitiesScript = preload("res://scripts/Entities.gd")
 const BODY_FONT = preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2")
 const BossMotionScript = preload("res://scripts/BossMotion.gd")
+const PhaseOneStory = preload("res://scripts/PhaseOneStory.gd")
 const PHYSICAL_GAIT_RELEASE_ENABLED := false
 var land_renderer: Node2D
 var nala: CharacterBody2D
@@ -750,31 +751,7 @@ func _update_hud() -> void:
 		for zone in GameState.world.get("zones",[]):
 			if depth>=float(zone.minDepth) and depth<float(zone.maxDepth):
 				region = str(zone.name)
-	var day := int(p.progress.day)
-	var stage := str(p.progress.stage)
-	var counts := _mission_counts()
-	var goal := "Layani warga di Kedai Waras."
-	if GameState.homestead.get("pendingStoryAdvance")!=null:
-		goal="Pulang ke Griya Sasmita di barat desa dan tidur di dipan."
-	elif stage == "night":
-		goal = "Buka Kedai Waras bersama Mbah Wira & racik solusi warga malam ini."
-	elif stage == "boss":
-		goal = "Pulihkan Gajah Mina di Tamansari."
-	elif stage == "done":
-		goal = "Prasasti Smara Kuno ditemukan. Fase 1 selesai."
-	elif day == 1:
-		goal = "Jelajahi Segaran dan jala bekal kedai. Hutan Pesisir ada di timur laut dermaga."
-	elif day == 2:
-		if not GameState.dive.is_empty():
-			goal = "Hutan Lamun Wringin (25–60 m): Amati Nitrogen, Fotosintesis, & Osmosis (%d/3) lalu jala Benih Hayati." % int(counts.sea)
-		elif int(counts.garden) < 3:
-			goal = "Misi Bu Darmi: Amati Kebun Apung (%d/3), Hutan Pesisir (%d/3), & Hutan Lamun (%d/3)." % [int(counts.garden),int(counts.forest),int(counts.sea)]
-		elif int(counts.forest) < 3:
-			goal = "Kebun diamati (3/3). Bandingkan di Hutan Pesisir (%d/3) atau selami Hutan Lamun (%d/3)." % [int(counts.forest),int(counts.sea)]
-		else:
-			goal = "Daratan diamati. Selami Hutan Lamun Wringin (25–60 m) untuk pengamatan laut (%d/3) & Benih Hayati." % int(counts.sea)
-	else:
-		goal = "Selidiki pipa korporasi dan pulihkan penyaring Jalatunda."
+	var goal: String = PhaseOneStory.goal({"player":p,"adventure":GameState.adventure,"homestead":GameState.homestead,"dive":GameState.dive})
 	var d: Dictionary = GameState.dive
 	var state := {"area":region,"depth":depth,"diving":not d.is_empty(),"oxygen":d.get("oxygen",0),"maxOxygen":d.get("maxOxygen",100),"coins":p.coins,"weight":d.get("weight",0),"capacity":d.get("capacity",12),"objective":goal,"action":_action_label(nearby),"canInteract":not nearby.is_empty() and nearby.get("kind","")!="biota","canNet":nearby.get("kind","")=="biota" and not d.is_empty()}
 	state.merge(EnvironmentState.snapshot(),true)
@@ -1151,6 +1128,8 @@ func _npc_interact(name_text: String) -> void:
 			_talk([{"name":"Babak 4 · Sabotase di Kedai Waras","text":"Inspektur Raka menuntut kedai ditutup: pengetahuan tanpa lisensi, katanya. Lalu gempa mengguncang dermaga. Pipa raksasa di Tamansari pecah, dan sesuatu menarik jangkar kota."},{"name":"Nala","text":"Dia kabur sebelum selesai membacakan pasalnya. Aku anggap itu izin menyelam."},{"name":"Mbah Wira","text":"Gajah Mina sedang kesakitan. Netralisasi lapisan racunnya dalam simulasi alatmu, lepaskan pipa, dan pulihkan inti ingatannya. Jangan lukai sang penjaga. Tabung dan jala level tiga harus siap."}])
 		elif day==2:
 			_talk([{"name":"Mbah Wira","text":"Malam nanti Bu Darmi akan datang ke Kedai Waras. Agar racikanmu tepat, jangan hanya menyelam: amati dulu gejala kebun apung di timur pelataran (%d/3), bandingkan dengan Hutan Pesisir Wringin di daratan (%d/3), lalu selami Hutan Lamun Wringin pada kedalaman 25–60 m (%d/3)." % [int(counts.garden),int(counts.forest),int(counts.sea)]},{"name":"Nala","text":"Aku juga akan memastikan fragmen Benih Hayati (Biologi Tumbuhan) sudah ada di tas sebelum membuka kedai malam ini."}])
+		elif day>=3:
+			_talk([{"name":"Babak 3 · Jejak Pipa Jalatunda","text":"Air kebun mulai jernih, tetapi limbah asam terus datang dari kedalaman. Ada pipa korporasi di Jalatunda dan penyaring desa tersumbat."},{"name":"Mbah Wira","text":"Amati pipa itu, pecahkan teka-teki penyaring, lalu bawa fragmen untuk tiga warga terakhir di kedai. Jangan membuka malam sebelum kedua bukti tercatat."},{"name":"Nala","text":"Aku akan mengikuti aliran limbah sampai sumbernya. Catatan di SmaraPedia akan membantuku menghubungkan bukti."}])
 		else:
 			_talk([{"name":"Mbah Wira","text":"Kedai buka setelah kamu kembali membawa fragmen. Jika bekal kurang, tutup sementara dan cari lagi. Pelanggan yang sudah dilayani tetap tercatat."},{"name":"Nala","text":"Baik. Menjaring ingatan dulu, meracik solusi kemudian."}])
 	elif name_text=="Beno":
@@ -1168,6 +1147,8 @@ func _npc_interact(name_text: String) -> void:
 			_talk([{"name":"Bu Darmi","text":"Kamu sudah memeriksa ketiga gejala di kebunku (3/3): daunnya pucat klorosis, medianya padat tergenang tanpa udara, dan saluran pasangnya tersendat."},{"name":"Nala","text":"Benar, Bu. Sekarang aku sedang melengkapi perbandingan di Hutan Pesisir Wringin daratan (%d/3) dan pengamatan bawah laut di Hutan Lamun Wringin 25–60 m (%d/3) sambil menjala fragmen Benih Hayati." % [int(counts.forest),int(counts.sea)]}])
 		else:
 			_talk([{"name":"Bu Darmi","text":"Semua catatan dari kebun apung (3/3), Hutan Pesisir Wringin (3/3), dan Hutan Lamun Wringin (3/3) sudah lengkap!"},{"name":"Nala","text":"Begitu kembali dari penyelaman dan malam tiba, aku akan menemui Mbah Wira di Kedai Waras untuk meracik solusinya dengan Benih Hayati."}])
+	elif day>=3 and stage!="done":
+		_talk([{"name":"Inspektur Raka","text":"Pipa di Jalatunda adalah aset PT Cakrawala Sintetis. Pengamatan tanpa izin tidak diakui sebagai bukti."},{"name":"Nala","text":"Air asam dan saringan yang tersumbat tidak menunggu stempel. Aku sudah mencatat keduanya."},{"name":"Inspektur Raka","text":"Kalau begitu Anda akan menerima pemberitahuan resmi di Kedai Waras."}])
 	else:
 		_talk([{"name":"Inspektur Raka","text":"PT Cakrawala Sintetis menyediakan Kapsul Instan untuk seluruh kebutuhan kerja Anda. Belajar mandiri meningkatkan risiko kesalahan prosedur."},{"name":"Nala","text":"Menarik. Apakah prosedurnya juga menjelaskan pipa yang bocor di bawah kota?"},{"name":"Inspektur Raka","text":"Akses ke fasilitas Sektor Tuban-7 dibatasi. Percakapan ini dicatat."}])
 func _service_debug_status() -> Dictionary:
