@@ -1,5 +1,11 @@
 # Jalasmara visual evidence
 
+## Phase 1 cinematic release startup on public staging, 14 November 2026
+
+![Public 844×390 Bandar Hujung dock after the Phase 1 cinematic release, showing Nala, the HUD and the unobstructed playfield.](phase1-cutscene-release-ready-hub-20261114.png)
+
+Original public Chromium/SwiftShader screenshot from source `2b5bd8edf6c21828502df4b9a9c22dd39137736a`, active image `f60edf88490a`, and CI PCK `72a92e317d3aa91b6c37b3aca74a160413b04a12b612ff7aa0745512d519b325`. PNG SHA-256 `216a22d3c6deb7c00be4c6984a46a9d336084ca0f0d78b72af5be4e3beac8f6e`. This proves a ready game and visible Nala after the release; the tutorial-complete fixture did not trigger a cinematic. See the [release report](../reviews/phase-one-cutscenes-2026-11-14.md). The image is documentation, not a game texture or physical-device benchmark.
+
 ## Compact HUD and three-line Menu on public staging, 14 November 2026
 
 ![Public 844×390 Bandar Hujung dock with the icon-only hamburger Menu, compact land badge, Nala and clear playfield.](hud-phase1-staging-20261114.png)
