@@ -11,6 +11,9 @@ var progress_label: Label
 var boss_art: TextureRect
 var boss_atlas: AtlasTexture
 var boss_phase := 0.0
+var backdrop: Texture2D
+var backdrop_key := ""
+var backdrop_time := 0.0
 var motif_id := ""
 var motif_beat := 0
 var motif_time := 0.0
@@ -18,10 +21,10 @@ var skip_button: Button
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	shade = ColorRect.new()
 	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	shade.show_behind_parent = true
 	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(shade)
 	upper = ColorRect.new()
@@ -75,7 +78,7 @@ func _ready() -> void:
 	boss_art.anchor_top = 0.12
 	boss_art.anchor_right = 0.98
 	boss_art.anchor_bottom = 0.68
-	boss_art.modulate = Color(0.69,0.94,0.92,0.67)
+	boss_art.modulate = Color(0.81,1.0,0.95,0.92)
 	boss_art.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(boss_art)
 	boss_art.hide()
@@ -84,6 +87,7 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if not visible or EnvironmentState.reduced_motion: return
 	motif_time += delta
+	backdrop_time += delta
 	queue_redraw()
 	if boss_art.visible:
 		boss_phase += delta
@@ -95,6 +99,12 @@ func _draw() -> void:
 	var view := size
 	if view.x<1 or view.y<1: return
 	var motion := 0.0 if EnvironmentState.reduced_motion else motif_time
+	if backdrop!=null:
+		var source:=Vector2(backdrop.get_size())
+		var scale:=maxf(view.x/source.x,view.y/source.y)*1.08
+		var painted:=source*scale
+		var pan:=Vector2.ZERO if EnvironmentState.reduced_motion else Vector2(sin(backdrop_time*.22)*10.0,cos(backdrop_time*.17)*5.0)
+		draw_texture_rect(backdrop,Rect2((view-painted)*.5+pan,painted),false)
 	if motif_id=="prologue":
 		if motif_beat<=1:
 			for i in range(6):
@@ -147,6 +157,16 @@ func _label(parent: Control, font_size: int, color: Color) -> Label:
 
 func present(title: String, beat: Dictionary, index: int, total: int, cinematic_id: String) -> void:
 	visible = true
+	var scene_key := ""
+	match cinematic_id:
+		"prologue", "earthquake", "first_service": scene_key = "prologue"
+		"boss_intro", "boss_phase_two": scene_key = "tamansari"
+		"victory": scene_key = "tamansari" if index<=2 else "epilogue"
+		"epilogue": scene_key = "epilogue"
+	if scene_key!=backdrop_key:
+		backdrop_key = scene_key
+		backdrop = load("res://resources/art/cinematics-v1/"+scene_key+".png") if not scene_key.is_empty() else null
+		backdrop_time = 0.0
 	motif_id = cinematic_id
 	motif_beat = index
 	motif_time = 0.0

@@ -1,5 +1,15 @@
 # Jalasmara visual evidence
 
+## Phase 1 cinematic art candidate, 14 November 2026
+
+![Native 844×390 original Bandar Hujung cinematic background beneath Godot's cutscene frame.](phase1-cinematic-prologue-20261114.png)
+
+![Native 667×375 Tamansari arena with the separate moving Gajah Mina sprite in front.](phase1-cinematic-boss-20261114.png)
+
+![Native 844×390 Griya Sasmita epilogue with a warm veranda and glowing garden.](phase1-cinematic-epilogue-20261114.png)
+
+Original Godot 4.7.2 Apple M2 Compatibility component captures from `work/phase1-cinematic-art-20261114`, before release. The PNG SHA-256 values and source asset provenance are in the [candidate report](../reviews/phase-one-cinematic-art-2026-11-14.md). These prove native shot composition at the stated sizes; they do not prove public-browser progression, physical-device performance, or a completed screenplay animation. Documentation images are separate from the runtime artwork and its terms.
+
 ## Phase 1 cinematic release startup on public staging, 14 November 2026
 
 ![Public 844×390 Bandar Hujung dock after the Phase 1 cinematic release, showing Nala, the HUD and the unobstructed playfield.](phase1-cutscene-release-ready-hub-20261114.png)
