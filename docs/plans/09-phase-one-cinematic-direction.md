@@ -1,6 +1,6 @@
 # Phase 1 cinematic direction
 
-This document maps the owner's screenplay to the current Godot 4.7.2 game. The Indonesian dialogue lives in `client-godot/scripts/PhaseOneCutscenes.gd`; `CutsceneFrame.gd` presents letterbox framing, warm/plum/teal/deep color cues, shot labels, a boss cut-in, and a touch-sized skip button over the live game world. `Main.gd` connects the beats to actual play. Gameplay, rewards, calendar time, questions, and boss victory remain server-owned.
+This document maps the owner's screenplay to the current Godot 4.7.2 game. The Indonesian dialogue lives in `client-godot/scripts/PhaseOneCutscenes.gd`; `CutsceneFrame.gd` presents letterbox framing, warm/plum/teal/deep color cues, shot labels, a twelve-frame boss cut-in, procedural fog/rays/bubbles/quake/memory motes/hologram lines, and a touch-sized skip button over the live game world. `Main.gd` connects the beats to actual play. Gameplay, rewards, calendar time, questions, and boss victory remain server-owned.
 
 | Screenplay beat | Playback gate | Music / visual direction | Implemented presentation and gameplay relationship |
 | --- | --- | --- | --- |
@@ -20,6 +20,6 @@ This document maps the owner's screenplay to the current Godot 4.7.2 game. The I
 
 ## Art and acceptance limits
 
-This pass uses the live world, existing portraits, existing Gajah Mina source art, dialogue, color overlays, and project audio. It **does not yet** animate the screenplay's boat backflip, unique five-child ensemble, capsule crowd, pipe fracture, illuminated map hologram, or large-scale memory-particle rain as bespoke cutscene assets. Those are separate art/animation tasks, not evidence that the full cinematic direction has been rendered. Before claiming the visual screenplay complete, capture a new-player playthrough, a day-2/day-3 progression, and all six boss resonances in a real browser; review the 667×375 and 844×390 layouts, audio continuity, skip behavior, and FPS on Windows and Samsung S23.
+This pass uses the live world, existing portraits, existing Gajah Mina motion atlas, dialogue, color overlays, lightweight procedural motifs, and project audio. It **does not yet** animate the screenplay's boat backflip, unique five-child ensemble, capsule crowd, literal pipe fracture, full 3D map projection, or large-scale memory-particle rain as bespoke cutscene assets. Those are separate art/animation tasks, not evidence that the full cinematic direction has been rendered. Before claiming the visual screenplay complete, capture a new-player playthrough, a day-2/day-3 progression, and all six boss resonances in a real browser; review the 667×375 and 844×390 layouts, audio continuity, skip behavior, and FPS on Windows and Samsung S23.
 
 The screenwriter's Phaser shader names are directions, not runtime requirements: Godot's existing weather/underwater rendering and the cutscene color overlay provide the current cues. There is no Phaser migration or second renderer.
