@@ -1,5 +1,13 @@
 # Jalasmara visual evidence
 
+## Living Phase 1 action layers, native candidate, 14 November 2026
+
+| Nala arrives by sampan | Tamansari pipe fractures | Prasasti depth route |
+| --- | --- | --- |
+| ![Code-authored pixel sampan and Nala over the Bandar Hujung water.](living-action-boat-667x375-20261114.png) | ![Pixel fracture and cyan fragments aligned to the existing Tamansari pipe.](living-action-pipe-667x375-20261114.png) | ![Cyan route projection over the Griya Sasmita veranda.](living-action-map-667x375-20261114.png) |
+
+Godot 4.7.2 Apple M2 Compatibility captures at 667×375 from isolated source branch `work/living-gameplay-20261114`, not a public staging build. They show composition; temporal motion is exercised by the native before/after fixture, and physical Windows/S23 performance remains untested. Source painting hashes, screenshot hashes, tool/provenance and test limits are in the [candidate report](../reviews/living-cinematic-actions-2026-11-14.md). These PNGs document development and are not runtime assets.
+
 ## Phase 1 cinematic motion candidate, 14 November 2026
 
 | Bandar Hujung | Tamansari | Griya Sasmita |

@@ -14,6 +14,7 @@ var boss_phase := 0.0
 var backdrop: Texture2D
 var living_plate: TextureRect
 var living_material: ShaderMaterial
+var action_layer: Control
 var backdrop_key := ""
 var backdrop_time := 0.0
 var motif_id := ""
@@ -39,6 +40,8 @@ func _ready() -> void:
 	living_plate.material = living_material
 	add_child(living_plate)
 	move_child(living_plate, 0)
+	action_layer = preload("res://scripts/CinematicActionLayer.gd").new()
+	add_child(action_layer)
 	upper = ColorRect.new()
 	upper.color = Color("161129")
 	upper.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -99,11 +102,14 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if not visible: return
 	if EnvironmentState.reduced_motion:
+		action_layer.queue_redraw()
 		if living_plate.visible:
 			living_plate.hide()
 			queue_redraw()
 		return
 	motif_time += delta
+	action_layer.elapsed = motif_time
+	action_layer.queue_redraw()
 	backdrop_time += delta
 	living_material.set_shader_parameter("elapsed", backdrop_time)
 	_update_living_plate()
@@ -216,6 +222,10 @@ func present(title: String, beat: Dictionary, index: int, total: int, cinematic_
 	motif_id = cinematic_id
 	motif_beat = index
 	motif_time = 0.0
+	action_layer.motif_id = cinematic_id
+	action_layer.motif_beat = index
+	action_layer.elapsed = 0.0
+	action_layer.queue_redraw()
 	title_label.text = title
 	shot_label.text = str(beat.get("shot", ""))
 	progress_label.text = "%d / %d" % [index, total]
