@@ -1,5 +1,14 @@
 # Jalasmara visual evidence
 
+## Phase 1 cinematic motion candidate, 14 November 2026
+
+| Bandar Hujung | Tamansari | Griya Sasmita |
+| --- | --- | --- |
+| ![Native Godot prologue frame with moving water, factory plume and pollen.](cinematic-motion-prologue-667x375-20261114.png) | ![Native Godot boss frame with caustics and animated Gajah Mina.](cinematic-motion-boss-667x375-20261114.png) | ![Native Godot epilogue frame with sea shimmer, foliage and lantern light.](cinematic-motion-epilogue-667x375-20261114.png) |
+
+Original 667×375 Godot 4.7.2 Apple M2 Compatibility captures from candidate source `58a4b75`. Image hashes, before/after pixel-change measurements, provenance, and acceptance limits are in the [motion report](../reviews/phase-one-cinematic-motion-2026-11-14.md). These stills show composition, not proof of animation by themselves or of public staging playback. The six raw temporal frames stay in ignored local artifacts; no screenshot is a runtime asset.
+
+
 ## Neutralizer combat HUD and staging startup, 14 November 2026
 
 ![Native 667×375 boss HUD with compact JALA and TEMBAK actions.](neutralizer-hud-boss-667x375.png)
