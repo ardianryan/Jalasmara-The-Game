@@ -50,6 +50,7 @@ const scripts = [
   "scripts/tests/village-portraits.gd",
   "scripts/tests/field-book.gd",
   "scripts/tests/phase-one-story.gd",
+  "scripts/tests/phase-one-cutscenes.gd",
   "scripts/tests/world-atlas-layout.gd",
   "scripts/tests/render-performance.gd",
   "scripts/tests/ocean-resolution.gd",

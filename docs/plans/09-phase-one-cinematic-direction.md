@@ -1,0 +1,25 @@
+# Phase 1 cinematic direction
+
+This document maps the owner's screenplay to the current Godot 4.7.2 game. The Indonesian dialogue lives in `client-godot/scripts/PhaseOneCutscenes.gd`; `CutsceneFrame.gd` presents letterbox framing, warm/plum/teal/deep color cues, shot labels, a boss cut-in, and a touch-sized skip button over the live game world. `Main.gd` connects the beats to actual play. Gameplay, rewards, calendar time, questions, and boss victory remain server-owned.
+
+| Screenplay beat | Playback gate | Music / visual direction | Implemented presentation and gameplay relationship |
+| --- | --- | --- | --- |
+| 0.1–0.4: fog, capsule pitch, Nala's return, inherited net | New player after appearance selection, before tutorial completion | Title theme; warm coast gradually shifts to plum fog; Beno's workshop boom | A ten-shot, skippable prologue plays over the hub. Finishing or skipping acknowledges the existing tutorial endpoint. |
+| 1.1: first descent | First successful day-1 dive start | Segaran BGM, teal tint, water impact | Radio guidance follows the authoritative dive start. The actual underwater environment remains animated behind the dialogue. |
+| 1.2: first Kedai night and recovered knowledge | First day-1 shift and completion of `daun_kuning` | Kedai BGM, lantern warmth, Raka's colder final beat | Two short sequences bookend the first real recipe. The current first server customer is Bu Darmi; Pak Ranto appears in the opening scene but is not misrepresented as the rewarded customer. |
+| 2.1: garden crisis and children | First hub visit after story day advances to 2 | Coastal BGM, plum-to-warm color shift | Four shots explain the existing garden, forest and kelp observation requirements. No artificial deadline or premature garden unlock is applied. |
+| 2.2: Saras visits after garden treatment | Completion of recipe `akar` | Village hall BGM, warm-to-plum shift | Plays before the next customer; the garden's existing gradual recovery remains unchanged. |
+| 3.1: Jalatunda cave warning | First day-3 dive reaching 60 m | Deep-cave BGM, deep-blue tint, underwater impact | Plays once per local player profile and pauses the dive reading while open. The cave investigation and filter puzzle remain real server checks. |
+| 3.2: quake and Kinasih's song | First hub visit after the third night advances to boss stage | Village hall BGM, purple quake beat, warm preparation | The song, Raka's admission, and Beno's level-three upgrade instruction precede the existing boss dive. |
+| 4.1: Gajah Mina introduction | Successful boss dive start | Boss BGM, dark frame and existing Gajah Mina art | The in-game boss still swims and telegraphs attacks through the existing motion controller; six fixed resonance targets remain reachable. |
+| 4.2: pipe breaks / core opens | Third successful resonance | Boss BGM, teal shift and impact | Phase transition is **3/6**, matching the authoritative fight. The screenplay's 2+3 HP framing is adapted to the shipped 3+3 rule; no client damage is invented. |
+| 4.3–4.4: purification and returning memories | Successful extraction after resonance 6/6 | Victory jingle, coastal-dusk BGM, teal-to-warm shift | The cutscene plays only after the server reports victory and awards the prasasti. |
+| 4.5–4.6: feast and abisal teaser | Immediately after victory; replays on next hub load if unfinished locally | Village-hall BGM, warm feast and deep map beat | The final line thanks the player, states that progress is saved, and points to the SmaraPedia teaser. Phase 2 is not presented as playable. |
+
+`user://phase-one-cutscenes.cfg` stores only cosmetic seen flags keyed by authenticated player ID. It does not grant rewards, advance the calendar, or change server progress. A player on another device may replay a cinematic; this is preferable to treating local playback as authoritative. Completing or skipping a sequence marks its local flag. A failed local save still suppresses replay in the current session.
+
+## Art and acceptance limits
+
+This pass uses the live world, existing portraits, existing Gajah Mina source art, dialogue, color overlays, and project audio. It **does not yet** animate the screenplay's boat backflip, unique five-child ensemble, capsule crowd, pipe fracture, illuminated map hologram, or large-scale memory-particle rain as bespoke cutscene assets. Those are separate art/animation tasks, not evidence that the full cinematic direction has been rendered. Before claiming the visual screenplay complete, capture a new-player playthrough, a day-2/day-3 progression, and all six boss resonances in a real browser; review the 667×375 and 844×390 layouts, audio continuity, skip behavior, and FPS on Windows and Samsung S23.
+
+The screenwriter's Phaser shader names are directions, not runtime requirements: Godot's existing weather/underwater rendering and the cutscene color overlay provide the current cues. There is no Phaser migration or second renderer.

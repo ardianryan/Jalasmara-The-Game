@@ -22,6 +22,7 @@ var panic_player: AudioStreamPlayer
 var ambience_player: AudioStreamPlayer
 var victory_player: AudioStreamPlayer
 var current_bgm_track := ""
+var cinematic_bgm := ""
 var is_underwater := false
 var audio_unlocked := false
 var muted := false
@@ -418,6 +419,9 @@ func _process(delta: float) -> void:
 func _refresh_context() -> void:
 	var diving := not GameState.dive.is_empty()
 	set_underwater_filter(diving)
+	if not cinematic_bgm.is_empty():
+		play_bgm(cinematic_bgm,0.35)
+		return
 	if GameState.player.is_empty():
 		play_bgm("title_theme",0.4)
 		return
@@ -443,6 +447,10 @@ func _refresh_context() -> void:
 	elif str(EnvironmentState.snapshot().get("phase",""))=="senja":
 		desired = "coastal_dusk"
 	play_bgm(desired,1.0)
+
+func set_cinematic_bgm(track_name: String) -> void:
+	cinematic_bgm = track_name if bgm_streams.has(track_name) else ""
+	_refresh_context()
 
 func _near_village_hall() -> bool:
 	if str(GameState.surface.get("area","hub"))!="hub":

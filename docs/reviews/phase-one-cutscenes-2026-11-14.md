@@ -1,0 +1,21 @@
+# Phase 1 cutscene source review — 14 November 2026
+
+The owner supplied a director's screenplay from the Nir-Aksara prologue to the Prasasti Smara Kuno epilogue. This package translates it into twelve playable, skippable Godot sequences tied to the existing authoritative story. It is a **source candidate** on `work/phase1-cutscenes-20261114`, based on `main` `5eb6144`; it has not been merged, mirrored, run through GitHub Actions, or activated on staging at the time of this report.
+
+`PhaseOneCutscenes.gd` holds Indonesian dialogue and shot-level tone/SFX cues. `CutsceneFrame.gd` adds letterbox framing, a shot counter, touch skip, colored atmosphere and an animated cut-in cropped from the existing twelve-frame Gajah Mina atlas. `Main.gd` plays the sequences at the real first dive, first Kedai service, story day 2, Saras's `akar` aftermath, 60 m Jalatunda, boss stage, boss dive, resonance 3/6, server-confirmed victory and epilogue. `AudioManager.gd` temporarily holds the appropriate BGM during dialogue, then returns to the world context. The local `user://phase-one-cutscenes.cfg` tracks cosmetic seen flags per player, with a session fallback; server progress and rewards are unchanged. See [direction and trigger map](../plans/09-phase-one-cinematic-direction.md).
+
+The supplied screenplay described a 2+3 boss HP transition. The shipped fight requires six server-authoritative resonances, so the cutscene transition is at **3/6**, followed by the other three. The shipped first Kedai recipe is Bu Darmi's `daun_kuning`; Pak Ranto is a prologue/Kedai cameo rather than a falsely rewarded first customer. Kapsul Basa and UV equipment are not granted as inventory items by this presentation layer. Phase 2 remains a teaser only.
+
+## Verification
+
+- Godot 4.7.2 headless editor import: no `SCRIPT ERROR`, `ERROR`, or parse error on final run. The first cold import briefly reported missing generated font import data, then the second import was clean.
+- New `phase-one-cutscenes.gd` check: twelve non-empty sequences, first-load gates, boss-art cut-in and counter passed.
+- `npm run check:world`: passed the complete registered suite after two fixture regressions were corrected. `kedai-focus.gd`, `kedai-resume.gd`, and `kedai-result-layout.gd` passed in focused reruns. The initial two full-suite attempts failed when cinematic opening replaced fixture service panels; real playback is now gated on authenticated player and shift IDs.
+- `npm run typecheck`: passed. `npm test`: **123/123 passed** against temporary MongoDB `rs0` on port 27018 and Redis on port 6380; those isolated services were stopped and their 6.6 MiB temporary data directory removed. `GODOT_BIN=... npm run build`: passed, with local PCK SHA-256 `14b3de8c967624c9fb6ae50cec9ba9e505a83f70c7b2ddd3d1b1b440d896a8af`.
+- A headless framebuffer capture was attempted for a frame fixture but the dummy renderer did not produce a readable texture; it was stopped and the temporary capture script removed. Therefore this report does **not** claim a visual screenshot or live-browser cinematic review.
+
+## Tools, assets, limits, and next work
+
+Tools actually used: the repository's Godot 4.7.2 binary, Node/npm test/build commands, isolated MongoDB and Redis, and local source/image inspection. No third-party cinematic package, external AI image, new generated raster, or new license was introduced. The cut-in reuses `client-godot/resources/art/gajah-mina-motion-v1/swim.png`; its original source and derivation are recorded in [asset provenance](../assets/provenance.md), and the project artwork terms remain unchanged. Existing BGM/SFX are reused; composer attribution remains in the asset provenance.
+
+The screenplay's boat backflip, five-child stage ensemble, capsule crowd, pipe-breaking animation, memory-particle rain and holographic map are **still art/animation tasks**. Current cutscenes are dialogue plus shot framing, color/audio cues and the live world. Before visual completion or staging acceptance, run an actual browser playthrough across day 1–3 and all six resonances, inspect first-load and skip on 667×375/844×390, check music continuity, then follow GitHub Actions `verified-delivery` and the documented backup/hash/public-smoke release procedure. Windows and Samsung S23 pacing require owner-assisted physical checks.

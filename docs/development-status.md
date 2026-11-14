@@ -1,5 +1,7 @@
 # Status pengembangan
 
+**Phase 1 cinematic source candidate, 14 November 2026:** Twelve skippable Godot sequences now cover the owner's prologue, day 1–3 interludes, Gajah Mina phases, purification and epilogue. The [source review](reviews/phase-one-cutscenes-2026-11-14.md) records passing Godot/world/typecheck/123 API/build checks and the remaining bespoke action-animation work. This is still an isolated source candidate; the active staging build below has not changed.
+
 **HUD dan cerita Fase 1 aktif, 14 November 2026:** Source `70b2d4b` lulus [GitHub Actions 43536948468](https://github.com/ardianryan/Jalasmara-The-Game/actions/runs/43536948468) dan aktif di staging sebagai image `ce3bacae0f06` dengan PCK `3876454393e8`. [Laporan rilis](reviews/hud-phase1-story-staging-2026-11-14.md) mencatat backup/restore 51 dokumen, smoke publik 6/6, nol residu fixture, dan satu rollback. Screenshot [menu hamburger serta HUD darat](visual/hud-phase1-staging-20261114.png) tersedia. Uji tiga siklus hingga boss tamat lulus di API lokal; duel enam resonansi di browser publik dan pemeriksaan Windows/S23 fisik masih perlu dilakukan. Catatan kandidat di bawah adalah riwayat.
 
 ## Kandidat HUD ringkas dan panduan cerita Fase 1, 14 November 2026

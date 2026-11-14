@@ -5,6 +5,7 @@ const EntitiesScript = preload("res://scripts/Entities.gd")
 const BODY_FONT = preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2")
 const BossMotionScript = preload("res://scripts/BossMotion.gd")
 const PhaseOneStory = preload("res://scripts/PhaseOneStory.gd")
+const PhaseOneCutscenes = preload("res://scripts/PhaseOneCutscenes.gd")
 const PHYSICAL_GAIT_RELEASE_ENABLED := false
 var land_renderer: Node2D
 var nala: CharacterBody2D
@@ -34,6 +35,12 @@ var net_time := 0.0
 var chain_lines: Array = []
 var chain_end: Callable
 var phase_seen := ""
+var cutscene_frame: Control
+var cutscene_id := ""
+var cutscene_title := ""
+var cutscene_total := 0
+var cutscene_index := 0
+var cutscene_seen_session: Dictionary = {}
 var attacks: Array = []
 var boss_motion = BossMotionScript.new()
 var touch_enabled := false
@@ -145,6 +152,9 @@ func _ready() -> void:
 		_show_character(true)
 	elif not GameState.player.progress.get("tutorial",false):
 		_story_intro()
+	elif GameState.dive.is_empty():
+		var opening: String = PhaseOneCutscenes.eligible_on_load(GameState.player,GameState.dive,GameState.shift)
+		if not opening.is_empty(): _play_cutscene(opening)
 	if OS.has_feature("web"):
 		var window = JavaScriptBridge.get_interface("window")
 		window.jalasmaraReady = true
@@ -219,6 +229,13 @@ func _build_ui() -> void:
 	ui.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	ui.theme = hud.root_control.theme
 	hud.add_child(ui)
+	cutscene_frame = preload("res://scripts/CutsceneFrame.gd").new()
+	ui.add_child(cutscene_frame)
+	cutscene_frame.skip_requested.connect(func():
+		if cutscene_id.is_empty(): return
+		chain_lines.clear()
+		_next_line()
+	)
 	get_viewport().size_changed.connect(_layout_modal)
 	ViewportLayout.host_pause_changed.connect(func(paused: bool):
 		if not GameState.dive.is_empty():
@@ -383,7 +400,7 @@ func _layout_quiz_answers(answers: GridContainer,width: float) -> void:
 		var measured:=BODY_FONT.get_multiline_string_size(option_label.text,HORIZONTAL_ALIGNMENT_LEFT,maxf(80,column_width-padding.x*2),_ui_font())
 		answer.custom_minimum_size=Vector2(0,maxf(_ui_target(),measured.y+padding.y*2))
 func _close() -> void:
-	if not GameState.shift.is_empty() and GameState.dive.is_empty() and not _can_resume_kedai("Mbah Wira"):
+	if cutscene_id.is_empty() and not GameState.shift.is_empty() and GameState.dive.is_empty() and not _can_resume_kedai("Mbah Wira"):
 		_kedai_customer()
 		return
 	if is_instance_valid(field_panel):
@@ -412,6 +429,10 @@ func _next_line() -> void:
 			chain_end.call()
 		return
 	var line: Dictionary = chain_lines.pop_front()
+	if not cutscene_id.is_empty() and is_instance_valid(cutscene_frame):
+		cutscene_index += 1
+		cutscene_frame.present(cutscene_title,line,cutscene_index,cutscene_total,cutscene_id)
+		if line.has("sfx"): AudioManager.play_sfx(str(line.sfx),1.0,-7.0)
 	if is_instance_valid(modal): modal.queue_free()
 	modal_open = true
 	hud.set_modal(true)
@@ -424,16 +445,42 @@ func _next_line() -> void:
 	if not GameState.dive.is_empty():
 		ApiClient.call_api("/dive/reading",{"diveId":GameState.dive.id,"paused":true})
 func _story_intro() -> void:
-	_talk([
-		{"name":"Babak 1 · Kabut dan Kopi Pahit","text":"Bandar Hujung terapung di atas ingatan yang tenggelam. Kabut Nir-Aksara membuat warga lupa ilmu yang dahulu mereka kuasai. Kapal Nala rusak, dan uang sewanya hampir habis."},
-		{"name":"Beno","emotion":"happy","text":"Kapalmu bisa kuperbaiki. Gratis? Hampir. Bantu Mbah Wira membuka Kedai Waras, dan jangan sentuh tuas merah di bengkelnya."},
-		{"name":"Nala","emotion":"thinking","text":"Baik. Utang kapal dibayar dengan kopi. Sejauh ini rencana hidupku makin masuk akal."},
-		{"name":"Mbah Wira","text":"Di bawah dermaga ada ingatan yang mengkristal. Berenanglah. Amati taman tua itu. Tidak semua ilmu datang dari menjawab pertanyaan: banyak yang hanya perlu kamu temukan."},
-		{"name":"Petualangan dimulai","text":"WASD / arah: bergerak. E: bicara atau mengamati. Tahan lalu lepas spasi: Jala Kognisi. M: peta, J: jurnal, I: tas. Datangi tangga selam di kanan Galangan Bubat; kembali ke tangga untuk naik."}
-	],func():
+	_play_cutscene("prologue",func():
 		await ApiClient.call_api("/game/tutorial",{})
 		await GameState.refresh()
 		_update_hud()
+	)
+
+func _cutscene_seen(id: String) -> bool:
+	if bool(cutscene_seen_session.get(id,false)): return true
+	var saved := ConfigFile.new()
+	if saved.load("user://phase-one-cutscenes.cfg")!=OK: return false
+	return bool(saved.get_value(str(GameState.player.get("id","")),id,false))
+
+func _play_cutscene(id: String, done := Callable()) -> void:
+	if _cutscene_seen(id):
+		if done.is_valid(): done.call()
+		return
+	var sequence: Dictionary = PhaseOneCutscenes.sequence(id)
+	if sequence.is_empty() or modal_open:
+		if done.is_valid(): done.call()
+		return
+	cutscene_id = id
+	cutscene_title = str(sequence.title)
+	cutscene_index = 0
+	cutscene_total = sequence.lines.size()
+	AudioManager.set_cinematic_bgm(str(sequence.get("bgm","")))
+	if id=="victory": AudioManager.play_victory_jingle()
+	_talk(sequence.lines,func():
+		cutscene_seen_session[id] = true
+		var saved := ConfigFile.new()
+		saved.load("user://phase-one-cutscenes.cfg")
+		saved.set_value(str(GameState.player.get("id","")),id,true)
+		saved.save("user://phase-one-cutscenes.cfg")
+		cutscene_id = ""
+		cutscene_frame.hide()
+		AudioManager.set_cinematic_bgm("")
+		if done.is_valid(): done.call()
 	)
 func _limit_gait_velocity(at: Vector2, speed: Vector2, delta: float) -> Vector2:
 	return preload("res://scripts/NalaPhysicalMotion.gd").limit_velocity(land_renderer,at,speed,delta)
@@ -571,6 +618,8 @@ func _process(delta: float) -> void:
 	if not GameState.dive.is_empty():
 		sync_clock += delta
 		refresh_clock += delta
+		if int(GameState.player.get("progress",{}).get("day",1))>=3 and str(GameState.dive.get("mode",""))!="boss" and not modal_open and not network_busy and maxf(0.0,(nala.position.y-400.0)/28.0)>=60.0 and not _cutscene_seen("cave_warning"):
+			_play_cutscene("cave_warning")
 		if sync_clock>2 and not network_busy and not syncing and not modal_open:
 			sync_clock = 0
 			_sync_position()
@@ -612,6 +661,11 @@ func _draw() -> void:
 	if flash>0 and nala:
 		draw_circle(nala.position,28,Color(0.9,0.4,0.3,.25))
 func _unhandled_key_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel") and not cutscene_id.is_empty():
+		chain_lines.clear()
+		_next_line()
+		get_viewport().set_input_as_handled()
+		return
 	if event.is_action_pressed("ui_cancel") and is_instance_valid(homestead_ui) and homestead_ui.is_open:
 		homestead_ui.close()
 		get_viewport().set_input_as_handled()
@@ -913,6 +967,7 @@ func _begin_dive() -> void:
 	if r.get("ok",false):
 		_enter_water(r.dive)
 		status.text = "Cari celah di antara terumbu. Amati prasasti, instalasi, dan biota di sepanjang jalan."
+		_play_cutscene("boss_intro" if mode=="boss" else "first_dive" if int(GameState.player.progress.get("day",1))==1 else "")
 	else:
 		_show_message("Belum dapat menyelam",str(r.get("error","Coba kembali.")))
 func _extract(fainted := false) -> void:
@@ -947,7 +1002,7 @@ func _extract(fainted := false) -> void:
 	nala.frozen = was_frozen or modal_open or ViewportLayout.host_paused
 	_update_hud()
 	if r.get("victory",false):
-		_talk([{"name":"Babak 5 · Sang Penjaga Kembali Mengingat","text":"Pipa terakhir terlepas. Gajah Mina berhenti mengamuk; air di sekitar mahkotanya kembali jernih. Nala mengembalikan Inti Smara kepada sang penjaga."},{"name":"Saras","text":"Ini bukan reruntuhan biasa. Prasasti itu memetakan ruang penyimpanan ingatan di kedalaman 300 meter. Seseorang membangun seluruh palung ini."},{"name":"Bandar Hujung","text":"Kebun kembali hijau. Warga tidak lagi bergantung pada Kapsul Instan. Di bawah Tamansari, gerbang mekanik perlahan terbuka. Fase 1 selesai."}])
+		_play_cutscene("victory",func(): _play_cutscene("epilogue"))
 	else:
 		_show_message("Kembali ke Bandar Hujung", "Beno menolong Nala dan menyelamatkan satu tangkapan." if r.get("fainted",false) else "Fragmen tersimpan ke tas. Datangi Mbah Wira di Kedai Waras untuk membantu warga malam ini.")
 func _discover(obj: Dictionary) -> void:
@@ -1062,6 +1117,8 @@ func _show_quiz() -> void:
 			if r.get("ok",false):
 				GameState.dive = r.dive
 				_close()
+				if int(GameState.dive.get("hits",0))==ceili(_required_hits()/2.0):
+					_play_cutscene("boss_phase_two")
 				if int(GameState.dive.get("hits",0))>=_required_hits():
 					_extract()
 		)
@@ -1204,8 +1261,27 @@ func _open_kedai() -> void:
 		_show_message("Kedai belum dapat dibuka",str(r.get("error","Coba kembali.")))
 		return
 	GameState.shift = r.shift
-	_kedai_customer()
+	if int(GameState.player.get("progress",{}).get("day",1))==1 and not str(GameState.player.get("id","")).is_empty() and not str(GameState.shift.get("id","")).is_empty():
+		_play_cutscene("first_kedai",_kedai_customer)
+	else:
+		_kedai_customer()
 func _kedai_customer() -> void:
+	var served: Array = GameState.shift.get("served",[])
+	var pending_cutscene := ""
+	var live_service := not str(GameState.player.get("id","")).is_empty() and not str(GameState.shift.get("id","")).is_empty()
+	if live_service and int(GameState.player.get("progress",{}).get("day",1))==1 and served.is_empty() and not _cutscene_seen("first_kedai"):
+		pending_cutscene = "first_kedai"
+	elif live_service and served.has("daun_kuning") and not _cutscene_seen("first_service"):
+		pending_cutscene = "first_service"
+	elif live_service and served.has("akar") and not _cutscene_seen("saras_visit"):
+		pending_cutscene = "saras_visit"
+	if not pending_cutscene.is_empty():
+		if is_instance_valid(modal): modal.queue_free()
+		modal = null
+		modal_open = false
+		hud.set_modal(false)
+		_play_cutscene(pending_cutscene,_kedai_customer)
+		return
 	var box := _open("Meja Racik · Kedai Waras")
 	modal.set_meta("service_tray",true)
 	var stranded := not _can_resume_kedai("Mbah Wira")
@@ -1354,7 +1430,19 @@ func _show_kedai_result(current: Dictionary,r: Dictionary) -> void:
 	if str(current.id) == "akar":
 		_label(result_box,"Dampak ke Rakit Tani Tanggulangen:\n• Malam ini: PERAWATAN DIMULAI — Bu Darmi memasang penyangga aerasi bambu dan membuka saluran pembuangan pasang agar akar kembali bernapas.\n• Hari berikutnya: PULIH BERTAHAP — Pucuk hijau dan bunga kebun apung akan tumbuh kembali.",14)
 	_label(result_box,"Upah racikan: +%d koin" % int(r.earned),16)
-	_button(result_box,"Pelanggan berikutnya",_kedai_customer).grab_focus.call_deferred()
+	_button(result_box,"Pelanggan berikutnya",func():
+		if is_instance_valid(modal): modal.queue_free()
+		modal = null
+		modal_open = false
+		hud.set_modal(false)
+		var live_service := not str(GameState.player.get("id","")).is_empty() and not str(GameState.shift.get("id","")).is_empty()
+		if live_service and str(current.id)=="daun_kuning":
+			_play_cutscene("first_service",_kedai_customer)
+		elif live_service and str(current.id)=="akar":
+			_play_cutscene("saras_visit",_kedai_customer)
+		else:
+			_kedai_customer()
+	).grab_focus.call_deferred()
 
 func _open_field_panel(panel: Control) -> void:
 	if is_instance_valid(field_panel): field_panel.queue_free()
