@@ -1,5 +1,13 @@
 # Jalasmara visual evidence
 
+## Neutralizer combat HUD and staging startup, 14 November 2026
+
+![Native 667×375 boss HUD with compact JALA and TEMBAK actions.](neutralizer-hud-boss-667x375.png)
+
+![Public 844×390 ready game after the neutralizer release.](neutralizer-staging-ready-hub-20261114.png)
+
+The first image is an original Godot 4.7.2 Apple M2 Compatibility component capture over project-owned Tamansari art, SHA-256 `ce93fb9f3116acff0374de1e19cbcfa7cd1769e752d10a8ba79b7063cc067b59`. It verifies compact HUD layout, not live boss interaction. The second is an original Chromium/SwiftShader public staging screenshot from source `f3f0ab4`, image `9dfde26231b5`, CI PCK `b73dbf7d82ce79e821d74e04643465a87a7f4ef9a3160743f764703fa573ce0c`, SHA-256 `4c8f0b15981652079fd9b1ebd9df338e000a560df5aa27ee335d4e7bb7028b23`. It proves startup and visible Nala only; the six-resonance duel still needs public and physical-device review. See the [release report](../reviews/neutralizer-combat-2026-11-14.md). These documentation images are separate from runtime assets.
+
 ## Phase 1 cinematic art on public staging, 14 November 2026
 
 ![Public 844×390 ready game after the cinematic art release, with Nala visible and gameplay unobstructed.](phase1-cinematic-release-ready-hub-20261114.png)
