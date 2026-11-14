@@ -10,11 +10,14 @@ func _run() -> void:
 	var budget=load("res://scripts/RenderBudget.gd")
 	assert(budget.viewport_size(Vector2(960,540))==Vector2i(480,270))
 	assert(budget.viewport_size(Vector2(960,540),budget.quality_budget("balanced"))==Vector2i(640,360))
+	assert(budget.viewport_size(Vector2(960,540),budget.quality_budget("sharp"))==Vector2i(960,540))
 	assert(budget.quality_budget("low")==129600)
 	for logical in [Vector2(667,540),Vector2(1290,540),Vector2(960,2077),Vector2(3840,1080)]:
-		var size: Vector2i=budget.viewport_size(logical)
-		assert(size.x*size.y<=129600)
-		assert(absf(float(size.x)/size.y-logical.x/logical.y)<.015,"Render budget must preserve fullscreen aspect")
+		for profile in ["low","balanced","sharp"]:
+			var pixel_limit: int=budget.quality_budget(profile)
+			var size: Vector2i=budget.viewport_size(logical,pixel_limit)
+			assert(size.x*size.y<=pixel_limit)
+			assert(absf(float(size.x)/size.y-logical.x/logical.y)<.015,"Render budget must preserve fullscreen aspect")
 	var diagnostics=load("res://scripts/Diagnostics.gd")
 	diagnostics.set_enabled(false)
 	assert(not diagnostics.enabled())
@@ -25,6 +28,7 @@ func _run() -> void:
 	var old_profile: String=quality.get_profile().requested
 	var old_path: String=quality.settings_path
 	var old_coarse: bool=quality.get("_coarse")
+	var old_auto_drop: int=quality.get("_auto_drop")
 	var config_path: String="user://render-quality-test.cfg"
 	quality.settings_path=config_path
 	quality.set_profile("balanced",false)
@@ -35,13 +39,19 @@ func _run() -> void:
 	var saved:=ConfigFile.new()
 	assert(saved.load(config_path)==OK and saved.get_value("graphics","quality")=="low")
 	assert(quality.set_profile("balanced") and quality.get_profile().sunShadows)
+	assert(quality.set_profile("sharp",false) and quality.get_profile().effective=="sharp")
 	quality.set("_coarse",true)
 	quality.set_profile("auto")
-	assert(quality.get_profile().effective=="low","Auto must select the lower shadow budget on touch devices")
+	assert(quality.get_profile().effective=="balanced","Auto should keep touch graphics legible")
 	quality.set("_coarse",false)
+	assert(quality.get_profile().effective=="sharp")
+	quality.set("_auto_drop",1)
 	assert(quality.get_profile().effective=="balanced")
+	quality.set("_coarse",true)
+	assert(quality.get_profile().effective=="low")
 	quality.set("_coarse",old_coarse)
 	quality.set_profile(old_profile,false)
+	quality.set("_auto_drop",old_auto_drop)
 	quality.settings_path=old_path
 	DirAccess.remove_absolute(config_path)
 	var metrics: Dictionary=diagnostics.performance_sample(quality)
@@ -155,5 +165,5 @@ func _run() -> void:
 	state.dive={}
 	scene.free()
 	await process_frame
-	print("RENDER PERFORMANCE PASS: aspect-preserving129600/230400pixelbudgets, opt-in diagnostics, five crop stage changes without static/water/NPC rebuilds, unchanged-plot identity, bounded shorelinecache, inactivewater pause/resume")
+	print("RENDER PERFORMANCE PASS: aspect-preserving129600/230400/518400pixelbudgets, touch balanced and desktop sharp auto with low-FPS downgrade, opt-in diagnostics, five crop stage changes without static/water/NPC rebuilds, unchanged-plot identity, bounded shorelinecache, inactivewater pause/resume")
 	quit()

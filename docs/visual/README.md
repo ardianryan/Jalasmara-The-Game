@@ -1,5 +1,13 @@
 # Jalasmara visual evidence
 
+## Graphics clarity source candidate, 14 November 2026
+
+| Sharp forest bridge | Sharp dock shore |
+| --- | --- |
+| ![Native forest bridge with readable ground texture, clear sprite edges and calmer green grass.](graphics-clarity-forest-sharp-20261114.png) | ![Native dock shore at the Sharp world render profile, with detailed grass, stone and deck boards.](graphics-clarity-dock-sharp-20261114.png) |
+
+Original Godot 4.7.2 Apple M2 Compatibility captures from `work/graphics-clarity-20261114`, before staging. PNG SHA-256 values are `8ec2804c05284a980388454d2b28199e5c81814fe0465fc14247928e80de643b` and `40eb26dc93890b126bcca4d6b2f971f5b81e6edd1e4f77087a2665b2af4ff7c3`. See the [source review](../reviews/graphics-clarity-source-2026-11-14.md). These are documentation, not game textures or device FPS proof.
+
 ## Coast and Pixora Menu on public staging, 14 November 2026
 
 ![The public 844×390 Bandar Hujung view with the Pixora Menu icon, the refined dock shore and the compact game HUD.](coast-pixora-staging-20261114.png)

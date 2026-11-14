@@ -13,13 +13,13 @@ interface PlayProps {
   canManage?: boolean;
   onLogout: () => Promise<void>;
 }
-type GraphicsQuality = "auto" | "low" | "balanced";
+type GraphicsQuality = "auto" | "low" | "balanced" | "sharp";
 const QUALITY_STORAGE_KEY = "jalasmara.graphicsQuality";
 
 function storedGraphicsQuality(): GraphicsQuality {
   try {
     const value = localStorage.getItem(QUALITY_STORAGE_KEY);
-    if (value === "low" || value === "balanced") return value;
+    if (value === "low" || value === "balanced" || value === "sharp") return value;
   } catch {
     // Restricted storage must not prevent playing or changing this session's setting.
   }
@@ -384,7 +384,8 @@ export function Play({ canManage = false, onLogout }: PlayProps) {
                   if (
                     value === "auto" ||
                     value === "low" ||
-                    value === "balanced"
+                    value === "balanced" ||
+                    value === "sharp"
                   )
                     setGraphicsQuality(value);
                 }}
@@ -401,9 +402,10 @@ export function Play({ canManage = false, onLogout }: PlayProps) {
                   padding: "10px 12px",
                 }}
               >
-                <option value="auto">Auto (perangkat)</option>
+                <option value="auto">Auto (sesuaikan kecepatan)</option>
                 <option value="low">Ringan</option>
                 <option value="balanced">Seimbang</option>
+                <option value="sharp">Tajam (lebih berat)</option>
               </select>
             </div>
             <button

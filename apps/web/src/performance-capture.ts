@@ -101,7 +101,7 @@ export function engineSample(value: unknown) {
     result.quality = Object.fromEntries(
       ["requested", "effective"]
         .filter((key) =>
-          ["auto", "low", "balanced"].includes(String(quality[key])),
+          ["auto", "low", "balanced", "sharp"].includes(String(quality[key])),
         )
         .map((key) => [key, String(quality[key])]),
     );

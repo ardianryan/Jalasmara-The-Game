@@ -61,11 +61,13 @@ func run() -> void:
 		{"id":"griya-night-balanced","area":"hub","at":Vector2(160,615),"quality":"balanced","minute":1200},
 		{"id":"griya-day-low","area":"hub","at":Vector2(265,700),"quality":"low","minute":600},
 		{"id":"hub-water-edge","area":"hub","at":Vector2(900,1360),"quality":"balanced","minute":600},
+		{"id":"hub-water-edge-sharp","area":"hub","at":Vector2(900,1360),"quality":"sharp","minute":600},
 		{"id":"ujang-work","focus":"Mang Ujang","area":"hub","at":Vector2(980,1370),"quality":"balanced","minute":600,"zoom":2.4},
 		{"id":"darmi-work","focus":"Bu Darmi","area":"hub","at":Vector2(1800,610),"quality":"balanced","minute":600,"zoom":2.4},
 		{"id":"sari-work","focus":"Yu Sari","area":"hub","at":Vector2(840,740),"quality":"balanced","minute":600,"zoom":2.4},
 		{"id":"forest-gateway","area":"forest","at":Vector2(350,1250),"quality":"balanced","minute":600},
 		{"id":"forest-bridge","area":"forest","at":Vector2(1450,650),"quality":"balanced","minute":600},
+		{"id":"forest-bridge-sharp","area":"forest","at":Vector2(1450,650),"quality":"sharp","minute":600},
 	]:
 		root.get_node("RenderQuality").set_profile(setting.quality,false)
 		clock.visual_minutes=setting.minute

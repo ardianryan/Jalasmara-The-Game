@@ -1,5 +1,9 @@
 # Comfy world palette
 
+## Graphics clarity candidate, 14 November 2026
+
+The earlier 640×360 Balanced and 480×270 Low render targets left the world coarse on large displays and touch devices. The new Sharp profile draws the 3D world at the 960×540 logical view; Auto begins there on desktop and at Balanced on touch, then falls one step after sustained low FPS. UI text is not reduced with the world. Existing 32×32 terrain textures now contribute centered, bounded contrast instead of almost no visible detail. Daylight grass and dirt are slightly cooler and less neon. See [source review](reviews/graphics-clarity-source-2026-11-14.md) and [native evidence](visual/README.md). The candidate still needs browser/physical-device acceptance; the game remains deliberately pixelated rather than photorealistic.
+
 ## Object pixel scale, 12 November 2026
 
 For new or repaired bitmap details, use 16×16 source pixels for tiny details, 32×32 for props, and up to 64×64 for a character or a large object part as an authoring guide. Inspect each asset at its actual in-game size and preserve crisp nearest-neighbor edges. This is not a tile-size mandate for buildings, shorelines or the 3D terrain. The [village and Gajah Mina motion package](reviews/village-boss-motion-2026-11-12.md) applies the guide only to its repaired actors.
