@@ -1,5 +1,11 @@
 # Jalasmara visual evidence
 
+## Living action release on public staging, 14 November 2026
+
+![Public 844×390 ready game with Nala visible on Bandar Hujung's pier.](living-action-staging-ready-20261114.png)
+
+Original Chromium/SwiftShader public staging capture after source `85b3612`, CI PCK `ab1c964b01736980db7075859ff92096fc7d81cf5ba6f50f2b2a73bade8ba7b5`, image `ad8b8ce901ce`; SHA-256 `2a2be18cd26a210d9a81a8619117e2ac386f420f99b3bba2d65e89bed785c4af`. The associated full-route smoke passed 6/6; this still does not show cutscene timing or physical-device FPS. See the [release report](../reviews/living-cinematic-actions-2026-11-14.md). This screenshot is documentation, not a runtime asset.
+
 ## Living Phase 1 action layers, native candidate, 14 November 2026
 
 | Nala arrives by sampan | Tamansari pipe fractures | Prasasti depth route |
