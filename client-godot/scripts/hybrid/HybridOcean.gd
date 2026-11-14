@@ -247,7 +247,7 @@ func _update_lighting() -> void:
 	environment.fog_density = lerpf(0.000018, 0.000055, deep) + cloud * 0.000008
 	environment.fog_light_color = Color("367982").lerp(Color("123b56"), deep)
 	sunlight.light_energy = lerpf(1.45, 0.65, deep) * lerpf(0.8, 1.0, daylight) * (1 - cloud * 0.25)
-	headlamp.light_energy = lerpf(1.8, 3.2, deep)
+	headlamp.light_energy = lerpf(1.8, 3.2, deep) * (1.0 + 0.22 * int(GameState.player.get("gear",{}).get("lamp",0)))
 
 func is_active() -> bool:
 	return active

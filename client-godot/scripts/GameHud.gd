@@ -4,6 +4,7 @@ extends CanvasLayer
 signal interact_requested
 signal net_pressed
 signal net_released
+signal shoot_requested
 signal map_requested
 signal journal_requested
 signal inventory_requested
@@ -32,6 +33,14 @@ class HudIcon extends Control:
 	var kind := "map"
 	var ink := Color("f1e1bc")
 	func _draw() -> void:
+		if kind=="launcher":
+			var unit := size.x/32.0
+			draw_rect(Rect2(Vector2(4,14)*unit,Vector2(23,8)*unit),Color("422d29"))
+			draw_rect(Rect2(Vector2(6,12)*unit,Vector2(18,7)*unit),Color("c89856"))
+			draw_rect(Rect2(Vector2(8,13)*unit,Vector2(10,4)*unit),Color("2a6e78"))
+			draw_rect(Rect2(Vector2(22,10)*unit,Vector2(5,11)*unit),Color("e4bb75"))
+			draw_rect(Rect2(Vector2(7,20)*unit,Vector2(6,7)*unit),Color("ad7845"))
+			return
 		var glyph := preload("res://scripts/HudSkin.gd").icon("interact-hand" if kind=="action" else kind)
 		if glyph!=null: draw_texture_rect(glyph,Rect2(Vector2.ZERO,size),false)
 
@@ -84,6 +93,7 @@ var _objective: Label
 var _instrument: DiveInstrument
 var _status_panel: Panel
 var _action: Button
+var _action_icon: HudIcon
 var _action_label: Label
 var _net: Button
 var _net_title: Label
@@ -100,6 +110,7 @@ var _modal := false
 var _net_held := false
 var _can_interact := false
 var _can_net := false
+var _can_shoot := false
 var _held_seconds := 0.0
 var _message_until := 0.0
 var _state: Dictionary = {}
@@ -109,6 +120,7 @@ var _warning_plate: Panel
 var _oxygen_caption: Label
 var _depth_caption: Label
 var _action_title: Label
+var _action_key: Label
 var _net_hint: Label
 
 func _ready() -> void:
@@ -196,13 +208,14 @@ func _button(text: String,rect: Rect2,callback: Callable) -> Button:
 	root_control.add_child(button)
 	return button
 
-func _icon(parent: Node,kind: String,at: Vector2,dimensions: Vector2) -> void:
+func _icon(parent: Node,kind: String,at: Vector2,dimensions: Vector2) -> HudIcon:
 	var icon := HudIcon.new()
 	icon.kind = kind
 	icon.position = at
 	icon.size = dimensions
 	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	parent.add_child(icon)
+	return icon
 
 func _build_identity() -> void:
 	_identity_plate = _panel(Rect2(12,10,340,94),false)
@@ -326,14 +339,17 @@ func _build_actions() -> void:
 			net_pressed.emit()
 	)
 	_net.button_up.connect(_release_net)
-	_action = _button("",action_rect,func():interact_requested.emit())
-	_icon(_action,"action",Vector2((action_rect.size.x-34)/2,6) if touch_enabled else Vector2(22,5),Vector2(34,34) if touch_enabled else Vector2(26,26))
+	_action = _button("",action_rect,func():
+		if _can_shoot: shoot_requested.emit()
+		else: interact_requested.emit()
+	)
+	_action_icon = _icon(_action,"action",Vector2((action_rect.size.x-34)/2,6) if touch_enabled else Vector2(22,5),Vector2(34,34) if touch_enabled else Vector2(26,26))
 	var action_text := _label(_action,"AKSI",Vector2(0,40 if touch_enabled else 35),Vector2(action_rect.size.x,28 if touch_enabled else 14),22 if touch_enabled else 12)
 	_action_title=action_text
 	action_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	var action_key := _label(_action,"SENTUH" if touch_enabled else "E",Vector2(0,action_rect.size.y-16),Vector2(action_rect.size.x,13),8)
-	action_key.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	action_key.visible = not touch_enabled
+	_action_key = _label(_action,"SENTUH" if touch_enabled else "E",Vector2(0,action_rect.size.y-16),Vector2(action_rect.size.x,13),8)
+	_action_key.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_action_key.visible = not touch_enabled
 	_action.tooltip_text = "Berinteraksi [E]"
 
 func _build_dpad() -> void:
@@ -451,6 +467,8 @@ func _layout() -> void:
 					child.size=Vector2(button.size.x,15 if title else 10)
 					child.add_theme_font_size_override("font_size",11 if title else 8)
 		_net_charge.position=Vector2(4,_net.size.y-3)
+	if _can_shoot:
+		_action_title.add_theme_font_size_override("font_size",14 if touch_enabled else 11)
 	_action.position=Vector2(right-action_side,bottom-action_side)
 	_net.position=Vector2(right-action_side*(2 if _can_interact else 1)-(10 if _can_interact else 0),bottom-action_side)
 	_deck.position=Vector2(_net.position.x-6,bottom-action_side-6) if _net.visible else _action.position-Vector2(6,6)
@@ -505,7 +523,7 @@ func _layout() -> void:
 	_bag.size.x=bag_width
 	_instrument.size.x=maxf(296,_bag.position.x+bag_width+12)
 	_depth_caption.text="Kedalaman"
-	if physical.x<physical.y or not touch_enabled:
+	if physical.x<physical.y or not touch_enabled or compact_dive:
 		_layout_portrait_instrument(ratio,instrument_scale,viewport.x-margin.x-16-inset.z)
 	var instrument_y:=margin.y+identity_height+12
 	if portrait: instrument_y=_dpad.position.y-_instrument.size.y*instrument_scale-line-24
@@ -639,12 +657,20 @@ func update_state(state: Dictionary) -> void:
 	_objective.text = str(state.get("objective",""))
 	_objective.tooltip_text = _objective.text
 	_objective.visible = not _modal
-	_can_interact = bool(state.get("canInteract",false))
+	_can_shoot = bool(state.get("canShoot",false))
+	_can_interact = bool(state.get("canInteract",false)) or _can_shoot
 	_can_net = bool(state.get("canNet",false))
 	_action_label.text = str(state.get("action",""))
 	_action_label.tooltip_text = _action_label.text
 	_action_label.visible = _can_interact and not _modal
 	_action.disabled = _modal or not _can_interact
+	_action_title.text = "TEMBAK" if _can_shoot else "AKSI"
+	_action_key.text = "F" if _can_shoot else "E"
+	_action_icon.kind = "launcher" if _can_shoot else "action"
+	_action_icon.queue_redraw()
+	_action.tooltip_text = "Tembak kapsul penetral [F]" if _can_shoot else "Berinteraksi [E]"
+	_net_hint.text = "KUNCI" if bool(state.get("bossMode",false)) and touch_enabled else "TAHAN" if touch_enabled else "SPASI"
+	_net.tooltip_text = "Kunci resonansi setelah menembak penetral [Spasi]" if bool(state.get("bossMode",false)) else "Tahan untuk membentangkan jala; lepas untuk menangkap [Spasi]"
 	_net.disabled = _modal or not _can_net
 	var charging := bool(state.get("netCharging",_net_held))
 	var ready := float(state.get("netProgress",_held_seconds/2.0))>=1.0

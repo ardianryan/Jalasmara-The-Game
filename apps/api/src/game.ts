@@ -28,6 +28,7 @@ import {
 import type { Guards } from "./auth.js";
 import { uuid, ability } from "./schemas.js";
 import { WORLD } from "../../../packages/shared/src/world.js";
+import { GEAR_UPGRADES, type GearId } from "../../../packages/shared/src/gear.js";
 interface Dive extends Omit<DiveView, "challenge"> {
   playerVersion: number;
   updatedAt: number;
@@ -43,6 +44,7 @@ interface Dive extends Omit<DiveView, "challenge"> {
   };
   questionIds: string[];
   lastHazard: number;
+  lastNeutralizerAt?: number;
 }
 interface Shift extends ShiftView {
   userId: string;
@@ -66,6 +68,7 @@ function diveView(d: Dive): DiveView {
     questionIds,
     lastHazard,
     netAt,
+    lastNeutralizerAt,
     reading,
     ...v
   } = d;
@@ -398,6 +401,9 @@ export async function gameRoutes(app: FastifyInstance, s: Store, g: Guards) {
             d.hits < Math.ceil(d.requiredHits / 2)
         )
           fail("Titik resonansi ini terbuka pada fase berikutnya.", 409);
+        if (d.mode === "boss" &&
+          (d.neutralizedTargetId !== t!.id || (d.neutralizedUntil ?? 0) < Date.now()))
+          fail("Bidik titik resonansi dengan kapsul penetral terlebih dahulu [F].", 409);
         const pos = d.position ?? WORLD.spawn;
         if (Math.hypot(pos.x - t!.x, pos.y - t!.y) > d.net + 110)
           fail("Dekati fragmen sebelum menggunakan jala.", 409);
@@ -414,6 +420,10 @@ export async function gameRoutes(app: FastifyInstance, s: Store, g: Guards) {
           return fail("Soal untuk fragmen ini tidak tersedia.", 503);
         const q = pool[randomInt(pool.length)];
         d.questionIds.push(q.id);
+        if (d.mode === "boss") {
+          delete d.neutralizedTargetId;
+          delete d.neutralizedUntil;
+        }
         d.challenge = {
           id: randomUUID(),
           targetId: t!.id,
@@ -426,6 +436,33 @@ export async function gameRoutes(app: FastifyInstance, s: Store, g: Guards) {
       });
     },
   );
+  app.post("/api/dive/neutralize", { preHandler: g.authenticated }, async (req) => {
+    const b = z.object({ diveId: uuid, targetId: uuid }).strict().parse(req.body);
+    return lock(s, req.user!.id, async () => {
+      const p = await user(req.user!.id), d = await loadDive(p.id, p);
+      if (!d || d.id !== b.diveId) return fail("Penyelaman tidak tersedia.", 410);
+      if (d.mode !== "boss" || d.challenge || d.reading || d.oxygen <= 0)
+        fail("Pelontar hanya dapat digunakan pada titik racun saat duel.", 409);
+      const target = d.targets.find((t) => t.id === b.targetId && !t.caught);
+      if (!target) fail("Titik resonansi tidak tersedia.", 409);
+      const index = d.targets.indexOf(target!);
+      if ((index < Math.ceil(d.requiredHits / 2)) !== (d.hits < Math.ceil(d.requiredHits / 2)))
+        fail("Titik resonansi ini terbuka pada fase berikutnya.", 409);
+      const level = Math.min(2, p.gear?.launcher ?? 0);
+      const range = GEAR_UPGRADES.launcher.ranges[level];
+      const position = d.position ?? WORLD.spawn;
+      if (Math.hypot(position.x - target!.x, position.y - target!.y) > range)
+        fail("Titik berada di luar jangkauan pelontar.", 409);
+      const now = Date.now();
+      if (now - (d.lastNeutralizerAt ?? 0) < 1100 - 150 * level)
+        fail("Pelontar sedang mengisi kapsul berikutnya.", 409);
+      d.lastNeutralizerAt = now;
+      d.neutralizedTargetId = target!.id;
+      d.neutralizedUntil = now + 8000;
+      await saveDive(p.id, d);
+      return { dive: diveView(d) };
+    });
+  });
   app.post(
     "/api/dive/net/start",
     { preHandler: g.authenticated },
@@ -944,6 +981,13 @@ export async function gameRoutes(app: FastifyInstance, s: Store, g: Guards) {
               def = c.catalog.abilities.find((a) => a.id === b.ability)!,
               price = def.prices[u.abilities[b.ability]];
             if (price === undefined) return fail("Kemampuan sudah maksimal.");
+            if (b.ability === "net") {
+              const level = u.abilities.net;
+              const find = level === 1 ? "photosynthesis" : level === 2 ? "inscription" : "";
+              const item = level === 1 ? "lensa_kelompok_bagas" : level === 2 ? "serpih_prasasti_uv" : "";
+              if (find && (!u.adventure?.discoveries.includes(find) || !u.adventure.keyItems.includes(item)))
+                return fail(`Jala memerlukan fragmen unik ${item.replaceAll("_", " ")}.`, 409);
+            }
             if (u.coins < price) return fail("Koin belum cukup.");
             u.coins -= price;
             u.abilities[b.ability]++;
@@ -953,4 +997,31 @@ export async function gameRoutes(app: FastifyInstance, s: Store, g: Guards) {
       });
     },
   );
+  app.post("/api/game/gear-upgrade", { preHandler: g.authenticated }, async (req) => {
+    const b = z.object({ gear: z.enum(["lamp", "launcher"]) }).strict().parse(req.body);
+    return lock(s, req.user!.id, async () => {
+      const p = await user(req.user!.id);
+      await requireHub(p);
+      if (await loadDive(p.id, p)) fail("Tingkatkan alat setelah kembali ke dermaga.", 409);
+      if (await shifts.findOne({ userId: p.id, active: true, playerVersion: p.version }))
+        fail("Tutup giliran kedai sebelum meningkatkan alat.", 409);
+      return once(s, p.id, operationKey(req), { route: "gear-upgrade", ...b }, async (session) => {
+        const u = await user(p.id, session);
+        const gearId: GearId = b.gear;
+        const definition = GEAR_UPGRADES[gearId];
+        const level = u.gear?.[gearId] ?? 0;
+        const price = definition.costs[level];
+        if (price === undefined) fail("Alat sudah maksimal.", 409);
+        const find = definition.requiredFinds[level];
+        const item = definition.requiredItems[level];
+        if (!u.adventure?.discoveries.includes(find) || !u.adventure.keyItems.includes(item))
+          fail(`Temukan fragmen unik ${item.replaceAll("_", " ")} sebelum meningkatkan alat.`, 409);
+        if (u.coins < price) fail("Koin belum cukup.", 409);
+        u.coins -= price;
+        u.gear ??= { lamp: 0, launcher: 0 };
+        u.gear[gearId] = level + 1;
+        return { player: await update(u, session) };
+      });
+    });
+  });
 }

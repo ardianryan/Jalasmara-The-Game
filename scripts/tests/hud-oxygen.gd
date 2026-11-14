@@ -115,7 +115,7 @@ func run() -> void:
 					assert(bag.get_theme_font("font").get_string_size(text_line,HORIZONTAL_ALIGNMENT_LEFT,-1,bag.get_theme_font_size("font_size")).x<=bag.size.x,"Bag amount and kg must fit without ellipsis")
 				assert(hud.get("_warning_plate").visible)
 				assert(not hud.get("_warning_plate").get_global_rect().intersects(hud.get("_dpad").get_global_rect()),"Critical warning must not overlap the joystick")
-				if physical.x<physical.y: _portrait_stats(hud,view,scale)
+				if physical.x<physical.y or physical.y<=480: _portrait_stats(hud,view,scale)
 				else:
 					assert(hud.get("_instrument").size.y==140 and hud.get("_instrument").bar_rect==Rect2(49,87,96,16),"Landscape instrument artwork and default height stay unchanged")
 	# Actual browser fixture f695ff9d: portrait390x844, O2 100/100,

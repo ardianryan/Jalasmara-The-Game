@@ -1,6 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { WORLD } from "../../../packages/shared/src/world.js";
+import { DISCOVERY_GEAR_ITEMS } from "../../../packages/shared/src/gear.js";
 import { type Store, type User, fail, lock, once, publicUser } from "./db.js";
 import type { Guards } from "./auth.js";
 import { operationKey } from "./game.js";
@@ -419,6 +420,8 @@ export async function adventureRoutes(
                 knowledge,
               };
             a.discoveries.push(b.id);
+            const gearItem = DISCOVERY_GEAR_ITEMS[b.id];
+            if (gearItem && !a.keyItems.includes(gearItem)) a.keyItems.push(gearItem);
             current.adventure = a;
             current.coins += obj.reward;
             current.version++;
@@ -607,6 +610,8 @@ export async function adventureRoutes(
                 alreadyFound: true,
               };
             list.push(b.id);
+            const gearItem = DISCOVERY_GEAR_ITEMS[b.id];
+            if (gearItem && !a.keyItems.includes(gearItem)) a.keyItems.push(gearItem);
             p.adventure = a;
             p.coins += obj.reward;
             p.version++;

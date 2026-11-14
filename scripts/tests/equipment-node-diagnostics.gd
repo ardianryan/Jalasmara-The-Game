@@ -35,14 +35,18 @@ func _run() -> void:
 		equipment.update_attachment(sprite,{"modular":true,"tank":diving,"net":diving,"satchel":explorer,"vest":false},false,false)
 		var report:Dictionary=equipment.visibility_diagnostics()
 		assert(report.visibilityScope=="scene-tree-not-pixel-occlusion" and report.rootInTree and report.rootVisibleInTree)
-		assert(report.keys().size()==5 and report.nodes.keys().size()==4,"Allowlist must exclude account, path or mutable gameplay data")
-		for key in ["tank","net","satchel","vest"]:
+		assert(report.keys().size()==5 and report.nodes.keys().size()==5,"Allowlist must exclude account, path or mutable gameplay data")
+		for key in ["tank","net","launcher","satchel","vest"]:
 			var expected:bool=diving if key in ["tank","net"] else explorer if key=="satchel" else false
 			assert(report.nodes[key].exists and report.nodes[key].meshCount>0)
 			assert(report.nodes[key].visible==expected and report.nodes[key].visibleInTree==expected)
 			assert((report.nodes[key].visibleMeshCount>0)==expected)
 		assert(land.debug_counts().gearNodes==report and ocean.gear_node_diagnostics()==report)
 		assert(not land.counts.has("gearNodes"),"Diagnostics must not mutate retained frame counts")
+	equipment.update_attachment(sprite,{"modular":true,"tank":true,"net":true,"launcher":true},true,false)
+	var boss_gear: Dictionary=equipment.visibility_diagnostics()
+	assert(boss_gear.nodes.launcher.visibleInTree and boss_gear.nodes.launcher.visibleMeshCount>0,"Boss launcher must be visible as separate gear")
+	equipment.update_attachment(sprite,{"modular":true,"satchel":true},false,false)
 	parent.visible=false
 	var hidden:Dictionary=equipment.visibility_diagnostics()
 	assert(not hidden.rootVisibleInTree and hidden.nodes.satchel.visible and not hidden.nodes.satchel.visibleInTree and hidden.nodes.satchel.visibleMeshCount==0,"Parent-hidden gear must not be labelled visible in tree")

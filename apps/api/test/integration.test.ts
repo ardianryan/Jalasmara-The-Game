@@ -140,6 +140,15 @@ async function observe(b: Browser, d: any, id: string, settings?: number[]) {
 }
 async function answer(b: Browser, d: any, target: any, correct = true) {
   await fixturePosition(b, target);
+  if (d.mode === "boss") {
+    if (d.hits > 0) await new Promise((resolve) => setTimeout(resolve, 1000));
+    const neutralized = await b.request("/dive/neutralize", {
+      diveId: d.id,
+      targetId: target.id,
+    });
+    assert.equal(neutralized.status, 200, JSON.stringify(neutralized.data));
+    d = neutralized.data.dive;
+  }
   const r = await b.request("/dive/challenge", {
     diveId: d.id,
     targetId: target.id,
@@ -690,6 +699,7 @@ test("tiga siklus siang-malam, anti-farming pelanggan, upgrade, dan boss sampai 
         assert.equal((await observe(b, d, id)).status, 200);
     if (day === 3) {
       assert.equal((await observe(b, d, "corporate_pipe")).status, 200);
+      assert.equal((await observe(b, d, "inscription")).status, 200);
       assert.equal((await observe(b, d, "filter", [0, 1, 2])).status, 200);
     }
     await fixturePosition(b, WORLD.spawn);
@@ -761,9 +771,23 @@ test("tiga siklus siang-malam, anti-farming pelanggan, upgrade, dan boss sampai 
         (await b.request("/game/upgrade", { ability: "oxygen" })).status,
         200,
       );
+    if (day === 1)
+      assert.equal((await b.request("/game/gear-upgrade", { gear: "lamp" })).status, 409);
   }
   const m = await manager();
   await change(m, u, { action: "coins", mode: "add", amount: 3000 });
+  // Simulate an account that made these discoveries before gear items existed.
+  await s.users.updateOne({ id: u.id }, {
+    $pull: { "adventure.keyItems": { $in: ["lensa_kelompok_bagas", "inti_katup_peneliti", "serpih_prasasti_uv"] } },
+  });
+  let gearState = (await b.request("/game/state")).data.player;
+  assert(gearState.adventure.keyItems.includes("lensa_kelompok_bagas"));
+  assert(gearState.adventure.keyItems.includes("inti_katup_peneliti"));
+  assert(gearState.adventure.keyItems.includes("serpih_prasasti_uv"));
+  assert.equal((await b.request("/game/gear-upgrade", { gear: "lamp" })).status, 200);
+  assert.equal((await b.request("/game/gear-upgrade", { gear: "launcher" })).status, 200);
+  assert.equal((await b.request("/game/gear-upgrade", { gear: "launcher" })).status, 200);
+  assert.equal((await b.request("/game/gear-upgrade", { gear: "launcher" })).status, 409);
   for (const ability of ["oxygen", "net"]) {
     while (
       (await s.users.findOne({ id: u.id }))!.abilities[
@@ -774,6 +798,11 @@ test("tiga siklus siang-malam, anti-farming pelanggan, upgrade, dan boss sampai 
   }
   let boss = await start(b, "boss");
   assert.equal(boss.mode, "boss");
+  await fixturePosition(b, WORLD.spawn);
+  assert.equal((await b.request("/dive/neutralize", { diveId: boss.id, targetId: boss.targets[0].id })).status, 409);
+  await fixturePosition(b, boss.targets[0]);
+  assert.equal((await b.request("/dive/challenge", { diveId: boss.id, targetId: boss.targets[0].id })).status, 409);
+  assert.equal((await b.request("/dive/neutralize", { diveId: boss.id, targetId: boss.targets[3].id })).status, 409);
   for (const target of boss.targets) {
     boss = await answer(b, boss, target);
     boss = await continueDive(b, boss);

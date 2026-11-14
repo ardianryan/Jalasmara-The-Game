@@ -85,8 +85,8 @@ func get_equipment_state() -> Dictionary:
 	return result
 
 static func equipment_state(id: String,overrides: Dictionary,modular: bool,in_water := false) -> Dictionary:
-	var result := {"outfit":id,"modular":modular,"tank":id=="diving","net":id=="diving","satchel":id=="explorer","vest":id=="explorer","bodySize":SWIM_SIZE if in_water else LAND_SIZE}
-	for key in ["tank","net","satchel","vest"]:
+	var result := {"outfit":id,"modular":modular,"tank":id=="diving","net":id=="diving","launcher":false,"satchel":id=="explorer","vest":id=="explorer","bodySize":SWIM_SIZE if in_water else LAND_SIZE}
+	for key in ["tank","net","launcher","satchel","vest"]:
 		if overrides.has(key): result[key]=bool(overrides[key])
 	return result
 

@@ -209,6 +209,13 @@ static func entries_for(state: Dictionary,tab: String) -> Array:
 			if str(item.get("id","")) not in ["cell","nitrogen","photosynthesis","osmosis","food_web"]: continue
 			output.append({"title":str(item.get("name",item.get("title","Temuan laut"))),"subtitle":"Biota dan habitat Palung Smara","text":str(item.get("text","")),"unlocked":discoveries.has(item.get("id","")),"icon":"ekosistem"})
 	elif tab=="Konsep":
+		var unique_items: Array = state.get("adventure",{}).get("keyItems",[])
+		for gear_find in [
+			{"id":"lensa_kelompok_bagas","title":"Lensa Bagas","source":"Lentera Fotosintesis","use":"Bahan tetap untuk Lampu Sorot UV dan Jala Kognisi tingkat lanjut."},
+			{"id":"inti_katup_peneliti","title":"Inti Katup Peneliti","source":"Pipa Limbah Korporasi","use":"Bahan tetap untuk Pelontar Kapsul Basa di bengkel Beno."},
+			{"id":"serpih_prasasti_uv","title":"Serpih Prasasti UV","source":"Prasasti Retak Jalatunda","use":"Membuka peningkatan akhir lampu, pelontar, dan jala."},
+		]:
+			output.append({"title":gear_find.title,"subtitle":"Temuan unik · %s" % gear_find.source,"text":gear_find.use,"unlocked":unique_items.has(gear_find.id),"icon":"ekosistem"})
 		for fragment in catalog.get("fragments",[]):
 			var known := knows_fragment(state,str(fragment.id))
 			output.append({"title":str(fragment.name),"subtitle":str(fragment.get("subject","Fragmen ilmu")),"text":str(fragment.get("description","")),"unlocked":known,"icon":str(fragment.id)})

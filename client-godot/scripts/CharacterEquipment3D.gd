@@ -2,6 +2,7 @@ extends Node3D
 
 var _tank: Node3D
 var _net: Node3D
+var _launcher: Node3D
 var _satchel: Node3D
 var _vest: Node3D
 var _built := false
@@ -71,6 +72,13 @@ func _build() -> void:
 		var span := sqrt(maxf(0,25-index*index*2.25))
 		_box(_net,Vector3(span*2,.45,.45),Vector3(7,index*1.5,0),fibers)
 		_box(_net,Vector3(.45,span*2,.45),Vector3(7+index*1.5,0,0),fibers)
+	_launcher = Node3D.new()
+	_launcher.name = "DetachableNeutralizerLauncher"
+	add_child(_launcher)
+	_box(_launcher,Vector3(19,4,4),Vector3.ZERO,copper)
+	_box(_launcher,Vector3(9,2.5,4.3),Vector3(-2,1,0),_material("58b3b2"))
+	_box(_launcher,Vector3(5,7,5),Vector3(10,0,0),_material("e4bb75",true))
+	_box(_launcher,Vector3(3,7,3),Vector3(-7,-4,0),dark)
 	_satchel = Node3D.new()
 	_satchel.name = "DetachableFieldSatchel"
 	add_child(_satchel)
@@ -99,6 +107,7 @@ func update_attachment(sprite: Sprite3D,equipment: Dictionary,in_water: bool,fli
 	var facing := -1.0 if flip else 1.0
 	_tank.visible = bool(equipment.get("tank",false))
 	_net.visible = bool(equipment.get("net",false))
+	_launcher.visible = bool(equipment.get("launcher",false))
 	_satchel.visible = bool(equipment.get("satchel",false))
 	_vest.visible = bool(equipment.get("vest",false))
 	if in_water:
@@ -106,6 +115,8 @@ func update_attachment(sprite: Sprite3D,equipment: Dictionary,in_water: bool,fli
 		_tank.rotation.z=-PI*.5*facing
 		_net.position=Vector3(30*facing,-2,3)
 		_net.scale.x=facing
+		_launcher.position=Vector3(18*facing,-11,5)
+		_launcher.scale.x=facing
 		_satchel.position=Vector3(-10*facing,-14,3)
 	else:
 		var layout:=land_layout(str(equipment.get("facingDirection","west" if flip else "east")),float(equipment.get("gaitPhase",0)),bool(equipment.get("moving",false)))
@@ -113,6 +124,8 @@ func update_attachment(sprite: Sprite3D,equipment: Dictionary,in_water: bool,fli
 		_tank.rotation.z=0
 		_net.position=layout.net
 		_net.scale.x=float(layout.handFacing)
+		_launcher.position=layout.net+Vector3(0,-7,2)
+		_launcher.scale.x=float(layout.handFacing)
 		_satchel.position=layout.satchel
 	_vest.position=Vector3(0,0,2.3)
 
@@ -129,13 +142,13 @@ static func land_layout(direction: String,phase: float,moving: bool) -> Dictiona
 	return {"tank":Vector3(tank_x,4,7 if north else -7),"net":Vector3(hand_x,-10+bob,-3 if north else 4),"satchel":Vector3(bag_x,-14-absf(bob)*.4,4 if north else 3),"handFacing":side}
 
 func debug_status() -> Dictionary:
-	return {"facingDirection":state.get("facingDirection","east"),"gaitPhase":state.get("gaitPhase",0.0),"tankDepth":_tank.position.z if is_instance_valid(_tank) else 0.0,"netDepth":_net.position.z if is_instance_valid(_net) else 0.0,"modular":bool(state.get("modular",false)),"tank":is_instance_valid(_tank) and _tank.visible and visible,"net":is_instance_valid(_net) and _net.visible and visible,"satchel":is_instance_valid(_satchel) and _satchel.visible and visible,"vest":is_instance_valid(_vest) and _vest.visible and visible,"meshes":find_children("*","MeshInstance3D",true,false).size()}
+	return {"facingDirection":state.get("facingDirection","east"),"gaitPhase":state.get("gaitPhase",0.0),"tankDepth":_tank.position.z if is_instance_valid(_tank) else 0.0,"netDepth":_net.position.z if is_instance_valid(_net) else 0.0,"modular":bool(state.get("modular",false)),"tank":is_instance_valid(_tank) and _tank.visible and visible,"net":is_instance_valid(_net) and _net.visible and visible,"launcher":is_instance_valid(_launcher) and _launcher.visible and visible,"satchel":is_instance_valid(_satchel) and _satchel.visible and visible,"vest":is_instance_valid(_vest) and _vest.visible and visible,"meshes":find_children("*","MeshInstance3D",true,false).size()}
 
 # Node-tree visibility is diagnostic evidence, not a pixel-occlusion result.
 func visibility_diagnostics() -> Dictionary:
 	if not preload("res://scripts/Diagnostics.gd").enabled(): return {}
 	var nodes: Dictionary={}
-	for entry in [["tank",_tank],["net",_net],["satchel",_satchel],["vest",_vest]]:
+	for entry in [["tank",_tank],["net",_net],["launcher",_launcher],["satchel",_satchel],["vest",_vest]]:
 		var attachment: Node3D=entry[1]
 		var present:=is_instance_valid(attachment)
 		var meshes: Array=attachment.find_children("*","MeshInstance3D",true,false) if present else []

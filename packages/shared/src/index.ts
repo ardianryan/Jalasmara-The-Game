@@ -1,4 +1,5 @@
 export * from "./calendar.js";
+export * from "./gear.js";
 export * from "./homestead.js";
 import type { CalendarState } from "./calendar.js";
 import type { HomesteadState } from "./homestead.js";
@@ -29,6 +30,7 @@ export interface Player {
   coins: number;
   inventory: Loot[];
   abilities: Record<Ability, number>;
+  gear?: { lamp: number; launcher: number };
   progress: Progress;
   version: number;
   authVersion: number;
@@ -111,6 +113,8 @@ export interface DiveView {
   net: number;
   hits: number;
   requiredHits: number;
+  neutralizedTargetId?: string;
+  neutralizedUntil?: number;
   loot: Loot[];
   liveCatch?: { reef_seruni: number };
   position?: { x: number; y: number };

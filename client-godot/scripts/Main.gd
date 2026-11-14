@@ -32,6 +32,9 @@ var net_started := false
 var net_released := false
 var net_target: Dictionary = {}
 var net_time := 0.0
+var neutralizer_flash := 0.0
+var neutralizer_from := Vector2.ZERO
+var neutralizer_to := Vector2.ZERO
 var chain_lines: Array = []
 var chain_end: Callable
 var phase_seen := ""
@@ -202,7 +205,7 @@ func _restore_player_movement() -> void:
 		nala.touch=Vector2.ZERO
 
 func _setup_input() -> void:
-	var bindings = {"left":[KEY_A,KEY_LEFT],"right":[KEY_D,KEY_RIGHT],"up":[KEY_W,KEY_UP],"down":[KEY_S,KEY_DOWN],"interact":[KEY_E],"net":[KEY_SPACE],"map":[KEY_M],"journal":[KEY_J],"inventory":[KEY_I],"character":[KEY_C]}
+	var bindings = {"left":[KEY_A,KEY_LEFT],"right":[KEY_D,KEY_RIGHT],"up":[KEY_W,KEY_UP],"down":[KEY_S,KEY_DOWN],"interact":[KEY_E],"net":[KEY_SPACE],"shoot":[KEY_F],"map":[KEY_M],"journal":[KEY_J],"inventory":[KEY_I],"character":[KEY_C]}
 	for action in bindings:
 		if not InputMap.has_action(action):
 			InputMap.add_action(action)
@@ -215,6 +218,7 @@ func _build_ui() -> void:
 	add_child(hud)
 	hud.interact_requested.connect(_interact)
 	hud.net_pressed.connect(_start_net)
+	hud.shoot_requested.connect(_shoot_neutralizer)
 	hud.net_released.connect(func(): net_released = true)
 	hud.map_requested.connect(_show_map)
 	hud.journal_requested.connect(_show_journal)
@@ -533,7 +537,7 @@ func _process(delta: float) -> void:
 		var facing := 1.0 if nala.direction >= 0 else -1.0
 		dive_lamp.position = Vector2(32.0 * facing,-8.0)
 		dive_lamp.rotation = 0.0 if facing > 0 else PI
-		dive_lamp.energy = lerpf(0.3,0.85,clampf((nala.position.y-400)/2300,0,1))
+		dive_lamp.energy = lerpf(0.3,0.85,clampf((nala.position.y-400)/2300,0,1)) * (1.0 + 0.22 * int(GameState.player.get("gear",{}).get("lamp",0)))
 	for i in port_lamps.size():
 		var lamp := port_lamps[i]
 		lamp.visible = not submerged
@@ -547,6 +551,7 @@ func _process(delta: float) -> void:
 	terrain.gardens_restored = GameState.player.get("progress",{}).get("day",1)>=3
 	terrain.solved = GameState.adventure.get("puzzles",[])
 	flash = maxf(0,flash-delta)
+	neutralizer_flash = maxf(0,neutralizer_flash-delta)
 	queue_redraw()
 	if GameState.player.is_empty():
 		return
@@ -601,6 +606,8 @@ func _process(delta: float) -> void:
 			_interact()
 		if Input.is_action_just_pressed("net"):
 			_start_net()
+		if Input.is_action_just_pressed("shoot"):
+			_shoot_neutralizer()
 		if Input.is_action_just_released("net"):
 			net_released = true
 		if Input.is_action_just_pressed("map"):
@@ -644,6 +651,15 @@ func _process(delta: float) -> void:
 				shot.node.queue_free()
 			attacks.clear()
 func _draw() -> void:
+	if neutralizer_flash>0:
+		var progress := 1.0-neutralizer_flash/0.24
+		var capsule := neutralizer_from.lerp(neutralizer_to,ease(progress,0.8))
+		draw_line(neutralizer_from,capsule,Color(0.23,0.96,0.87,0.45*(1.0-progress)),2)
+		draw_circle(capsule,6.0,Color("5b351d"))
+		draw_circle(capsule,4.0,Color("e9b766"))
+		draw_circle(capsule,2.0,Color("78fff0"))
+		if progress>0.8:
+			draw_arc(neutralizer_to,8.0+12.0*(progress-0.8)*5.0,0,TAU,16,Color(0.58,1.0,0.91,(1.0-progress)*3.0),2)
 	if boss_motion.telegraph and not GameState.dive.is_empty():
 		var source: Vector2 = boss_motion.attack_origin()
 		draw_arc(source,34,0,TAU,24,Color("ffd166"),2)
@@ -676,7 +692,10 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		_close()
 func _find_nearby() -> void:
 	nearby = {}
-	var best := 140.0
+	var boss_mode: bool = GameState.dive.get("mode","")=="boss"
+	var gear_level := mini(2,int(GameState.player.get("gear",{}).get("launcher",0)))
+	var shot_range: float = [160.0,200.0,240.0][gear_level]
+	var best := shot_range if boss_mode else 140.0
 	var objects: Array = []
 	if GameState.dive.is_empty():
 		var home: Dictionary=GameState.world.get("homestead",{})
@@ -716,7 +735,7 @@ func _find_nearby() -> void:
 			for item in GameState.world.get(collection,[]):
 				var obj: Dictionary = item.duplicate()
 				obj.kind = collection
-				obj["radius"] = 140.0
+				obj["radius"] = shot_range if boss_mode else 140.0
 				if not obj.has("name"):
 					obj.name = "Peti peninggalan"
 				objects.append(obj)
@@ -740,14 +759,17 @@ func _find_nearby() -> void:
 			best = distance
 			nearby = obj
 	if nearby.is_empty():
-		hint.text = "WASD / arah: bergerak · E: amati · Tahan & lepas spasi: jala · M: peta · J: jurnal"
+		hint.text = "WASD / arah: bergerak · E: amati · F: kapsul penetral · Spasi: jala · M: peta · J: jurnal" if boss_mode else "WASD / arah: bergerak · E: amati · Tahan & lepas spasi: jala · M: peta · J: jurnal"
 	elif str(nearby.get("kind","")) == "dive":
 		var ab: Dictionary = GameState.player.get("abilities",{})
 		var day_now := int(GameState.player.get("progress",{}).get("day",1))
 		var target_zone := "Dangkalan Segaran (0–25 m)" if day_now==1 else "Hutan Lamun Wringin (25–60 m)" if day_now==2 else "Rongga Kapur Jalatunda & Tamansari (60–110 m)"
 		hint.text = "[E] Selami: %s · Siap selam: Oksigen Lv %d, Tas Lv %d · Tujuan: %s" % [str(nearby.name),int(ab.get("oxygen",0)),int(ab.get("bag",0)),target_zone]
 	else:
-		hint.text = ("Tahan & lepas spasi: " if nearby.kind=="biota" else "[E] ")+_action_label(nearby)
+		if boss_mode and nearby.kind=="biota":
+			hint.text = "[F] Tembak kapsul penetral → [Spasi] kunci resonansi"
+		else:
+			hint.text = ("Tahan & lepas spasi: " if nearby.kind=="biota" else "[E] ")+_action_label(nearby)
 func _action_label(obj: Dictionary) -> String:
 	if obj.is_empty():
 		return "Dekati tempat atau tokoh"
@@ -807,7 +829,9 @@ func _update_hud() -> void:
 				region = str(zone.name)
 	var goal: String = PhaseOneStory.goal({"player":p,"adventure":GameState.adventure,"homestead":GameState.homestead,"dive":GameState.dive})
 	var d: Dictionary = GameState.dive
-	var state := {"area":region,"depth":depth,"diving":not d.is_empty(),"oxygen":d.get("oxygen",0),"maxOxygen":d.get("maxOxygen",100),"coins":p.coins,"weight":d.get("weight",0),"capacity":d.get("capacity",12),"objective":goal,"action":_action_label(nearby),"canInteract":not nearby.is_empty() and nearby.get("kind","")!="biota","canNet":nearby.get("kind","")=="biota" and not d.is_empty()}
+	var boss_target: bool = d.get("mode","")=="boss" and nearby.get("kind","")=="biota"
+	var action_text := "Tembak kapsul penetral, lalu kunci dengan jala" if boss_target else _action_label(nearby)
+	var state := {"area":region,"depth":depth,"diving":not d.is_empty(),"bossMode":d.get("mode","")=="boss","oxygen":d.get("oxygen",0),"maxOxygen":d.get("maxOxygen",100),"coins":p.coins,"weight":d.get("weight",0),"capacity":d.get("capacity",12),"objective":goal,"action":action_text,"canInteract":not nearby.is_empty() and nearby.get("kind","")!="biota","canShoot":boss_target,"canNet":nearby.get("kind","")=="biota" and not d.is_empty()}
 	state.merge(EnvironmentState.snapshot(),true)
 	state["netCharging"] = net_started
 	state["netProgress"] = clampf(net_time/0.3,0,1)
@@ -1090,6 +1114,26 @@ func _finish_net() -> void:
 		status.text = "%s tertangkap · %d bintang · %d/%d kg" % [_biota_name(str(net_target.subject)),int(r.stars),int(r.dive.weight),int(r.dive.capacity)]
 	else:
 		status.text = str(r.get("error","Jala terlepas."))
+func _shoot_neutralizer() -> void:
+	if network_busy or modal_open or GameState.dive.get("mode","")!="boss" or nearby.get("kind","")!="biota":
+		return
+	var target: Dictionary = nearby.duplicate()
+	network_busy = true
+	if not await _sync_position():
+		network_busy = false
+		return
+	var r: Dictionary = await ApiClient.call_api("/dive/neutralize",{"diveId":GameState.dive.id,"targetId":target.id})
+	network_busy = false
+	if not r.get("ok",false):
+		status.text = str(r.get("error","Kapsul belum mengenai titik racun."))
+		return
+	GameState.dive = r.dive
+	neutralizer_from = nala.position+Vector2(0,-14)
+	neutralizer_to = entities.target_position(target)
+	neutralizer_flash = 0.24
+	AudioManager.play_sfx("swoosh_water",1.15,-8.0)
+	status.text = "Lapisan racun ternetralisir! Tekan Spasi untuk mengunci resonansi sebelum pendar memudar."
+	_update_hud()
 func _boss_challenge(target: Dictionary) -> void:
 	network_busy = true
 	if not await _sync_position():
@@ -1236,13 +1280,16 @@ func _can_resume_kedai(name_text: String) -> bool:
 
 func _show_upgrades() -> void:
 	var box := _open("Beno · Galangan Rongsok Bubat")
-	_label(box,"Tabung dan Jala Kognisi level 3 diperlukan di Tamansari. Penemuan, peti, dan pemulihan instalasi memberi bekal tambahan.",14)
+	_label(box,"Tabung dan Jala Kognisi level 3 diperlukan di Tamansari. Lampu dan pelontar ditingkatkan dengan koin serta fragmen unik hasil penemuan.",14)
 	for item in GameState.catalog.get("abilities",[]):
 		var ability_id := str(item.id)
 		var level := int(GameState.player.abilities.get(ability_id,0))
 		var maxed: bool = level>=item.prices.size()
 		var price := 0 if maxed else int(item.prices[level])
-		var button := _button(box,"%s · Lv %d · %s" % [item.name,level,"Maksimal" if maxed else "%d koin" % price],func():
+		var required_find := "photosynthesis" if ability_id=="net" and level==1 else "inscription" if ability_id=="net" and level==2 else ""
+		var has_find: bool = required_find.is_empty() or GameState.adventure.get("discoveries",[]).has(required_find)
+		var item_hint := " + Lensa Kelompok Bagas" if required_find=="photosynthesis" else " + Serpih Prasasti UV" if required_find=="inscription" else ""
+		var button := _button(box,"%s · Lv %d · %s%s" % [item.name,level,"Maksimal" if maxed else "%d koin" % price,item_hint],func():
 			var r: Dictionary = await ApiClient.call_api("/game/upgrade",{"ability":ability_id})
 			if r.get("ok",false):
 				await GameState.refresh()
@@ -1251,7 +1298,28 @@ func _show_upgrades() -> void:
 			else:
 				_show_message("Beno",str(r.get("error","Belum dapat ditingkatkan.")))
 		)
-		button.disabled = maxed or int(GameState.player.coins)<price or not GameState.dive.is_empty() or not GameState.shift.is_empty()
+		button.disabled = maxed or not has_find or int(GameState.player.coins)<price or not GameState.dive.is_empty() or not GameState.shift.is_empty()
+	for gear_id in ["lamp","launcher"]:
+		var level := int(GameState.player.get("gear",{}).get(gear_id,0))
+		var prices := [180,320] if gear_id=="lamp" else [200,360]
+		var finds := ["photosynthesis","inscription"] if gear_id=="lamp" else ["corporate_pipe","inscription"]
+		var fragments := ["Lensa Kelompok Bagas","Serpih Prasasti UV"] if gear_id=="lamp" else ["Inti Katup Peneliti","Serpih Prasasti UV"]
+		var name_text := "Lampu Sorot UV" if gear_id=="lamp" else "Pelontar Kapsul Basa"
+		if level>=prices.size():
+			_label(box,"%s · Lv %d · Maksimal" % [name_text,level],14)
+			continue
+		var found: bool = GameState.adventure.get("discoveries",[]).has(finds[level])
+		var upgrade_id: String = gear_id
+		var button := _button(box,"%s · Lv %d → %d · %d koin + %s%s" % [name_text,level,level+1,prices[level],fragments[level]," ✓" if found else " (belum ditemukan)"],func():
+			var r: Dictionary = await ApiClient.call_api("/game/gear-upgrade",{"gear":upgrade_id})
+			if r.get("ok",false):
+				await GameState.refresh()
+				_update_hud()
+				_show_upgrades()
+			else:
+				_show_message("Beno",str(r.get("error","Belum dapat ditingkatkan.")))
+		)
+		button.disabled = not found or int(GameState.player.coins)<prices[level] or not GameState.dive.is_empty() or not GameState.shift.is_empty()
 	_button(box,"Kembali ke dermaga",_close)
 func _open_kedai() -> void:
 	network_busy = true

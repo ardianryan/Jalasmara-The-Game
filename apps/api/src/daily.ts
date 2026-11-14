@@ -1,5 +1,6 @@
 import type { ClientSession } from "mongodb";
 import { WORLD } from "../../../packages/shared/src/world.js";
+import { DISCOVERY_GEAR_ITEMS } from "../../../packages/shared/src/gear.js";
 import {
   CALENDAR_DAY_MS,
   freshCalendar,
@@ -32,11 +33,18 @@ export async function dailyUser(
   if (!p || p.status !== "active") return fail("Akun tidak aktif.", 403);
   const missingCalendar = !p.calendar,
     missingHome = !p.homestead;
+  const missingGearItems = Object.entries(DISCOVERY_GEAR_ITEMS)
+    .filter(([discovery, item]) =>
+      p.adventure?.discoveries.includes(discovery) &&
+      !p.adventure.keyItems.includes(item),
+    )
+    .map(([, item]) => item);
+  if (missingGearItems.length) p.adventure!.keyItems.push(...missingGearItems);
   const homeChanged = p.homestead
     ? normalizeHomestead(p.homestead, p.calendar?.calendarDay ?? 1)
     : false;
   ensureDaily(p);
-  if (missingCalendar || missingHome || homeChanged) {
+  if (missingCalendar || missingHome || homeChanged || missingGearItems.length) {
     const saved = await s.users.updateOne(
       {
         id,
@@ -48,6 +56,7 @@ export async function dailyUser(
         $set: {
           ...(missingCalendar ? { calendar: p.calendar } : {}),
           ...(missingHome || homeChanged ? { homestead: p.homestead } : {}),
+          ...(missingGearItems.length ? { adventure: p.adventure } : {}),
         },
       },
       { session },

@@ -133,7 +133,7 @@ func _physics_process(delta: float) -> void:
 			outfit = "diving"
 		elif position.x<1390 or position.y<1200:
 			outfit = "daily"
-		equipment = {"tank":outfit=="diving","net":outfit=="diving","satchel":outfit=="explorer"}
+		equipment = {"tank":outfit=="diving","net":outfit=="diving","launcher":in_water and GameState.dive.get("mode","")=="boss","satchel":outfit=="explorer"}
 		swim_sprite.set_appearance(str(GameState.player.get("appearance","male_default")))
 		swim_sprite.set_outfit(outfit)
 		swim_sprite.set_equipment(equipment)
@@ -148,6 +148,11 @@ func _physics_process(delta: float) -> void:
 	queue_redraw()
 func _draw() -> void:
 	if hybrid_visual and not in_water: return
+	if in_water and GameState.dive.get("mode","")=="boss" and not hybrid_visual:
+		var side := 1.0 if direction>=0 else -1.0
+		draw_rect(Rect2(20.0*side-8.0,-14.0,20,5),Color("ad8350"))
+		draw_rect(Rect2(20.0*side-6.0,-13.0,11,3),Color("63c9c1"))
+		draw_rect(Rect2(20.0*side+8.0,-16.0,4,9),Color("e4bb75"))
 	for mark in wet_marks:
 		var at: Vector2 = mark.at-position
 		draw_set_transform(at,0,Vector2(1,.35))
