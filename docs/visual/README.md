@@ -1,6 +1,12 @@
 # Jalasmara visual evidence
 
-## Graphics clarity source candidate, 14 November 2026
+## Graphics clarity on public staging, 14 November 2026
+
+![The public 844×390 Bandar Hujung hub with the Sharp desktop world render profile and refined terrain texture.](graphics-clarity-staging-20261114.png)
+
+Original public Chromium/SwiftShader screenshot from source `98b4d29`, active image `15ed8a134cdd` and CI PCK `2c3066cec4bd4c21c5127348133aa7b3740f79b1cd01bad3251f5c5aea9929fc`. PNG SHA-256 `36f30cce357aab7c3bf47111376db3536fccd6f4c2fd1a2799e6b926dcbeba22`. Compare the [previous staging view](coast-pixora-staging-20261114.png). The [release report](../reviews/graphics-clarity-staging-2026-11-14.md) records the public 6/6 route smoke and its limits. This is development evidence, not a game texture or physical-device benchmark.
+
+## Graphics clarity native source frames, 14 November 2026
 
 | Sharp forest bridge | Sharp dock shore |
 | --- | --- |

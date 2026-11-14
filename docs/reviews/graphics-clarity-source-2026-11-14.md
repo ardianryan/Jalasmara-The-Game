@@ -1,5 +1,7 @@
 # Graphics clarity source review — 14 November 2026
 
+**Release update:** The candidate was merged as `98b4d29` and activated on staging after [GitHub CI and public smoke](graphics-clarity-staging-2026-11-14.md). Candidate-stage statements below record the sequence at review time.
+
 The owner correctly reported that the earlier coast/Pixora release still looked coarse. Its world render used 640×360 on desktop and 480×270 on touch, even though the Godot logical view is 960×540. The ground shader multiplied existing 32×32 terrain textures at only approximately 10% strength, leaving surfaces nearly flat. The [released staging screenshot](../visual/coast-pixora-staging-20261114.png) is the before reference; the linked native images below are the new source candidate, not a staging release.
 
 This candidate adds a **Sharp** 960×540 world profile. Auto now starts Sharp on desktop and Balanced 640×360 on touch; sustained below-42-FPS rendering for five seconds after a twelve-second warmup lowers Auto one step (desktop to Balanced, touch to Low 480×270). Background or host-paused time does not count. Manual Low/Balanced/Sharp choices remain available in the host Menu, with Sharp labeled as heavier. Both land and ocean use the same profile budget; the screen-space UI stays at its existing readable resolution. This raises world pixel count 2.25× on desktop Auto versus the previous 640×360, and 1.78× on touch Auto versus the previous 480×270. Those ratios are pixel work, not measured GPU cost or device FPS.
