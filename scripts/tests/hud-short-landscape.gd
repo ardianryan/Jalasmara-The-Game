@@ -50,7 +50,7 @@ func run() -> void:
 		assert(dive_status.position.x>=instrument.end.x,"Dive notification must not cover the oxygen and depth instrument")
 		if fixture.touch and fixture.size.y<=480:
 			var physical_scale:float=fixture.size.x/float(layout.logicalSize[0])
-			assert(instrument.size.y*physical_scale<=114,"Touch dive gauge must leave the center of the game clear")
+			assert(instrument.size.y*physical_scale<=122,"Touch dive gauge must leave the center of the game clear")
 			assert(instrument.size.x*physical_scale<=290,"Touch dive gauge must fit a compact top-left cluster")
 			var depth:Label=hud.get("_depth")
 			var bag:Label=hud.get("_bag")

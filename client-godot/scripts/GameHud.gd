@@ -373,6 +373,7 @@ func _layout() -> void:
 	var portrait := viewport.x<800
 	var compact_dive := touch_enabled and bool(_state.get("diving",false))
 	_depth_caption.show()
+	_oxygen_caption.show()
 	_bag.text = "TAS\n%.1f/%.1f kg" % [float(_state.get("weight",0)),float(_state.get("capacity",0))]
 	var margin := Vector2(16+inset.x,16+inset.y+(ceilf(60*ratio) if portrait else 0))
 	var right := viewport.x-16-inset.z
@@ -605,33 +606,34 @@ func _layout_compact_dive_instrument(ratio:float,instrument_scale:float,availabl
 	var width:=minf(288*ratio,available_width)/instrument_scale
 	var padding:=8*unit
 	var font_size:=ceili(16*unit)
-	var number_size:=ceili(24*unit)
+	var number_size:=ceili(20*unit)
 	var row_height:=ceilf(_bag.get_theme_font("font").get_height(font_size))
 	_oxygen_caption.position=Vector2(42*unit,padding)
-	_oxygen_caption.size=Vector2(88*unit,row_height)
+	_oxygen_caption.size=Vector2(82*unit,row_height)
 	_oxygen_caption.add_theme_font_size_override("font_size",font_size)
-	_oxygen_text.position=Vector2(42*unit,padding+row_height)
-	_oxygen_text.size=Vector2(66*unit,30*unit)
+	_oxygen_text.position=Vector2(128*unit,padding)
+	_oxygen_text.size=Vector2(68*unit,28*unit)
 	_oxygen_text.add_theme_font_size_override("font_size",number_size)
-	_oxygen_max.position=Vector2(110*unit,padding+row_height+4*unit)
+	_oxygen_max.position=Vector2(202*unit,padding+7*unit)
 	_oxygen_max.size=Vector2(width-_oxygen_max.position.x-padding,row_height)
 	_oxygen_max.add_theme_font_size_override("font_size",font_size)
-	_oxygen_loss.position=Vector2(width-80*unit,padding)
-	_oxygen_loss.size=Vector2(72*unit,row_height)
+	_oxygen_loss.position=_oxygen_caption.position
+	_oxygen_loss.size=_oxygen_caption.size
 	_oxygen_loss.add_theme_font_size_override("font_size",font_size)
-	var bar_y:=64*unit
+	_oxygen_caption.visible=not _oxygen_loss.visible
+	var bar_y:=60*unit
 	_instrument.tank_rect=Rect2(padding,padding,28*unit,46*unit)
 	_instrument.bar_rect=Rect2(padding,bar_y,width-padding*2,8*unit)
 	_instrument.loss_line=Rect2(padding,bar_y-4*unit,width-padding*2,0)
 	_depth_caption.hide()
-	_depth.position=Vector2(padding,74*unit)
+	_depth.position=Vector2(padding,76*unit)
 	_depth.size=Vector2(74*unit,row_height)
 	_depth.add_theme_font_size_override("font_size",font_size)
 	_bag.text=_bag.text.replace("\n"," ")
-	_bag.position=Vector2(86*unit,74*unit)
+	_bag.position=Vector2(86*unit,76*unit)
 	_bag.size=Vector2(width-_bag.position.x-padding,row_height)
 	_bag.add_theme_font_size_override("font_size",font_size)
-	_instrument.size=Vector2(width,112*unit)
+	_instrument.size=Vector2(width,116*unit)
 	_instrument.queue_redraw()
 
 static func fit_region_name(full_name: String,font: Font,font_size: int,width: float) -> String:
