@@ -1,6 +1,6 @@
 # Jalasmara visual evidence
 
-## Underwater pixel refinement candidate, 15 November 2026
+## Underwater pixel refinement on staging, 15 November 2026
 
 ![Four appearances with three regenerated swim poses each.](swim-pixel-refinement-20261115.png)
 
@@ -8,7 +8,11 @@ The source-derived 28-color strips have code-drawn visors and clean alpha. PNG S
 
 ![Native Godot reef with Nala, modular oxygen cylinder, jala and clearer parallax.](ocean-pixel-refinement-20261115.png)
 
-The 1440×810 Godot 4.7.2 Apple M2/OpenGL capture has SHA-256 `59daabe34591e4c49d70abb85bcc2476ec93a9ce464e4b6ea344e2be0d13eff4`. [Report](../reviews/pixel-visual-refinement-2026-11-15.md) records source, checks and the remaining moodboard/device limits. Both images are project development documentation, not runtime assets.
+The 1440×810 Godot 4.7.2 Apple M2/OpenGL capture has SHA-256 `59daabe34591e4c49d70abb85bcc2476ec93a9ce464e4b6ea344e2be0d13eff4`. [Report](../reviews/pixel-visual-refinement-2026-11-15.md) records source, checks and the remaining moodboard/device limits. These images are project development documentation, not runtime assets.
+
+![Public 844×390 ready game after the pixel refinement release.](pixel-refinement-staging-ready-20261115.png)
+
+This Chromium/SwiftShader screenshot (SHA-256 `98e7609e3cb0c7b2f89c84fa7f542c5faddb8c9a6e19172c761e57785396b940`) uses source `0257864`, active CI PCK `e317a3bc9195` and image `c9914bda517e`. It proves game-ready visibility after the 6/6 public smoke, not the underwater frames or Windows/S23 performance. The two cold-start timeouts and subsequent hash-checked cache warm-up are detailed in the report.
 
 ## Nala underwater motion and staging, 15 November 2026
 
