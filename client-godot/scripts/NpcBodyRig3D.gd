@@ -45,19 +45,22 @@ func configure(owner_renderer: Node,person: Node2D) -> bool:
 		sprite.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		add_child(sprite)
 		sprites[name]=sprite
-	if id=="ujang":
-		var candidate:=preload("res://scripts/UjangFootPlant.gd").new()
-		if candidate.configure(renderer,actor,data):
-			_foot_plant=candidate
-			for side in ["left","right"]:
-				var image:Image=sprites["foot_"+side].texture.get_image()
-				if image.is_compressed(): image.decompress()
-				var bottom:=image.get_used_rect().end.y-1
-				var sum:=0.0
-				var count:=0
-				for x in range(image.get_width()):
-					if image.get_pixel(x,bottom).a>=.5: sum+=x+.5; count+=1
-				_sole_pixels[side]=Vector2(sum/maxi(1,count),bottom+1)
+	var candidate:=preload("res://scripts/UjangFootPlant.gd").new()
+	var shortest_leg:=minf(_length("upper_leg_left")+_length("lower_leg_left"),_length("upper_leg_right")+_length("lower_leg_right"))
+	var step_scale:=1.0 if id=="ujang" else minf(float(actor.body_scale),shortest_leg*.82/candidate.STRIDE)
+	if candidate.configure(renderer,actor,{"joints":data.joints,"stepScale":step_scale,"turnCosine":.5 if id=="ujang" else .8}):
+		_foot_plant=candidate
+		for side in ["left","right"]:
+			var image:Image=sprites["foot_"+side].texture.get_image()
+			if image.is_compressed(): image.decompress()
+			var bottom:=image.get_used_rect().end.y-1
+			var sum:=0.0
+			var count:=0
+			for x in range(image.get_width()):
+				if image.get_pixel(x,bottom).a>=.5: sum+=x+.5; count+=1
+			_sole_pixels[side]=Vector2(sum/maxi(1,count),bottom+1)
+	else:
+		return false
 	ready_rig=true
 	actor.set_meta("body_layered",true)
 	return true
@@ -72,6 +75,7 @@ func _place_part(name: String,center: Vector2,rotation: float,depth: float) -> v
 	var sprite: Sprite3D=sprites[name]
 	sprite.position=Vector3(center.x,-center.y,depth)
 	sprite.rotation.z=-rotation
+	sprite.flip_h=actor.actor_name!="Mang Ujang" and _visual_facing=="west" and name in ["head","torso"]
 	sprite.modulate=_tint
 	sprite.visible=true
 
@@ -125,11 +129,8 @@ func update_pose(tint: Color) -> void:
 	var camera:=get_viewport().get_camera_3d()
 	if camera==null: return
 	var foot: Vector3=renderer.ground_point(actor.position) if renderer.has_method("ground_point") else renderer.map_point(actor.position,renderer.ground_height(actor.position))
-	if _foot_plant==null: foot-=renderer.camera_forward()*8
 	global_transform=Transform3D(camera.global_basis.orthonormalized(),foot)
 	var facing:=_camera_facing(camera,state)
-	scale=Vector3(-1 if facing=="west" and _foot_plant==null else 1,1,1)
-	if facing in ["east","west"] and _foot_plant==null: scale.x*=.93
 	var back:=facing=="north"
 	var clip:=str(state.clip)
 	var reduced:=EnvironmentState.reduced_motion
@@ -141,23 +142,8 @@ func update_pose(tint: Color) -> void:
 	var lean:=work*(.025+wave*.012) if not reduced else 0.0
 	for sprite in sprites.values(): sprite.visible=false
 	_pelvis_drop=0.0
-	if _foot_plant!=null:
-		_contact_pose=_foot_plant.update(actor.position,actor.moved_velocity,float(actor.get("_elapsed")),1.0)
-		_contact_legs(_contact_pose)
-	else:
-		for index in range(2):
-			var side:="left" if index==0 else "right"
-			var hip:=_v(data.joints[side+"Hip"])
-			var foot_part: Dictionary=data.parts["foot_"+side]
-			var phase:=stride+index*PI
-			var lift:=maxf(0,sin(phase))*3.4 if walking else 0.0
-			var sole:=float(foot_part.size[1])
-			var ankle:=Vector2(hip.x+sin(phase)*3.5 if walking else hip.x,-sole-lift)
-			var knee:=hip.lerp(ankle,.52)+Vector2(1.0+lift*.35,0)
-			var depth: float=-.2 if index==0 else -.05
-			_bone("upper_leg_"+side,hip,knee,depth)
-			_bone("lower_leg_"+side,knee,ankle,depth+.01)
-			_place_part("foot_"+side,ankle+Vector2(0,sole*.5),0,depth+.02)
+	_contact_pose=_foot_plant.update(actor.position,actor.moved_velocity,float(actor.get("_elapsed")),1.0)
+	_contact_legs(_contact_pose)
 	var torso_name:="torso_back" if back else "torso"
 	_place_part(torso_name,_body_transform(_center(torso_name) if data.parts[torso_name].has("center") else _center("torso"),lean),lean,.03)
 	var head_angle:=0.0 if reduced else sin(t*2.4)*.035 if clip=="interact" else wave*.008

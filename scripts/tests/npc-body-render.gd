@@ -1,7 +1,10 @@
 extends SceneTree
 
 class RigStage extends Node3D:
-	func map_point(_point: Vector2,_height: float) -> Vector3: return Vector3.ZERO
+	var map:Dictionary={"surfaces":[{"polygon":[[-1000,-1000],[1000,-1000],[1000,1000],[-1000,1000]],"walkable":true}],"obstacles":[]}
+	var camera_3d:Camera3D
+	func map_point(point: Vector2,_height: float) -> Vector3: return Vector3(point.x,point.y,0)
+	func ground_point(point: Vector2) -> Vector3: return map_point(point,0)
 	func ground_height(_point: Vector2) -> float: return 0.0
 	func camera_forward() -> Vector3: return Vector3(0,0,-1)
 
@@ -29,6 +32,7 @@ func _run() -> void:
 	camera.position=Vector3(0,45,500)
 	camera.current=true
 	stage.add_child(camera)
+	stage.camera_3d=camera
 	DirAccess.make_dir_recursive_absolute('res://../artifacts/godot/npc-body-rig/isolated')
 	var results: Dictionary={}
 	for pair in [['Mang Ujang','fishing'],['Bu Darmi','gardening'],['Yu Sari','weaving']]:
@@ -43,12 +47,12 @@ func _run() -> void:
 		var animation=person.get('_body_animation')
 		var images: Array[Image]=[]
 		var bottoms: Array[int]=[]
-		for index in range(4):
+		for index in range(5):
 			animation.clip='work_loop' if index<2 else 'walk'
 			animation.elapsed=.9 if index==0 else 3.2
 			animation.distance=3.0 if index==2 else 13.0
-			animation.direction=['south','south','east','north'][index]
-			person.moved_velocity=Vector2(26,0) if index>1 else Vector2.ZERO
+			animation.direction=['south','south','east','north','west'][index]
+			person.moved_velocity=Vector2(-26,0) if index==4 else Vector2(26,0) if index>1 else Vector2.ZERO
 			animation.set('_work_kind',pair[1])
 			rig.update_pose(Color.WHITE)
 			await process_frame
@@ -69,6 +73,18 @@ func _run() -> void:
 				if (a.a>.5 or b.a>.5) and a!=b: changed+=1
 		assert(changed>30,'Working BODY pixels must change without any tool, terrain or camera movement')
 		assert(abs(bottoms[0]-bottoms[1])<=2,'Work cannot slide feet')
+		for step in range(8):
+			person.position+=Vector2(2.6,0)
+			person.moved_velocity=Vector2(26,0)
+			person._elapsed+=.1
+			animation.update(.1,person.moved_velocity,false,false,false,false,false,pair[1])
+			rig.update_pose(Color.WHITE)
+			var pose:Dictionary=rig.pose_snapshot()
+			assert(pose.has('contacts') and pose.contacts.reachValid)
+			assert(float(pose.contacts.maxLengthError)<.02)
+			await process_frame
+			await RenderingServer.frame_post_draw
+			viewport.get_texture().get_image().save_png('res://../artifacts/godot/npc-body-rig/isolated/'+str(pair[1])+'-walk-%02d.png'%step)
 		results[str(pair[0])]={ 'bodyPixelsChanged':changed,'alphaBottoms':bottoms,'parts':rig.sprites.size(),'rootMotion':false }
 		rig.queue_free()
 		person.queue_free()

@@ -8,7 +8,10 @@ var _barrier:=false
 var _barrier_point:=Vector2(1210,1250)
 
 class RigStage extends Node3D:
-	func map_point(_point:Vector2,_height:float) -> Vector3: return Vector3.ZERO
+	var map:Dictionary={"surfaces":[{"polygon":[[-10000,-10000],[10000,-10000],[10000,10000],[-10000,10000]],"walkable":true}],"obstacles":[]}
+	var camera_3d:Camera3D
+	func map_point(point:Vector2,_height:float) -> Vector3: return Vector3(point.x,point.y,0)
+	func ground_point(point:Vector2) -> Vector3: return map_point(point,0)
 	func ground_height(_point:Vector2) -> float: return 0.0
 	func camera_forward() -> Vector3: return Vector3(0,0,-1)
 
@@ -143,6 +146,7 @@ func _reduced_rigs() -> void:
 	camera.position=Vector3(0,45,500)
 	stage.add_child(camera)
 	camera.make_current()
+	stage.camera_3d=camera
 	clock.reduced_motion=true
 	for name in ["Mang Ujang","Bu Darmi","Yu Sari"]:
 		var profile:Dictionary=profiles.filter(func(value:Dictionary)->bool:return value.name==name)[0]
@@ -157,9 +161,25 @@ func _reduced_rigs() -> void:
 		var foot:Vector3=rig.sprites.foot_left.position
 		var hand:Vector3=rig.sprites.hand_left.position
 		animation.update(.2,Vector2(26,0),false,false,false,false,true,actor.activity_kind)
+		actor.position+=Vector2(5.2,0)
+		actor._elapsed+=.2
 		rig.update_pose(Color.WHITE)
 		assert(foot.distance_to(rig.sprites.foot_left.position)>.1,"Reduced-motion essential gait must not slide in a static pose")
 		assert(hand.distance_to(rig.sprites.hand_left.position)>.1,"Hands follow actual travel, not a frozen work tool pose")
+		for direction in [Vector2.RIGHT,Vector2.UP,Vector2.LEFT,Vector2.DOWN]:
+			for step in range(16):
+				actor.position+=direction*2.6
+				actor.moved_velocity=direction*26
+				actor._elapsed+=.1
+				animation.update(.1,actor.moved_velocity,false,false,false,false,true,actor.activity_kind)
+				rig.update_pose(Color.WHITE)
+				var pose:Dictionary=rig.pose_snapshot()
+				assert(pose.has("contacts") and pose.contacts.reachValid,"Every resident needs planted, reachable feet through four turns")
+				assert(float(pose.contacts.maxLengthError)<.02,"Paha dan betis tidak boleh meregang")
+				assert(rig.global_basis.determinant()>0,"Turning cannot swap anatomical sides by mirroring the whole body")
+				for side in ["left","right"]:
+					assert(absf(rig.sprites["upper_leg_"+side].global_basis.y.length()-1.0)<.001)
+					assert(absf(rig.sprites["lower_leg_"+side].global_basis.y.length()-1.0)<.001)
 		actor.moved_velocity=Vector2.ZERO
 		animation.update(.1,Vector2.ZERO,false,false,false,false,true,actor.activity_kind)
 		rig.update_pose(Color.WHITE)

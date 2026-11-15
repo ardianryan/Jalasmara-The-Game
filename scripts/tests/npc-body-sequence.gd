@@ -53,7 +53,10 @@ func run() -> void:
 	land.setup(scene,player,camera,"hub")
 	player.visible=false
 	var report: Dictionary={}
+	var only:=OS.get_environment("NPC_SEQUENCE_ONLY")
+	var full_capture:=OS.get_environment("NPC_SEQUENCE_FULL")=="1"
 	for pilot in ["Mang Ujang","Bu Darmi","Yu Sari"]:
+		if not only.is_empty() and only!=pilot: continue
 		var subject: Node2D
 		for child in scene.get_children():
 			if child is Node2D and child.get("actor_name")==pilot: subject=child
@@ -77,7 +80,8 @@ func run() -> void:
 			camera.force_update_scroll()
 			await process_frame
 			await RenderingServer.frame_post_draw
-			land.viewport_3d.get_texture().get_image().save_png(folder+"/%03d.png"%frame)
+			if full_capture or frame in [24,84,120,126,132,138,144,150,175]:
+				land.viewport_3d.get_texture().get_image().save_png(folder+"/%03d.png"%frame)
 			var body: Dictionary=subject.body_animation_state()
 			clips[str(body.clip)]=true
 			phases[str(body.workPhase)]=true

@@ -1,5 +1,13 @@
 # Jalasmara visual evidence
 
+## Legacy residents' planted walk, native candidate, 15 November 2026
+
+![Eight consecutive Godot native walking frames for Bu Darmi and Yu Sari.](legacy-resident-walk-20261115.png)
+
+![Native west-facing Bu Darmi and Yu Sari with the anatomical legs unreflected.](legacy-resident-west-20261115.png)
+
+Original 1,536×384 isolated Godot 4.7.2 Compatibility contact sheet from candidate branch `work/npc-facing-foot-20261115`; PNG SHA-256 `a4b0c2fdba62f1941d5b080f266131789919b56969efc96fb6e3bb0a678be18d`. It shows eight actual-distance frames for each resident. The 384×192 west-facing pair is `bf34f695d158993ded32fa68c844f53653c8758d5f560aefae61bfb5629bddf0`. The [contact report](../reviews/legacy-resident-foot-contact-2026-11-15.md) contains the 4,172-sample route check, source/PCK, tool provenance and limits. These are development evidence, not game assets, public staging screenshots or physical-device results. Seven other portrait residents still lack reviewed rear/side art.
+
 ## Living action release on public staging, 14 November 2026
 
 ![Public 844×390 ready game with Nala visible on Bandar Hujung's pier.](living-action-staging-ready-20261114.png)
