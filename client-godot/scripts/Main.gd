@@ -155,9 +155,18 @@ func _ready() -> void:
 		_show_character(true)
 	elif not GameState.player.progress.get("tutorial",false):
 		_story_intro()
-	elif GameState.dive.is_empty():
+	elif not GameState.dive.is_empty():
+		if PhaseOneCutscenes.ready_to_extract_on_load(GameState.dive):
+			call_deferred("_extract")
+		elif not modal_open:
+			var dive_opening: String = PhaseOneCutscenes.eligible_on_load(GameState.player,GameState.dive,GameState.shift)
+			if not dive_opening.is_empty(): _play_cutscene(dive_opening)
+	else:
 		var opening: String = PhaseOneCutscenes.eligible_on_load(GameState.player,GameState.dive,GameState.shift)
-		if not opening.is_empty(): _play_cutscene(opening)
+		if opening=="victory":
+			_play_cutscene("victory",func(): _play_cutscene("epilogue"))
+		elif not opening.is_empty():
+			_play_cutscene(opening)
 	if OS.has_feature("web"):
 		var window = JavaScriptBridge.get_interface("window")
 		window.jalasmaraReady = true
@@ -435,6 +444,7 @@ func _next_line() -> void:
 	var line: Dictionary = chain_lines.pop_front()
 	if not cutscene_id.is_empty() and is_instance_valid(cutscene_frame):
 		cutscene_index += 1
+		if line.has("bgm"): AudioManager.set_cinematic_bgm(str(line.bgm))
 		cutscene_frame.present(cutscene_title,line,cutscene_index,cutscene_total,cutscene_id)
 		if line.has("sfx"): AudioManager.play_sfx(str(line.sfx),1.0,-7.0)
 	if is_instance_valid(modal): modal.queue_free()
@@ -1167,7 +1177,7 @@ func _show_quiz() -> void:
 			if r.get("ok",false):
 				GameState.dive = r.dive
 				_close()
-				if int(GameState.dive.get("hits",0))==ceili(_required_hits()/2.0):
+				if PhaseOneCutscenes.eligible_on_load(GameState.player,GameState.dive,GameState.shift)=="boss_phase_two" and not _cutscene_seen("boss_phase_two"):
 					_play_cutscene("boss_phase_two")
 				if int(GameState.dive.get("hits",0))>=_required_hits():
 					_extract()

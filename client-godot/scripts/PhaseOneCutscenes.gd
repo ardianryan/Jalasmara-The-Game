@@ -9,7 +9,7 @@ static func sequence(id: String) -> Dictionary:
 				{"shot":"0.1 · Sektor Tuban-7","tone":"plum","name":"Mbah Wira","text":"Lalu pipa PT Cakrawala Sintetis membuang residu ungu ke Palung Smara. Kabut Nir-Aksara naik dan pengetahuan warga perlahan hilang."},
 				{"shot":"0.1 · Pasar dan kebun","tone":"plum","name":"Mbah Wira","text":"Pak Ranto lupa membaca timbangan. Bu Darmi lupa merawat kebunnya. Ingatan mengalir seperti air pasang, Nala; sekarang arusnya diracuni."},
 				{"shot":"0.2 · Kapal korporasi di Dermaga Bubat","tone":"plum","name":"Inspektur Raka","emotion":"happy","text":"Mengapa lelah menghafal rumus dan menghitung takaran? Kapsul Kognisi Instan dari PT Cakrawala Sintetis membuat hidup tenang!"},
-				{"shot":"0.2 · Penolakan","tone":"warm","name":"Ki Lurah Wirabhumi","emotion":"angry","text":"Anak-anak, tetap di belakangku. Bandar Hujung tidak akan menukar akal sehatnya dengan kapsul."},
+				{"shot":"0.2 · Penolakan","tone":"warm","name":"Ki Lurah Wirabhumi","emotion":"angry","text":"Bagas, Kinasih, Gito, Cempaka, Danu—berlindung di belakangku. Bandar Hujung tidak akan menukar akal sehat dengan kapsul."},
 				{"shot":"0.3 · Kepulangan Nala","tone":"warm","sfx":"explosion_heavy","name":"Beno","emotion":"shock","text":"Uhuk! Nala? Kau pulang tepat ketika bengkelku hampir meledak. Ayo, Mbah Wira menunggu di Kedai Waras."},
 				{"shot":"0.4 · Kedai Waras","tone":"warm","name":"Mbah Wira","text":"Kakekmu hilang saat menyelidiki pipa di Palung Smara. Ia meninggalkan SmaraPedia dan rancangan Jala Kognisi untukmu."},
 				{"shot":"0.4 · Jala Kognisi","tone":"teal","name":"Beno","emotion":"happy","text":"Fragmen pengetahuan warga terserap biota laut. Jala ini bisa menangkapnya. Amati biota dan pahami pertanyaannya agar ingatan kembali jernih."},
@@ -23,8 +23,8 @@ static func sequence(id: String) -> Dictionary:
 			]}
 		"first_kedai":
 			return {"title":"Malam Pertama di Kedai Waras","bgm":"kedai_waras_night","lines":[
-				{"shot":"1.2 · Lentera kedai menyala","tone":"warm","name":"Pak Ranto","emotion":"thinking","text":"Nota pasarku terbalik lagi. Raka bilang daun pucat hanya perlu cairan pabrik. Tapi... apa yang dipakai daun untuk membuat makanan?"},
-				{"shot":"1.2 · Seduhan pertama","tone":"warm","name":"Mbah Wira","emotion":"happy","text":"Duduklah, Ranto. Malam ini kita juga menolong Bu Darmi, pelanggan pertama, dengan fragmen yang Nala bawa. Pengetahuan kembali lewat pemahaman."}
+				{"shot":"1.2 · Lentera kedai menyala","tone":"warm","name":"Bu Darmi","emotion":"thinking","text":"Daun di kebunku pucat. Raka menyuruhku membeli cairan pabrik, tetapi aku lupa apa yang dibutuhkan daun untuk membuat makanan."},
+				{"shot":"1.2 · Seduhan pertama","tone":"warm","name":"Mbah Wira","emotion":"happy","text":"Duduklah, Darmi. Nala membawa fragmen dari Segaran. Kita racik Seduhan Tunas Klorofil dan pahami cara daun bekerja."}
 			]}
 		"first_service":
 			return {"title":"Ingatan yang Menyala","bgm":"kedai_waras_night","lines":[
@@ -35,7 +35,7 @@ static func sequence(id: String) -> Dictionary:
 			return {"title":"Krisis Kebun Apung","bgm":"coastal_day","lines":[
 				{"shot":"2.1 · Rakit tani Bu Darmi","tone":"plum","name":"Bu Darmi","emotion":"thinking","text":"Daunku menguning, media tanamnya tergenang. Petugas pabrik hendak menyegel rakit ini sebelum aku tahu penyebabnya."},
 				{"shot":"2.1 · Laskar Kognisi","tone":"warm","name":"Gito","emotion":"angry","text":"Jangan sita kebun Bu Darmi! Bagas, Kinasih, Cempaka, Danu—kita bantu Kak Nala!"},
-				{"shot":"2.1 · Tongkat ukur pasang-surut","tone":"warm","name":"Ki Lurah Wirabhumi","emotion":"angry","text":"Tidak ada rakit yang dibongkar tanpa izin Balai Adat. Nala, kebun kakekmu kubuka kembali. Cari bukti sebelum senja."},
+				{"shot":"2.1 · Tongkat ukur pasang-surut","tone":"warm","name":"Ki Lurah Wirabhumi","emotion":"angry","text":"Tidak ada rakit yang dibongkar tanpa izin Balai Adat. Tolong kebun Bu Darmi dahulu. Setelah racikan akar berhasil, ambil izin kebun kakekmu di papan balai."},
 				{"shot":"2.1 · Petunjuk Kinasih","tone":"teal","name":"Kinasih","emotion":"happy","text":"Amati kebun, Hutan Pesisir Wringin, dan Hutan Lamun Wringin di 25–60 meter. Koral hara dan kerang osmosis mungkin menyimpan jawabannya."}
 			]}
 		"saras_visit":
@@ -51,7 +51,7 @@ static func sequence(id: String) -> Dictionary:
 			]}
 		"earthquake":
 			return {"title":"Lagu Sandi Sang Penjaga","bgm":"village_hall","lines":[
-				{"shot":"3.2 · Gempa Bandar Hujung","tone":"plum","sfx":"underwater_boom","name":"Ki Lurah Wirabhumi","emotion":"angry","text":"Raka! Mengapa air di muara bergelembung ungu dan dermaga berguncang?"},
+				{"shot":"3.2 · Pagi setelah giliran kedai ketiga","tone":"plum","sfx":"underwater_boom","name":"Ki Lurah Wirabhumi","emotion":"angry","text":"Raka! Mengapa air di muara bergelembung ungu dan dermaga berguncang?"},
 				{"shot":"3.2 · Pengakuan Raka","tone":"plum","name":"Inspektur Raka","emotion":"shock","text":"Tekanan pipa meningkat. Makhluk di dasar palung menghalangi saluran kami... suntikan asam justru membuatnya mengamuk."},
 				{"shot":"3.2 · Lagu Kinasih","tone":"teal","name":"Kinasih","text":"Gajah Mina bertapa di Tamansari; gadingnya batu, mahkotanya memori. Bila racun membelenggu dahi, basuhlah dengan kapur dan kasih yang murni."},
 				{"shot":"3.2 · Peta batu Balai Adat","tone":"warm","name":"Saras","emotion":"thinking","text":"Dia bukan monster jahat. Pipa melilit tubuhnya dan meracuni inti di dahinya. Kita harus memulihkannya, bukan menyerang tubuhnya."},
@@ -80,7 +80,7 @@ static func sequence(id: String) -> Dictionary:
 				{"shot":"4.5 · Pesta Kedai Waras","tone":"warm","name":"Inspektur Raka","emotion":"angry","text":"Tekanan pipa Sektor Tuban-7 mati! Kalian berhenti mengantre kapsul? Aku akan menyegel kedai ini!"},
 				{"shot":"4.5 · Warga berdiri bersama","tone":"warm","name":"Ki Lurah Wirabhumi","emotion":"angry","text":"Simpan suratmu. Warga telah mengingat cara berpikirnya sendiri. Dewan Adat akan menuntut pencemaran Palung Smara."},
 				{"shot":"4.5 · Perayaan","tone":"warm","name":"Gito","emotion":"happy","text":"Dadah, Inspektur Kapsul! Jangan lupa belajar kimia dasar di jalan pulang!"},
-				{"shot":"4.6 · Ruang peta Griya Sasmita","tone":"deep","name":"Saras","emotion":"shock","text":"Di bawah Tamansari masih ada Zona Senja Abisal hingga 300 meter—dan Perpustakaan Tenggelam Nusantara Kuno."},
+				{"shot":"4.6 · Ruang peta Griya Sasmita","tone":"deep","bgm":"coastal_dusk","name":"Saras","emotion":"shock","text":"Di bawah Tamansari masih ada Zona Senja Abisal hingga 300 meter—dan Perpustakaan Tenggelam Nusantara Kuno."},
 				{"shot":"4.6 · Jejak kakek Nala","tone":"teal","name":"Ki Lurah Wirabhumi","text":"Di titik terdalam itu, korporasi menancapkan bor reaktornya. Mungkin kakekmu masih mengikuti jejak yang sama, Nala."},
 				{"shot":"4.6 · Janji Beno","tone":"warm","name":"Beno","emotion":"happy","text":"Aku akan merombak bengkel untuk baju selam tekanan tinggi. Untuk malam ini, kita pulang dulu."},
 				{"shot":"4.6 · Beranda saat malam","tone":"warm","name":"Mbah Wira","emotion":"happy","text":"Istirahatlah, Nala. Kau telah mengembalikan senyum dan akal sehat Bandar Hujung."},
@@ -89,12 +89,22 @@ static func sequence(id: String) -> Dictionary:
 	return {}
 
 static func eligible_on_load(player: Dictionary, dive: Dictionary, shift: Dictionary) -> String:
-	if player.is_empty() or not dive.is_empty() or not shift.is_empty(): return ""
+	if player.is_empty() or not shift.is_empty(): return ""
 	var progress: Dictionary = player.get("progress",{})
-	if not bool(progress.get("tutorial",false)): return "prologue"
+	if not bool(progress.get("tutorial",false)) and dive.is_empty(): return "prologue"
 	var stage := str(progress.get("stage","dive"))
 	var day := int(progress.get("day",1))
-	if stage=="done": return "epilogue"
+	if stage=="done" and dive.is_empty(): return "victory"
+	if not dive.is_empty():
+		if str(dive.get("mode",""))!="boss" or not dive.get("challenge",{}).is_empty(): return ""
+		var hits := int(dive.get("hits",0))
+		var required_hits := int(dive.get("requiredHits",6))
+		if required_hits<=0 or hits>=required_hits: return ""
+		if hits>=ceili(required_hits/2.0): return "boss_phase_two"
+		return "boss_intro" if hits==0 else ""
 	if stage=="boss": return "earthquake"
 	if day>=2 and day<3: return "garden_crisis"
 	return ""
+
+static func ready_to_extract_on_load(dive: Dictionary) -> bool:
+	return str(dive.get("mode",""))=="boss" and dive.get("challenge",{}).is_empty() and int(dive.get("requiredHits",0))>0 and int(dive.get("hits",0))>=int(dive.get("requiredHits",0)) and float(dive.get("oxygen",0.0))>0.0

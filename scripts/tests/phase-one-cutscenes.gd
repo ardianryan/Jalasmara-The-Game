@@ -16,6 +16,13 @@ func run() -> void:
 			assert(not str(beat.get("name","")).is_empty())
 			assert(not str(beat.get("text","")).is_empty())
 	assert(story.sequence("unknown").is_empty())
+	assert(story.sequence("first_kedai").lines[0].name=="Bu Darmi")
+	assert(story.sequence("first_service").lines[0].name=="Bu Darmi")
+	assert(str(story.sequence("garden_crisis").lines[2].text).contains("papan balai"))
+	assert(not str(story.sequence("garden_crisis").lines[2].text).contains("kubuka kembali"))
+	assert(str(story.sequence("earthquake").lines[0].shot).contains("setelah giliran kedai ketiga"))
+	assert(str(story.sequence("boss_phase_two").lines[0].shot).contains("Tiga resonansi pertama"))
+	assert(story.sequence("epilogue").lines[3].bgm=="coastal_dusk")
 	var player := {"id":"fixture","progress":{"tutorial":false,"day":1,"stage":"dive"}}
 	assert(story.eligible_on_load(player,{}, {})=="prologue")
 	player.progress.tutorial=true
@@ -26,8 +33,28 @@ func run() -> void:
 	player.progress.stage="boss"
 	assert(story.eligible_on_load(player,{}, {})=="earthquake")
 	assert(story.eligible_on_load(player,{"id":"dive"},{}).is_empty())
+	var boss_dive := {"id":"boss-dive","mode":"boss","hits":0,"requiredHits":6,"oxygen":40.0}
+	assert(story.eligible_on_load(player,boss_dive,{})=="boss_intro")
+	boss_dive.hits=2
+	assert(story.eligible_on_load(player,boss_dive,{}).is_empty())
+	boss_dive.hits=3
+	assert(story.eligible_on_load(player,boss_dive,{})=="boss_phase_two")
+	boss_dive.hits=5
+	assert(story.eligible_on_load(player,boss_dive,{})=="boss_phase_two")
+	boss_dive.challenge={"id":"unfinished-quiz"}
+	assert(story.eligible_on_load(player,boss_dive,{}).is_empty())
+	boss_dive.erase("challenge")
+	boss_dive.hits=6
+	assert(story.eligible_on_load(player,boss_dive,{}).is_empty())
+	assert(story.ready_to_extract_on_load(boss_dive))
+	boss_dive.oxygen=0.0
+	assert(not story.ready_to_extract_on_load(boss_dive))
+	boss_dive.oxygen=40.0
+	boss_dive.mode="dive"
+	assert(not story.ready_to_extract_on_load(boss_dive))
 	player.progress.stage="done"
-	assert(story.eligible_on_load(player,{}, {})=="epilogue")
+	assert(story.eligible_on_load(player,{}, {})=="victory")
+	assert(story.eligible_on_load(player,{}, {"id":"night-shift"}).is_empty())
 	var frame:Control=frame_script.new()
 	root.add_child(frame)
 	var environment := root.get_node("EnvironmentState")
