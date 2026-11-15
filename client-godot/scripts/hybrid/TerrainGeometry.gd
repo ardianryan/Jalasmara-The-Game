@@ -17,6 +17,43 @@ var _atlas: Texture2D
 var _materials: Array[Material] = []
 var _coral_pivots: Array[Dictionary] = []
 
+func _upper_contour_y(polygon: PackedVector2Array, x: float) -> float:
+	var upper := INF
+	for edge in range(polygon.size()):
+		var a := polygon[edge]
+		var b := polygon[(edge + 1) % polygon.size()]
+		if absf(b.x - a.x) < 0.001 or x < minf(a.x, b.x) or x > maxf(a.x, b.x):
+			continue
+		upper = minf(upper, lerpf(a.y, b.y, (x - a.x) / (b.x - a.x)))
+	return upper
+
+func _coral_mount(entry_at: Vector2) -> Dictionary:
+	var contours: Array = world.get("terrainContours", [])
+	var rectangles: Array = world.get("terrain", [])
+	for index in range(mini(contours.size(), rectangles.size())):
+		var values: Array = rectangles[index]
+		var rect := Rect2(float(values[0]), float(values[1]), float(values[2]), float(values[3]))
+		if rect.position.y < 550 or rect.position.y > 3300 or rect.size.x < 250 or not rect.has_point(entry_at):
+			continue
+		var outline := PackedVector2Array()
+		for point in contours[index]:
+			outline.append(Vector2(float(point[0]), float(point[1])))
+		if outline.size() < 3 or absf(_upper_contour_y(outline, entry_at.x) + 7.0 - entry_at.y) > 1.0:
+			continue
+		var inset := float(Layers.at_depth(rect.get_center().y).inset)
+		var front := PackedVector2Array()
+		for point in outline:
+			var candidate := point.lerp(rect.get_center(), inset)
+			front.append(candidate if Geometry2D.is_point_in_polygon(candidate, outline) else point.lerp(rect.get_center(), 0.025))
+		var top := _upper_contour_y(front, entry_at.x)
+		if not is_finite(top):
+			continue
+		var anchor := Vector2(entry_at.x, maxf(entry_at.y, top + minf(18.0, rect.size.y * 0.18)))
+		if not Geometry2D.is_point_in_polygon(anchor, front):
+			continue
+		return {"at": anchor, "terrain": index, "column": 0 if rect.get_center().y < 2080 else 1 if rect.get_center().y < 3060 else 2}
+	return {"at": entry_at, "terrain": -1, "column": 0}
+
 func configure(data: Dictionary) -> void:
 	world = data
 	for child in get_children():
@@ -260,7 +297,17 @@ func _build_growth() -> void:
 	if not ResourceLoader.exists(path): return
 	var atlas: Texture2D = load(path)
 	var cell := Vector2(atlas.get_width()/3.0,634.0)
+	var sockets: Array[SurfaceTool] = []
+	var socket_counts := [0, 0, 0]
+	for column in range(3):
+		var tool := SurfaceTool.new()
+		tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+		sockets.append(tool)
+	var mounted_count := 0
 	for entry in preload("res://scripts/ReefGrowth.gd").placements(world):
+		var mount := _coral_mount(entry.at)
+		var anchor: Vector2 = mount.at
+		var column: int = mount.column
 		var texture := AtlasTexture.new()
 		texture.atlas = atlas
 		texture.region = Rect2(Vector2(int(entry.kind)*cell.x,0),cell)
@@ -279,11 +326,33 @@ func _build_growth() -> void:
 		plant.flip_h = bool(entry.flip)
 		var pivot:=Node3D.new()
 		pivot.name="CoralRoot"
-		pivot.position=_point(entry.at,36)
+		pivot.position=_point(anchor,50)
 		plant.position=Vector3(0,entry.size.y*.5,0)
 		add_child(pivot)
 		pivot.add_child(plant)
-		_coral_pivots.append({"node":pivot,"position":entry.at,"size":entry.size})
+		_coral_pivots.append({"node":pivot,"position":anchor,"size":entry.size,"terrain":mount.terrain})
+		if int(mount.terrain) < 0 or _materials.size() != 3:
+			continue
+		mounted_count += 1
+		var half_width: float = minf(float(entry.size.x) * 0.28, 42.0)
+		var y := anchor.y + 6.0
+		var back_left := _point(Vector2(anchor.x - half_width, y - 5.0), 28.0)
+		var back_right := _point(Vector2(anchor.x + half_width, y - 5.0), 28.0)
+		var front_left := _point(Vector2(anchor.x - half_width * 0.78, y + 5.0), 51.0)
+		var front_right := _point(Vector2(anchor.x + half_width * 0.78, y + 5.0), 51.0)
+		_triangle(sockets[column], back_left, back_right, front_right, column, Color(0.78, 0.94, 0.89))
+		_triangle(sockets[column], back_left, front_right, front_left, column, Color(0.69, 0.84, 0.79))
+		socket_counts[column] += 1
+	for column in range(3):
+		if socket_counts[column] == 0:
+			continue
+		var stone := MeshInstance3D.new()
+		stone.name = "CoralRootStone%d" % column
+		stone.mesh = sockets[column].commit()
+		stone.material_override = _materials[column]
+		stone.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		add_child(stone)
+	set_meta("coral_stone_mounts", mounted_count)
 
 func _process(_delta: float) -> void:
 	var now:=float(Time.get_ticks_msec())*.001
@@ -297,4 +366,4 @@ func update_camera(center: Vector2) -> void:
 	if is_instance_valid(geology): geology.update_camera(center)
 
 func debug_status() -> Dictionary:
-	return {"geology":geology.debug_status() if is_instance_valid(geology) else {},"terrainVolumes":terrain_count,"layeredBands":layered_band_count,"modelInstances":model_instances,"memoryBackingInstances":backing_instances,"coralPivots":_coral_pivots.size(),"triangles":triangle_count,"depthRange":volume_depth_range,"bounds":projected_bounds,"units":"world pixels; x,-y,z; front26/backnegative"}
+	return {"geology":geology.debug_status() if is_instance_valid(geology) else {},"terrainVolumes":terrain_count,"layeredBands":layered_band_count,"modelInstances":model_instances,"memoryBackingInstances":backing_instances,"coralPivots":_coral_pivots.size(),"coralStoneMounts":int(get_meta("coral_stone_mounts",0)),"triangles":triangle_count,"depthRange":volume_depth_range,"bounds":projected_bounds,"units":"world pixels; x,-y,z; front26/backnegative"}

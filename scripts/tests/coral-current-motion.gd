@@ -22,7 +22,7 @@ func run() -> void:
 	for entry in terrain._coral_pivots:
 		var pivot: Node3D = entry.node
 		var plant := pivot.get_child(0) as Sprite3D
-		assert(pivot.position == terrain._point(entry.position,36.0), "The coral root must stay planted at its authored world position")
+		assert(pivot.position == terrain._point(entry.position,50.0), "The coral root must stay planted at its visible stone contact")
 		assert(is_equal_approx(plant.position.y, float(entry.size.y) * 0.5))
 		assert(is_equal_approx(plant.position.z, 0.0), "Sway must not shift the coral through depth planes")
 		assert(plant.billboard == BaseMaterial3D.BILLBOARD_DISABLED, "Billboarding would cancel root rotation")
