@@ -10,6 +10,7 @@ const CREST_PHASE := 0.34
 var mesh_instance: MeshInstance3D
 var splash_instances: MultiMeshInstance3D
 var fleck_instances: MultiMeshInstance3D
+var pollution_surface: Node3D
 var material: ShaderMaterial
 var water_field = WaterFieldScript.new()
 var elapsed := 0.0
@@ -87,6 +88,9 @@ func configure(renderer: Node, map: Dictionary) -> void:
 
 	_build_distant_backing(renderer)
 	_setup_effect_pools()
+	pollution_surface = preload("res://scripts/hybrid/PollutionSurface.gd").new()
+	add_child(pollution_surface)
+	pollution_surface.configure(renderer, water_field)
 	_seed_initial_activity()
 
 func _build_distant_backing(renderer: Node) -> void:
@@ -189,6 +193,7 @@ func _seed_initial_activity() -> void:
 
 func set_focus_point(point: Vector2) -> void:
 	_focus_point = point
+	if is_instance_valid(pollution_surface): pollution_surface.set_focus(point)
 
 func pop_swell_events() -> Array[Dictionary]:
 	if _swell_events.is_empty():
@@ -224,6 +229,7 @@ func _process(delta: float) -> void:
 				_focus_point = (actor_node as Node2D).position
 
 	_step_emitters_and_pools(delta)
+	if is_instance_valid(pollution_surface): pollution_surface.set_focus(_focus_point)
 	_sync_multimeshes()
 
 func _step_emitters_and_pools(delta: float) -> void:
@@ -412,4 +418,5 @@ func debug_status() -> Dictionary:
 		"activeFlecks": active_flecks,
 		"swellEvents": _total_swell_events,
 		"lastEvent": _last_swell_event,
+		"pollution": pollution_surface.debug_status() if is_instance_valid(pollution_surface) else {},
 	}

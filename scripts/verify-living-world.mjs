@@ -31,6 +31,7 @@ const scripts = [
   "scripts/tests/fishgen-animation.gd",
   "scripts/godot-wildlife-check.gd",
   "scripts/tests/living-water.gd",
+  "scripts/tests/pollution-bubbles.gd",
   "scripts/tests/ocean-current.gd",
   "scripts/tests/coral-current-motion.gd",
   "scripts/tests/ocean-rock-mount.gd",

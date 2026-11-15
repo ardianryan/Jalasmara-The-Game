@@ -19,6 +19,7 @@ var headlamp: SpotLight3D
 var terrain_geometry: Node3D
 var actors: Node3D
 var living_water: Node2D
+var pollution_underwater: Node3D
 var _living_layer: CanvasLayer
 var _built := false
 var _camera_center := Vector2.ZERO
@@ -113,6 +114,9 @@ func _create_world() -> void:
 		terrain_geometry = load(terrain_path).new()
 		world_root.add_child(terrain_geometry)
 		terrain_geometry.configure(GameState.world)
+	pollution_underwater = preload("res://scripts/hybrid/PollutionUnderwater.gd").new()
+	world_root.add_child(pollution_underwater)
+	pollution_underwater.configure(GameState.world)
 	var actors_path := "res://scripts/hybrid/OceanActors.gd"
 	if ResourceLoader.exists(actors_path):
 		actors = load(actors_path).new()
@@ -191,6 +195,7 @@ func _process(delta: float) -> void:
 		_create_world()
 	active = next_active and _built
 	if is_instance_valid(living_water): living_water.set_active(not GameState.dive.is_empty())
+	if is_instance_valid(pollution_underwater): pollution_underwater.set_active(next_active)
 	display.visible = active
 	viewport_3d.render_target_update_mode = SubViewport.UPDATE_ALWAYS if active else SubViewport.UPDATE_DISABLED
 	if is_instance_valid(actors):
@@ -198,6 +203,7 @@ func _process(delta: float) -> void:
 	if not active:
 		return
 	_camera_center = main.camera.get_screen_center_position()
+	if is_instance_valid(pollution_underwater): pollution_underwater.set_focus(_camera_center)
 	var center := Vector3(_camera_center.x, -_camera_center.y / cos(TILT), 0)
 	camera_3d.position = center + Vector3(0, sin(TILT) * CAMERA_DISTANCE, cos(TILT) * CAMERA_DISTANCE)
 	camera_3d.look_at(center, Vector3.UP)
