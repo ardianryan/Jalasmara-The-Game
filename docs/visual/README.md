@@ -1,5 +1,13 @@
 # Jalasmara visual evidence
 
+## Seven resident front/profile/rear candidate, 15 November 2026
+
+![Pixel-source contact sheet for seven original residents in three views.](resident-facings-contact-20261115.png)
+
+![Isolated Godot 480×270 Sprite3D captures for the same seven residents and views.](resident-facings-native-20261115.png)
+
+These are curated candidate evidence from `work/resident-facings-20261115`. The first sheet contains generated 64 px pixels enlarged with nearest scaling; the second crops actual native Godot 4.7.2 Sprite3D frames from the 480×270 fixture. They prove identity/view assets and renderability, not live village movement, browser deployment or Windows/Samsung S23 acceptance. [The report](../reviews/resident-directional-steps-2026-11-15.md) records tool/provenance, test results and remaining review. These screenshots are documentation, not runtime art.
+
 ## Resident foot-contact staging startup, 15 November 2026
 
 ![Public staging ready game with Nala and a resident visible on the Bandar Hujung pier.](legacy-resident-staging-ready-20261115.png)

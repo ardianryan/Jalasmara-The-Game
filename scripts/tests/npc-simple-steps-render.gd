@@ -35,18 +35,21 @@ func run() -> void:
 	DirAccess.make_dir_recursive_absolute(directory)
 	var result: Dictionary={}
 	for name in steps.FILES:
-		var captures: Array=[]
-		for frame in range(5):
-			var pose: Dictionary={"clip":"idle" if frame==0 else "walk","distance":float(frame-1)*6.5}
-			var texture: Texture2D=steps.frame(name,pose)
-			actors._sprite("npc",texture,Vector2.ZERO,Vector2(100,100),36)
-			await process_frame
-			RenderingServer.force_draw(false)
-			var image: Image=viewport.get_texture().get_image()
-			var filename: String=str(name).to_snake_case()+"-%d.png"%frame
-			image.save_png(directory+"/"+filename)
-			captures.append(filename)
-		result[name]=captures
+		var views: Dictionary={}
+		for view in {"front":Vector2.DOWN,"side":Vector2.RIGHT,"rear":Vector2.UP}:
+			var captures: Array=[]
+			for frame in range(5):
+				var pose: Dictionary={"clip":"idle" if frame==0 else "walk","distance":float(frame-1)*6.5}
+				var texture: Texture2D=steps.frame(name,pose,{"front":Vector2.DOWN,"side":Vector2.RIGHT,"rear":Vector2.UP}[view])
+				actors._sprite("npc",texture,Vector2.ZERO,Vector2(100,100),36)
+				await process_frame
+				RenderingServer.force_draw(false)
+				var image: Image=viewport.get_texture().get_image()
+				var filename: String=str(name).to_snake_case()+"-"+view+"-%d.png"%frame
+				image.save_png(directory+"/"+filename)
+				captures.append(filename)
+			views[view]=captures
+		result[name]=views
 	FileAccess.open(directory+"/results.json",FileAccess.WRITE).store_string(JSON.stringify({"renderPixels":[480,270],"cameraHeight":720,"actorWorldSize":[100,100],"captures":result},"  "))
-	print("NPC SIMPLE STEPS NATIVE PASS: 35 actual Sprite3D frames at 480x270")
+	print("NPC SIMPLE STEPS NATIVE PASS: 105 front/side/rear Sprite3D frames at 480x270")
 	quit()
