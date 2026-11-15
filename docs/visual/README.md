@@ -1,5 +1,11 @@
 # Jalasmara visual evidence
 
+## Continuous daylight staging release, 15 November 2026
+
+![Public 844×390 hub ready game after the continuous daylight release.](moodboard-continuous-light-staging-ready-20261115.png)
+
+This original public Chromium/SwiftShader screenshot (SHA-256 `97a8f09ca29b698d8015b5e51685a740e93d6e62215dd813411eb9cce320477d`) uses source `d163bc2`, CI PCK `bd6d3364effbfa15901dd97e3e901f6fc2447bb324713a8dad205b27709003f1` and active image `95c66620addb`. The [release report](../reviews/moodboard-continuous-light-staging-2026-11-15.md) records public warmed route 6/6 and the failed cold first load. This single frame documents readiness, not a moving daylight transition or physical-device performance. It is documentation, not a game asset.
+
 ## Continuous light and underwater shaft source review, 15 November 2026
 
 The [17:30](moodboard-daylight/land-dusk-1730-667x375.png), [18:30](moodboard-daylight/land-dusk-1830-667x375.png), and [settled night](moodboard-daylight/land-night-667x375.png) Godot 4.7.2 captures document the continuous land-lighting source candidate. The [reef before](ocean-shafts-baseline-667x375-20261115.png) and [reef after](ocean-shafts-candidate-667x375-20261115.png) show the water-plane shaft at actual landscape size. These are native captures from local source, not public staging or physical-device proof. See the [lighting report](../reviews/moodboard-land-shader-continuity-2026-11-15.md), [clock-correction report](../reviews/moodboard-clock-jump-visual-2026-11-15.md), and [ocean report](../reviews/moodboard-ocean-light-2026-11-15.md) for tests, provenance and limits.
