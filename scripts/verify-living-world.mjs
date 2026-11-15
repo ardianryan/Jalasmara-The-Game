@@ -84,6 +84,7 @@ const scripts = [
   "scripts/tests/natural-terrain-edges.gd",
   "scripts/tests/terrain-facets.gd",
   "scripts/tests/coastline-foliage.gd",
+  "scripts/tests/land-wind-coverage.gd",
   "scripts/tests/map-grounding.gd",
   "scripts/tests/surface-traversal.gd",
   "scripts/tests/stair-foot-grounding.gd",

@@ -389,6 +389,19 @@ func _box(label: String, center: Vector3, dimensions: Vector3, material: Materia
 	_meshes+=1
 	return instance
 
+func _wind_box(label: String, center: Vector3, dimensions: Vector3, material_id := "wind_leaves") -> MeshInstance3D:
+	var half:=dimensions*.5
+	var vertices:=PackedVector3Array([
+		center+Vector3(-half.x,-half.y,-half.z),center+Vector3(half.x,-half.y,-half.z),
+		center+Vector3(half.x,half.y,-half.z),center+Vector3(-half.x,half.y,-half.z),
+		center+Vector3(-half.x,-half.y,half.z),center+Vector3(half.x,-half.y,half.z),
+		center+Vector3(half.x,half.y,half.z),center+Vector3(-half.x,half.y,half.z)
+	])
+	var faces:=PackedInt32Array([0,2,1,0,3,2,4,5,6,4,6,7,0,1,5,0,5,4,1,2,6,1,6,5,2,3,7,2,7,6,3,0,4,3,4,7])
+	var weights:=PackedColorArray()
+	for index in range(vertices.size()): weights.append(Color(0 if index<4 else 1,0,0,1))
+	return _mesh(label,vertices,faces,_materials.get_material(material_id),null,weights)
+
 func _build_water() -> void:
 	if is_instance_valid(water_mesh): water_mesh.queue_free()
 	var width:=float(map.get("width",2400))
@@ -1054,17 +1067,18 @@ func _garden(_entry: Dictionary,rect: Rect2,center: Vector3) -> void:
 			if _garden_state==0:
 				var droop:=Vector3((crop%2*2-1)*4,3,9)
 				_column(plant,plant+droop,1.8,thatch if (crop+index)%2==0 else leaves)
-				_box("CropLeaves",plant+droop,Vector3(10,9,3),thatch if (crop+index)%2==0 else leaves)
+				if (crop+index)%2==0: _box("CropLeaves",plant+droop,Vector3(10,9,3),thatch)
+				else: _wind_box("CropLeaves",plant+droop,Vector3(10,9,3))
 				_box("WiltedCropLeaves",plant+droop+Vector3(0,2,-1),Vector3(8,7,2),thatch)
 			elif _garden_state==1:
 				_column(plant,plant+Vector3(0,0,17),2.2,leaves)
-				_box("CropLeaves",plant+Vector3(0,0,15),Vector3(14,13,5),leaves)
-				_box("CareCropLeaves",plant+Vector3(0,0,18),Vector3(10,9,3),leaves)
+				_wind_box("CropLeaves",plant+Vector3(0,0,15),Vector3(14,13,5))
+				_wind_box("CareCropLeaves",plant+Vector3(0,0,18),Vector3(10,9,3))
 				_column(plant+Vector3(4,0,0),plant+Vector3(4,0,22),1.6,bamboo)
 			else:
 				_column(plant,plant+Vector3(0,0,24),2.6,leaves)
-				_box("CropLeaves",plant+Vector3(0,0,18),Vector3(18,16,7),leaves)
-				_box("RecoveredCropLeaves",plant+Vector3(0,0,25),Vector3(12,11,5),leaves)
+				_wind_box("CropLeaves",plant+Vector3(0,0,18),Vector3(18,16,7))
+				_wind_box("RecoveredCropLeaves",plant+Vector3(0,0,25),Vector3(12,11,5))
 				if (crop+index)%2==0:
 					_box("GardenBloom",plant+Vector3(0,0,29),Vector3(6,6,4),sand)
 	# Titik pengamatan 1: Daun Kebun Menguning (1775, 515)
@@ -1191,10 +1205,6 @@ func _build_ground_details() -> void:
 			frame.region=Rect2(Vector2(frame_index%3,frame_index/3)*cell,cell)
 			frame.filter_clip=true
 			ground_foliage.append(frame)
-	var flower_material:=StandardMaterial3D.new()
-	flower_material.resource_name="foliage_nonwalkable"
-	flower_material.albedo_color=Color("bc9c7e")
-	flower_material.roughness=1
 	var clusters: Array[Vector2]=[]
 	if area=="hub":
 		clusters=[Vector2(490,660),Vector2(740,650),Vector2(1180,680),Vector2(1485,675),Vector2(700,1000),Vector2(1550,980),Vector2(1180,1100)]
@@ -1229,8 +1239,8 @@ func _build_ground_details() -> void:
 			if area=="hub":
 				var flower:=at+Vector3(7,0,9+tuft)
 				_column(at+Vector3(7,0,0),flower,.7,_materials.get_material("leaves"))
-				_box("SmallFlower",flower,Vector3(5,2,3),flower_material)
-				_box("SmallFlower",flower,Vector3(2,5,3),flower_material)
+				_wind_box("SmallFlower",flower,Vector3(5,2,3),"wind_flower")
+				_wind_box("SmallFlower",flower,Vector3(2,5,3),"wind_flower")
 	var index:=0
 	for surface in map.get("surfaces",[]):
 		if not bool(surface.get("walkable",true)) or str(surface.material) not in ["grass","dirt","sand"]: continue
@@ -1260,6 +1270,7 @@ func _build_ground_details() -> void:
 				plant.position=at+camera_up()*8
 				plant.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 				_geometry.add_child(plant)
+				_leaves.append({"node":plant,"home":plant.position,"phase":float(index),"pixel":1.0,"size":.45})
 			else:
 				for pebble in range(3):
 					var offset:=Vector3(pebble*5-5,pebble%2*4,1)
@@ -1330,6 +1341,11 @@ func _process(delta: float) -> void:
 	var now:=float(Time.get_ticks_msec())*.001
 	var wind_x:=float(conditions.get("wind_x",0))
 	var wind:=absf(wind_x)
+	for wind_material_id in ["wind_leaves","wind_flower"]:
+		var wind_material: ShaderMaterial=_materials.get_material(wind_material_id)
+		wind_material.set_shader_parameter("wind_time",now)
+		wind_material.set_shader_parameter("wind_x",wind_x)
+		wind_material.set_shader_parameter("wind_reduced",reduced)
 	var sway:=0.0 if reduced else 1.2+wind*.035
 	for leaf in _leaves:
 		var node: Node3D=leaf.node
