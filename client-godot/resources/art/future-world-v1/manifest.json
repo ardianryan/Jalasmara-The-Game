@@ -1,0 +1,212 @@
+{
+  "schemaVersion": 1,
+  "source": "Code-authored by Jalasmara project; no AI/image pack pixels",
+  "license": "Jalasmara LICENSE section 2 (project art, all rights reserved)",
+  "pixelGrid": "one source pixel per drawn pixel; nearest texture filter",
+  "runtimePlacement": "none; all sprites are phase-gated authoring assets",
+  "assets": {
+    "solar_panel_roof": {
+      "path": "res://resources/art/future-world-v1/solar_panel_roof.png",
+      "sizePx": [
+        64,
+        32
+      ],
+      "pivotPx": [
+        32,
+        31
+      ],
+      "site": "director_rv_and_inspector_quarters",
+      "phaseGate": "phase_1_or_later",
+      "frames": 1,
+      "sha256": "440ea689c98747e234b9e0d08a0e0ddec680dbc8c860a5b5dd22b07589501163"
+    },
+    "generator_set": {
+      "path": "res://resources/art/future-world-v1/generator_set.png",
+      "sizePx": [
+        64,
+        48
+      ],
+      "pivotPx": [
+        32,
+        47
+      ],
+      "site": "director_rv_and_inspector_quarters",
+      "phaseGate": "phase_1_or_later",
+      "frames": 1,
+      "sha256": "c99f0e98554d1a4c0e73ae6c610a51074eea3451d8fa5fa8bff21cb370846af1"
+    },
+    "inspector_bunk_container": {
+      "path": "res://resources/art/future-world-v1/inspector_bunk_container.png",
+      "sizePx": [
+        128,
+        96
+      ],
+      "pivotPx": [
+        64,
+        95
+      ],
+      "site": "future_inspector_quarters",
+      "phaseGate": "later",
+      "frames": 1,
+      "sha256": "1bfd9dd553f70c2fd702a359034e85025e979b4645727881e64fd21ff8ab7077"
+    },
+    "saras_field_tent": {
+      "path": "res://resources/art/future-world-v1/saras_field_tent.png",
+      "sizePx": [
+        128,
+        96
+      ],
+      "pivotPx": [
+        64,
+        95
+      ],
+      "site": "saras_north_field_camp",
+      "phaseGate": "later",
+      "frames": 1,
+      "sha256": "58f5301c9d6a33ddf3ea6d218ee85a5dcf3fb49ce9dbcc294d4dc106aea09d73"
+    },
+    "saras_satellite_terminal": {
+      "path": "res://resources/art/future-world-v1/saras_satellite_terminal.png",
+      "sizePx": [
+        64,
+        64
+      ],
+      "pivotPx": [
+        32,
+        63
+      ],
+      "site": "saras_north_field_camp",
+      "phaseGate": "later",
+      "frames": 1,
+      "sha256": "f93bae7bbe58cfcddb518653709ca775e516e57e8f691d9968a2490a84c8cfc6"
+    },
+    "saras_worktable": {
+      "path": "res://resources/art/future-world-v1/saras_worktable.png",
+      "sizePx": [
+        64,
+        48
+      ],
+      "pivotPx": [
+        32,
+        47
+      ],
+      "site": "saras_north_field_camp",
+      "phaseGate": "later",
+      "frames": 1,
+      "sha256": "39a129522aef12200d2cc9828ec17d6da78d5c313895c66d1ac2051b817e4fb2"
+    },
+    "saras_rugged_laptop": {
+      "path": "res://resources/art/future-world-v1/saras_rugged_laptop.png",
+      "sizePx": [
+        32,
+        32
+      ],
+      "pivotPx": [
+        16,
+        31
+      ],
+      "site": "saras_north_field_camp",
+      "phaseGate": "later",
+      "frames": 1,
+      "sha256": "82b4d771fa63208f858ea4dc705838765068f1a33348b4e4a1f93bc6f5c9ac4b"
+    },
+    "saras_evidence_case": {
+      "path": "res://resources/art/future-world-v1/saras_evidence_case.png",
+      "sizePx": [
+        32,
+        32
+      ],
+      "pivotPx": [
+        16,
+        31
+      ],
+      "site": "saras_north_field_camp",
+      "phaseGate": "later",
+      "frames": 1,
+      "sha256": "0f4fcf03c6873237ea73adfc70c63142d4769e403fbc346797d270c467c5b5d4"
+    },
+    "saras_antenna": {
+      "path": "res://resources/art/future-world-v1/saras_antenna.png",
+      "sizePx": [
+        32,
+        48
+      ],
+      "pivotPx": [
+        16,
+        47
+      ],
+      "site": "saras_north_field_camp",
+      "phaseGate": "later",
+      "frames": 1,
+      "sha256": "81d45949a6b5f4bafb86ea6a756d7b2a4223136fc2910754e902f553ceb92a94"
+    },
+    "oil_palm_mature": {
+      "path": "res://resources/art/future-world-v1/oil_palm_mature.png",
+      "sizePx": [
+        96,
+        128
+      ],
+      "pivotPx": [
+        48,
+        127
+      ],
+      "site": "north_forest_future_plantation",
+      "phaseGate": "future_only",
+      "frames": 1,
+      "sha256": "74e351ee0139e4820814d565b9732ceecfaa2e159fb47257ce227d4e4fada2ed"
+    },
+    "forest_charred_trunk": {
+      "path": "res://resources/art/future-world-v1/forest_charred_trunk.png",
+      "sizePx": [
+        64,
+        96
+      ],
+      "pivotPx": [
+        32,
+        95
+      ],
+      "site": "north_forest_future_fire",
+      "phaseGate": "future_only",
+      "frames": 1,
+      "sha256": "ade239fad0213944f0282b0c0e378a5423c4e8a85490d59a06de4cceb4152e9c"
+    },
+    "forest_fire_sheet": {
+      "path": "res://resources/art/future-world-v1/forest_fire_sheet.png",
+      "sizePx": [
+        256,
+        64
+      ],
+      "pivotPx": [
+        32,
+        63
+      ],
+      "site": "north_forest_future_fire",
+      "phaseGate": "future_only",
+      "frames": 4,
+      "sha256": "18c1898734c074c2bbc4a82640cde3e622e226deff2d6f7698c03d24918aa51d",
+      "frameSizePx": [
+        64,
+        64
+      ]
+    },
+    "forest_smoke_sheet": {
+      "path": "res://resources/art/future-world-v1/forest_smoke_sheet.png",
+      "sizePx": [
+        256,
+        64
+      ],
+      "pivotPx": [
+        32,
+        63
+      ],
+      "site": "north_forest_future_fire",
+      "phaseGate": "future_only",
+      "frames": 4,
+      "sha256": "b6b1196bac17308e6ea67a074a33d723ca161b275ee7e0d64d0c8a2e0eac932a",
+      "frameSizePx": [
+        64,
+        64
+      ]
+    }
+  }
+}
