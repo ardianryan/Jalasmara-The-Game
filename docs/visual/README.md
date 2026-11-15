@@ -1,5 +1,11 @@
 # Jalasmara visual evidence
 
+## Resident facing v2 staging, 15 November 2026
+
+![Public ready game with Nala and nearby residents at 844×390.](resident-facing-v2-staging-ready-20261115.png)
+
+This public Chromium/SwiftShader still is from source `a26fd5f4af6d21fe87b8af34d4bebea64a3177ad`, CI PCK `6cd14511b96171f2d6c92f2533b0fe1d551a4d7e95225afbfaa32445a8178f6d`, image `ee3b1735bb2c`. PNG SHA-256 `fd5bca8ab242cec248281dfa175bc32ca667b1fe1abea928a28fa66418bef774`. It proves ready-game visibility, not gait or physical-device quality. The [release report](../reviews/resident-facing-v2-candidate-2026-11-15.md) records the 6/6 public smoke and native motion evidence. This screenshot is documentation, not a game asset.
+
 ## Resident source-matched turns candidate, 15 November 2026
 
 ![Seven residents, three views, from the actual Godot 480×270 Sprite3D fixture.](resident-facing-v2-native-20261115.png)
