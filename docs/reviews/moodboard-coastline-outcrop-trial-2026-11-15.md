@@ -1,0 +1,13 @@
+# Authored coastline outcrop trial rejected
+
+Date: 15 November 2026. Base: `e061855`. The experiment ran in isolated branch `work/terrain-composition-20261115`; no terrain source, map, collision, stairs, dock, or runtime asset from it is offered for integration.
+
+The current limestone shoulder has a near-uniform silhouette at game size. After the earlier uniform displacement trial failed, I tested six location-authored outcrops: two on the hub lower court and four along the forest river banks. Each outcrop locally widened the shoulder toe and grass cap, while the existing route/stair clearance logic continued to clip the shape. It changed no authoritative world data. The same camera and fixture were rendered before and after at 667×375 and 844×390, in daylight and dusk, for the hub lower coast, central stairs, and two forest banks: 16 baseline and 16 candidate frames.
+
+The hub coast acquired a slightly scalloped lower edge, but the overall island still read as a long, regular stone strip. The forest banks were visually indistinguishable in the full frame. At the 667×375 day view, pixels with an RGB-channel difference above 8 were 4,722 (1.89%) on the hub lower coast and 1,072–1,229 (0.43–0.49%) on the two forest banks. This does not meet the requested visible improvement. [Matched A/B contact](../visual/coastline-outcrop-trial-rejected-20261115.webp) shows the hub dusk at 844×390 and forest day at 667×375; source image SHA-256: `77944adb83ccc2465c04f716cb71ca78cca916a34dc7025993bffb3449e0ce4c`.
+
+Godot 4.7.2 Compatibility rendered all 32 frames with no `SCRIPT ERROR` or `ERROR`; the fixture asserted one player and foot error below 0.01. The source world fixture hash remained `d709f37758406c3a8dd27b381b9c78ddea26d967e9475df8efadb717e033ea5a`. This was a native still-frame review, not browser traversal, mobile GPU validation, or a performance claim. The trial source was reverted before commit.
+
+Next work should redraw the island and riverbank silhouettes as larger authored landforms with distinct limestone shelves and grass interruptions visible at 667×375, then bind the visual mesh to the existing walkable/connector contracts. Repeating bounded procedural offsets or stone color bands is unlikely to be enough. Preserve stair mouths, dock axes, and the server-owned world footprint. Use matched native A/B before proposing a release.
+
+Tools actually used: isolated Git worktree, local GDScript visual trial, Python Pillow for pixel-difference/contact diagnostics, and the project-pinned Godot 4.7.2 Compatibility renderer. No external art, third-party source, or new asset license entered the game.
