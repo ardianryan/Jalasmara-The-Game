@@ -38,7 +38,7 @@ var _trees := 0
 var _houses := 0
 var _stair_treads := 0
 var _meshes := 0
-var _weather_clock := 0.0
+var _lighting_display: Dictionary={}
 var _built := false
 var _center := Vector2.ZERO
 var _leaves: Array[Dictionary] = []
@@ -100,8 +100,8 @@ func setup(scene: Node2D, player: Node2D, camera: Camera2D, place: String, overr
 	display.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	display.texture_filter=CanvasItem.TEXTURE_FILTER_NEAREST
 	_grade_material=ShaderMaterial.new()
-	_grade_material.shader=load("res://shaders/ComfyGrade.gdshader")
-	_grade_material.set_shader_parameter("strength",.6)
+	_grade_material.shader=load("res://shaders/LandComfyGrade.gdshader")
+	_grade_material.set_shader_parameter("strength",.75)
 	display.material=_grade_material
 	screen_layer.add_child(display)
 	viewport_3d=SubViewport.new()
@@ -146,6 +146,7 @@ func setup(scene: Node2D, player: Node2D, camera: Camera2D, place: String, overr
 	sunlight.shadow_bias=.035
 	viewport_3d.add_child(sunlight)
 	set_area(place)
+	_update_lighting(0.0,EnvironmentState.snapshot())
 
 func set_area(place: String) -> void:
 	area=place
@@ -1332,32 +1333,39 @@ func _process(delta: float) -> void:
 	_canopy_readability.update(ground_point(actor.position),camera_up(),camera_forward(),delta,camera_right())
 	_shelter_architecture.update(self,delta)
 	_fish_pen.update(self,float(Time.get_ticks_msec())*.001)
-	_weather_clock+=delta
-	if _weather_clock>.25:
-		_weather_clock=0
-		var weather:=EnvironmentState.snapshot()
-		var lighting:=lighting_palette(area,weather)
-		var daylight: float=lighting.daylight
-		var clouds:=float(weather.get("clouds",0))
-		_grade_material.set_shader_parameter("daylight",daylight)
-		sunlight.light_energy=float(lighting.sun_energy)*(1-clouds*.25)
-		sunlight.light_color=lighting.sun_color
-		sunlight.shadow_enabled=daylight>.15 and bool(RenderQuality.get_profile().sunShadows)
-		for lantern in _lanterns: lantern.light_energy=lerpf(280.0,28.0,daylight)
-		if _glow_material: _glow_material.emission_energy_multiplier=lerpf(.85,.14,daylight)
-		environment.ambient_light_energy=lighting.ambient_energy
-		environment.ambient_light_color=lighting.ambient_color
+	_update_lighting(delta,conditions)
+
+func _update_lighting(delta: float,weather: Dictionary) -> void:
+	var target:=lighting_palette(area,weather)
+	target.sun_energy=float(target.sun_energy)*(1.0-clampf(float(weather.get("clouds",0.0)),0.0,1.0)*.25)
+	_lighting_display=smooth_lighting(_lighting_display,target,delta)
+	var daylight: float=_lighting_display.daylight
+	_grade_material.set_shader_parameter("daylight",daylight)
+	sunlight.light_energy=float(_lighting_display.sun_energy)
+	sunlight.light_color=_lighting_display.sun_color
+	sunlight.shadow_opacity=.64*smoothstep(0.0,.18,daylight)
+	sunlight.shadow_enabled=daylight>.004 and bool(RenderQuality.get_profile().sunShadows)
+	for lantern in _lanterns: lantern.light_energy=lerpf(280.0,28.0,daylight)
+	if _glow_material: _glow_material.emission_energy_multiplier=lerpf(.85,.14,daylight)
+	environment.ambient_light_energy=_lighting_display.ambient_energy
+	environment.ambient_light_color=_lighting_display.ambient_color
+
+static func smooth_lighting(previous: Dictionary,target: Dictionary,delta: float) -> Dictionary:
+	if previous.is_empty(): return target.duplicate()
+	var weight:=1.0-exp(-maxf(delta,0.0)*4.5)
+	var old_sun: Color=previous.sun_color
+	var old_ambient: Color=previous.ambient_color
+	return {"daylight":lerpf(float(previous.daylight),float(target.daylight),weight),"dusk":lerpf(float(previous.dusk),float(target.dusk),weight),"sun_color":old_sun.lerp(target.sun_color,weight),"sun_energy":lerpf(float(previous.sun_energy),float(target.sun_energy),weight),"ambient_color":old_ambient.lerp(target.ambient_color,weight),"ambient_energy":lerpf(float(previous.ambient_energy),float(target.ambient_energy),weight)}
 
 static func lighting_palette(place: String,weather: Dictionary) -> Dictionary:
 	var daylight:=clampf((float(weather.get("daylight",.8))-.24)/.76,0.0,1.0)
-	var dusk:=0.0
-	if str(weather.get("phase",""))=="senja":
-		dusk=smoothstep(0.0,0.35,daylight)*(1.0-smoothstep(0.65,1.0,daylight))
+	var minute_of_day:=float(weather.get("minuteOfDay",720.0))
+	var dusk:=smoothstep(960.0,1045.0,minute_of_day)*(1.0-smoothstep(1055.0,1120.0,minute_of_day))
 	var sun_color:=Color("a5c2c0").lerp(Color("fff0d7"),daylight).lerp(Color("ffd09b"),dusk*.88)
 	var ambient_night:=Color("9faeae") if place=="home" else Color("819da6")
 	var ambient_color:=ambient_night.lerp(Color("b7d4d1"),daylight).lerp(Color("91a8b6"),dusk*.35)
 	var ambient_energy:=lerpf(.65,.62,daylight) if place=="home" else lerpf(.54,.62,daylight)
-	return {"daylight":daylight,"dusk":dusk,"sun_color":sun_color,"sun_energy":lerpf(.035,.72,daylight),"ambient_color":ambient_color,"ambient_energy":ambient_energy}
+	return {"daylight":daylight,"dusk":dusk,"sun_color":sun_color,"sun_energy":.72*daylight,"ambient_color":ambient_color,"ambient_energy":ambient_energy}
 
 func debug_status() -> Dictionary:
 	return {"active":active,"area":area,"renderer":"LandSubViewport3D","viewport":[viewport_3d.size.x,viewport_3d.size.y],"quality":RenderQuality.get_profile(),"performance":{"staticBuilds":_static_builds,"plotUpdates":_plot_updates,"softGroundPatches":_soft_ground_patches,"softGroundVertices":_soft_ground_vertices},"readability":_canopy_readability.debug_status(),"tilt":55,"elevationDegrees":camera_elevation,"azimuthDegrees":camera_azimuth,"view":{"azimuth":camera_azimuth,"elevation":camera_elevation,"input":"screen-relative","motion":view_projection.motion_contract(ground_gradient(actor.position)),"targetHeight":ground_height(actor.position)},"meshes":_meshes,"houses":_houses,"trees":_trees,"glbModels":_models,"stairTreads":_stair_treads,"surfaces":map.get("surfaces",[]).size(),"obstacles":map.get("obstacles",[]).size(),"actors":actors_3d.debug_counts() if is_instance_valid(actors_3d) else {},"maxFootError":actors_3d.max_foot_error if is_instance_valid(actors_3d) else 0,"camera":[_center.x,_center.y],"warmLanterns":_lanterns.size(),"gardenState":_garden_state,"streamCleared":_stream_cleared,"components":_components.duplicate(),"bridges":_bridges.duplicate(true),"gateways":_gateway_architecture.debug_status(),"bitmapGround":false,"water":water_node.debug_status() if is_instance_valid(water_node) else {}}

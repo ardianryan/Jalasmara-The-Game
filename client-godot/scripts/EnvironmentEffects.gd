@@ -131,12 +131,7 @@ func _process(delta: float) -> void:
 	var data: Dictionary = state.snapshot() if state != null and state.has_method("snapshot") else {"daylight":0.9,"rain":0.0,"clouds":0.0}
 	var daylight := float(data.get("daylight",0.9))
 	var clouds := float(data.get("clouds",0.0))
-	var tint := Color(0.64,0.77,0.82) if _area=="sea" else Color(0.53,0.64,0.71)
-	var target := tint.lerp(Color(1.0,0.99,0.94),daylight)
-	if bool(data.get("night",false)):
-		target = Color(0.31,0.43,0.54) if _area != "sea" else Color(0.24,0.40,0.49)
-	if _area != "sea":
-		target = target.darkened(clouds*0.12)
+	var target := tint_for(_area,daylight,clouds)
 	_tint = _tint.lerp(target,1.0-exp(-delta*1.8))
 	if is_instance_valid(_modulate):
 		_modulate.color = _tint
@@ -155,6 +150,13 @@ func _process(delta: float) -> void:
 		_impact_clock = 0.0
 		_ground_rain_impacts(data)
 		_update_foliage(data)
+
+static func tint_for(area: String,daylight: float,clouds: float) -> Color:
+	var tint := Color(0.64,0.77,0.82) if area=="sea" else Color(0.53,0.64,0.71)
+	var target := tint.lerp(Color(1.0,0.99,0.94),clampf(daylight,0.24,1.0))
+	var night_tint := Color(0.31,0.43,0.54) if area!="sea" else Color(0.24,0.40,0.49)
+	target=target.lerp(night_tint,1.0-smoothstep(0.24,0.82,daylight))
+	return target.darkened(clampf(clouds,0.0,1.0)*0.12) if area!="sea" else target
 
 func _ground_rain_impacts(data: Dictionary) -> void:
 	if _area=="sea" or float(data.get("rain",0))<0.12 or bool(data.get("reduced_motion",false)) or not is_instance_valid(_pixel_fx): return

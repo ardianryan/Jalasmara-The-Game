@@ -34,7 +34,8 @@ void fragment() {
 	if(has_micro) {
 		vec3 texel=texture(micro_texture,fract(planar/128.0)).rgb;
 		float luma=dot(texel,vec3(.299,.587,.114));
-		color*=1.0+clamp((luma-micro_mean)*micro_strength,-.16,.16);
+		float detail=clamp((luma-micro_mean)*micro_strength,-.16,.16);
+		color*=1.0+floor(detail*24.0+0.5)/24.0;
 	}
 	if(has_atlas) {
 		vec2 tile=fract(planar/150.0);
@@ -87,6 +88,10 @@ void fragment() {
 		color*=.90+weave*.12+band*.10;
 	}
 	if(kind==8) color*=.92+step(13.0,mod(planar.x,18.0))*.12;
+	float side=1.0-smoothstep(.28,.82,abs(normal_world.z));
+	if(kind==1) color*=mix(vec3(1.0),vec3(.91,.95,.96),side);
+	if(kind==3) color*=mix(vec3(1.0),vec3(.85,.92,1.0),side);
+	if(kind==4 || kind==5 || kind==6 || kind==11) color*=mix(vec3(1.0),vec3(.94,.91,.96),side);
 	ALBEDO=color;
 	ROUGHNESS=.96;
 	SPECULAR=.08;
@@ -107,7 +112,7 @@ func _init() -> void:
 func get_material(id: String) -> ShaderMaterial:
 	var key: String={"bridge":"wood","cliff":"stone"}.get(id,id)
 	if _cache.has(key): return _cache[key]
-	var types: Dictionary={"dirt":[0,"a68762",0],"grass":[1,"72995b",-1],"sand":[2,"e0c58c",-1],"stone":[3,"a8b5aa",1],"wood":[4,"a57b50",2],"dock":[11,"95714e",2],"thatch":[5,"c5a16d",4],"bamboo":[6,"c9b17d",3],"leaves":[7,"657361",5],"metal":[8,"344a4b",-1],"bridge_board":[9,"a18760",-1],"bridge_board_light":[9,"ad926a",-1],"bridge_board_dark":[9,"947853",-1],"terracotta":[0,"bb7e58",-1],"cloth_cream":[0,"e2cfa1",-1],"cloth_teal":[0,"58998c",-1],"office_shell":[8,"c6c5b4",-1],"office_glass":[8,"425e65",-1],"corporate_copper":[8,"a76045",-1],"roof_tiles":[5,"b87854",-1],"woven_teal":[10,"568779",-1],"paper":[0,"d5c092",-1]}
+	var types: Dictionary={"dirt":[0,"b18a5e",0],"grass":[1,"80a963",-1],"sand":[2,"e0c58c",-1],"stone":[3,"afb9ac",1],"wood":[4,"a57b50",2],"dock":[11,"95714e",2],"thatch":[5,"c5a16d",4],"bamboo":[6,"c9b17d",3],"leaves":[7,"657361",5],"metal":[8,"344a4b",-1],"bridge_board":[9,"a18760",-1],"bridge_board_light":[9,"ad926a",-1],"bridge_board_dark":[9,"947853",-1],"terracotta":[0,"bb7e58",-1],"cloth_cream":[0,"e2cfa1",-1],"cloth_teal":[0,"58998c",-1],"office_shell":[8,"c6c5b4",-1],"office_glass":[8,"425e65",-1],"corporate_copper":[8,"a76045",-1],"roof_tiles":[5,"b87854",-1],"woven_teal":[10,"568779",-1],"paper":[0,"d5c092",-1]}
 	var data: Array=types.get(key,types.stone)
 	var material:=ShaderMaterial.new()
 	material.shader=_shader
