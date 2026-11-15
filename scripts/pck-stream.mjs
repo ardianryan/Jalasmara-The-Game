@@ -1,6 +1,11 @@
 // Kept self-contained: the exporter embeds this function in the pinned Godot loader.
 export function createPckFetch(manifest, fetchAsset, options) {
-  const { baseUrl, subtle, partTimeoutMs = 30000 } = options;
+  const {
+    baseUrl,
+    subtle,
+    partTimeoutMs = 30000,
+    hedgeDelayMs = 1500,
+  } = options;
   const validHash = (value) =>
     typeof value === "string" && /^[a-f0-9]{64}$/.test(value);
   if (
@@ -56,15 +61,20 @@ export function createPckFetch(manifest, fetchAsset, options) {
     let next = 0;
     let stopped = false;
     function launch(index) {
-      const part = (async () => {
+      const attempts = [];
+      const requestPart = async (hedge) => {
         const ownAbort = new AbortController();
+        attempts.push(ownAbort);
         const onAbort = () => ownAbort.abort();
         abort.signal.addEventListener("abort", onAbort, { once: true });
         if (abort.signal.aborted) ownAbort.abort();
         const timeout = setTimeout(() => ownAbort.abort(), partTimeoutMs);
         try {
+          const partUrl = new URL(String(index), partBase);
+          // A distinct URL prevents browsers from coalescing a stalled request.
+          if (hedge) partUrl.searchParams.set("hedge", String(requestIdentity));
           const response = await fetchAsset(
-            new URL(String(index), partBase).href,
+            partUrl.href,
             { signal: ownAbort.signal },
           );
           const size = Math.min(
@@ -95,9 +105,39 @@ export function createPckFetch(manifest, fetchAsset, options) {
           clearTimeout(timeout);
           abort.signal.removeEventListener("abort", onAbort);
         }
-      })();
+      };
+      let startHedge;
+      const part = new Promise((resolve, reject) => {
+        let settled = false;
+        let active = 0;
+        let hedged = false;
+        const finish = (error, bytes) => {
+          if (settled) return;
+          if (error && active > 0) return;
+          settled = true;
+          for (const attempt of attempts) attempt.abort();
+          if (error) reject(error);
+          else resolve(bytes);
+        };
+        const startAttempt = (hedge = false) => {
+          active++;
+          requestPart(hedge).then(
+            (bytes) => finish(null, bytes),
+            (error) => {
+              active--;
+              finish(error);
+            },
+          );
+        };
+        startAttempt();
+        startHedge = () => {
+          if (settled || hedged) return;
+          hedged = true;
+          startAttempt(true);
+        };
+      });
       part.catch(() => {});
-      pending.set(index, part);
+      pending.set(index, { part, startHedge });
     }
     function stop() {
       stopped = true;
@@ -118,7 +158,16 @@ export function createPckFetch(manifest, fetchAsset, options) {
           if (stopped) return;
           try {
             const index = next++;
-            const bytes = await pending.get(index);
+            const entry = pending.get(index);
+            const hedgeTimer = hedgeDelayMs > 0 && hedgeDelayMs < partTimeoutMs
+              ? setTimeout(entry.startHedge, hedgeDelayMs)
+              : null;
+            let bytes;
+            try {
+              bytes = await entry.part;
+            } finally {
+              if (hedgeTimer !== null) clearTimeout(hedgeTimer);
+            }
             if (stopped) return;
             pending.delete(index);
             controller.enqueue(bytes);

@@ -63,6 +63,41 @@ test("out-of-order parallel responses are verified and yielded in original PCK o
   sameBytes(await response.arrayBuffer());
   assert.deepEqual([...calls].sort(), [0, 1, 2, 3, 4, 5]);
 });
+test("a stalled part gets one distinct bounded hedge and cancels its loser", async () => {
+  const calls = [];
+  let slowAborted = false;
+  const fetch = adapter((url, { signal }) => {
+    const index = partIndex(url);
+    calls.push(url);
+    if (index === 0 && !new URL(url).searchParams.has("hedge"))
+      return new Promise((_resolve, reject) => {
+        signal.addEventListener("abort", () => {
+          slowAborted = true;
+          reject(new Error("cancelled slow part"));
+        }, { once: true });
+      });
+    return Promise.resolve(endpoint(index));
+  }, { hedgeDelayMs: 15, partTimeoutMs: 200 });
+  sameBytes(await (await fetch("index.pck")).arrayBuffer());
+  assert.equal(calls.filter((url) => partIndex(url) === 0).length, 2);
+  assert.equal(calls.filter((url) => partIndex(url) === 0 && new URL(url).searchParams.has("hedge")).length, 1);
+  assert(slowAborted);
+  assert(calls.length <= manifest.hashes.length + 1);
+});
+test("a stalled primary and hedge both fail within the per-attempt bound", async () => {
+  const signals = [];
+  const fetch = adapter((_url, { signal }) => {
+    signals.push(signal);
+    return new Promise((_resolve, reject) =>
+      signal.addEventListener("abort", () => reject(new Error("timed out")), {
+        once: true,
+      }),
+    );
+  }, { hedgeDelayMs: 10, partTimeoutMs: 30 });
+  await assert.rejects((await fetch("index.pck")).arrayBuffer(), /timed out/);
+  assert.equal(signals.length, 5, "only the blocking part gets a hedge");
+  assert(signals.every((signal) => signal.aborted));
+});
 test("WASM and other assets keep the original fetch path and arguments", async () => {
   const calls = [];
   const original = () => new Response("wasm");
