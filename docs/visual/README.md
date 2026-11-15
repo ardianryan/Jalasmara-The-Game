@@ -1,5 +1,9 @@
 # Jalasmara visual evidence
 
+## Land palette and compact HUD candidate, 15 November 2026
+
+The [667×375 land before/after](land-palette-quality-hub-667x375-20261115.webp) shows the same camera at day and dusk with calmer grass/stone and a warmer continuously driven sunset grade. The [667×375 HUD](moodboard-hud-badge-667x375-before-after-20261115.png) and [844×390 HUD](moodboard-hud-badge-844x390-before-after-20261115.png) compare the shorter identity badge and existing 32 px icons. These are native/component proofs from the [integration report](../reviews/moodboard-palette-hud-integration-2026-11-15.md), not staging or physical-device captures. Rejected [foliage sharpening](foliage-source-sharpen-rejected-20261115.png) and [leaf-mass trial](foliage-leaf-masses-rejected-20261115.png) are kept only as development evidence; neither entered the game.
+
 ## Continuous daylight staging release, 15 November 2026
 
 ![Public 844×390 hub ready game after the continuous daylight release.](moodboard-continuous-light-staging-ready-20261115.png)
