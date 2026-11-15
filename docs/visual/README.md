@@ -1,5 +1,11 @@
 # Jalasmara visual evidence
 
+## Coastal-life staging, 16 November 2026
+
+![Public ready-game view of Bandar Hujung at 844×390.](coastal-life-staging-hub-20261116.png)
+
+This original game screenshot came from the public Chromium/SwiftShader smoke of source `e17d539ebcbaa298e146badb71bb9f5bab02dc14`, CI PCK `8eed4a6502708d7037b2f683e15d3262315cdc1acc8fc91abedff320fcf16045`, and active image `sha256:e7ae1721cef0c51f9e5659af110ae3e950ec58c122a965f928b6a8302cff0b53`. PNG SHA-256: `a2e46086222cd79fbfb2a9769b3e31c15e89425e360c00b479d7b342bccb0192`. The [release report](../reviews/coastal-life-staging-2026-11-16.md) records the full public route and limits. This still proves game readiness, not coral movement or physical-device GPU quality; it is development documentation, not a runtime asset.
+
 ## Reef contacts at gameplay size, 16 November 2026
 
 The accepted [667×375](coral-rock-integration-667x375-20261116.webp) and [844×390](coral-rock-integration-844x390-20261116.webp) native A/B sheets compare coral roots against the same reef shelves in shallow and deep water. The [coral report](../reviews/coral-rock-integration-2026-11-16.md) records 39 of 43 mounted clusters and four unverified edge placements. The [rear-rock composition trial](../reviews/ocean-depth-composition-trial-2026-11-16.md) was rejected after it widened the empty teal lane; its [baseline](ocean-depth-trial-baseline-844x390-20261116.png) and [candidate](ocean-depth-trial-repeat-844x390-20261116.png) remain development evidence only. These captures do not prove browser motion, physical-device performance, or full moodboard parity.
