@@ -11,12 +11,21 @@ func run() -> void:
 	for name in steps.FILES:
 		var idle: Texture2D = steps.frame(name,{"clip":"idle","distance":0.0})
 		assert(idle!=null and idle.get_size()==Vector2(64,64),"Missing 64px original-identity frame for "+name)
+		assert(steps.view_for_motion(Vector2.UP)=="rear")
+		assert(steps.view_for_motion(Vector2.RIGHT)=="side")
+		assert(steps.view_for_motion(Vector2.DOWN)=="front")
 		var values: Array=[]
 		for i in range(4):
 			var frame: Texture2D = steps.frame(name,{"clip":"walk","distance":float(i)*6.5})
 			assert(frame!=null and frame.get_size()==Vector2(64,64))
 			values.append(frame)
 		assert(values[0]!=values[1] and values[1]!=values[2] and values[2]!=values[3],"Four poses must be distinct resources")
+		var rear_idle: Texture2D = steps.frame(name,{"clip":"idle","distance":0.0},Vector2.UP)
+		assert(rear_idle!=null and rear_idle.get_size()==Vector2(64,64) and rear_idle!=idle,"Each resident needs a real rear view")
+		var rear_values: Array=[]
+		for i in range(4):
+			rear_values.append(steps.frame(name,{"clip":"walk","distance":float(i)*6.5},Vector2.UP))
+		assert(rear_values[0]!=rear_values[1] and rear_values[1]!=rear_values[2] and rear_values[2]!=rear_values[3],"Rear foot frames must advance")
 	motion.advance(0.0,"session",0,6,false,false,false)
 	var start: Vector2 = motion.position
 	var seen: Array=[]
@@ -85,5 +94,5 @@ func run() -> void:
 	assert(motion.phase==0 and not motion.telegraph and not motion.attack_event,"Recovered boss must be calm")
 	motion.advance(0.0,"new-session",0,6,false,false,false)
 	assert(motion.elapsed==0.0 and motion.attack_clock==0.0,"New session resets animation and attack timer")
-	print("VILLAGE BOSS MOTION PASS: seven original-portrait short-step sheets, two patrol phases, telegraph, pause, recovery, session reset")
+	print("VILLAGE BOSS MOTION PASS: seven source-matched rear short-step sheets, two patrol phases, telegraph, pause, recovery, session reset")
 	quit()

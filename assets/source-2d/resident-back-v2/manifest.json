@@ -1,0 +1,53 @@
+{
+  "kind": "original Jalasmara resident rear source art",
+  "tool": "built-in imagegen, identity-constrained edit of each original resident portrait",
+  "operator": "OpenAI Codex",
+  "promptAndCuration": "Ardian Ryan game brief; Codex per-character prompt and visual curation",
+  "promptPattern": "Edit the attached original Jalasmara sprite into ONE static full-body REAR VIEW of the same character. Preserve the exact identity, outfit colors, hair silhouette, role prop, body proportions, textured pixel detail and sole baseline. Face completely away from camera, no eyes/nose/mouth/front chest. One centered sprite on true transparent background, no ground/shadow/text/grid. Static source art for later code-driven gait.",
+  "license": "Original project artwork; LICENSE section 2, not the MIT code license",
+  "date": "2026-11-15",
+  "people": {
+    "ki_lurah_wirabhumi": {
+      "file": "ki_lurah_wirabhumi-rear-source.png",
+      "sha256": "7d7629f204b5db48f5707988e0b94da8d909bfcc4803fb97e058c473bf3c53cf",
+      "reference": "client-godot/resources/art/npc-simple-steps-v1/ki_lurah_wirabhumi.png frame 0",
+      "subject": "elder village head, indigo and ochre patterned robe, white hair, tide-measuring staff"
+    },
+    "mbok_ratih": {
+      "file": "mbok_ratih-rear-source.png",
+      "sha256": "6c3d27e1efbb9898f4a0d5d9f3bec0f084db7a507a331486d02b09325e1289f6",
+      "reference": "client-godot/resources/art/npc-simple-steps-v1/mbok_ratih.png frame 0",
+      "subject": "market woman, coral blouse, batik brown skirt, dark hair bun, produce basket"
+    },
+    "kang_tedi": {
+      "file": "kang_tedi-rear-source.png",
+      "sha256": "176537efdaf5a1cb1ec8d1c6c684e665a8db54e7d779c92024ae980c0d7cf2c0",
+      "reference": "client-godot/resources/art/npc-simple-steps-v1/kang_tedi.png frame 0",
+      "subject": "mechanic, white sleeveless shirt, indigo work trousers, red-brown cap, wrench"
+    },
+    "saras": {
+      "file": "saras-rear-source.png",
+      "sha256": "66b358bd0b96da94987ed0b7e95bc4235745d5ca28cf8d65c5448bbe6e3c3ce2",
+      "reference": "client-godot/resources/art/npc-simple-steps-v1/saras.png frame 0",
+      "subject": "field archaeologist, khaki shirt, dark hair, leather satchel, rolled scroll"
+    },
+    "mbah_wira": {
+      "file": "mbah_wira-rear-source.png",
+      "sha256": "275bad99d43f84e90ff069550989805d7a041d8372b8ac7bebc9f359ea81affb",
+      "reference": "client-godot/resources/art/npc-simple-steps-v1/mbah_wira.png frame 0",
+      "subject": "elder tea maker, dark cap, white beard, brown patterned apron, brass cup"
+    },
+    "beno": {
+      "file": "beno-rear-source.png",
+      "sha256": "53ceb5a2642adb4d0f31d78eeaa9ea229abb387e0021fe89b24bf1b3f546a900",
+      "reference": "client-godot/resources/art/npc-simple-steps-v1/beno.png frame 0",
+      "subject": "young mechanic, red cap, goggles, indigo workwear, tool belt, wrench"
+    },
+    "inspektur_raka": {
+      "file": "inspektur_raka-rear-source.png",
+      "sha256": "6fd90ccba7f4a7d4c8e6ffb780cdcd22aec2f52d55778ee2c0d3d0efdcf55071",
+      "reference": "client-godot/resources/art/npc-simple-steps-v1/inspektur_raka.png frame 0",
+      "subject": "corporate inspector, dark hair, red headband, white coat, document case"
+    }
+  }
+}

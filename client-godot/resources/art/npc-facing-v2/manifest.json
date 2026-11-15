@@ -1,0 +1,90 @@
+{
+  "method": "source-preserved front/three-quarter side and original rear portraits with code-driven short foot cycles",
+  "releaseStatus": "visual_candidate_not_staged",
+  "people": {
+    "Ki Lurah Wirabhumi": {
+      "file": "ki_lurah_wirabhumi-front.png",
+      "side": "ki_lurah_wirabhumi-side.png",
+      "rear": "ki_lurah_wirabhumi-rear.png",
+      "source": "assets/source-2d/resident-back-v2/ki_lurah_wirabhumi-rear-source.png",
+      "sourceSha256": "7d7629f204b5db48f5707988e0b94da8d909bfcc4803fb97e058c473bf3c53cf",
+      "frontSha256": "325e4a1dc36406ef68ff60ff3e0f8309d03d744fe0154f7527987ef9e20932af",
+      "rearSha256": "8ce43ef65e592b93d7d8431dcd97d8d596837a48dcf158b2eb24cd93b9ad9fc4",
+      "frames": 5,
+      "cellSize": 64,
+      "legTop": 55
+    },
+    "Mbok Ratih": {
+      "file": "mbok_ratih-front.png",
+      "side": "mbok_ratih-side.png",
+      "rear": "mbok_ratih-rear.png",
+      "source": "assets/source-2d/resident-back-v2/mbok_ratih-rear-source.png",
+      "sourceSha256": "6c3d27e1efbb9898f4a0d5d9f3bec0f084db7a507a331486d02b09325e1289f6",
+      "frontSha256": "1ce126329f8ecc7aff2a4f87bfab2000434c98f0e5f63ec305c2b2b63f799560",
+      "rearSha256": "512b83fb42a48c8449eed65c12465361c0932e1d1106073f62988093de623181",
+      "frames": 5,
+      "cellSize": 64,
+      "legTop": 54
+    },
+    "Kang Tedi": {
+      "file": "kang_tedi-front.png",
+      "side": "kang_tedi-side.png",
+      "rear": "kang_tedi-rear.png",
+      "source": "assets/source-2d/resident-back-v2/kang_tedi-rear-source.png",
+      "sourceSha256": "176537efdaf5a1cb1ec8d1c6c684e665a8db54e7d779c92024ae980c0d7cf2c0",
+      "frontSha256": "0c496eff8078cfb64f439f6e57c84704504a50d6b295ba49b73e49dedcd3e854",
+      "rearSha256": "348e6f72434fa8b77a321be8dd55844df7338a0b80443bd0dc64ce46ecdea5c8",
+      "frames": 5,
+      "cellSize": 64,
+      "legTop": 43
+    },
+    "Saras": {
+      "file": "saras-front.png",
+      "side": "saras-side.png",
+      "rear": "saras-rear.png",
+      "source": "assets/source-2d/resident-back-v2/saras-rear-source.png",
+      "sourceSha256": "66b358bd0b96da94987ed0b7e95bc4235745d5ca28cf8d65c5448bbe6e3c3ce2",
+      "frontSha256": "eaa224b71c3919381cc605956d583fc543792d98854fe00e17274b67f8ca57e2",
+      "rearSha256": "1e9d9de36bf18602b3bd4895bfdd0c76e2635e89147e1375ff90f8c19f22bea8",
+      "frames": 5,
+      "cellSize": 64,
+      "legTop": 43
+    },
+    "Mbah Wira": {
+      "file": "mbah_wira-front.png",
+      "side": "mbah_wira-side.png",
+      "rear": "mbah_wira-rear.png",
+      "source": "assets/source-2d/resident-back-v2/mbah_wira-rear-source.png",
+      "sourceSha256": "275bad99d43f84e90ff069550989805d7a041d8372b8ac7bebc9f359ea81affb",
+      "frontSha256": "213d0375183b9aa11241a42350d6fc1da42ed4efba54c295e66d4499cd36d7d8",
+      "rearSha256": "74c5d63558fccef4736d9a5642f99dd2b4df3ceb02cb4d36f02cfdedda7c3482",
+      "frames": 5,
+      "cellSize": 64,
+      "legTop": 54
+    },
+    "Beno": {
+      "file": "beno-front.png",
+      "side": "beno-side.png",
+      "rear": "beno-rear.png",
+      "source": "assets/source-2d/resident-back-v2/beno-rear-source.png",
+      "sourceSha256": "53ceb5a2642adb4d0f31d78eeaa9ea229abb387e0021fe89b24bf1b3f546a900",
+      "frontSha256": "539c4831184a15d2a611354904875c35ab881d41d8f748e2d874de479d22003f",
+      "rearSha256": "b6a2ffa4cf296862d53eb80056452eb2cb87322ae08dc7e15a8f9de2887a930a",
+      "frames": 5,
+      "cellSize": 64,
+      "legTop": 43
+    },
+    "Inspektur Raka": {
+      "file": "inspektur_raka-front.png",
+      "side": "inspektur_raka-side.png",
+      "rear": "inspektur_raka-rear.png",
+      "source": "assets/source-2d/resident-back-v2/inspektur_raka-rear-source.png",
+      "sourceSha256": "6fd90ccba7f4a7d4c8e6ffb780cdcd22aec2f52d55778ee2c0d3d0efdcf55071",
+      "frontSha256": "0057c9ba65cf36d46402dc113839c8802971fd3512361d270809fb82ec2dbaca",
+      "rearSha256": "d4b34eb1f401b9611280ba8a43b92ddbc2475e4b378e49568e9d8c1b8233855d",
+      "frames": 5,
+      "cellSize": 64,
+      "legTop": 51
+    }
+  }
+}

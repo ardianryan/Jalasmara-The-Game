@@ -73,5 +73,6 @@
     }
   },
   "directionArt": "Original south 3/4 source portraits; pixel-authored east profile and rear silhouettes, mirrored for west",
-  "authoringTool": "tools/npc-rig/draw_facing_steps.py (Pillow pixel primitives; project original artwork, no external asset)"
+  "authoringTool": "tools/npc-rig/draw_facing_steps.py (Pillow pixel primitives; project original artwork, no external asset)",
+  "releaseStatus": "rejected_visual_review_2026-11-15"
 }

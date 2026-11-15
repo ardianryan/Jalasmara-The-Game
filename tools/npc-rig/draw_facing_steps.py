@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Draw original 64 px side/rear resident poses with reproducible pixel primitives.
+"""Historical rejected 64 px side/rear resident pose experiment.
 
 The portrait atlas supplies the south-facing view. These two views are authored
 as small role-specific silhouettes; they do not transform or recolor a face.
+Its 2026-11-15 output failed public visual review. Do not select it for runtime.
 """
 
 import json
@@ -243,6 +244,7 @@ def generate():
     manifest = json.loads(manifest_path.read_text())
     manifest["directionArt"] = "Original south 3/4 source portraits; pixel-authored east profile and rear silhouettes, mirrored for west"
     manifest["authoringTool"] = "tools/npc-rig/draw_facing_steps.py (Pillow pixel primitives; project original artwork, no external asset)"
+    manifest["releaseStatus"] = "rejected_visual_review_2026-11-15"
     for name, person in manifest["people"].items():
         slug = name.lower().replace(" ", "_")
         person["side"] = f"{slug}-side.png"

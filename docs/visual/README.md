@@ -1,5 +1,11 @@
 # Jalasmara visual evidence
 
+## Resident source-matched turns candidate, 15 November 2026
+
+![Seven residents, three views, from the actual Godot 480×270 Sprite3D fixture.](resident-facing-v2-native-20261115.png)
+
+This curated 1,120×540 sheet is cropped from 105 native Godot 4.7.2 Compatibility frames at 480×270, then enlarged 2× with nearest pixels. PNG SHA-256 `9eae6b44e4b0679f6e4753bb0dcf3fedcba33798ef26b3bcd388bba8cc492649`. The [candidate report](../reviews/resident-facing-v2-candidate-2026-11-15.md) records source hashes, test results and limits. It is not a public staging screenshot or physical-device acceptance. These images are evidence, not game/kit assets.
+
 ## Seven resident front/profile/rear candidate, 15 November 2026
 
 ![Pixel-source contact sheet for seven original residents in three views.](resident-facings-contact-20261115.png)
