@@ -1,5 +1,11 @@
 # Jalasmara visual evidence
 
+## Ocean karst edge candidate, 15 November 2026
+
+![Native Godot reef after the opaque alpha threshold removes the atmosphere atlas fringe.](ocean-alpha-cut-native-20261115.png)
+
+This original 1440×810 Godot 4.7.2 Apple M2/Compatibility frame has SHA-256 `fa7a22c0fd7bbab456b94146eaa12e7e2210d2b02be19cb97dde093e363e28b2`. The [candidate report](../reviews/ocean-backdrop-alpha-edge-2026-11-15.md) compares it with the previous reef capture. It is development evidence, not a distributed game asset, public-browser result or physical-device benchmark. The one-line shader candidate is not yet on staging.
+
 ## Underwater pixel refinement on staging, 15 November 2026
 
 ![Four appearances with three regenerated swim poses each.](swim-pixel-refinement-20261115.png)

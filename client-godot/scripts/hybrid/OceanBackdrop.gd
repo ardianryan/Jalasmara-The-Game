@@ -24,7 +24,7 @@ void vertex() {
 }
 void fragment() {
 	vec4 texel = texture(atlas, region.xy + local_uv * region.zw);
-	if (texel.a < 0.2) discard;
+	if (texel.a < 0.5) discard;
 	float world_y = card_center.y + layer_offset.y + (local_uv.y - 0.5) * card_size.y;
 	if (world_y < world_surface + 18.0) discard;
 	float luminance = dot(texel.rgb, vec3(0.2126, 0.7152, 0.0722));
