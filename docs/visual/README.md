@@ -1,10 +1,14 @@
 # Jalasmara visual evidence
 
-## Nala underwater motion candidate, 15 November 2026
+## Nala underwater motion and staging, 15 November 2026
 
 ![Eight native Godot frames of Nala idling, kicking, shooting, taking damage and recovering.](swim-v2-motion-20261115.png)
 
-This Apple M2/OpenGL native Godot 4.7.2 sheet (SHA-256 `8a6c5684882a375d31aeba1685499cc1ae5f90967d0a81439aadfcaa27107570`) captures the actual runtime sprite; it is development documentation, not a distributed asset or Windows/S23 performance evidence. [Source strips](swim-v2-source-contact-20261115.png) and [full native reef scene](swim-v2-native-reef-20261115.png) show scale and environment. [Candidate report](../reviews/nala-swim-combat-reactions-2026-11-15.md) records the source, provenance, tests and limitations. This candidate is not yet active on staging.
+This Apple M2/OpenGL native Godot 4.7.2 sheet (SHA-256 `8a6c5684882a375d31aeba1685499cc1ae5f90967d0a81439aadfcaa27107570`) captures the actual runtime sprite; it is development documentation, not a distributed asset or Windows/S23 performance evidence. [Source strips](swim-v2-source-contact-20261115.png) and [full native reef scene](swim-v2-native-reef-20261115.png) show scale and environment. [Release report](../reviews/nala-swim-combat-reactions-2026-11-15.md) records source `abfe2d4`, CI PCK `e7b07bfe1d31`, provenance, tests and limitations.
+
+![Public ready game at 844×390 after the underwater-motion release.](swim-v2-staging-ready-20261115.png)
+
+This public Chromium/SwiftShader screenshot (SHA-256 `d68c35d2f28e4246b972f90704acb2af77708c3b51810351a7fc2938004fffe2`) uses the exact CI PCK and active staging image `a08ad10df7ed`. It proves ready-game visibility, not underwater animation or physical-device quality. It is development documentation, not a runtime asset.
 
 ## Gito gait correction on staging, 15 November 2026
 
