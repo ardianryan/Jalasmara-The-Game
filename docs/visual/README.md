@@ -1,5 +1,15 @@
 # Jalasmara visual evidence
 
+## Continuous light and underwater shaft source review, 15 November 2026
+
+The [17:30](moodboard-daylight/land-dusk-1730-667x375.png), [18:30](moodboard-daylight/land-dusk-1830-667x375.png), and [settled night](moodboard-daylight/land-night-667x375.png) Godot 4.7.2 captures document the continuous land-lighting source candidate. The [reef before](ocean-shafts-baseline-667x375-20261115.png) and [reef after](ocean-shafts-candidate-667x375-20261115.png) show the water-plane shaft at actual landscape size. These are native captures from local source, not public staging or physical-device proof. See the [lighting report](../reviews/moodboard-land-shader-continuity-2026-11-15.md), [clock-correction report](../reviews/moodboard-clock-jump-visual-2026-11-15.md), and [ocean report](../reviews/moodboard-ocean-light-2026-11-15.md) for tests, provenance and limits.
+
+## Current moodboard refinement on staging, 15 November 2026
+
+![Public 844×390 hub ready game with the current dock and lighting refinement.](moodboard-staging-ready-20261115.png)
+
+This original Chromium/SwiftShader screenshot (SHA-256 `95b40acbf1a63b771cb21c3c42b16dd3d8815b61eeffbb04cf6a87122ddacb2b`) uses source `0a94d985`, exact CI PCK `9e84afe2fd3a49a370240571416f45b16f354df6557db1885dcbbca2b8f01fb8` and active image `b3edddd8b82f`. The [release report](../reviews/moodboard-staging-2026-11-15.md) records the warmed public 6/6 route and failed cold startup. This screenshot proves hub readiness, not full moodboard parity, underwater quality, or Windows/S23 frame pacing. It is documentation, not a game asset.
+
 ## Ocean karst edge on staging, 15 November 2026
 
 ![Native Godot reef after the opaque alpha threshold removes the atmosphere atlas fringe.](ocean-alpha-cut-native-20261115.png)

@@ -66,6 +66,7 @@ func _run() -> void:
 	_clock.clock_paused=false
 	_clock.reduced_motion=false
 	_clock.authoritative=true
+	_clock.apply_calendar({"calendarRevision":1,"calendarDay":1,"minuteOfDay":600})
 	_clock.set("_server_rain",false)
 	_clock.set("_rain_amount",0)
 	var immutable:=JSON.stringify(_state.world)
@@ -100,8 +101,9 @@ func _run() -> void:
 	_renderer.set_process(false)
 	var day_tints:Dictionary={}
 	for minute in [600,1320]:
-		_clock.visual_minutes=minute
-		_clock._process(0)
+		if minute==1320:
+			_clock.apply_calendar({"calendarRevision":2,"calendarDay":1,"minuteOfDay":minute})
+			for frame in range(360): _clock._process(1.0/60.0)
 		_renderer._process(.3)
 		assert(_renderer.actors_3d._body_rigs.size()==7,"Six resident rigs and original Ujang must coexist without duplicate body caches")
 		for actor in _people:

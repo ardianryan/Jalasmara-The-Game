@@ -67,6 +67,8 @@ const scripts = [
   "scripts/tests/component-land.gd",
   "scripts/tests/land-water-3d.gd",
   "scripts/tests/land-lighting-palette.gd",
+  "scripts/tests/moodboard-daylight-continuity.gd",
+  "scripts/tests/moodboard-clock-jump-visual.gd",
   "scripts/tests/land-renderer.gd",
   "scripts/tests/ground-query-canonical.gd",
   "scripts/tests/ground-query-consumers.gd",
