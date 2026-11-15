@@ -143,3 +143,42 @@ func _sasmita_understructure(renderer: Node) -> void:
 		var right:=corners[1].lerp(corners[2],fraction)-Vector3(0,0,16)
 		renderer._column(left,right,5.0,wood)
 	renderer._components["SasmitaPileFrame"]=1
+
+func add_house_details(renderer: Node, entry: Dictionary, center: Vector3, width: float, depth: float, wall: float, height: float) -> void:
+	# The renderer has already entered the house's local frame. These details add no support surface or collider.
+	var variant:=str(entry.get("variant",""))
+	if variant in ["metal","director_rv","balai","workshop"]: return
+	var wood: Material=renderer._materials.get_material("wood")
+	var bamboo: Material=renderer._materials.get_material("bamboo")
+	var front: float=-depth*.5+13.0
+	var eave_z: float=wall+12.0
+	var rise: float=height*(.26 if variant=="lurah_home" else .43)
+	var is_gable: bool=variant in ["lurah_home","home_pelana"]
+	var eave_y: float=-depth*(.55 if is_gable else .57)
+	var vertices:=PackedVector3Array()
+	var indices:=PackedInt32Array()
+	for course in [.23,.46,.69]:
+		var half_width: float=width*(.54 if is_gable else lerpf(.55,.27,course))
+		var y: float=lerpf(eave_y,0.0,course)
+		var z: float=eave_z+rise*course+1.2
+		var offset:=vertices.size()
+		vertices.append_array(PackedVector3Array([
+			center+Vector3(-half_width,y-1.4,z),center+Vector3(half_width,y-1.4,z),
+			center+Vector3(half_width,y+1.4,z+rise*2.8/-eave_y),
+			center+Vector3(-half_width,y+1.4,z+rise*2.8/-eave_y)
+		]))
+		indices.append_array(PackedInt32Array([offset,offset+1,offset+2,offset,offset+2,offset+3]))
+	renderer._mesh("RoofCourseBinding",vertices,indices,wood)
+	# Shallow joinery frames the openings without placing geometry on the central approach.
+	renderer._box("PorchLintelDetail",center+Vector3(0,front-5.0,wall*.76+12.0),Vector3(width*.82,3.0,4.0),wood)
+	for side in [-1.0,1.0]:
+		var x: float=side*width*.31
+		renderer._box("WindowSillDetail",center+Vector3(x,front-13.0,wall*.25+12.0),Vector3(width*.20,4.0,4.0),wood)
+		renderer._box("WovenWallFrame",center+Vector3(side*width*.455,front-5.0,wall*.49+12.0),Vector3(3.0,4.0,wall*.66),wood)
+		renderer._box("PorchRail",center+Vector3(side*width*.455,-depth*.38,34.0),Vector3(3.5,depth*.23,4.0),bamboo)
+		for position in [-.18,.17]:
+			var y: float=depth*position
+			var z: float=wall*.54+12.0
+			renderer._box("SideWindowFrame",center+Vector3(side*(width*.5+1.0),y,z),Vector3(2.0,29.0,33.0),wood)
+			renderer._box("SideWindowAmber",center+Vector3(side*(width*.5+2.3),y,z),Vector3(1.0,21.0,25.0),renderer._glow_material)
+			renderer._box("SideWindowMullion",center+Vector3(side*(width*.5+3.2),y,z),Vector3(1.0,2.8,26.0),wood)
