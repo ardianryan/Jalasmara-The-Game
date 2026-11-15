@@ -48,6 +48,15 @@ func run() -> void:
 		var dive_status:Rect2=hud.get("_status_panel").get_global_rect()
 		var instrument:Rect2=hud.get("_instrument").get_global_rect()
 		assert(dive_status.position.x>=instrument.end.x,"Dive notification must not cover the oxygen and depth instrument")
+		if fixture.touch and fixture.size.y<=480:
+			var physical_scale:float=fixture.size.x/float(layout.logicalSize[0])
+			assert(instrument.size.y*physical_scale<=114,"Touch dive gauge must leave the center of the game clear")
+			assert(instrument.size.x*physical_scale<=290,"Touch dive gauge must fit a compact top-left cluster")
+			var depth:Label=hud.get("_depth")
+			var bag:Label=hud.get("_bag")
+			assert(depth.get_global_rect().end.x<=bag.get_global_rect().position.x,"Depth and bag values must not overlap")
+			assert(not bag.text.contains("\n"),"Compact bag value must use one readable line")
+			assert(float(depth.get_theme_font_size("font_size"))*hud.get("_instrument").scale.x*physical_scale>=16,"Depth value must stay legible at phone size")
 		if DisplayServer.get_name()!="headless":
 			await RenderingServer.frame_post_draw
 			root.get_texture().get_image().save_png(output+"/%dx%d-%s.png"%[fixture.size.x,fixture.size.y,"touch" if fixture.touch else "keyboard"])
