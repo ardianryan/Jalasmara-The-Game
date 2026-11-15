@@ -1,5 +1,9 @@
 # Jalasmara visual evidence
 
+## Rooted coral current motion candidate, 15 November 2026
+
+The native 667×375 [still](coral-current-still-667x375-20261115.png), [sway phase A](coral-current-sway-a-667x375-20261115.png), and [sway phase B](coral-current-sway-b-667x375-20261115.png) show the same original coral atlas anchored at its visible base. The [source report](../reviews/coral-current-motion-2026-11-15.md) records hashes, focused test, 844×390 captures and measured changed pixels. These are development evidence from an isolated branch, not staging or a physical-device motion review.
+
 ## Smooth daylight, land palette and compact HUD staging, 15 November 2026
 
 ![Public 844×390 hub ready game after the land palette and compact HUD release.](moodboard-palette-hud-staging-ready-20261115.png)

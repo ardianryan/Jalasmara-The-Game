@@ -32,6 +32,7 @@ const scripts = [
   "scripts/godot-wildlife-check.gd",
   "scripts/tests/living-water.gd",
   "scripts/tests/ocean-current.gd",
+  "scripts/tests/coral-current-motion.gd",
   "scripts/tests/ocean-rock-mount.gd",
   "scripts/tests/world-foley.gd",
   "scripts/tests/audio-context.gd",

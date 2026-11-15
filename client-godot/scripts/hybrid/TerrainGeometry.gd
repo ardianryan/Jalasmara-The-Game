@@ -268,30 +268,30 @@ func _build_growth() -> void:
 		var plant := Sprite3D.new()
 		plant.texture = texture
 		plant.pixel_size = 1.0
-		plant.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		plant.billboard = BaseMaterial3D.BILLBOARD_DISABLED
 		plant.shaded = true
 		plant.modulate = Color(0.78,0.83,0.78)
 		plant.alpha_cut = SpriteBase3D.ALPHA_CUT_DISCARD
 		plant.alpha_scissor_threshold = 0.5
 		plant.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
 		plant.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		var original_position: Vector3 = _point(entry.at-Vector2(0,entry.size.y/2),36)
 		plant.scale = Vector3(entry.size.x/cell.x,entry.size.y/cell.y,1)
 		plant.flip_h = bool(entry.flip)
 		var pivot:=Node3D.new()
 		pivot.name="CoralRoot"
-		pivot.position=original_position-Vector3(0,0,entry.size.y*.5)
-		plant.position=Vector3(0,0,entry.size.y*.5)
+		pivot.position=_point(entry.at,36)
+		plant.position=Vector3(0,entry.size.y*.5,0)
 		add_child(pivot)
 		pivot.add_child(plant)
-		_coral_pivots.append({"node":pivot,"position":entry.at})
+		_coral_pivots.append({"node":pivot,"position":entry.at,"size":entry.size})
 
 func _process(_delta: float) -> void:
 	var now:=float(Time.get_ticks_msec())*.001
-	var motion=preload("res://scripts/FoliageMotion.gd")
+	var motion=preload("res://scripts/CoralCurrentMotion.gd")
+	var current_x:=float(EnvironmentState.snapshot().get("current_x",7.0))
 	for coral in _coral_pivots:
 		var pivot: Node3D=coral.node
-		pivot.rotation.y=0.0 if EnvironmentState.reduced_motion else motion.current_angle(now,coral.position)
+		pivot.rotation.z=0.0 if EnvironmentState.reduced_motion else motion.angle(now,coral.position,current_x)
 
 func update_camera(center: Vector2) -> void:
 	if is_instance_valid(geology): geology.update_camera(center)
