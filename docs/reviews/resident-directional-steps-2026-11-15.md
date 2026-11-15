@@ -1,5 +1,7 @@
 # Seven portrait residents: directional short-step candidate
 
+Post-merge [GitHub Actions 43679044368](https://github.com/ardianryan/Jalasmara-The-Game/actions/runs/43679044368) passed on `main` commit `51558f08cdadf2c5c8b1eb7aa42d22fd8affece9`. The temporary worktree and branch were removed from local/GitHub/Gitea/GitLab; only `main` remains. This CI result did not change staging.
+
 Source commit `e762509b08bb66193f55d3598bb62f1d9e77b592` was fast-forwarded to `main` after the branch [GitHub Actions run 43678431349](https://github.com/ardianryan/Jalasmara-The-Game/actions/runs/43678431349) completed successfully. That records the source and CI result; it does not activate staging or prove live-browser gait.
 
 The owner asked for the other walking villagers to stop looking as if they move backwards. This package adds side and rear 64×64 pixel poses for Ki Lurah Wirabhumi, Mbok Ratih, Kang Tedi, Saras, Mbah Wira, Beno and Inspektur Raka. Their original front three-quarter artwork remains unchanged. Each new view has one idle and four alternating step frames, and the existing distance-driven phase selects them from actual travel. `LandActors3D.gd` now passes camera-projected motion into `NpcSimpleSteps.gd`, so travel toward the upper screen uses a back silhouette and lateral travel uses a profile. The west profile mirrors the authored east profile. No route, collider, conversation, clock, reward, boss or server state changes.
