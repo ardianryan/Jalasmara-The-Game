@@ -50,6 +50,22 @@ func run() -> void:
 	var weather := {"daylight":1.0,"clouds":0.0,"rain":0.0,"current_x":0.12,"current_y":0.03,"reduced_motion":false}
 	backdrop.update_camera(Vector2(1550,620),weather,10.0)
 	var start: Dictionary = backdrop.debug_status()
+	var water := backdrop.get_node("ContinuousWater") as MeshInstance3D
+	var water_material := water.material_override as ShaderMaterial
+	assert(is_equal_approx(float(water_material.get_shader_parameter("daylight")),1.0))
+	assert(is_equal_approx(float(water_material.get_shader_parameter("clouds")),0.0))
+	assert(is_equal_approx(float(water_material.get_shader_parameter("reduced_motion")),0.0))
+	weather.daylight = 0.24
+	weather.clouds = 0.70
+	weather.reduced_motion = true
+	backdrop.update_camera(Vector2(1550,620),weather,10.0)
+	assert(is_equal_approx(float(water_material.get_shader_parameter("daylight")),0.24),"Water light must follow the time-of-day signal")
+	assert(is_equal_approx(float(water_material.get_shader_parameter("clouds")),0.70),"Water light must dim under clouds")
+	assert(is_equal_approx(float(water_material.get_shader_parameter("reduced_motion")),1.0),"Reduced motion must stop light-shaft drift")
+	weather.daylight = 1.0
+	weather.clouds = 0.0
+	weather.reduced_motion = false
+	backdrop.update_camera(Vector2(1550,620),weather,10.0)
 	assert(start.active and start.atlasAvailable)
 	assert(start.layers.size()==3)
 	assert(start.layers[0].depth<start.layers[1].depth and start.layers[1].depth<start.layers[2].depth)

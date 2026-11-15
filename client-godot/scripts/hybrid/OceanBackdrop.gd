@@ -38,9 +38,24 @@ shader_type spatial;
 render_mode unshaded, cull_disabled, fog_disabled;
 uniform vec4 upper : source_color;
 uniform vec4 lower : source_color;
+uniform vec2 world_origin;
+uniform vec2 world_size;
+uniform float world_surface = 400.0;
+uniform float daylight = 0.8;
+uniform float clouds = 0.0;
+uniform float reduced_motion = 0.0;
 void fragment() {
 	float depth = smoothstep(0.0, 1.0, UV.y);
-	ALBEDO = mix(upper.rgb, lower.rgb, depth);
+	vec3 water = mix(upper.rgb, lower.rgb, depth);
+	float world_x = floor((world_origin.x + UV.x * world_size.x) / 8.0) * 8.0;
+	float below_surface = floor(max(0.0, world_origin.y + UV.y * world_size.y - world_surface) / 8.0) * 8.0;
+	float drift = sin(TIME * 0.18) * 24.0 * (1.0 - reduced_motion);
+	float lane = abs(fract((world_x + below_surface * 0.22 + drift) / 530.0) - 0.5);
+	float shaft = 1.0 - smoothstep(0.07, 0.24, lane);
+	float inner = 1.0 - smoothstep(0.025, 0.09, lane);
+	float reach = smoothstep(4.0, 80.0, below_surface) * (1.0 - smoothstep(320.0, 1450.0, below_surface));
+	float glow = shaft * reach * daylight * (1.0 - clouds * 0.65);
+	ALBEDO = min(water + vec3(0.12, 0.14, 0.10) * glow + vec3(0.06, 0.075, 0.045) * inner * reach * daylight, vec3(1.0));
 }
 """
 var _layers: Array[Dictionary] = []
@@ -73,7 +88,12 @@ func configure(world: Dictionary) -> void:
 	shader.code = WATER_SHADER
 	_base_material = ShaderMaterial.new()
 	_base_material.shader = shader
-	_quad(self, "ContinuousWater", Vector2(width / 2, (_surface + height) / 2), Vector2(width + 6000, height - _surface + 1800), -2100, _base_material)
+	var water_size := Vector2(width + 6000, height - _surface + 1800)
+	var water_center := Vector2(width / 2, (_surface + height) / 2)
+	_base_material.set_shader_parameter("world_origin", water_center - water_size / 2.0)
+	_base_material.set_shader_parameter("world_size", water_size)
+	_base_material.set_shader_parameter("world_surface", _surface)
+	_quad(self, "ContinuousWater", water_center, water_size, -2100, _base_material)
 	for profile in layer_profiles():
 		var layer := Node3D.new()
 		layer.name = profile.name
@@ -145,6 +165,9 @@ func update_camera(center: Vector2, weather: Dictionary = {}, depth_m: float = -
 	if _base_material:
 		_base_material.set_shader_parameter("upper", Color("45969a") * brightness)
 		_base_material.set_shader_parameter("lower", Color("0a283e") * brightness)
+		_base_material.set_shader_parameter("daylight", clampf(daylight, 0.0, 1.0))
+		_base_material.set_shader_parameter("clouds", clampf(clouds, 0.0, 1.0))
+		_base_material.set_shader_parameter("reduced_motion", 1.0 if _reduced else 0.0)
 	for index in range(_layers.size()):
 		var layer: Dictionary = _layers[index]
 		var factor: Vector2 = layer.parallax
