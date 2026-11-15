@@ -33,9 +33,17 @@ func build_surface(renderer: Node, surface: Dictionary, polygon: PackedVector2Ar
 		_quad(top,a[0],b[0],b[1],a[1],index,Vector3(0,0,1))
 		_quad(soil,a[1],b[1],b[2],a[2],index,normal)
 		for band in range(2,5):
-			var target: Dictionary=stone if (index+band*2)%5 in [0,1,4] else shade
-			if band==4: target=root if index%3==0 else shade
-			_quad(target,a[band],b[band],b[band+1],a[band+1],index+band,normal)
+			var midpoint: Vector3=(a[band]+b[band]+a[band+1]+b[band+1])*.25
+			var tone:=_noise(Vector2(midpoint.x,midpoint.y)*.016+Vector2(float(band)*1.8,float(band)*.7))
+			var is_stone:=tone>.43
+			var target: Dictionary=stone if is_stone else shade
+			if band==4: target=root if tone>.67 else shade
+			if band<4 and tone>.34 and tone<.68:
+				var partner: Dictionary=shade if is_stone else stone
+				_triangle(target,a[band],b[band],b[band+1],normal)
+				_triangle(partner,a[band],b[band+1],a[band+1],normal)
+			else:
+				_quad(target,a[band],b[band],b[band+1],a[band+1],index+band,normal)
 		segments+=1
 	var material_id:=str(surface.get("material","grass"))
 	_emit(renderer,"NaturalTerrainLip",top,renderer._materials.get_material(material_id))
@@ -111,7 +119,7 @@ func make_profile(renderer: Node, surface: Dictionary, polygon: PackedVector2Arr
 		var bottom:=support-5.0
 		var drop:=height-bottom
 		var noise: float=node.noise
-		var lip_z:=height-minf(1.5+noise*2.5,drop*.12)
+		var lip_z:=height-minf(.45+noise*.75,drop*.06)
 		var soil_z:=height-minf(10.0+noise*5.0,drop*.30)
 		node["support"]=support
 		node["rings"]=[Vector3(node.world.x,node.world.y,height+.10),Vector3(lip_xy.x,lip_xy.y,lip_z),Vector3(soil_xy.x,soil_xy.y,soil_z),Vector3(upper_xy.x,upper_xy.y,lerpf(soil_z,bottom,.30+noise*.08)),Vector3(belly_xy.x,belly_xy.y,lerpf(soil_z,bottom,.66+float(node.wave)*.08)),Vector3(toe_xy.x,toe_xy.y,bottom)]
@@ -121,7 +129,7 @@ func _node(logical: Vector2, at: Vector2, outward: Vector2, height: float) -> Di
 	# Coordinate noise is independent of edge order, global RNG, time and the camera.
 	var noise:=_noise(at*.039+Vector2(height*.13,height*.071))
 	var wave:=.5+.5*sin(at.x*.031+at.y*.024)
-	var lip:=7.0+noise*8.0+wave*3.0
+	var lip:=12.0+noise*13.0+wave*4.0
 	return {"logical":logical,"world":at,"outward":outward,"noise":noise,"wave":wave,"lip":lip,"toe":lip+11.0+noise*7.0}
 
 func _shape_node(renderer: Node, node: Dictionary, outline: PackedVector2Array, height: float) -> void:
@@ -218,6 +226,16 @@ func _prepare_support(renderer: Node) -> void:
 
 func _buffer() -> Dictionary:
 	return {"vertices":PackedVector3Array(),"indices":PackedInt32Array()}
+
+func _triangle(buffer: Dictionary, a: Vector3, b: Vector3, c: Vector3, desired_normal: Vector3) -> void:
+	var normal:=-(b-a).cross(c-a)
+	if normal.length_squared()<.00001: return
+	var start: int=buffer.vertices.size()
+	buffer.vertices.append_array(PackedVector3Array([a,b,c]))
+	if normal.dot(desired_normal)<0:
+		buffer.indices.append_array(PackedInt32Array([start,start+2,start+1]))
+	else:
+		buffer.indices.append_array(PackedInt32Array([start,start+1,start+2]))
 
 func _quad(buffer: Dictionary, a: Vector3, b: Vector3, c: Vector3, d: Vector3, alternating: int, desired_normal: Vector3) -> void:
 	var start: int=buffer.vertices.size()
