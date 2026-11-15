@@ -5,7 +5,7 @@ npm ci
 node --test scripts/push-remotes.test.mjs
 node ci/init-mongo.mjs
 npm run typecheck
-node --test scripts/game-loading-bridge.test.mjs scripts/godot-preloader-stream.test.mjs scripts/godot-wasm-init-errors.test.mjs scripts/loader-body-fault.test.mjs scripts/pck-stream.test.mjs scripts/pck-identity.test.mjs
+node --test scripts/game-loading-bridge.test.mjs scripts/godot-preloader-stream.test.mjs scripts/godot-wasm-init-errors.test.mjs scripts/loader-body-fault.test.mjs scripts/pck-stream.test.mjs scripts/pck-identity.test.mjs scripts/prewarm-public-pck.test.mjs
 node --test scripts/land-view-navigation.test.mjs scripts/left-forest-fixture.test.mjs scripts/calendar-resume-proof.test.mjs scripts/public-smoke-scope.test.mjs
 node --test scripts/canopy-route-fixture.test.mjs scripts/gateway-route-fixture.test.mjs scripts/saras-alpha-fixture.test.mjs
 node --test scripts/gameplay-api-failure.test.mjs

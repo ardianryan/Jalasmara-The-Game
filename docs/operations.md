@@ -143,6 +143,8 @@ sha256sum .env
 
 Pastikan image/container aktual, hash PCK penuh, manifest part, bind `10.1.0.8:3000`, checksum `.env` serta container Mongo/Redis cocok dengan catatan yang diharapkan. Dari mesin operator, periksa `https://staging-jalasmara.ardianryan.com/api/health`, kemudian jalankan smoke publik dengan hash/ukuran PCK yang dipin: startup default, login fixture, perjalanan darat/hutan, jurnal/pause, save dan reload. Gunakan UUID fixture sendiri dan pastikan akun/receipt/shift/auth cleanup nol. Pemeriksaan internal belum membuktikan HTTPS, delivery H2, startup atau perjalanan game publik. Catat emulasi versus perangkat nyata; jangan menyebut SwiftShader sebagai FPS Samsung/Windows.
 
+Untuk SHA PCK baru, jalankan `node scripts/prewarm-public-pck.mjs https://staging-jalasmara.ardianryan.com <SHA_PCK>` segera setelah health/hash aktif dan sebelum smoke berakun. Script mengunduh maksimal enam bagian paralel, memeriksa ukuran, offset dan SHA-256 setiap bagian terhadap manifest publik yang cocok dengan SHA rilis, lalu mengeluarkan JSON durasi/byte/retry. Simpan output pada laporan rilis. Gagal verifikasi berarti kandidat belum siap untuk smoke; jangan abaikan error atau mengklaim startup browser lulus. Ini mitigasi cold transfer pada jalur publik, bukan bukti bahwa cache semua jaringan/perangkat hangat. Jika ingin mengukur cold start murni, lakukan percobaan terpisah pada SHA baru **sebelum** warm-up dan catat hasilnya secara jujur.
+
 Jika health/hash atau smoke gagal, kembalikan tag `current` ke image lama yang sudah dicatat, lalu recreate **app saja** dan ulangi verifikasi. Tidak perlu checkout source atau mengubah `.env`:
 
 ```sh
