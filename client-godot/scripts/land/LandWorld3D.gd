@@ -121,8 +121,8 @@ func setup(scene: Node2D, player: Node2D, camera: Camera2D, place: String, overr
 	environment.background_mode=Environment.BG_COLOR
 	environment.background_color=Color("447d7a")
 	environment.ambient_light_source=Environment.AMBIENT_SOURCE_COLOR
-	environment.ambient_light_color=Color("c9d0b7")
-	environment.ambient_light_energy=.75
+	environment.ambient_light_color=Color("b7d4d1")
+	environment.ambient_light_energy=.62
 	environment.tonemap_mode=Environment.TONE_MAPPER_LINEAR
 	atmosphere.environment=environment
 	viewport_3d.add_child(atmosphere)
@@ -138,8 +138,8 @@ func setup(scene: Node2D, player: Node2D, camera: Camera2D, place: String, overr
 	sunlight.directional_shadow_blend_splits=true
 	sunlight.shadow_blur=1.8
 	sunlight.shadow_opacity=.64
-	sunlight.light_color=Color("fff0ce")
-	sunlight.light_energy=1.15
+	sunlight.light_color=Color("fff0d7")
+	sunlight.light_energy=.72
 	sunlight.shadow_enabled=bool(RenderQuality.get_profile().sunShadows)
 	sunlight.directional_shadow_mode=DirectionalLight3D.SHADOW_ORTHOGONAL
 	sunlight.directional_shadow_max_distance=float(RenderQuality.get_profile().sunShadowDistance)
@@ -1335,16 +1335,28 @@ func _process(delta: float) -> void:
 	if _weather_clock>.25:
 		_weather_clock=0
 		var weather:=EnvironmentState.snapshot()
-		var daylight:=clampf((float(weather.get("daylight",.8))-.24)/.76,0,1)
+		var lighting:=lighting_palette(area,weather)
+		var daylight: float=lighting.daylight
 		var clouds:=float(weather.get("clouds",0))
 		_grade_material.set_shader_parameter("daylight",daylight)
-		sunlight.light_energy=lerpf(.035,.72,daylight)*(1-clouds*.25)
-		sunlight.light_color=Color("a5c2c0").lerp(Color("fff0d7"),daylight)
+		sunlight.light_energy=float(lighting.sun_energy)*(1-clouds*.25)
+		sunlight.light_color=lighting.sun_color
 		sunlight.shadow_enabled=daylight>.15 and bool(RenderQuality.get_profile().sunShadows)
 		for lantern in _lanterns: lantern.light_energy=lerpf(280.0,28.0,daylight)
 		if _glow_material: _glow_material.emission_energy_multiplier=lerpf(.85,.14,daylight)
-		environment.ambient_light_energy=lerpf(.65,.62,daylight) if area=="home" else lerpf(.50,.62,daylight)
-		environment.ambient_light_color=(Color("9faeae") if area=="home" else Color("71929c")).lerp(Color("b7d4d1"),daylight)
+		environment.ambient_light_energy=lighting.ambient_energy
+		environment.ambient_light_color=lighting.ambient_color
+
+static func lighting_palette(place: String,weather: Dictionary) -> Dictionary:
+	var daylight:=clampf((float(weather.get("daylight",.8))-.24)/.76,0.0,1.0)
+	var dusk:=0.0
+	if str(weather.get("phase",""))=="senja":
+		dusk=smoothstep(0.0,0.35,daylight)*(1.0-smoothstep(0.65,1.0,daylight))
+	var sun_color:=Color("a5c2c0").lerp(Color("fff0d7"),daylight).lerp(Color("ffd09b"),dusk*.88)
+	var ambient_night:=Color("9faeae") if place=="home" else Color("819da6")
+	var ambient_color:=ambient_night.lerp(Color("b7d4d1"),daylight).lerp(Color("91a8b6"),dusk*.35)
+	var ambient_energy:=lerpf(.65,.62,daylight) if place=="home" else lerpf(.54,.62,daylight)
+	return {"daylight":daylight,"dusk":dusk,"sun_color":sun_color,"sun_energy":lerpf(.035,.72,daylight),"ambient_color":ambient_color,"ambient_energy":ambient_energy}
 
 func debug_status() -> Dictionary:
 	return {"active":active,"area":area,"renderer":"LandSubViewport3D","viewport":[viewport_3d.size.x,viewport_3d.size.y],"quality":RenderQuality.get_profile(),"performance":{"staticBuilds":_static_builds,"plotUpdates":_plot_updates,"softGroundPatches":_soft_ground_patches,"softGroundVertices":_soft_ground_vertices},"readability":_canopy_readability.debug_status(),"tilt":55,"elevationDegrees":camera_elevation,"azimuthDegrees":camera_azimuth,"view":{"azimuth":camera_azimuth,"elevation":camera_elevation,"input":"screen-relative","motion":view_projection.motion_contract(ground_gradient(actor.position)),"targetHeight":ground_height(actor.position)},"meshes":_meshes,"houses":_houses,"trees":_trees,"glbModels":_models,"stairTreads":_stair_treads,"surfaces":map.get("surfaces",[]).size(),"obstacles":map.get("obstacles",[]).size(),"actors":actors_3d.debug_counts() if is_instance_valid(actors_3d) else {},"maxFootError":actors_3d.max_foot_error if is_instance_valid(actors_3d) else 0,"camera":[_center.x,_center.y],"warmLanterns":_lanterns.size(),"gardenState":_garden_state,"streamCleared":_stream_cleared,"components":_components.duplicate(),"bridges":_bridges.duplicate(true),"gateways":_gateway_architecture.debug_status(),"bitmapGround":false,"water":water_node.debug_status() if is_instance_valid(water_node) else {}}
