@@ -19,6 +19,25 @@ var _row:HBoxContainer
 var _column:VBoxContainer
 var _panel_style:StyleBox
 var _compact_layout:=false
+var _portrait_tween:Tween
+
+const SPEAKER_INK := {
+	"Nala": Color("a34f2c"),
+	"Mbah Wira": Color("315c47"),
+	"Beno": Color("366774"),
+	"Saras": Color("315f72"),
+	"Kinasih": Color("71547c"),
+	"Ki Lurah Wirabhumi": Color("684326"),
+	"Inspektur Raka": Color("79346d"),
+}
+
+const SPEAKER_BLIP_PITCH := {
+	"Mbah Wira": 0.79,
+	"Beno": 1.26,
+	"Kinasih": 1.15,
+	"Saras": 1.04,
+	"Inspektur Raka": 0.93,
+}
 
 class Emote extends Control:
 	var mood := "neutral"
@@ -27,16 +46,21 @@ class Emote extends Control:
 		draw_rect(Rect2(2,2,26,24),Color("f4ebd9"))
 		var ink := Color("654733")
 		if mood=="happy":
-			draw_rect(Rect2(8,7,3,3),ink)
-			draw_rect(Rect2(19,7,3,3),ink)
-			draw_polyline(PackedVector2Array([Vector2(8,15),Vector2(12,19),Vector2(18,19),Vector2(22,15)]),ink,2)
+			for mark in [Vector2(14,5),Vector2(7,12),Vector2(21,12)]:
+				draw_rect(Rect2(mark,Vector2(3,3)),Color("d4a359"))
+			draw_rect(Rect2(12,10,6,7),Color("f7c662"))
 		elif mood=="thinking":
 			draw_rect(Rect2(8,10,3,3),ink)
 			draw_rect(Rect2(14,10,3,3),ink)
 			draw_rect(Rect2(20,10,3,3),ink)
+		elif mood=="angry":
+			draw_line(Vector2(5,9),Vector2(11,15),Color("a7442b"),3)
+			draw_line(Vector2(11,15),Vector2(17,7),Color("a7442b"),3)
+			draw_line(Vector2(17,7),Vector2(24,13),Color("a7442b"),3)
 		else:
-			draw_rect(Rect2(13,5,4,11),Color("a7442b"))
-			draw_rect(Rect2(13,20,4,3),Color("a7442b"))
+			for x in [9,18]:
+				draw_rect(Rect2(x,5,3,11),Color("a7442b"))
+				draw_rect(Rect2(x,20,3,3),Color("a7442b"))
 
 func _ready() -> void:
 	set_meta("dialogue",true)
@@ -125,6 +149,7 @@ func present(speaker: String,text: String,emotion := "neutral") -> void:
 	_emote.visible = _emotion!="neutral"
 	_emote.queue_redraw()
 	nameplate.text = speaker
+	nameplate.add_theme_color_override("font_color",SPEAKER_INK.get(_speaker,Color("654733")))
 	text_view.text = formatted(text)
 	_total = text.replace("**","").length()
 	_revealed = 0.0
@@ -134,7 +159,19 @@ func present(speaker: String,text: String,emotion := "neutral") -> void:
 	_scroll.scroll_vertical = 0
 	_layout()
 	_schedule_layout()
+	_pop_portrait()
 	next_button.grab_focus()
+
+func _pop_portrait() -> void:
+	if _portrait_tween and _portrait_tween.is_running(): _portrait_tween.kill()
+	portrait.scale = Vector2.ONE
+	portrait.rotation = 0.0
+	_emote.scale = Vector2.ONE*preload("res://scripts/UiMetrics.gd").ratio(self)
+	if EnvironmentState.reduced_motion or not portrait.visible: return
+	portrait.pivot_offset = portrait.size*Vector2(.5,.83)
+	portrait.scale = Vector2(.78,1.12) if _emotion in ["shock","angry"] else Vector2(.88,1.05)
+	_portrait_tween = create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_portrait_tween.tween_property(portrait,"scale",Vector2.ONE,.29)
 
 func _portrait(speaker: String) -> Texture2D:
 	var sheet: Texture2D
@@ -241,7 +278,7 @@ func _process(delta: float) -> void:
 		_blip_at += delta
 		if _blip_at>.10 and AudioManager.can_play_environment():
 			_blip_at = 0
-			AudioManager.play_sfx("wooden_click_light",.85 if _speaker=="Mbah Wira" else 1.1,-28)
+			AudioManager.play_sfx("wooden_click_light",float(SPEAKER_BLIP_PITCH.get(_speaker,1.0)),-28)
 	if count>=_total: text_view.visible_characters = -1
 
 func debug_state() -> Dictionary:

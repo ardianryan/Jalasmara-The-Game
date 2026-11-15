@@ -41,6 +41,14 @@ func run() -> void:
 	assert(presenter.portrait.texture!=null)
 	presenter.present("Bu Darmi · Kebun Pulih","Pucuk hijau sudah tumbuh.","happy")
 	assert(presenter.debug_state().portrait and presenter.debug_state().emotion=="happy","Speaker subtitles must retain their actual portrait and authored emotion")
+	presenter.present("Inspektur Raka","Rakit itu disegel!","angry")
+	assert(presenter.nameplate.get_theme_color("font_color")==Color("79346d"),"Raka's nameplate must use his own ink")
+	assert(presenter.portrait.scale!=Vector2.ONE,"Emotional portrait needs a visible spring pose")
+	root.get_node("EnvironmentState").reduced_motion = true
+	presenter.present("Inspektur Raka","Rakit itu disegel!","angry")
+	assert(presenter.portrait.scale==Vector2.ONE,"Reduced motion must suppress portrait spring")
+	root.get_node("EnvironmentState").reduced_motion = false
+	presenter.present("Inspektur Raka","Rakit itu disegel!","angry")
 	presenter.advance()
 	assert(fired.is_empty() and presenter.text_view.visible_characters==-1,"First press reveals only")
 	presenter.advance()
