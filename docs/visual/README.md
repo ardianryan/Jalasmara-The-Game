@@ -1,5 +1,11 @@
 # Jalasmara visual evidence
 
+## Resident foot-contact staging startup, 15 November 2026
+
+![Public staging ready game with Nala and a resident visible on the Bandar Hujung pier.](legacy-resident-staging-ready-20261115.png)
+
+Original 844×390 Chromium/SwiftShader public screenshot from source `7c884a9095b1b498c2198420ed9a406defb615b7`, CI PCK `ab6fcffa91b3ee5baca1be0c652e514ceb524f7fa1668ebfadbd53eff197f4f2`, and active image `sha256:f547723c020590e6747d2e3e2ade918316cc7f00849b2f45dcf1971c8d2aa36a`. PNG SHA-256 `a5581c94ca231151bdb483168b9f30b9053e7721993ffe977f6ca5d53d473093`. The [release report](../reviews/legacy-resident-foot-contact-2026-11-15.md) records the 6/6 public smoke and its scope. This screenshot proves startup and visible Nala, not Bu Darmi/Yu Sari gait or physical-device performance. It is documentation, not a runtime asset.
+
 ## Legacy residents' planted walk, native candidate, 15 November 2026
 
 ![Eight consecutive Godot native walking frames for Bu Darmi and Yu Sari.](legacy-resident-walk-20261115.png)
