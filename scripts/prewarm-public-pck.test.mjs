@@ -12,13 +12,13 @@ const manifest = {
   partSize: 1024 * 1024, hashes: [digest(first), digest(last)],
 };
 
-function endpoint({ corrupt = false, stale = false } = {}) {
+function endpoint({ corrupt = false, stale = false, fullSha = sha } = {}) {
   const calls = [];
   const fetcher = async (url) => {
     const pathname = new URL(url).pathname;
     calls.push(pathname);
     if (pathname.endsWith("pck-manifest.json"))
-      return Response.json(stale ? { ...manifest, sha256: "0".repeat(64) } : manifest);
+      return Response.json(stale ? { ...manifest, sha256: "0".repeat(64) } : { ...manifest, sha256: fullSha });
     const index = Number(pathname.split("/").at(-1));
     const bytes = index === 0 ? first : (corrupt ? Buffer.from("bad tail") : last);
     return new Response(bytes, {
@@ -52,4 +52,10 @@ test("retries a corrupt part once and never reports a verified warm-up", async (
   const { fetcher, calls } = endpoint({ corrupt: true });
   await assert.rejects(verifyPublicPck("https://game.test", sha, fetcher), /checksum mismatch/);
   assert.equal(calls.filter((path) => path.endsWith("/1")).length, 2);
+});
+
+test("rejects a manifest whose part hashes pass but full PCK SHA is false", async () => {
+  const falseSha = "1".repeat(64);
+  const { fetcher } = endpoint({ fullSha: falseSha });
+  await assert.rejects(verifyPublicPck("https://game.test", falseSha, fetcher), /full checksum mismatch/);
 });

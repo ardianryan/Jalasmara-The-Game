@@ -30,6 +30,7 @@ export async function verifyPublicPck(origin, expectedSha, fetcher = fetch) {
   let next = 0;
   let completedBytes = 0;
   let failure;
+  const verifiedParts = new Array(manifest.hashes.length);
   const attempts = new Array(manifest.hashes.length).fill(0);
   const worker = async () => {
     while (!failure && next < manifest.hashes.length) {
@@ -52,6 +53,7 @@ export async function verifyPublicPck(origin, expectedSha, fetcher = fetch) {
           const bytes = Buffer.from(await response.arrayBuffer());
           if (bytes.length !== size || createHash("sha256").update(bytes).digest("hex") !== manifest.hashes[index])
             throw new Error(`part ${index}: checksum mismatch`);
+          verifiedParts[index] = bytes;
           completedBytes += bytes.length;
           verified = true;
         } catch (error) {
@@ -66,6 +68,10 @@ export async function verifyPublicPck(origin, expectedSha, fetcher = fetch) {
   await Promise.all(Array.from({ length: Math.min(6, manifest.hashes.length) }, worker));
   if (failure) throw failure;
   if (completedBytes !== manifest.bytes) throw new Error("Public PCK verification incomplete");
+  const fullHash = createHash("sha256");
+  for (const bytes of verifiedParts) fullHash.update(bytes);
+  if (fullHash.digest("hex") !== expectedSha)
+    throw new Error("Public PCK full checksum mismatch");
   return {
     origin: base.origin,
     sha256: expectedSha,
@@ -76,8 +82,7 @@ export async function verifyPublicPck(origin, expectedSha, fetcher = fetch) {
   };
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const [origin, sha] = process.argv.slice(2);
+export async function verifyPublicPckOverHttps(origin, sha) {
   const agent = new Agent({ keepAlive: true, maxSockets: 6 });
   const sixSocketFetch = (url, { signal } = {}) => new Promise((resolve, reject) => {
     const call = request(url, { agent, signal }, (response) => {
@@ -99,12 +104,15 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     call.end();
   });
   try {
-    const result = await verifyPublicPck(origin ?? "", sha ?? "", sixSocketFetch);
-    console.log(JSON.stringify(result));
-  } catch (error) {
-    console.error(error.message);
-    process.exitCode = 1;
+    return await verifyPublicPck(origin, sha, sixSocketFetch);
   } finally {
     agent.destroy();
   }
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const [origin, sha] = process.argv.slice(2);
+  verifyPublicPckOverHttps(origin ?? "", sha ?? "")
+    .then((result) => console.log(JSON.stringify(result)))
+    .catch((error) => { console.error(error.message); process.exitCode = 1; });
 }

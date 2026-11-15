@@ -11,6 +11,7 @@ import { watchGameplayFailures } from "./gameplay-api-failure.mjs";
 import { keyboardPulse, corridorTargets } from "./land-view-navigation.mjs";
 import { calendarResumeProof } from "./calendar-resume-proof.mjs";
 import { isAdminChunkUrl, publicAcceptance } from "./public-smoke-scope.mjs";
+import { verifyPublicPckOverHttps } from "./prewarm-public-pck.mjs";
 import {
   deriveCanopyTarget,
   readCanopyAlpha,
@@ -700,52 +701,10 @@ try {
   });
   assert(health.ok, `Public health ${health.status}`);
   assert.equal((await health.json()).status, "ok");
-  const manifestResponse = await fetch(`${origin}/game/pck-manifest.json`, {
-    signal: AbortSignal.timeout(15000),
-  });
-  assert(manifestResponse.ok);
-  const pckManifest = await manifestResponse.json();
-  assert.equal(pckManifest.sha256, expectedPck);
-  assert.equal(pckManifest.bytes, expectedPckBytes);
-  assert.equal(pckManifest.partSize, 1024 * 1024);
-  assert.equal(pckManifest.hashes.length, Math.ceil(expectedPckBytes / pckManifest.partSize));
-  const hash = createHash("sha256");
-  let decodedBytes = 0;
-  for (let start = 0; start < pckManifest.hashes.length; start += 4) {
-    const parts = await Promise.all(
-      pckManifest.hashes.slice(start, start + 4).map(async (partHash, offset) => {
-        const index = start + offset;
-        const response = await fetch(`${origin}/game/pck/${expectedPck}/${index}`, {
-          signal: AbortSignal.timeout(30000),
-        });
-        assert(response.ok, `Public PCK part ${index}: ${response.status}`);
-        const bytes = Buffer.from(await response.arrayBuffer());
-        assert.equal(
-          bytes.length,
-          Math.min(pckManifest.partSize, expectedPckBytes - index * pckManifest.partSize),
-          `Public PCK part ${index} size`,
-        );
-        assert.equal(createHash("sha256").update(bytes).digest("hex"), partHash);
-        return bytes;
-      }),
-    );
-    for (const bytes of parts) {
-      hash.update(bytes);
-      decodedBytes += bytes.length;
-    }
-  }
-  assert.equal(
-    hash.digest("hex"),
-    expectedPck,
-    "Public release PCK must match before creating an account",
-  );
-  assert.equal(
-    decodedBytes,
-    expectedPckBytes,
-    "Public PCK size must match release",
-  );
+  const verifiedPck = await verifyPublicPckOverHttps(origin, expectedPck);
+  assert.equal(verifiedPck.bytes, expectedPckBytes);
   // Only validated release metadata reaches the report, never downloaded content.
-  publicPck = { sha256: expectedPck, decodedBytes: expectedPckBytes };
+  publicPck = { sha256: expectedPck, decodedBytes: expectedPckBytes, verificationMs: verifiedPck.elapsedMs };
   checks.push("public-health-and-downloaded-pck-match-release");
   fixtureAttempted = true;
   stage = "fixture-create";

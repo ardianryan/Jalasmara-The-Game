@@ -1,10 +1,14 @@
 # Jalasmara visual evidence
 
-## Ocean karst edge candidate, 15 November 2026
+## Ocean karst edge on staging, 15 November 2026
 
 ![Native Godot reef after the opaque alpha threshold removes the atmosphere atlas fringe.](ocean-alpha-cut-native-20261115.png)
 
-This original 1440×810 Godot 4.7.2 Apple M2/Compatibility frame has SHA-256 `fa7a22c0fd7bbab456b94146eaa12e7e2210d2b02be19cb97dde093e363e28b2`. The [candidate report](../reviews/ocean-backdrop-alpha-edge-2026-11-15.md) compares it with the previous reef capture. It is development evidence, not a distributed game asset, public-browser result or physical-device benchmark. The one-line shader candidate is not yet on staging.
+This original 1440×810 Godot 4.7.2 Apple M2/Compatibility frame has SHA-256 `fa7a22c0fd7bbab456b94146eaa12e7e2210d2b02be19cb97dde093e363e28b2`. The [release report](../reviews/ocean-backdrop-alpha-edge-2026-11-15.md) compares it with the previous reef capture. It is development evidence, not a distributed game asset, public-browser result or physical-device benchmark.
+
+![Public 844×390 ready game after the ocean-edge release.](ocean-alpha-staging-ready-20261115.png)
+
+This Chromium/SwiftShader screenshot (SHA-256 `772cd64e8bdad93fe22a6dab894fe6f02c0a60a1ad3d8053fab72ac80e168e19`) uses source `9ea9fa65`, CI PCK `c7c40eab9ece` and active image `bc2b56d22e35`. It is a public hub ready-game capture after the 6/6 warm-path smoke, not a public underwater capture or Windows/S23 performance evidence. The new-SHA cold load timed out at 38%/120s. It is documentation, not a runtime asset.
 
 ## Underwater pixel refinement on staging, 15 November 2026
 
