@@ -10,7 +10,7 @@ func run() -> void:
 	var output := "res://../artifacts/godot/overnight-hud-footprint/" + phase
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(output))
 	var report: Dictionary = {}
-	for physical in [Vector2i(1440,900), Vector2i(667,375), Vector2i(390,844)]:
+	for physical in [Vector2i(1440,900), Vector2i(844,390), Vector2i(667,375), Vector2i(390,844)]:
 		root.size = physical
 		for frame in range(3): await process_frame
 		var hud = load("res://scripts/GameHud.gd").new()

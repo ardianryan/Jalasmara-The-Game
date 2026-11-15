@@ -55,8 +55,12 @@ func run() -> void:
 				var original:=Image.load_from_file(before_png)
 				assert(image.get_data()!=original.get_data(),"Native correction must change the actual previously clipped image")
 	if phase!="before":
-		var original_rectangles:Dictionary={"_identity_plate":[10.0,10.0,382.0,96.0],"_identity_portrait":[26.0,22.0,46.0,36.0],"_region":[80.0,22.0,228.0,36.0],"_resources":[26.0,56.0,282.0,36.0],"_objective_toggle":[316.0,16.0,70.0,70.0],"_sound_button":[874.0,16.0,70.0,70.0],"_dpad":[16.0,380.0,144.0,144.0]}
-		assert(report.rectangles==original_rectangles,"Actual BEFORE fixture rectangles must remain unchanged")
+		var stable_rectangles:Dictionary={"_identity_portrait":[26.0,22.0,46.0,36.0],"_region":[80.0,22.0,228.0,36.0],"_resources":[26.0,56.0,282.0,36.0],"_objective_toggle":[316.0,16.0,70.0,70.0],"_sound_button":[874.0,16.0,70.0,70.0],"_dpad":[16.0,380.0,144.0,144.0]}
+		for key in stable_rectangles:
+			assert(report.rectangles[key]==stable_rectangles[key],"Text, portrait and button hit areas must remain unchanged: "+key)
+		var identity:Array=report.rectangles["_identity_plate"]
+		assert(identity[0]==10.0 and identity[1]==10.0 and identity[2]==382.0)
+		assert(identity[3]<96.0 and identity[3]>=76.0,"Short landscape badge should reclaim space without clipping its two rows")
 		var font:=region.get_theme_font("font")
 		var font_size:=region.get_theme_font_size("font_size")
 		var hud_script=load("res://scripts/GameHud.gd")
@@ -79,6 +83,6 @@ func run() -> void:
 		report["resizeAndGraphemesVerified"]=true
 	FileAccess.open(output+"/results.json",FileAccess.WRITE).store_string(JSON.stringify(report,"  "))
 	print("HUD REGION ",phase," OBSERVED ",JSON.stringify(report))
-	if phase!="before": print("HUD REGION FIT PASS: actual font bounds, preserved badge/input geometry, grapheme boundaries and resize restoration")
+	if phase!="before": print("HUD REGION FIT PASS: actual font bounds, compact badge, preserved input geometry, grapheme boundaries and resize restoration")
 	hud.free()
 	quit()

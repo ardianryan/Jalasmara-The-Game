@@ -32,6 +32,8 @@ func run() -> void:
 	for state in ["normal","hover","pressed","selected"]:
 		assert(artwork.button(state) is StyleBoxTexture)
 	assert(artwork.button("normal").texture!=artwork.button("pressed").texture)
+	for name in ["map-32","journal-32","satchel-32","character-32","speaker-on-32","speaker-off-32"]:
+		assert(artwork.icon(name)!=null,"Compact utility icons must be imported: "+name)
 	var hud=load("res://scripts/GameHud.gd").new()
 	root.add_child(hud)
 	hud.set_process(false)
@@ -95,7 +97,10 @@ func run() -> void:
 			assert(not hud.get("_objective").visible,"Full mission is available through its button, not a persistent four-line banner")
 			assert(not hud.get("_utility_plate").visible,"Utility hit targets do not require another oversized outer frame")
 			if not diving:
-				assert(hud.get("_identity_plate").size.y*scale<=70,"Two-row land identity must stay below70physical pixels")
+				var identity:Control=hud.get("_identity_plate")
+				assert(identity.get_global_rect().size.y*scale<=64,"Short landscape two-row badge must stay below64physical pixels")
+				for row in [hud.get("_region"),hud.get("_resources")]:
+					assert(identity.get_global_rect().grow(.01).encloses(row.get_global_rect()),"Badge text must remain inside its complete frame")
 				var focus:=Rect2(view.size*Vector2(.46,.35),view.size*Vector2(.08,.31))
 				for chrome in [hud.get("_identity_plate"),hud.get("_weather_plate"),hud.get("_action_plate"),hud.get("_dpad")]:
 					assert(not focus.intersects(chrome.get_global_rect()),"Default land HUD must leave the central player area unobstructed")

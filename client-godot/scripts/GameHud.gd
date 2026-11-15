@@ -281,7 +281,7 @@ func _build_utilities() -> void:
 	var start := 620.0 if touch_enabled else 734.0
 	_utility_plate = _panel(Rect2(start-4,10,cell*5+8,cell+8),false)
 	var index := 0
-	for item in [["map","Peta","M",func():map_requested.emit()],["journal","Jurnal","J",func():journal_requested.emit()],["bag","Tas","I",func():inventory_requested.emit()],["character","Tampilan","C",func():character_requested.emit()]]:
+	for item in [["map-32","Peta","M",func():map_requested.emit()],["journal-32","Jurnal","J",func():journal_requested.emit()],["satchel-32","Tas","I",func():inventory_requested.emit()],["character-32","Tampilan","C",func():character_requested.emit()]]:
 		var button := _button("",Rect2(start+index*cell,14,cell,cell),item[3])
 		_icon(button,item[0],Vector2((cell-25)/2,5),Vector2(25,25))
 		var key := _label(button,str(item[2]),Vector2(0,cell-15),Vector2(cell,12),9)
@@ -297,7 +297,7 @@ func _build_utilities() -> void:
 	_sound_button.add_theme_font_size_override("font_size",18 if touch_enabled else 12)
 	var refresh: Callable = func(_muted: bool):
 		_sound_button.text = ""
-		HudArt.set_icon(_sound_button,"speaker-off" if AudioManager.muted else "speaker-on",32)
+		HudArt.set_icon(_sound_button,"speaker-off-32" if AudioManager.muted else "speaker-on-32",32)
 		_sound_button.tooltip_text = "Suara nonaktif [V]" if AudioManager.muted else "Suara aktif [V]"
 	AudioManager.mute_changed.connect(refresh)
 	refresh.call(AudioManager.muted)
@@ -379,7 +379,8 @@ func _layout() -> void:
 	var right := viewport.x-16-inset.z
 	var bottom := viewport.y-16-inset.w
 	var cell := maxf(48,ceilf(48*ratio)) if touch_enabled else maxf(24,ceilf(48*ratio))
-	var identity_height := cell+12 if compact_dive else line*2+24*unit
+	var short_landscape := physical.x>physical.y and physical.y<=480
+	var identity_height := cell+12 if compact_dive else maxf(cell+8,line*2+12*unit) if short_landscape else line*2+24*unit
 	var utilities_y := margin.y+identity_height+8 if portrait else margin.y
 	_utility_plate.position=Vector2(right-cell*5-4,utilities_y-4)
 	_utility_plate.size=Vector2(cell*5+8,cell+8)
@@ -393,14 +394,14 @@ func _layout() -> void:
 		button.visible=not _modal
 		for child in button.get_children():
 			if child is HudIcon:
-				child.position=Vector2.ONE*(cell-32)/2 if touch_enabled else Vector2(12,12)
-				child.size=Vector2.ONE*(32 if touch_enabled else 24)
+				child.position=Vector2.ONE*(cell-32)/2 if touch_enabled else Vector2(8,8)
+				child.size=Vector2.ONE*32
 			elif child is Label:
 				child.hide()
 	_sound_button.add_theme_font_size_override("font_size",body)
 	_sound_button.add_theme_font_override("font",preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2"))
 	_sound_button.text=""
-	HudArt.set_icon(_sound_button,"speaker-off" if AudioManager.muted else "speaker-on",32 if touch_enabled else 24)
+	HudArt.set_icon(_sound_button,"speaker-off-32" if AudioManager.muted else "speaker-on-32",32)
 	var width:=minf(410,viewport.x-margin.x-24) if portrait else minf(370*unit,viewport.x-cell*5-48)
 	if not portrait:
 		var host_control:=ViewportLayout.host_control_bounds()
@@ -542,7 +543,6 @@ func _layout() -> void:
 	_warning_plate.visible=_warning.visible
 	var minimap_side:=0.0
 	if is_instance_valid(_minimap_shell):
-		var short_landscape:=physical.x>physical.y and physical.y<=480
 		var mini_side:=68*ratio if short_landscape else (78*ratio if touch_enabled else 128*ratio)
 		var mini_scale:=mini_side/128
 		_minimap_shell.scale=Vector2.ONE*mini_scale
