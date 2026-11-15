@@ -1,5 +1,11 @@
 # Jalasmara visual evidence
 
+## Smooth daylight, land palette and compact HUD staging, 15 November 2026
+
+![Public 844×390 hub ready game after the land palette and compact HUD release.](moodboard-palette-hud-staging-ready-20261115.png)
+
+This original public Chromium/SwiftShader screenshot (SHA-256 `1435eb9874dfc59fddff697f3d6aaa066efe5a082714f798ac2e59b86c516949`) uses source `9392ec9`, CI PCK `6e7559d5bb69e6b21f533f6ca7ca0fafe49f6ba84b6290fb7b03e9e31080496b`, and active image `d21269477130`. The [release report](../reviews/moodboard-palette-hud-staging-2026-11-15.md) records 6/6 warmed public smoke. This single frame proves startup/current appearance, not a moving daylight transition or physical-device performance. The [reef A/B contact sheet](reef-pixel-trials-667x375-20261115.png) documents a rejected experiment; no trial coral entered the runtime. These are development documentation, not distributable game assets.
+
 ## Land palette and compact HUD candidate, 15 November 2026
 
 The [667×375 land before/after](land-palette-quality-hub-667x375-20261115.webp) shows the same camera at day and dusk with calmer grass/stone and a warmer continuously driven sunset grade. The [667×375 HUD](moodboard-hud-badge-667x375-before-after-20261115.png) and [844×390 HUD](moodboard-hud-badge-844x390-before-after-20261115.png) compare the shorter identity badge and existing 32 px icons. These are native/component proofs from the [integration report](../reviews/moodboard-palette-hud-integration-2026-11-15.md), not staging or physical-device captures. Rejected [foliage sharpening](foliage-source-sharpen-rejected-20261115.png) and [leaf-mass trial](foliage-leaf-masses-rejected-20261115.png) are kept only as development evidence; neither entered the game.
