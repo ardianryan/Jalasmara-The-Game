@@ -51,6 +51,26 @@ void fragment() {
 		float fiber=step(.80,hash(vec3(floor(planar.x/2.5),floor(planar.y/14.0),4.0)));
 		color*=1.0-seam*.22-fiber*.025;
 	}
+	if(kind==11) {
+		vec2 pixel=floor(planar/4.0)*4.0;
+		float board=floor(pixel.x/23.0);
+		float cross=mod(pixel.x,23.0);
+		float along=mod(pixel.y,82.0);
+		float segment=floor(pixel.y/82.0);
+		color*=mix(.94,1.06,hash(vec3(board,0.0,11.0)));
+		float seam=step(20.0,cross);
+		float bright_edge=1.0-step(3.0,cross);
+		color*=1.0-seam*.23+bright_edge*.055;
+		float fiber=step(.82,hash(vec3(floor(pixel.x/8.0),floor(pixel.y/18.0),board+11.0)));
+		color*=1.0-fiber*.09;
+		vec2 knot_center=vec2(6.0+hash(vec3(board,segment,12.0))*10.0,23.0+hash(vec3(board,segment,17.0))*36.0);
+		float ring=length((vec2(cross,along)-knot_center)*vec2(.28,.14));
+		float knot=(1.0-smoothstep(.45,.75,ring))*.16;
+		knot+=(smoothstep(.8,1.0,ring)-smoothstep(1.2,1.4,ring))*.09;
+		color*=1.0-knot*step(.48,hash(vec3(board,segment,29.0)));
+		float nail=(1.0-step(2.2,abs(cross-6.0)))*(1.0-step(2.2,abs(mod(pixel.y,96.0)-8.0)));
+		color=mix(color,vec3(.30,.24,.18),nail*.72);
+	}
 	if(kind==5) {
 		float course=step(25.0,mod(planar.y,28.0));
 		float fiber=step(2.5,mod(planar.x+floor(planar.y/28.0)*7.0,4.0));
@@ -85,9 +105,9 @@ func _init() -> void:
 			break
 
 func get_material(id: String) -> ShaderMaterial:
-	var key: String={"dock":"wood","bridge":"wood","cliff":"stone"}.get(id,id)
+	var key: String={"bridge":"wood","cliff":"stone"}.get(id,id)
 	if _cache.has(key): return _cache[key]
-	var types: Dictionary={"dirt":[0,"a68762",0],"grass":[1,"72995b",-1],"sand":[2,"e0c58c",-1],"stone":[3,"a8b5aa",1],"wood":[4,"a57b50",2],"thatch":[5,"c5a16d",4],"bamboo":[6,"c9b17d",3],"leaves":[7,"657361",5],"metal":[8,"344a4b",-1],"bridge_board":[9,"a18760",-1],"bridge_board_light":[9,"ad926a",-1],"bridge_board_dark":[9,"947853",-1],"terracotta":[0,"bb7e58",-1],"cloth_cream":[0,"e2cfa1",-1],"cloth_teal":[0,"58998c",-1],"office_shell":[8,"c6c5b4",-1],"office_glass":[8,"425e65",-1],"corporate_copper":[8,"a76045",-1],"roof_tiles":[5,"b87854",-1],"woven_teal":[10,"568779",-1],"paper":[0,"d5c092",-1]}
+	var types: Dictionary={"dirt":[0,"a68762",0],"grass":[1,"72995b",-1],"sand":[2,"e0c58c",-1],"stone":[3,"a8b5aa",1],"wood":[4,"a57b50",2],"dock":[11,"95714e",2],"thatch":[5,"c5a16d",4],"bamboo":[6,"c9b17d",3],"leaves":[7,"657361",5],"metal":[8,"344a4b",-1],"bridge_board":[9,"a18760",-1],"bridge_board_light":[9,"ad926a",-1],"bridge_board_dark":[9,"947853",-1],"terracotta":[0,"bb7e58",-1],"cloth_cream":[0,"e2cfa1",-1],"cloth_teal":[0,"58998c",-1],"office_shell":[8,"c6c5b4",-1],"office_glass":[8,"425e65",-1],"corporate_copper":[8,"a76045",-1],"roof_tiles":[5,"b87854",-1],"woven_teal":[10,"568779",-1],"paper":[0,"d5c092",-1]}
 	var data: Array=types.get(key,types.stone)
 	var material:=ShaderMaterial.new()
 	material.shader=_shader
