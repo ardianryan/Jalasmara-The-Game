@@ -710,6 +710,7 @@ func _house_parts(entry: Dictionary, rect: Rect2, center: Vector3) -> void:
 		_box("WirabhumiPrivateDoor",center+Vector3(0,front_y-4,wall*.34+floor_height),Vector3(width*.17,4,wall*.67),wood)
 		_box("WirabhumiDoorSeam",center+Vector3(0,front_y-7,wall*.34+floor_height),Vector3(2,2,wall*.67),bamboo)
 		_cloth_panel(center+Vector3(-width*.30,front_y-9,wall*.95),width*.18,28,_materials.get_material("cloth_teal"))
+	_shelter_architecture.add_house_details(self,entry,center,width,depth,wall,height)
 
 
 func _gabled_roof(label: String, eave: Vector3, width: float, depth: float, rise: float, material: Material) -> void:
