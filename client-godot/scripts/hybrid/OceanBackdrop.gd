@@ -55,9 +55,9 @@ var _configured := false
 
 static func layer_profiles() -> Array[Dictionary]:
 	return [
-		{"id":"far", "name":"Far", "depth":-1550.0, "parallax":Vector2(0.18,0.12), "contrast":0.35, "visibility":0.46},
-		{"id":"mid", "name":"Mid", "depth":-950.0, "parallax":Vector2(0.42,0.28), "contrast":0.64, "visibility":0.72},
-		{"id":"near", "name":"Near", "depth":-420.0, "parallax":Vector2(0.70,0.55), "contrast":0.88, "visibility":0.88},
+		{"id":"far", "name":"Far", "depth":-1550.0, "parallax":Vector2(0.18,0.12), "contrast":0.48, "visibility":0.55},
+		{"id":"mid", "name":"Mid", "depth":-950.0, "parallax":Vector2(0.42,0.28), "contrast":0.75, "visibility":0.80},
+		{"id":"near", "name":"Near", "depth":-420.0, "parallax":Vector2(0.70,0.55), "contrast":0.98, "visibility":0.93},
 	]
 
 func configure(world: Dictionary) -> void:

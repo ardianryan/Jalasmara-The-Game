@@ -99,16 +99,16 @@ func _build() -> void:
 	_built = true
 	var copper := _material("ad8350",true)
 	var dark := _material("3a4547")
-	var teal := _material("568d91",true)
+	var teal := _material("286d7b",true)
 	var cloth := _material("8b7854")
 	_tank = Node3D.new()
 	_tank.name = "DetachableOxygenTank"
 	add_child(_tank)
-	_cylinder(_tank,5.3,23,Vector3.ZERO,teal)
-	_cylinder(_tank,4.3,3,Vector3(0,13,0),copper)
-	_cylinder(_tank,1.8,4,Vector3(0,16,0),dark)
-	for y in [-8.0,8.0]: _ring(_tank,5.4,.8,Vector3(0,y,0),copper)
-	_box(_tank,Vector3(4,2,1),Vector3(0,4,5.4),_material("bed3cb"))
+	_cylinder(_tank,4.3,16,Vector3.ZERO,teal)
+	_cylinder(_tank,3.5,2.5,Vector3(0,9,0),copper)
+	_cylinder(_tank,1.5,3,Vector3(0,11,0),dark)
+	for y in [-5.5,5.5]: _ring(_tank,4.4,.7,Vector3(0,y,0),copper)
+	_box(_tank,Vector3(3,2,1),Vector3(0,3,4.4),_material("bed3cb"))
 	_net = Node3D.new()
 	_net.name = "DetachableJala"
 	add_child(_net)
@@ -162,7 +162,8 @@ func update_attachment(sprite: Sprite3D,equipment: Dictionary,in_water: bool,fli
 	_satchel.visible = bool(equipment.get("satchel",false))
 	_vest.visible = bool(equipment.get("vest",false))
 	if in_water:
-		_tank.position=Vector3(-9*facing,14,-1.8)
+		# A diver's cylinder runs along the back, outside the body's silhouette.
+		_tank.position=Vector3(-12*facing,-2,5)
 		_tank.rotation.z=-PI*.5*facing
 		_net.position=Vector3(30*facing,-2,3)
 		_net.scale.x=facing

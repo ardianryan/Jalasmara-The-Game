@@ -22,7 +22,7 @@
     "recover-owner": "tsx apps/api/src/cli.ts recover-owner",
     "check": "npm run typecheck && npm test && npm run build",
     "build:game": "node scripts/export-game.mjs",
-    "check:world": "node scripts/verify-living-world.mjs",
+    "check:world": "node scripts/verify-living-world.mjs && python3 tools/player-swim/test_swim_atlas.py",
     "worldkit:import": "node tools/worldkit/cli.mjs import",
     "worldkit:snap": "python3 tools/pixel-snapper/snap.py snap",
     "worldkit:palette": "node tools/image-to-pixel/convert.mjs",
