@@ -1,5 +1,15 @@
 # Jalasmara visual evidence
 
+## Gito gait correction on staging, 15 November 2026
+
+![Six real Godot Compatibility frames of Gito walking on open ground, with alternating feet visible.](gito-gait-native-20261115.png)
+
+The 1,440×300 contact sheet uses original Godot 4.7.2 Apple M2 frames from source `3a18ee52d64a2d4e0a5aff2f3c4e0409b11d8b04`; PNG SHA-256 `6fd897b79cbda0b2b5c8fdfd12d3d64dfca1133f1850b964d2807795b547d893`. It is native visual evidence for the corrected knee bend, not browser or physical-device proof.
+
+![Public 844×390 ready game after the Gito gait release.](gito-gait-staging-ready-20261115.png)
+
+This Chromium/SwiftShader public screenshot uses CI PCK `9eefa0d0e8573043f14ad28ffab0c414e0c767ef402d020d27cc550fe7f18b55` and active image `fdd65aba4615`; PNG SHA-256 `361c4d59ce3d76b28e1aa17eea000bb1d14cb33f9464792543d2d750967c444c`. It proves ready-game visibility, not six-frame live motion. [Release report](../reviews/gito-gait-depth-bend-2026-11-15.md). Both images are development documentation, not game assets.
+
 ## Resident facing v2 staging, 15 November 2026
 
 ![Public ready game with Nala and nearby residents at 844×390.](resident-facing-v2-staging-ready-20261115.png)
