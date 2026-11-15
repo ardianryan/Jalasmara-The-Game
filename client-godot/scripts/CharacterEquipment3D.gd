@@ -8,6 +8,55 @@ var _vest: Node3D
 var _built := false
 var state: Dictionary = {}
 
+func _pixel_plate(kind: String) -> Sprite3D:
+	var image:=Image.create_empty(48,32,false,Image.FORMAT_RGBA8)
+	image.fill(Color.TRANSPARENT)
+	var ink:=Color("172b34")
+	var copper:=Color("98522f")
+	var brass:=Color("e7ad5e")
+	var glint:=Color("ffe0a0")
+	var teal:=Color("2db9ac")
+	var light:=Color("9bf0d5")
+	if kind=="launcher":
+		image.fill_rect(Rect2i(4,12,35,10),ink)
+		image.fill_rect(Rect2i(6,14,30,6),copper)
+		image.fill_rect(Rect2i(8,14,19,2),brass)
+		image.fill_rect(Rect2i(26,11,13,12),ink)
+		image.fill_rect(Rect2i(28,13,8,8),brass)
+		image.fill_rect(Rect2i(30,14,4,2),glint)
+		image.fill_rect(Rect2i(11,10,12,4),ink)
+		image.fill_rect(Rect2i(13,11,8,2),teal)
+		image.fill_rect(Rect2i(14,11,3,1),light)
+		image.fill_rect(Rect2i(8,21,7,9),ink)
+		image.fill_rect(Rect2i(10,22,3,6),copper)
+		image.fill_rect(Rect2i(35,15,7,4),ink)
+		image.fill_rect(Rect2i(37,16,4,2),light)
+	else:
+		for x in range(4,26):
+			var y:=25-int(float(x-4)*.42)
+			for offset in range(3): image.set_pixel(x,y+offset,ink if offset==0 or offset==2 else copper)
+		for y in range(5,25):
+			for x in range(23,46):
+				var dx:float=(float(x)-34.0)/11.0
+				var dy:float=(float(y)-15.0)/10.0
+				var radius:=dx*dx+dy*dy
+				if radius>.68 and radius<1.12: image.set_pixel(x,y,ink if radius>1.0 else brass)
+				elif radius<.67 and ((x+y)%7==0 or (x-y)%7==0): image.set_pixel(x,y,teal)
+		image.fill_rect(Rect2i(31,4,6,2),glint)
+		image.fill_rect(Rect2i(25,20,3,3),brass)
+	var plate:=Sprite3D.new()
+	plate.name="AuthoredPixel"+kind.capitalize()
+	plate.texture=ImageTexture.create_from_image(image)
+	plate.pixel_size=1.0
+	plate.texture_filter=BaseMaterial3D.TEXTURE_FILTER_NEAREST
+	plate.shaded=false
+	plate.alpha_cut=SpriteBase3D.ALPHA_CUT_DISCARD
+	plate.alpha_scissor_threshold=.5
+	plate.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	plate.billboard=BaseMaterial3D.BILLBOARD_ENABLED
+	plate.position.z=8.0
+	return plate
+
 func _material(color: String, metal := false) -> StandardMaterial3D:
 	var material := StandardMaterial3D.new()
 	material.albedo_color = Color(color)
@@ -72,6 +121,7 @@ func _build() -> void:
 		var span := sqrt(maxf(0,25-index*index*2.25))
 		_box(_net,Vector3(span*2,.45,.45),Vector3(7,index*1.5,0),fibers)
 		_box(_net,Vector3(.45,span*2,.45),Vector3(7+index*1.5,0,0),fibers)
+	_net.add_child(_pixel_plate("net"))
 	_launcher = Node3D.new()
 	_launcher.name = "DetachableNeutralizerLauncher"
 	add_child(_launcher)
@@ -79,6 +129,7 @@ func _build() -> void:
 	_box(_launcher,Vector3(9,2.5,4.3),Vector3(-2,1,0),_material("58b3b2"))
 	_box(_launcher,Vector3(5,7,5),Vector3(10,0,0),_material("e4bb75",true))
 	_box(_launcher,Vector3(3,7,3),Vector3(-7,-4,0),dark)
+	_launcher.add_child(_pixel_plate("launcher"))
 	_satchel = Node3D.new()
 	_satchel.name = "DetachableFieldSatchel"
 	add_child(_satchel)
@@ -115,7 +166,9 @@ func update_attachment(sprite: Sprite3D,equipment: Dictionary,in_water: bool,fli
 		_tank.rotation.z=-PI*.5*facing
 		_net.position=Vector3(30*facing,-2,3)
 		_net.scale.x=facing
-		_launcher.position=Vector3(18*facing,-11,5)
+		var shot_pulse:=clampf(float(equipment.get("shotPulse",0.0)),0.0,1.0)
+		_launcher.position=Vector3((18-5*shot_pulse)*facing,-11-2*shot_pulse,5)
+		_launcher.rotation.z=-shot_pulse*.16*facing
 		_launcher.scale.x=facing
 		_satchel.position=Vector3(-10*facing,-14,3)
 	else:

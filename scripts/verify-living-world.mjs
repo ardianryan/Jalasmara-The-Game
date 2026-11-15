@@ -40,6 +40,7 @@ const scripts = [
   "scripts/tests/ocean-geology.gd",
   "scripts/tests/ocean-platform06.gd",
   "scripts/tests/character-outfits.gd",
+  "scripts/tests/character-swim-reaction.gd",
   "scripts/tests/equipment-node-diagnostics.gd",
   "scripts/tests/hud-oxygen.gd",
   "scripts/tests/hud-footprint.gd",

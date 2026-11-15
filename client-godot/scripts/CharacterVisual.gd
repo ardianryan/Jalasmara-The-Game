@@ -8,8 +8,15 @@ var modular_ready := false
 var outfit := "daily"
 var equipment: Dictionary = {}
 var _in_water := false
+var _swim_distance := 0.0
+var _swim_velocity := Vector2.ZERO
+var _swim_phase := 0.0
+var _shot_until := -1.0
+var _hit_until := -1.0
+var _shot_pulse := 0.0
 var clothing_ready := false
 var _base_texture: Texture2D
+var _swim_texture: Texture2D
 var _land_texture: Texture2D
 var _gait_texture: Texture2D
 var _locomotion_driven := false
@@ -50,6 +57,8 @@ func set_appearance(id: String) -> void:
 	var path := stem+("-base-v1.png" if modular_ready else ".png")
 	atlas_ready = ResourceLoader.exists(path)
 	_base_texture = load(path) if atlas_ready else load("res://resources/art/nala-swim.png")
+	var swim_path:="res://resources/art/player-swim-v2/"+id.replace("_","-")+".png"
+	_swim_texture=load(swim_path) if ResourceLoader.exists(swim_path) else null
 	clothing_ready = ResourceLoader.exists(stem+"-outfits-v1.png")
 	_land_texture = load(stem+"-outfits-v1.png") if clothing_ready else null
 	var gait_path:="res://resources/art/player-gait/"+id.replace("_","-")+".png"
@@ -77,12 +86,19 @@ func set_equipment(items: Dictionary) -> void:
 
 func get_equipment_state() -> Dictionary:
 	var result := equipment_state(outfit,equipment,modular_ready,_in_water)
+	result["shotPulse"]=_shot_pulse if _in_water else 0.0
 	result["clothingAtlas"] = clothing_ready and not _in_water
 	if clothing_ready and not _in_water: result["vest"] = false
 	result["facingDirection"]=_artwork_direction if directional_pilot_active() else _requested_direction if _locomotion_driven else "west" if flip_h else "east"
 	result["gaitPhase"]=_pose_phase if directional_pilot_active() and _pose_walking else fposmod(_travel/_stride(),1.0) if _speed>.1 else 0.0
 	result["moving"]=_pose_walking if directional_pilot_active() else _speed>.1
 	return result
+
+func trigger_shot(now: float) -> void:
+	_shot_until=now+.22
+
+func trigger_hit(now: float) -> void:
+	_hit_until=now+.34
 
 static func equipment_state(id: String,overrides: Dictionary,modular: bool,in_water := false) -> Dictionary:
 	var result := {"outfit":id,"modular":modular,"tank":id=="diving","net":id=="diving","launcher":false,"satchel":id=="explorer","vest":id=="explorer","bodySize":SWIM_SIZE if in_water else LAND_SIZE}
@@ -112,6 +128,10 @@ func set_locomotion(velocity: Vector2,delta: float,visual_velocity := Vector2.IN
 	if _speed<.1 or _in_water:
 		_resume_contact=-1.0
 		if _in_water:
+			_swim_velocity=velocity
+			if _speed>1.0:
+				_swim_distance+=minf(_speed,200.0)*delta
+				_swim_phase=fposmod(_swim_distance/112.0,1.0)
 			_settle_frames.clear()
 			_pose_walking=false
 			return
@@ -213,7 +233,31 @@ func locomotion_state() -> Dictionary:
 
 func animate(moving: bool, in_water: bool, facing: int, elapsed: float) -> void:
 	_in_water = in_water
+	_shot_pulse=clampf((_shot_until-elapsed)/.22,0,1)
+	var hurt:=clampf((_hit_until-elapsed)/.34,0,1)
+	modulate=Color(1.0,1.0-hurt*.38,1.0-hurt*.43,1.0)
 	if in_water: _foot_contacts.clear()
+	if in_water and atlas_ready:
+		var environment:=get_node_or_null("/root/EnvironmentState")
+		var reduced:bool=is_instance_valid(environment) and bool(environment.get("reduced_motion"))
+		texture=_swim_texture if _swim_texture!=null else _base_texture
+		hframes=3
+		vframes=1 if _swim_texture!=null else 3
+		flip_h=facing<0
+		var cell:=Vector2(texture.get_size())/Vector2(hframes,vframes)
+		scale=Vector2(SWIM_SIZE/cell.x,SWIM_SIZE/cell.y)*Vector2(1.0+hurt*.09,1.0-hurt*.09)
+		# The source atlas has three distinct swimming poses; its second swim row
+		# repeats the first. Travel determines the kick instead of wall-clock time.
+		var kick:=[0,1,2,1,0,1,2,1]
+		var phase:=_swim_phase if _locomotion_driven else fposmod(elapsed/1.3,1.0)
+		frame=(0 if _swim_texture!=null else 3)+(int(kick[floori(phase*8.0)%8]) if moving else 2)
+		var target_pitch:=clampf(_swim_velocity.y/maxf(1.0,_swim_velocity.length())*.13,-.13,.13) if moving else 0.0
+		rotation=lerpf(rotation,(target_pitch+_shot_pulse*.08*float(facing)-hurt*.11*float(facing))*(.45 if reduced else 1.0),.22)
+		position.x=-_shot_pulse*(1.5 if reduced else 3.0)*float(facing)+(0.0 if reduced else sin(elapsed*55.0)*hurt*2.0)
+		position.y=(sin(phase*TAU)*(.5 if reduced else 1.4) if moving else 0.0 if reduced else sin(elapsed*1.8)*.7)-hurt*1.5
+		return
+	rotation=0.0
+	position.x=0.0
 	if not in_water and directional_pilot_active():
 		var walking:=_pose_walking
 		texture=_directional_walk if walking else _directional_idle

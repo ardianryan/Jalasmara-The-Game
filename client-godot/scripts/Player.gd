@@ -27,6 +27,12 @@ var equipment: Dictionary = {}
 var _traversal_bob := 0.0
 var _gait_samples: Array[Dictionary] = []
 
+func play_shot_reaction() -> void:
+	if is_instance_valid(swim_sprite): swim_sprite.trigger_shot(walk_time)
+
+func play_hit_reaction() -> void:
+	if is_instance_valid(swim_sprite): swim_sprite.trigger_hit(walk_time)
+
 func consume_gait_samples() -> Array[Dictionary]:
 	var samples := _gait_samples
 	_gait_samples = []
@@ -107,7 +113,7 @@ func _physics_process(delta: float) -> void:
 		if limited!=position:
 			position=limited if not land_mask.is_valid() or land_mask.call(limited) else previous
 			velocity=(position-previous)/maxf(delta,.001)
-	var moved_velocity := (position-previous)/maxf(delta,0.001) if not in_water else velocity
+	var moved_velocity := (position-previous)/maxf(delta,0.001)
 	if not in_water and moved_velocity.length()<8.0:
 		velocity = Vector2.ZERO
 		moved_velocity = Vector2.ZERO

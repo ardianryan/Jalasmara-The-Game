@@ -1,0 +1,32 @@
+{
+  "kind": "project-source-downsample",
+  "cell": 112,
+  "paletteColors": 64,
+  "frames": 3,
+  "entries": {
+    "male-default": {
+      "source": "client-godot/resources/art/male-default-base-v1.png",
+      "sourceSha256": "71d9d3c8ca2046e80e7317473d54e178784816a3f24ec01903fe61a64f69d31d",
+      "output": "client-godot/resources/art/player-swim-v2/male-default.png",
+      "outputSha256": "30b7ba02211a1855ae7c99de185b4dc05d147771a766e5b262877885441d30a2"
+    },
+    "female-default": {
+      "source": "client-godot/resources/art/female-default-base-v1.png",
+      "sourceSha256": "8c5b04dc99ebe934661176ea2959ad7f7031b20eb06abe45cc1fc8ec45475947",
+      "output": "client-godot/resources/art/player-swim-v2/female-default.png",
+      "outputSha256": "77c4420b8d6a208c13c90932bd2853bdf150008dcc42f805428cc15d99d1d0be"
+    },
+    "male-nusantara": {
+      "source": "client-godot/resources/art/male-nusantara-base-v1.png",
+      "sourceSha256": "fb7d6d7f81d353eff4fd4919e4b144fb31262865475c98952330abb906f4a7df",
+      "output": "client-godot/resources/art/player-swim-v2/male-nusantara.png",
+      "outputSha256": "dad0cad35b4b2a94e9e7f71b52d920c9a3723dff5b53c43127d80b47c9309094"
+    },
+    "female-nusantara": {
+      "source": "client-godot/resources/art/female-nusantara-base-v1.png",
+      "sourceSha256": "e958b76f4ab4a5fc64ad46850243a23475719f84ded25b071be1b98aa5728a2a",
+      "output": "client-godot/resources/art/player-swim-v2/female-nusantara.png",
+      "outputSha256": "3ea7bb951b07855547f5e185fd42e7179fa0e7effade0f7018335d130bfaf266"
+    }
+  }
+}

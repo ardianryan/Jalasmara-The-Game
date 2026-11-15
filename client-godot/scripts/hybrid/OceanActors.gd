@@ -90,9 +90,10 @@ func _mirror_player(nala: Node2D) -> void:
 		return
 	var cell := visual.texture.get_size()/Vector2(visual.hframes,visual.vframes)
 	var rectangle := Rect2(Vector2(visual.frame%visual.hframes,floori(float(visual.frame)/visual.hframes))*cell,cell)
-	var sprite := _sprite("player",_frame(visual.texture,rectangle),nala.position+visual.position,cell*visual.scale.abs(),12)
+	var sprite := _sprite("player",_frame(visual.texture,rectangle),nala.position+visual.position,cell*visual.scale.abs(),12,visual.modulate)
 	sprite.flip_h = visual.flip_h
 	sprite.flip_v = visual.flip_v
+	sprite.rotation.z = visual.rotation
 	if not is_instance_valid(_equipment):
 		_equipment=preload("res://scripts/CharacterEquipment3D.gd").new()
 		add_child(_equipment)

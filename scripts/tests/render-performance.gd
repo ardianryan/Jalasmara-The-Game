@@ -29,6 +29,7 @@ func _run() -> void:
 	var old_path: String=quality.settings_path
 	var old_coarse: bool=quality.get("_coarse")
 	var old_auto_drop: int=quality.get("_auto_drop")
+	var old_auto_upgrade: bool=quality.get("_auto_upgrade")
 	var config_path: String="user://render-quality-test.cfg"
 	quality.settings_path=config_path
 	quality.set_profile("balanced",false)
@@ -43,6 +44,9 @@ func _run() -> void:
 	quality.set("_coarse",true)
 	quality.set_profile("auto")
 	assert(quality.get_profile().effective=="balanced","Auto should keep touch graphics legible")
+	quality.set("_auto_upgrade",true)
+	assert(quality.get_profile().effective=="sharp","Sustained fast touch rendering should reveal full-resolution detail")
+	quality.set("_auto_upgrade",false)
 	quality.set("_coarse",false)
 	assert(quality.get_profile().effective=="sharp")
 	quality.set("_auto_drop",1)
@@ -52,6 +56,7 @@ func _run() -> void:
 	quality.set("_coarse",old_coarse)
 	quality.set_profile(old_profile,false)
 	quality.set("_auto_drop",old_auto_drop)
+	quality.set("_auto_upgrade",old_auto_upgrade)
 	quality.settings_path=old_path
 	DirAccess.remove_absolute(config_path)
 	var metrics: Dictionary=diagnostics.performance_sample(quality)

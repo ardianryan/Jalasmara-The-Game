@@ -382,7 +382,7 @@ func _run() -> void:
 	before=visual.locomotion_state().distance
 	visual.set_locomotion(Vector2(175,0),2)
 	assert(visual.locomotion_state().distance==before)
-	assert(visual.hframes==3 and visual.frame>=3)
+	assert(visual.hframes==3 and visual.vframes==1 and visual.frame in [0,1,2])
 	visual.free()
 	await _transition_checks()
 	_cold_pause_checks()

@@ -654,6 +654,11 @@ func _draw() -> void:
 	if neutralizer_flash>0:
 		var progress := 1.0-neutralizer_flash/0.24
 		var capsule := neutralizer_from.lerp(neutralizer_to,ease(progress,0.8))
+		if progress<.35:
+			var spark:=1.0-progress/.35
+			var ray:=Vector2(1,0).rotated((neutralizer_to-neutralizer_from).angle())
+			draw_line(neutralizer_from-ray*4,neutralizer_from+ray*(7+8*spark),Color(1.0,.86,.48,spark),3)
+			draw_arc(neutralizer_from,5+8*(1-spark),0,TAU,12,Color(.55,1.0,.91,spark),2)
 		draw_line(neutralizer_from,capsule,Color(0.23,0.96,0.87,0.45*(1.0-progress)),2)
 		draw_circle(capsule,6.0,Color("5b351d"))
 		draw_circle(capsule,4.0,Color("e9b766"))
@@ -1118,6 +1123,7 @@ func _shoot_neutralizer() -> void:
 	if network_busy or modal_open or GameState.dive.get("mode","")!="boss" or nearby.get("kind","")!="biota":
 		return
 	var target: Dictionary = nearby.duplicate()
+	nala.play_shot_reaction()
 	network_busy = true
 	if not await _sync_position():
 		network_busy = false
@@ -1552,7 +1558,8 @@ func _boss_tick(delta: float) -> void:
 		shot.node.position += shot.velocity*delta
 		if shot.node.position.distance_to(nala.position)<26:
 			flash = .5
-			ApiClient.call_api("/dive/hazard",{"diveId":GameState.dive.id})
+			nala.play_hit_reaction()
+			_hazard_hit()
 			shot.node.queue_free()
 			attacks.remove_at(i)
 		elif shot.node.position.x<2800 or shot.node.position.y>3470:
@@ -1562,6 +1569,7 @@ func _boss_tick(delta: float) -> void:
 func _hazard_hit() -> void:
 	var r: Dictionary = await ApiClient.call_api("/dive/hazard",{"diveId":GameState.dive.id})
 	if r.get("ok",false):
+		nala.play_hit_reaction()
 		GameState.dive = r.dive
 		status.text = "Bahaya melukai perlengkapan. Hindari duri dan rembesan limbah."
 		_update_hud()
