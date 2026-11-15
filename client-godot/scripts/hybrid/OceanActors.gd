@@ -2,6 +2,8 @@ extends Node3D
 
 const Animator = preload("res://scripts/CreatureAnimator.gd")
 const Wildlife = preload("res://scripts/Wildlife.gd")
+const VALVE_VISUAL_OFFSET := Vector2(0,82)
+const LEAK_VISUAL_OFFSET := Vector2(35,25)
 var source: Node
 var sprites: Dictionary = {}
 var atlas_frames: Dictionary = {}
@@ -172,7 +174,8 @@ func _mirror_props(entities: Node, origin: Vector2) -> void:
 		var index := 1 if kind=="valve" else 2 if kind=="filter" else 3
 		var dimensions := Vector2(140,135) if index==1 else Vector2(127,162) if index==2 else Vector2(152,139)
 		var done: bool = GameState.adventure.get("puzzles",[]).has(item.id)
-		_prop(entities,"puzzle:"+str(item.id),index,at+Vector2(0,18),dimensions,Color(0.83,1.0,0.89) if done else Color.WHITE)
+		var visual_at := at + (VALVE_VISUAL_OFFSET if index==1 else Vector2(0,18))
+		_prop(entities,"puzzle:"+str(item.id),index,visual_at,dimensions,Color(0.83,1.0,0.89) if done else Color.WHITE)
 	for item in GameState.world.get("caches",[]):
 		var at := Vector2(float(item.x),float(item.y))
 		if at.distance_to(origin)>1100: continue
@@ -182,7 +185,7 @@ func _mirror_props(entities: Node, origin: Vector2) -> void:
 		var at := Vector2(float(item.x),float(item.y))
 		if at.distance_to(origin)>1100: continue
 		var urchin := str(item.kind)=="urchin"
-		_prop(entities,"hazard:"+str(item.id),4 if urchin else 5,at if urchin else at+Vector2(-13,12),Vector2.ONE*float(item.radius)*2.0 if urchin else Vector2(122,132))
+		_prop(entities,"hazard:"+str(item.id),4 if urchin else 5,at if urchin else at+LEAK_VISUAL_OFFSET,Vector2.ONE*float(item.radius)*2.0 if urchin else Vector2(122,132))
 	if int(GameState.player.get("progress",{}).get("day",1))>=3:
 		var motion: RefCounted = source.get("boss_motion")
 		var at: Vector2 = motion.position if motion != null else Vector2(3820,3140)

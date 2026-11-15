@@ -34,6 +34,7 @@ const scripts = [
   "scripts/tests/ocean-current.gd",
   "scripts/tests/coral-current-motion.gd",
   "scripts/tests/ocean-rock-mount.gd",
+  "scripts/tests/ocean-pipe-grounding.gd",
   "scripts/tests/world-foley.gd",
   "scripts/tests/audio-context.gd",
   "scripts/tests/validated-contact-foley.gd",
