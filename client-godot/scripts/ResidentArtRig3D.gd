@@ -131,8 +131,9 @@ func _ik3(start:Vector3,end:Vector3,first:float,second:float,bend:float) -> Vect
 	var distance:=clampf(vector.length(),.001,first+second-.001)
 	var along:=vector.normalized()
 	var offset:float=(first*first-second*second+distance*distance)/(2*distance)
-	var hint:=Vector3(-along.y,along.x,0)*-bend
-	if hint.length()<.01: hint=Vector3.RIGHT
+	# The body billboard's depth is local Z. A sideways knee hint makes small
+	# residents look bow-legged even when both feet are correctly planted.
+	var hint:=Vector3(-along.y,along.x,0)*(-bend*.15)+Vector3.BACK
 	hint=(hint-along*hint.dot(along)).normalized()
 	return start+along*offset+hint*sqrt(maxf(0,first*first-offset*offset))
 
@@ -236,7 +237,7 @@ func update_pose(tint:Color) -> void:
 		var shoulder:=_relative(data.joints[side+"Shoulder"])+Vector2(0,_drop)
 		var lower:Array=data.parts["lower_arm_"+side].bone
 		var hand:=_relative(lower[1])+Vector2(0,_drop)
-		if walking and not reduced: hand+=Vector2(sin(float(_contacts.phaseDistance)/float(_contacts.stride)*TAU+index*PI)*1.5,0)*float(actor.body_scale)
+		if walking and not reduced: hand+=Vector2(sin(float(_contacts.phaseDistance)/float(_contacts.stride)*TAU+index*PI)*3.0,0)*float(actor.body_scale)
 		if index==1: hand=hand.lerp(shoulder+Vector2(4,(_length("upper_arm_"+side)+_length("lower_arm_"+side))*.55),work)
 		var reach:float=_length("upper_arm_"+side)+_length("lower_arm_"+side)-.001
 		hand=shoulder+(hand-shoulder).limit_length(reach)

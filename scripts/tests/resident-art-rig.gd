@@ -9,6 +9,7 @@ func _initialize() -> void:
 
 func _run() -> void:
 	root.size=Vector2i(1440,810)
+	if not output.is_empty() and DisplayServer.get_name()!="headless": DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(output))
 	var state=root.get_node("GameState")
 	state.world=JSON.parse_string(FileAccess.get_file_as_string("res://../.runtime/world-map.json"))
 	state.player={"appearance":"male_nusantara","progress":{"day":2,"stage":"dive"}}
@@ -78,6 +79,11 @@ func _run() -> void:
 			actor._body_animation.update(.05,actor.moved_velocity,false,false,false,false,clock.reduced_motion,"research")
 			rig.update_pose(Color.WHITE)
 			var status:Dictionary=rig.debug_status()
+			if not output.is_empty() and DisplayServer.get_name()!="headless" and str(profile.id)=="npc_kid_gito" and sample in [2,6,10,14,18,22]:
+				renderer._update_view(0,true)
+				await process_frame
+				RenderingServer.force_draw()
+				root.get_texture().get_image().save_png(output+"/gito-walk-%02d.png"%sample)
 			assert(status.authoredViews==1 and not status.mirrored and status.separateProp)
 			assert(is_equal_approx(float(status.contacts.turnCosine),.8),"Resident path corners need the explicit tighter turn handover")
 			var left_leg:Dictionary=status.links.leg_left
@@ -88,6 +94,13 @@ func _run() -> void:
 			for link in status.links.values():
 				assert(absf(link.start.distance_to(link.joint)-float(link.first))<.04,"First bone cannot stretch")
 				assert(absf(link.joint.distance_to(link.end)-float(link.second))<.04,"Second bone cannot stretch")
+			if str(profile.id)=="npc_kid_gito" and step<24:
+				for side in ["left","right"]:
+					var leg:Dictionary=status.links["leg_"+side]
+					var axis:Vector3=(leg.end-leg.start).normalized()
+					var along:float=(float(leg.first)*float(leg.first)-float(leg.second)*float(leg.second)+leg.start.distance_squared_to(leg.end))/(2*leg.start.distance_to(leg.end))
+					var bend:Vector3=leg.joint-(leg.start+axis*along)
+					assert(absf(bend.z)>absf(bend.x),"Gito's knees must bend in body depth, not splay sideways")
 			for side in ["left","right"]:
 				var leg:Dictionary=status.links["leg_"+side]
 				for segment in ["upper_leg_","lower_leg_"]:
@@ -235,6 +248,24 @@ func _run() -> void:
 		for frame in range(4): await process_frame
 		RenderingServer.force_draw()
 		root.get_texture().get_image().save_png(output+"/danu-actual-pen-work.png")
+		for rig in rigs: rig.visible=str(rig.actor.resident_id)=="npc_kid_gito"
+		var gito:Node2D=people[4]
+		var gito_rig:Node3D=rigs[4]
+		gito.position=anchors[0]
+		gito_rig._plant._ready=false
+		gito_rig._contacts.clear()
+		player.position=anchors[0]
+		for step in range(24):
+			gito.position+=Vector2.RIGHT*2
+			gito.moved_velocity=Vector2.RIGHT*20
+			gito._elapsed+=.1
+			gito._body_animation.update(.1,gito.moved_velocity,false,false,false,false,false,"research")
+			gito_rig.update_pose(Color.WHITE)
+			if step in [0,4,8,12,16,20]:
+				renderer._update_view(0,true)
+				await process_frame
+				RenderingServer.force_draw()
+				root.get_texture().get_image().save_png(output+"/gito-dock-%02d.png"%step)
 	stage.free()
 	await process_frame
 	print("RESIDENT ART RIG PASS:6 original single-view pixel partitions, ",samples," measured locomotion/turn/stop poses, actual alpha soles, fixed limb lengths, child stride scaling, separate role props, pause; max pelvis drop=",maximum_drop,". Native visual quality and alternate-view art require separate review.")
