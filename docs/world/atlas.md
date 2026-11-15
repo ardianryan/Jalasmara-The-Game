@@ -12,6 +12,8 @@ Atlas utama berupa peta geografis: daratan Bandar Hujung dan Wringin berada pada
 | Hutan Pesisir Wringin | Daratan di timur kota. Tajuk, akar, serasah, dan aliran kecil memperlihatkan hubungan cahaya, tanah, air, serta teluk. | Melalui gerbang di ujung timur dermaga |
 | Hulu Wringin | Lereng dan kebun tua di atas hutan pesisir. Limpasan dari wilayah ini menuju sungai, lalu ke perairan Bandar Hujung. | Pengembangan berikutnya |
 
+The northern route beyond **Longsoran Hulu** is reserved for a later conflict over forest clearing and an oil-palm plantation. In Phase 1 it remains forest and `coming_soon`; the existing southeastern **Gerbang Kebun Lama** is a separate old-garden exit. Any later before/after terrain state must preserve the watershed relationship from Hulu Wringin to the bay and be gated by server-owned story progress. See the [future land-world brief](../plans/11-future-land-world-setup.md).
+
 Pos Pengawas Cakrawala mengawasi jalur perdagangan dan akses warga. Fasilitas industri korporasi menghubungkan konflik di darat dengan pipa yang ditemukan pada kedalaman Jalatunda. Kedai dan bengkel berfungsi sebagai tujuan pulang dari eksplorasi, sedangkan kebun apung memberi alasan nyata untuk mempelajari siklus hara dan pencemaran.
 
 Hutan menggunakan pandangan miring dari atas dengan gerak dua arah pada bidang tanah. Wilayah hutan terpisah dari kota darat Bandar Hujung yang juga memakai pandangan miring dari atas, serta dari laut yang memakai tampilan samping. Perjalanan antarkeduanya dilakukan melalui gerbang, sehingga koordinat hutan tidak dibaca sebagai sambungan horizontal peta laut.
