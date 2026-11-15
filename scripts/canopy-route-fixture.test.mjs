@@ -104,10 +104,10 @@ test("CPU projection assumptions stay tied to current renderer equations and swa
     "const TILT := deg_to_rad(55.0)",
     "return Vector3(point.x,-point.y/cos(TILT)-height*tan(TILT),height)",
     "sin(progress*1.2)*14,progress*5,height*progress",
-    "210+height*.25",
+    "210.0+height*.25",
     "height*1.35",
     "camera_up()*width*.08",
-    'preload("res://scripts/FoliageMotion.gd").land_offset(now,Vector2(home.x,home.y),wind,float(leaf.pixel),float(leaf.size))',
+    'preload("res://scripts/FoliageMotion.gd").land_offset(now,Vector2(home.x,home.y),wind_x,float(leaf.pixel),float(leaf.size))',
   ])
     assert(renderer.includes(expression), expression);
   const foliage = readFileSync(
@@ -117,7 +117,8 @@ test("CPU projection assumptions stay tied to current renderer equations and swa
   for (const expression of [
     "floorf(seconds*10.0)/10.0",
     "roundf(distance/maxf(.2,pixel_step))*pixel_step",
-    "clampf(wind/22.0,.35,1.4)",
+    "clampf(absf(wind)/22.0,.35,1.4)",
+    "var direction:=-1.0 if wind<0.0 else 1.0",
   ])
     assert(foliage.includes(expression), expression);
   const readability = readFileSync(

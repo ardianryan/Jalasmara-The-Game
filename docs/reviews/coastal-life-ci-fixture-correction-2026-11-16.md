@@ -1,0 +1,11 @@
+# Coastal-life CI fixture correction — 16 November 2026
+
+The coastal-life integration source `59f514591fa4b4d23a9bb82d07aedc949bf04824` was pushed to GitHub, Gitea and GitLab. [GitHub Actions 43741111594](https://github.com/ardianryan/Jalasmara-The-Game/actions/runs/43741111594) failed during `ci/verify.sh`, before Godot export, verified-delivery packaging, or staging. The only reported failing subtest was `CPU projection assumptions stay tied to current renderer equations and sway limits` in `scripts/canopy-route-fixture.test.mjs`.
+
+The runtime had already changed the crown expression from `210+height*.25` to the numerically identical `210.0+height*.25`, and now passes signed `wind_x` into `FoliageMotion.land_offset`; that helper uses `absf(wind)` for strength and its sign for drift direction. The fixture retained the old literal expressions. This correction updates only those source assertions and adds an assertion that the signed direction is retained. It does not alter renderer geometry or game behavior.
+
+Local focused verification: `node --test scripts/canopy-route-fixture.test.mjs scripts/gateway-route-fixture.test.mjs scripts/saras-alpha-fixture.test.mjs` passed 15/15; `git diff --check` passed. The integrated source before this test-only correction had passed 88/88 Godot world checks, typecheck and build. GitHub CI must pass again before any exact artifact is eligible for staging. Active staging remains source `9392ec9` / PCK `6e7559d5bb69e6b21f533f6ca7ca0fafe49f6ba84b6290fb7b03e9e31080496b`.
+
+The 13 future-world transparent sprites for Saras's research/IT camp, the director's RV power equipment, separate Raka lodging, and future northern palms/fire remain unplaced. The [connected-floor survey](future-camp-connected-floor-survey-2026-11-16.md) provides provisional accessible footprints; native view, authoritative layout and resident schedule checks precede use. No external tool or new third-party asset was introduced in this correction.
+
+Next: commit this test/docs correction, push the same SHA to all three source remotes, inspect the new GitHub Actions verified-delivery result, and only then perform the independent staging backup/hash/rollback/public-smoke sequence. Full moodboard parity and four coral edge mounts remain open.
