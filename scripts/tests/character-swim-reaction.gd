@@ -9,17 +9,17 @@ func run() -> void:
 	visual.set_appearance("male_nusantara")
 	visual.set_outfit("diving")
 	visual.animate(false,true,1,0.0)
-	assert(visual.frame==2 and visual.texture.get_size()==Vector2(336,112),"Stopped swimmer should use the compact level-fin pose")
+	assert(visual.frame==4 and visual.texture.get_size()==Vector2(896,112),"Stopped swimmer should use the compact level-fin pose")
 	var frames:Array[int]=[]
 	for step in range(8):
 		visual.set_locomotion(Vector2(140,0),.1)
 		visual.animate(true,true,1,float(step+1)*.1)
 		frames.append(visual.frame)
-	assert(frames==[1,2,1,0,1,2,1,0],"Kick cadence must follow distance, using only distinct authored poses")
+	assert(frames==[1,2,3,4,5,6,7,0],"Kick cadence must follow distance through the full eight-frame cycle")
 	var phase:float=visual._swim_phase
 	visual.set_locomotion(Vector2.ZERO,.5)
 	visual.animate(false,true,1,1.3)
-	assert(visual._swim_phase==phase and visual.frame==2,"Idle may bob but cannot paddle in place")
+	assert(visual._swim_phase==phase and visual.frame==4,"Idle may bob but cannot paddle in place")
 	visual.trigger_shot(1.3)
 	visual.animate(false,true,1,1.3)
 	assert(float(visual.get_equipment_state().shotPulse)>.9 and visual.position.x<0,"Shot input should recoil body and separate launcher")

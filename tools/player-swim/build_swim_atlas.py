@@ -13,6 +13,24 @@ DEST = SOURCE / "player-swim-v2"
 APPEARANCES = ("male-default", "female-default", "male-nusantara", "female-nusantara")
 CELL = 112
 PALETTE_COLORS = 28
+SOURCE_POSES = (0, 0, 1, 1, 2, 2, 1, 0)
+FIN_FLEX = (0, -2, 0, 2, 0, -2, -2, 2)
+
+
+def _flex_fin_tips(frame: Image.Image, amount: int) -> Image.Image:
+    """Bend only the free end of the fins; the leg roots and body stay fixed."""
+    if amount == 0:
+        return frame.copy()
+    bent = frame.copy()
+    src = frame.load()
+    dst = bent.load()
+    for x in range(36):
+        shift = round(amount * (36 - x) / 36)
+        if shift == 0:
+            continue
+        for y in range(CELL):
+            dst[x, y] = src[x, y - shift] if 0 <= y - shift < CELL else (0, 0, 0, 0)
+    return bent
 
 
 def _visor(frame: Image.Image, name: str, pose: int) -> None:
@@ -90,7 +108,7 @@ def build_one(name: str) -> dict[str, str]:
     # A single compact palette prevents shirt/skin colors from shifting per pose.
     rgb = ImageEnhance.Contrast(combined.convert("RGB")).enhance(1.13)
     rgb = rgb.quantize(colors=PALETTE_COLORS, dither=Image.Dither.NONE).convert("RGBA")
-    strip = Image.new("RGBA", (CELL * 3, CELL))
+    clean_frames = []
     for pose, frame in enumerate(frames):
         pixel = rgb.crop((pose * CELL, 0, (pose + 1) * CELL, CELL))
         alpha = frame.getchannel("A").point(lambda value: 255 if value >= 175 else 0)
@@ -98,7 +116,10 @@ def build_one(name: str) -> dict[str, str]:
         pixel.putalpha(alpha)
         pixel = _largest_silhouette(pixel)
         _visor(pixel, name, pose)
-        strip.paste(pixel, (pose * CELL, 0))
+        clean_frames.append(pixel)
+    strip = Image.new("RGBA", (CELL * len(SOURCE_POSES), CELL))
+    for index, (pose, flex) in enumerate(zip(SOURCE_POSES, FIN_FLEX)):
+        strip.paste(_flex_fin_tips(clean_frames[pose], flex), (index * CELL, 0))
     destination = DEST / f"{name}.png"
     strip.save(destination, optimize=True)
     return {"source": str(source.relative_to(ROOT)), "sourceSha256": digest(source),
@@ -111,7 +132,8 @@ def main() -> None:
     (DEST / "provenance.json").write_text(json.dumps({"kind": "project-source-pixel-cleanup", "cell": CELL,
         "paletteColors": PALETTE_COLORS, "alphaThreshold": 175,
         "artwork": "code-drawn diving visor; source silhouette retained",
-        "frames": 3, "entries": entries}, indent=2) + "\n")
+        "frames": len(SOURCE_POSES), "sourcePoseOrder": SOURCE_POSES,
+        "finTipFlexPx": FIN_FLEX, "entries": entries}, indent=2) + "\n")
 
 
 if __name__ == "__main__":

@@ -241,16 +241,18 @@ func animate(moving: bool, in_water: bool, facing: int, elapsed: float) -> void:
 		var environment:=get_node_or_null("/root/EnvironmentState")
 		var reduced:bool=is_instance_valid(environment) and bool(environment.get("reduced_motion"))
 		texture=_swim_texture if _swim_texture!=null else _base_texture
-		hframes=3
+		hframes=8 if _swim_texture!=null else 3
 		vframes=1 if _swim_texture!=null else 3
 		flip_h=facing<0
 		var cell:=Vector2(texture.get_size())/Vector2(hframes,vframes)
 		scale=Vector2(SWIM_SIZE/cell.x,SWIM_SIZE/cell.y)*Vector2(1.0+hurt*.09,1.0-hurt*.09)
-		# The source atlas has three distinct swimming poses; its second swim row
-		# repeats the first. Travel determines the kick instead of wall-clock time.
-		var kick:=[0,1,2,1,0,1,2,1]
+		# Authored source poses and two-pixel fin-tip bends form one travel-driven cycle.
 		var phase:=_swim_phase if _locomotion_driven else fposmod(elapsed/1.3,1.0)
-		frame=(0 if _swim_texture!=null else 3)+(int(kick[floori(phase*8.0)%8]) if moving else 2)
+		var kick:=[0,1,2,1,0,1,2,1]
+		if _swim_texture!=null:
+			frame=floori(phase*8.0)%8 if moving else 4
+		else:
+			frame=3+int(kick[floori(phase*8.0)%8]) if moving else 5
 		var target_pitch:=clampf(_swim_velocity.y/maxf(1.0,_swim_velocity.length())*.13,-.13,.13) if moving else 0.0
 		rotation=lerpf(rotation,(target_pitch+_shot_pulse*.08*float(facing)-hurt*.11*float(facing))*(.45 if reduced else 1.0),.22)
 		position.x=-_shot_pulse*(1.5 if reduced else 3.0)*float(facing)+(0.0 if reduced else sin(elapsed*55.0)*hurt*2.0)

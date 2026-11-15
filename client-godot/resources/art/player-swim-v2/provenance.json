@@ -4,31 +4,51 @@
   "paletteColors": 28,
   "alphaThreshold": 175,
   "artwork": "code-drawn diving visor; source silhouette retained",
-  "frames": 3,
+  "frames": 8,
+  "sourcePoseOrder": [
+    0,
+    0,
+    1,
+    1,
+    2,
+    2,
+    1,
+    0
+  ],
+  "finTipFlexPx": [
+    0,
+    -2,
+    0,
+    2,
+    0,
+    -2,
+    -2,
+    2
+  ],
   "entries": {
     "male-default": {
       "source": "client-godot/resources/art/male-default-base-v1.png",
       "sourceSha256": "71d9d3c8ca2046e80e7317473d54e178784816a3f24ec01903fe61a64f69d31d",
       "output": "client-godot/resources/art/player-swim-v2/male-default.png",
-      "outputSha256": "0c3f3074a86b66577c5670c5d56b2a0141f7b4f9a62c48bc0065fa5970c672c5"
+      "outputSha256": "3ce5310a655aa82f52e23add0c2f7069133bc8adbc22c5cccc1a6d42762ea044"
     },
     "female-default": {
       "source": "client-godot/resources/art/female-default-base-v1.png",
       "sourceSha256": "8c5b04dc99ebe934661176ea2959ad7f7031b20eb06abe45cc1fc8ec45475947",
       "output": "client-godot/resources/art/player-swim-v2/female-default.png",
-      "outputSha256": "f02beff47f5e2000ab303af440931c582a96f66f73c0105a70da6547da75b112"
+      "outputSha256": "aa7951b7dde7e11a88d63afa81ff41f2488778a9908c8dbb063fe711614b3c7b"
     },
     "male-nusantara": {
       "source": "client-godot/resources/art/male-nusantara-base-v1.png",
       "sourceSha256": "fb7d6d7f81d353eff4fd4919e4b144fb31262865475c98952330abb906f4a7df",
       "output": "client-godot/resources/art/player-swim-v2/male-nusantara.png",
-      "outputSha256": "66abcbbfd268118d45d7fc36b56ed1757e250097a24d600814fdd49eee193617"
+      "outputSha256": "b02cb10a0388c7e64b03e89f95d126ffac6097b208052a416e08eb877cd4f038"
     },
     "female-nusantara": {
       "source": "client-godot/resources/art/female-nusantara-base-v1.png",
       "sourceSha256": "e958b76f4ab4a5fc64ad46850243a23475719f84ded25b071be1b98aa5728a2a",
       "output": "client-godot/resources/art/player-swim-v2/female-nusantara.png",
-      "outputSha256": "3c5c4508a013939880cde9fdd040ea2678319c85057806dace9f0783700dc4de"
+      "outputSha256": "06752f76a075b91108c9ed0f324fce20143e89b67e9a87769281b17de53a95a3"
     }
   }
 }

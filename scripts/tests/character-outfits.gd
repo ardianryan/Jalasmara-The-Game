@@ -27,7 +27,7 @@ func _run() -> void:
 			assert(not bool(gear.vest),"Explorer clothing is in the outfit atlas; no duplicate modelvest")
 			assert(bool(gear.satchel)==(outfit=="explorer"))
 		visual.animate(true,true,1,2.0)
-		assert(visual.frame>=0 and visual.frame<=2 and visual.hframes==3 and visual.vframes==1 and not visual.flip_h)
+		assert(visual.frame>=0 and visual.frame<=7 and visual.hframes==8 and visual.vframes==1 and not visual.flip_h)
 		assert(visual.texture.resource_path.ends_with("player-swim-v2/"+identity.replace("_","-")+".png"))
 		assert(visual.get_equipment_state().bodySize==112.0)
 	visual.set_equipment({"tank":false,"net":false})
