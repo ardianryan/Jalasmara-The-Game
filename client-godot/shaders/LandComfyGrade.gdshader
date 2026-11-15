@@ -2,6 +2,7 @@ shader_type canvas_item;
 render_mode unshaded;
 
 uniform float daylight : hint_range(0.0, 1.0) = 1.0;
+uniform float dusk : hint_range(0.0, 1.0) = 0.0;
 uniform float strength : hint_range(0.0, 1.0) = 0.75;
 
 void fragment() {
@@ -18,6 +19,8 @@ void fragment() {
 	float chroma = max(graded.r, max(graded.g, graded.b)) - min(graded.r, min(graded.g, graded.b));
 	float vibrance = (1.0 - smoothstep(0.08, 0.60, chroma)) * 0.07;
 	graded = mix(vec3(graded_luminance), graded, 1.08 + vibrance);
+	float sunset = dusk * smoothstep(0.17, 0.60, luminance);
+	graded = mix(graded, graded * vec3(1.18, 0.99, 0.78), sunset * 0.82);
 	graded += vec3(0.003, 0.004, 0.006) * shadows * (1.0 - daylight);
 	COLOR = vec4(clamp(mix(color, graded, strength), 0.0, 1.0), source.a);
 }

@@ -1341,6 +1341,7 @@ func _update_lighting(delta: float,weather: Dictionary) -> void:
 	_lighting_display=smooth_lighting(_lighting_display,target,delta)
 	var daylight: float=_lighting_display.daylight
 	_grade_material.set_shader_parameter("daylight",daylight)
+	_grade_material.set_shader_parameter("dusk",float(_lighting_display.dusk))
 	sunlight.light_energy=float(_lighting_display.sun_energy)
 	sunlight.light_color=_lighting_display.sun_color
 	sunlight.shadow_opacity=.64*smoothstep(0.0,.18,daylight)
