@@ -6,7 +6,11 @@
 
 ![Isolated Godot 480×270 Sprite3D captures for the same seven residents and views.](resident-facings-native-20261115.png)
 
-These are curated evidence from source `e762509`, now in `main`. The first sheet contains generated 64 px pixels enlarged with nearest scaling; the second crops actual native Godot 4.7.2 Sprite3D frames from the 480×270 fixture. They prove identity/view assets and renderability, not live village movement, browser deployment or Windows/Samsung S23 acceptance. [The report](../reviews/resident-directional-steps-2026-11-15.md) records tool/provenance, test results and remaining review. These screenshots are documentation, not runtime art.
+These are curated evidence from source `e762509`, now a **rejected visual candidate**. The first sheet contains generated 64 px pixels enlarged with nearest scaling; the second crops actual native Godot 4.7.2 Sprite3D frames from the 480×270 fixture. The uneven detail between front and alternate views caused a visible shape change when residents turned. They prove renderability only, not acceptance. [The rollback report](../reviews/resident-facing-staging-rollback-2026-11-15.md) records the public review. These screenshots are documentation, not runtime art.
+
+![Rejected staging resident-facing build, captured after public startup and before rollback.](resident-facing-staging-rejected-20261115.png)
+
+This public Chromium/SwiftShader capture (SHA-256 `9a45c915df4f350defe895eeb8d1a0a6dd414a1e2176c2a8d1e7cce9570a0158`) documents the rejected staging attempt. It is not the current staging version or a physical-device acceptance image.
 
 ## Resident foot-contact staging startup, 15 November 2026
 

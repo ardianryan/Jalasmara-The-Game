@@ -1,5 +1,7 @@
 # Seven portrait residents: directional short-step candidate
 
+> **Superseded after public staging review, 15 November 2026.** The owner rejected the flatter side/rear art because villagers changed shape when turning. The staging image was rolled back and runtime selection returned to the accepted front-view gait. Keep the tests below as historical source verification only; see the [rollback report](resident-facing-staging-rollback-2026-11-15.md).
+
 Post-merge [GitHub Actions 43679044368](https://github.com/ardianryan/Jalasmara-The-Game/actions/runs/43679044368) passed on `main` commit `51558f08cdadf2c5c8b1eb7aa42d22fd8affece9`. The temporary worktree and branch were removed from local/GitHub/Gitea/GitLab; only `main` remains. This CI result did not change staging.
 
 Source commit `e762509b08bb66193f55d3598bb62f1d9e77b592` was fast-forwarded to `main` after the branch [GitHub Actions run 43678431349](https://github.com/ardianryan/Jalasmara-The-Game/actions/runs/43678431349) completed successfully. That records the source and CI result; it does not activate staging or prove live-browser gait.

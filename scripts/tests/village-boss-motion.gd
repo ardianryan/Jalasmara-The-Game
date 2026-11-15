@@ -17,17 +17,6 @@ func run() -> void:
 			assert(frame!=null and frame.get_size()==Vector2(64,64))
 			values.append(frame)
 		assert(values[0]!=values[1] and values[1]!=values[2] and values[2]!=values[3],"Four poses must be distinct resources")
-		for facing in [Vector2.DOWN, Vector2.RIGHT, Vector2.UP]:
-			var view: String=steps.view_for_motion(facing)
-			var expected: String={"front":".png","side":"-side.png","rear":"-rear.png"}[view]
-			var facing_frame: Texture2D=steps.frame(name,{"clip":"idle","distance":0.0},facing)
-			assert(facing_frame!=null and facing_frame.get_size()==Vector2(64,64),"Missing direction frame for "+name+" "+view)
-			assert(str(facing_frame.atlas.resource_path).ends_with(expected),"Direction must select the authored file for "+name+" "+view)
-			for step in range(4):
-				assert(steps.frame(name,{"clip":"walk","distance":float(step)*6.5},facing)!=null)
-	assert(steps.view_for_motion(Vector2(-0.7,-1.0))=="rear")
-	assert(steps.view_for_motion(Vector2(-1.0,0.2))=="side")
-	assert(steps.view_for_motion(Vector2(0.0,1.0))=="front")
 	motion.advance(0.0,"session",0,6,false,false,false)
 	var start: Vector2 = motion.position
 	var seen: Array=[]

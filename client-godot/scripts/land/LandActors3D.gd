@@ -219,19 +219,18 @@ func update_actors(delta: float) -> void:
 			if "appearance_index" in npc and int(npc.get("appearance_index"))>=0: index=int(npc.get("appearance_index"))
 			var cell:=sheet.get_size()/Vector2(grid)
 			frame=_frame(sheet,Rect2(Vector2(index%grid.x,floori(float(index)/grid.x))*cell,cell))
+		if not bool(npc.crate) and not native_resident:
+			var step_frame: Texture2D = preload("res://scripts/NpcSimpleSteps.gd").frame(key,npc.body_animation_state())
+			if step_frame != null: frame = step_frame
 		var flip_npc := false
-		var view_facing := Vector2.DOWN
 		if not bool(npc.crate):
 			var logical_facing:=Vector2(float(npc.get("_facing")),0)
 			if "moved_velocity" in npc and npc.moved_velocity.length()>.1:
 				logical_facing=npc.moved_velocity
 			elif npc.has_method("body_animation_state"):
 				logical_facing={"east":Vector2.RIGHT,"west":Vector2.LEFT,"north":Vector2.UP,"south":Vector2.DOWN}.get(str(npc.body_animation_state().direction),logical_facing)
-			view_facing=renderer.visual_motion(logical_facing,renderer.ground_gradient(npc.position).dot(logical_facing))
+			var view_facing: Vector2=renderer.visual_motion(logical_facing,renderer.ground_gradient(npc.position).dot(logical_facing))
 			flip_npc=view_facing.x<0
-		if not bool(npc.crate) and not native_resident:
-			var step_frame: Texture2D = preload("res://scripts/NpcSimpleSteps.gd").frame(key,npc.body_animation_state(),view_facing)
-			if step_frame != null: frame = step_frame
 		var npc_size:=Vector2(70,70) if bool(npc.crate) else Vector2(100,100)*float(npc.body_scale) if native_resident else Vector2(100,100)
 		var npc_sprite:=_sprite("NPC_"+key,frame,npc.position,npc_size,30 if bool(npc.crate) else 36,flip_npc)
 		if "custom_tint" in npc: npc_sprite.modulate*=npc.get("custom_tint")

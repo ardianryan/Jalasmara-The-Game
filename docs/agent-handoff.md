@@ -1,5 +1,9 @@
 # Handoff aktif agent
 
+## Resident directional art rejected and staging rolled back, 15 November 2026
+
+The owner reviewed the seven new side/rear resident views on staging and reported that villagers looked strange. [Release and rollback report](reviews/resident-facing-staging-rollback-2026-11-15.md) records the exact source/PCK/image, public startup evidence, rejected visual comparison, data checks and cleanup. Staging is again on the accepted Bu Darmi/Yu Sari release: image `f547723c0205`, PCK `ab6fcffa91b3`; public health returned 200. Source selection has been reverted to the accepted front-view gait so future builds cannot select the rejected side/rear sheets. The sheets and authoring script remain only as labeled rejected candidates. The attempted browser smoke reached gameplay and passed its first four checks, but did not finish 6/6 before its route timeout. `npm run typecheck`, focused Godot motion test, `npm run build` and the complete `npm run check:world` rerun passed; the first world run timed out in a Godot subprocess and is not counted. API tests were not rerun because API source did not change. Next: reauthor the seven alternate views to match each portrait's detail, inspect turning in live gameplay at native size, run the full checks, and release only after visual acceptance. Earlier candidate wording below is historical.
+
 ## Seven portrait-resident directional candidate, 15 November 2026
 
 Post-merge verification: [GitHub Actions 43679044368](https://github.com/ardianryan/Jalasmara-The-Game/actions/runs/43679044368) passed on `main` commit `51558f08cdadf2c5c8b1eb7aa42d22fd8affece9`, including API, CodeQL, Godot export, world suite, web/API build and delivery artifact. The temporary branch and worktree were removed after fast-forwarding; only `main` remains locally and on all three remotes. Staging was not changed.
