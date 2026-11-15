@@ -56,12 +56,16 @@ void fragment() {
 		vec2 pixel=floor(planar/4.0)*4.0;
 		float board=floor(pixel.x/23.0);
 		float cross=mod(pixel.x,23.0);
-		float along=mod(pixel.y,82.0);
-		float segment=floor(pixel.y/82.0);
+		float board_offset=mod(board,3.0)*52.0;
+		float along=mod(pixel.y+board_offset,156.0);
+		float segment=floor((pixel.y+board_offset)/156.0);
 		color*=mix(.94,1.06,hash(vec3(board,0.0,11.0)));
 		float seam=step(20.0,cross);
 		float bright_edge=1.0-step(3.0,cross);
 		color*=1.0-seam*.23+bright_edge*.055;
+		float end_seam=1.0-step(4.0,along);
+		float end_highlight=step(4.0,along)*(1.0-step(8.0,along));
+		color*=1.0-end_seam*.09+end_highlight*.025;
 		float fiber=step(.82,hash(vec3(floor(pixel.x/8.0),floor(pixel.y/18.0),board+11.0)));
 		color*=1.0-fiber*.09;
 		vec2 knot_center=vec2(6.0+hash(vec3(board,segment,12.0))*10.0,23.0+hash(vec3(board,segment,17.0))*36.0);
@@ -69,7 +73,7 @@ void fragment() {
 		float knot=(1.0-smoothstep(.45,.75,ring))*.16;
 		knot+=(smoothstep(.8,1.0,ring)-smoothstep(1.2,1.4,ring))*.09;
 		color*=1.0-knot*step(.48,hash(vec3(board,segment,29.0)));
-		float nail=(1.0-step(2.2,abs(cross-6.0)))*(1.0-step(2.2,abs(mod(pixel.y,96.0)-8.0)));
+		float nail=(1.0-step(2.2,abs(cross-6.0)))*(1.0-step(2.2,abs(along-8.0)));
 		color=mix(color,vec3(.30,.24,.18),nail*.72);
 	}
 	if(kind==5) {
