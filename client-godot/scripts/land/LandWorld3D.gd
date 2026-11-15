@@ -35,6 +35,7 @@ var _materials = Materials.new()
 var _geometry: Node3D
 var _models := 0
 var _trees := 0
+var _mangroves := 0
 var _houses := 0
 var _stair_treads := 0
 var _meshes := 0
@@ -167,6 +168,7 @@ func set_area(place: String) -> void:
 	world_root.add_child(_geometry)
 	_models=0
 	_trees=0
+	_mangroves=0
 	_houses=0
 	_stair_treads=0
 	_meshes=0
@@ -908,7 +910,12 @@ func _tree(entry: Dictionary, rect: Rect2, center: Vector3) -> void:
 	if not palm:
 		for side in [-1.0,1.0]:
 			_column(center+Vector3(side*rect.size.x*.5,0,0),center+Vector3(0,0,height*.28),4,wood)
-		if not _atlas_canopy(previous,210+height*.25,0,not bool(entry.get("vista",false))): _canopy(previous,210+height*.25,_trees)
+		var crown_width:=210.0+height*.25
+		var is_mangrove:=str(entry.get("variant",""))=="mangrove"
+		if is_mangrove: _mangroves+=1
+		var crown_frame:=4 if (is_mangrove and _mangroves%2==0) or (not is_mangrove and _trees%4==0) else 0
+		if crown_frame==4: crown_width*=.92
+		if not _atlas_canopy(previous,crown_width,crown_frame,not bool(entry.get("vista",false))): _canopy(previous,crown_width,_trees)
 	else:
 		if not _atlas_canopy(previous,height*1.35,1,not bool(entry.get("vista",false))): _palm_fronds(previous,height*.65)
 
@@ -924,6 +931,7 @@ func _atlas_canopy(at: Vector3,width: float,index: int,track_occlusion := true) 
 	var sprite:=Sprite3D.new()
 	sprite.name="LivingCanopy"
 	sprite.texture=frame
+	if index==4: sprite.modulate=Color(.90,.96,.90)
 	sprite.billboard=BaseMaterial3D.BILLBOARD_ENABLED
 	sprite.shaded=true
 	sprite.alpha_cut=SpriteBase3D.ALPHA_CUT_DISCARD
@@ -1320,12 +1328,13 @@ func _process(delta: float) -> void:
 	var conditions:=EnvironmentState.snapshot()
 	var reduced:=bool(conditions.get("reduced_motion",false))
 	var now:=float(Time.get_ticks_msec())*.001
-	var wind:=absf(float(conditions.get("wind_x",0)))
+	var wind_x:=float(conditions.get("wind_x",0))
+	var wind:=absf(wind_x)
 	var sway:=0.0 if reduced else 1.2+wind*.035
 	for leaf in _leaves:
 		var node: Node3D=leaf.node
 		var home: Vector3=leaf.home
-		var drift:=0.0 if reduced else preload("res://scripts/FoliageMotion.gd").land_offset(now,Vector2(home.x,home.y),wind,float(leaf.pixel),float(leaf.size))
+		var drift:=0.0 if reduced else preload("res://scripts/FoliageMotion.gd").land_offset(now,Vector2(home.x,home.y),wind_x,float(leaf.pixel),float(leaf.size))
 		node.position=home+Vector3(drift,0,0)
 	for cloth in _cloth:
 		var panel: Node3D=cloth.node

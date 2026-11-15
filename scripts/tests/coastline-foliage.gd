@@ -42,8 +42,13 @@ func _run() -> void:
 	var motion=load("res://scripts/FoliageMotion.gd")
 	var at:=Vector2(100,150)
 	assert(motion.land_offset(1.01,at,18.0,1.0)==motion.land_offset(1.07,at,18.0,1.0),"Foliage must hold its pixel pose within a 100 ms step")
+	var wind_changed_pose:=false
 	for t in range(0,80):
 		var offset: float=motion.land_offset(float(t)*.1,at,18.0,1.0)
 		assert(offset==roundf(offset),"Foliage offset must stay on the pixel grid")
+		var reverse: float=motion.land_offset(float(t)*.1,at,-18.0,1.0)
+		assert(reverse==roundf(reverse) and reverse<=0.0,"Reversed wind must keep a pixel-aligned opposite lean")
+		if offset>0.0 and reverse<0.0: wind_changed_pose=true
+	assert(wind_changed_pose,"Wind reversal needs at least one visible opposite pose")
 	print("PASS coastline and foliage motion")
 	quit()

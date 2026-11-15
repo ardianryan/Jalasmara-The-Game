@@ -60,12 +60,32 @@ func _run() -> void:
 	assert(status.stairTreads>=10 and status.actors.player==1)
 	assert(float(status.maxFootError)<.01,"Actual atlas alpha-bottom must stay at the ground pivot")
 	assert(status.warmLanterns==11 and renderer.sunlight.shadow_enabled)
+	var hub_crowns: Dictionary={}
+	for leaf in renderer.get("_leaves"):
+		var canopy: Sprite3D=leaf.node as Sprite3D
+		if canopy==null or canopy.pixel_size<.1: continue
+		var frame_texture:=canopy.texture as AtlasTexture
+		if frame_texture==null or frame_texture.atlas.get_size()!=Vector2(1536,1024): continue
+		var region: Rect2=frame_texture.region
+		var frame:=int(region.position.y/region.size.y)*3+int(region.position.x/region.size.x)
+		hub_crowns[frame]=int(hub_crowns.get(frame,0))+1
+	assert(int(hub_crowns.get(0,0))>0 and int(hub_crowns.get(4,0))>0,"Hub canopy frames should vary")
 	for light in renderer.get("_lanterns"): assert(light is OmniLight3D and light.omni_range>=200)
 	assert(renderer.world_root.find_children("*","CollisionObject3D",true,false).is_empty(),"Renderer must not invent unsynchronized physics")
 	renderer.set_area("forest")
 	renderer._process(.3)
 	var forest: Dictionary=renderer.debug_status()
 	assert(forest.trees>=30 and forest.glbModels>=4)
+	var forest_crowns: Dictionary={}
+	for leaf in renderer.get("_leaves"):
+		var canopy: Sprite3D=leaf.node as Sprite3D
+		if canopy==null or canopy.pixel_size<.1: continue
+		var frame_texture:=canopy.texture as AtlasTexture
+		if frame_texture==null or frame_texture.atlas.get_size()!=Vector2(1536,1024): continue
+		var region: Rect2=frame_texture.region
+		var frame:=int(region.position.y/region.size.y)*3+int(region.position.x/region.size.x)
+		forest_crowns[frame]=int(forest_crowns.get(frame,0))+1
+	assert(int(forest_crowns.get(0,0))>0 and int(forest_crowns.get(4,0))>0,"Mangrove canopy frames should be distinct from the main broadleaf frame")
 	assert(forest.water.mesh and forest.water.vertexWaves)
 	var authored_bridges: Array=state.world.landMaps.forest.get("bridges",[])
 	assert(authored_bridges.size()==2,"Renderer test needs both authoritative river crossings")
