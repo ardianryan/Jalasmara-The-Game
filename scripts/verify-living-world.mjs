@@ -34,6 +34,7 @@ const scripts = [
   "scripts/tests/pollution-bubbles.gd",
   "scripts/tests/ocean-current.gd",
   "scripts/tests/coral-current-motion.gd",
+  "scripts/tests/coral-rock-integration.gd",
   "scripts/tests/ocean-rock-mount.gd",
   "scripts/tests/ocean-pipe-grounding.gd",
   "scripts/tests/world-foley.gd",

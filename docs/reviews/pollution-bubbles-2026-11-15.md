@@ -20,4 +20,4 @@ Curated native proof (667×375, project gameplay frames): [dock before](../visua
 
 ## Tools, assets, and release status
 
-The rings are project-authored procedural geometry in Godot 4.7.2 Compatibility. No external artwork or plugin was added; the existing project-owned ocean prop atlas supplies the copper elbow. The implementation is unmerged, has no Web export or PCK, and is not on staging. Native Godot on Apple M2 is the evidence level; browser WebGL, Windows, Samsung S23, and audiovisual performance remain untested.
+The rings are project-authored procedural geometry in Godot 4.7.2 Compatibility. No external artwork or plugin was added; the existing project-owned ocean prop atlas supplies the copper elbow. The source was merged into local `main` as `be58e0b` after the pipe correction `8f207b5`; it has no verified Web export or CI PCK and is not on staging yet. Native Godot on Apple M2 is the evidence level; browser WebGL, Windows, Samsung S23, and audiovisual performance remain untested.

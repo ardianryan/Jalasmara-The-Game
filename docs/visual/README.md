@@ -1,8 +1,24 @@
 # Jalasmara visual evidence
 
-## Rooted coral current motion candidate, 15 November 2026
+## Reef contacts at gameplay size, 16 November 2026
 
-The native 667×375 [still](coral-current-still-667x375-20261115.png), [sway phase A](coral-current-sway-a-667x375-20261115.png), and [sway phase B](coral-current-sway-b-667x375-20261115.png) show the same original coral atlas anchored at its visible base. The [source report](../reviews/coral-current-motion-2026-11-15.md) records hashes, focused test, 844×390 captures and measured changed pixels. These are development evidence from an isolated branch, not staging or a physical-device motion review.
+The accepted [667×375](coral-rock-integration-667x375-20261116.webp) and [844×390](coral-rock-integration-844x390-20261116.webp) native A/B sheets compare coral roots against the same reef shelves in shallow and deep water. The [coral report](../reviews/coral-rock-integration-2026-11-16.md) records 39 of 43 mounted clusters and four unverified edge placements. The [rear-rock composition trial](../reviews/ocean-depth-composition-trial-2026-11-16.md) was rejected after it widened the empty teal lane; its [baseline](ocean-depth-trial-baseline-844x390-20261116.png) and [candidate](ocean-depth-trial-repeat-844x390-20261116.png) remain development evidence only. These captures do not prove browser motion, physical-device performance, or full moodboard parity.
+
+## Pollution rings and ocean depth audit, 16 November 2026
+
+The [surface water](pollution-bubbles/surface-before-667x375.png), [grounded valve before purification](pollution-bubbles/underwater-before-667x375.png), and [same valve after purification](pollution-bubbles/underwater-after-667x375.png) are native 667×375 Godot frames from the accepted pipe-plus-pollution source. The [pollution report](../reviews/pollution-bubbles-2026-11-15.md) records state gates, budget, tests and screenshot hashes. The [844×390 reef baseline](ocean-parallax-audit-baseline-844x390-20261116.png) belongs to a [rejected depth-gradient audit](../reviews/ocean-parallax-coherence-audit-2026-11-16.md); the candidate shader was not committed. These are local development captures, not staging or mobile GPU acceptance.
+
+## Grounded underwater pipe props, 15 November 2026
+
+The [667×375](ocean-pipe-grounding-667x375-20261115.png) and [844×390](ocean-pipe-grounding-844x390-20261115.png) native A/B sheets compare the existing valve and leak sprites before/after placing their bases on reef shelves. The [grounding report](../reviews/ocean-pipe-grounding-2026-11-15.md) records the unchanged server interaction anchors, visual offsets, focused Godot check and PNG hashes. This accepted local source is not yet staging or browser evidence; the original project atlas remains the source art.
+
+## Land wind and future prop authoring, 15 November 2026
+
+The [hub](land-wind-hub-667x375-20261115.webp) and [forest](land-wind-forest-667x375-20261115.webp) side-by-side native captures show still/reduced-motion, eastward wind and westward wind at the actual 667×375 game size. [Coverage review](../reviews/land-wind-coverage-2026-11-15.md) records the Godot checks and the remaining browser/device limits. The [future prop contact sheet](future-world-props-v1-20261115.png) shows 13 original transparent sprites drawn with project code for future corporate power, Saras's field camp and the northern forest state. These props are **not placed in Phase 1**; [asset provenance](../assets/future-world-props-v1.md) distinguishes the source art from gameplay or staging evidence.
+
+## Coastal detail and rooted coral source review, 15 November 2026
+
+The native 667×375 [still](coral-current-still-667x375-20261115.png), [sway phase A](coral-current-sway-a-667x375-20261115.png), and [sway phase B](coral-current-sway-b-667x375-20261115.png) show the same original coral atlas anchored at its visible base. The [source report](../reviews/coral-current-motion-2026-11-15.md) records hashes, focused test, 844×390 captures and measured changed pixels. The [dock before](dock-joints-baseline-844x390-20261115.png) and [after](dock-joints-candidate-844x390-20261115.png) compare subtle staggered board ends in the original dock shader. Matched [forest](moodboard-foliage-forest-ab-20261115.png) and [hub](moodboard-foliage-hub-ab-20261115.png) contact sheets compare the original and alternate project-atlas tree crowns in day and dusk. All three changes are merged into local `main`; these files are development evidence, not staging or physical-device acceptance. The [rejected coastline trial](coastline-authored-landform-rejected-20261115.webp) was never merged into the runtime.
 
 ## Smooth daylight, land palette and compact HUD staging, 15 November 2026
 

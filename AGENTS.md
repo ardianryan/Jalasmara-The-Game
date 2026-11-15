@@ -32,6 +32,7 @@ Instruksi pengguna dalam sesi aktif mengatasi pedoman ini. Jangan mengulang perm
 ## Pembagian kerja dan verifikasi
 
 - Gunakan worktree terpisah dan tetapkan satu penulis tiap berkas bersama. Jumlah slot mencakup integrator; maksimalkan subagent hanya bila diminta dan sesuai kapasitas sesi.
+- Setelah paket agent selesai, integrator meninjau diff dan bukti, menggabungkan perubahan yang diterima ke `main` (atau hanya laporannya untuk percobaan visual yang ditolak), lalu memastikan isi commit hasil gabungan setara. Hapus worktree dan branch paket yang sudah tergabung agar tidak menumpuk. Jangan menghapus branch yang masih memuat pekerjaan belum ditinjau atau belum dipindahkan; catat alasan dan pemiliknya di handoff.
 - Semua import/export Godot, native render, browser WebGL dan benchmark GPU dijalankan bergantian lintas worktree. Umumkan pemilik slot dan pelepasannya; CPU/source independen boleh paralel.
 - Commit subagent tidak berarti diterima. Integrator menggabungkan, menjalankan tes gabungan, dan meninjau gambar/gameplay sebenarnya. Jangan stage symlink `node_modules`, `.runtime`, artefak uji atau kredensial.
 - Pemeriksaan umum: `npm run typecheck`, `npm test`, `npm run check:world`, `npm run build`. `GODOT_BIN` dapat menunjuk binary lokal. Periksa log Godot untuk `SCRIPT ERROR`/`ERROR`, bukan exit code saja. Tes baru yang diperlukan ikut runner CI.
@@ -56,6 +57,8 @@ Tool authoring baru tersedia secara terpisah: [Cinetic](tools/cinetic/README.md)
 ## Wajib setelah tiap paket/progres bermakna
 
 Perbarui laporan `docs/reviews/` dan [handoff aktif](docs/agent-handoff.md), walaupun pekerjaan baru selesai sebagian. Catat:
+
+Handoff wajib diperbarui sebelum menutup turn yang menghasilkan progres bermakna, termasuk status worktree/branch yang masih aktif dan apa yang sudah digabung atau dibersihkan.
 
 - Permintaan dan perubahan yang benar-benar dibuat; branch/commit serta status lokal/tergabung/dirilis.
 - Tes yang dijalankan, hasil gagal maupun lulus, bukti/artifact path, dan batas pengujian.

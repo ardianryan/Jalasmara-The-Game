@@ -1,6 +1,6 @@
 # Future land-world setup: corporate power, Saras's field camp, northern forest
 
-**Status:** placement and integration contract, 15 November 2026. Original reusable assets are being authored in a separate candidate package now; placement and activation remain later work. This document changes no playable map, character, mission, reward or Phase 1 cutscene. Narrative details of the later conflict have not been written.
+**Status:** placement and integration contract, 16 November 2026. Thirteen original reusable assets and their editable generator are prepared in [future-world props v1](../assets/future-world-props-v1.md). A [CPU connected-floor survey](../reviews/future-camp-connected-floor-survey-2026-11-16.md) proposes locations for Saras's tent, Raka's separate quarters and the director's generator; these remain provisional until native silhouette and route review. Placement and activation remain later work. This document changes no playable map, character, mission, reward or Phase 1 cutscene. Narrative details of the later conflict have not been written.
 
 ## Canon and existing surfaces
 
@@ -21,7 +21,7 @@ Saras currently appears from story cycle 2, works around hub x=1480,y=680, and v
 
 Use the current 3/4 camera and nearest-neighbor pixel presentation. Power props need clear mass and attachment rather than tiny high-frequency roof noise. Keep nighttime lighting warm and readable under the comfy grade, while the corporate materials remain recognizably different. Decorative lights, fans and indicator LEDs may be client-side, but generator fuel, power availability, network connectivity, evidence access or hacking cannot become gameplay facts without an authoritative server contract. Reduced-motion settings must calm moving props and lights without hiding their meaning.
 
-## Asset handoff being authored now
+## Authored asset handoff
 
 Prepare original, isolated transparent PNGs under `client-godot/resources/art/future-world-v1/`, with a JSON manifest carrying source-pixel canvas, bottom-center pivot, intended site, provenance and activation gate. These canvas sizes are authoring bounds, **not** world-unit footprint or collider dimensions. All placement goes through a later shared map/renderer package after a connected-floor survey.
 
@@ -35,6 +35,7 @@ Prepare original, isolated transparent PNGs under `client-godot/resources/art/fu
 | `saras_worktable.png`, `saras_rugged_laptop.png`, `saras_evidence_case.png`, `saras_antenna.png` | 32×32 or 64×48; bottom-center | Separate camp pieces that later phases can add without replacing the tent |
 | `oil_palm_mature.png` | 96×128; (48,127) | Future plantation state beyond northern blocker |
 | `forest_charred_trunk.png` | 64×96; (32,95) | Future damaged-forest state only |
+| `forest_fire_sheet.png` | Four 64×64 frames; bottom-center per cell | Future fire state only; never active in Phase 1 |
 | `forest_smoke_sheet.png` | Four 64×64 frames; bottom-center per cell | Future fire/smoke state only; calm first frame for reduced motion |
 
 The native game should import these with nearest filtering and stable alpha. A manifest entry marked `future_only` does not imply a runtime loader, a rendered object or a playable phase gate; the integrating package must explicitly map each entry into the world after review. A later forest transformation must distinguish intact forest, damaged forest, and planted palms rather than simply layering palms over burned trees.
