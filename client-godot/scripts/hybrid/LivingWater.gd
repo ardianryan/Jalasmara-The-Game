@@ -124,7 +124,7 @@ func _sample_water(player: Vector2,reduced: bool) -> void:
 	var center := camera.get_screen_center_position()
 	_shafts.clear()
 	_clips = 0
-	var daylight := float(_weather.get("daylight",0.8))
+	var daylight := float(_weather.get("presentedDaylight",_weather.get("daylight",0.8)))
 	if _depth<36 and daylight>0.3:
 		var surface := float(GameState.world.get("surface",400))+8
 		for index in range(_shaft_budget):
@@ -175,7 +175,7 @@ func _sample_water(player: Vector2,reduced: bool) -> void:
 
 func _draw() -> void:
 	if not enabled: return
-	var daylight := float(_weather.get("daylight",0.8))
+	var daylight := float(_weather.get("presentedDaylight",_weather.get("daylight",0.8)))
 	var clouds := float(_weather.get("clouds",0.0))
 	var shallow := (1.0-smoothstep(15.0,65.0,_depth))*daylight*(1.0-clouds*0.85)
 	for shaft in _shafts:

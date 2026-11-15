@@ -4,6 +4,9 @@ var story_day := 1
 var story_stage := "dive"
 var elapsed_seconds := 0.0
 var visual_minutes := 480.0
+var _presented_minutes := 480.0
+var _presented_daylight := 0.24
+var _presentation_initialized := false
 var day_length_minutes := 36.0
 var clock_paused := false
 var weather_cycle_seconds := 360.0
@@ -22,10 +25,15 @@ func apply_calendar(value: Dictionary) -> void:
 	if not value.has("minuteOfDay"): return
 	var revision:=int(value.get("calendarRevision",0))
 	if authoritative and revision<_calendar_revision: return
+	var first_sync:=_calendar_revision<0
 	authoritative=true
 	_calendar_revision=revision
 	calendar_day=maxi(1,int(value.get("calendarDay",1)))
 	visual_minutes=fposmod(float(value.minuteOfDay),1440.0)
+	if first_sync:
+		_presented_minutes=visual_minutes
+		_presented_daylight=daylight_for_minutes(visual_minutes)
+		_presentation_initialized=true
 	_since_sync=0.0
 	if value.has("leaseExpiresAt"): _clock_writer=bool(value.get("writer",true))
 	_server_rain=bool(value.get("weather",{}).get("raining",false))
@@ -61,7 +69,24 @@ func _process(delta: float) -> void:
 	_rain_amount=move_toward(_rain_amount,.55 if _server_rain else 0.0,delta*.08)
 	if not clock_paused and (not authoritative or (_since_sync<15.0 and _clock_writer)):
 		visual_minutes = fposmod(visual_minutes+delta*24.0/day_length_minutes,1440.0)
+	if not _presentation_initialized:
+		_presented_minutes=visual_minutes
+		_presented_daylight=daylight_for_minutes(visual_minutes)
+		_presentation_initialized=true
+	else:
+		_presented_minutes=advance_presented_minutes(_presented_minutes,visual_minutes,delta)
+		var blend:=1.0-exp(-minf(maxf(delta,0.0),0.25)*1.3)
+		_presented_daylight=lerpf(_presented_daylight,daylight_for_minutes(visual_minutes),blend)
 	_night = visual_minutes<360.0 or visual_minutes>=1110.0
+
+static func advance_presented_minutes(displayed: float,target: float,delta: float) -> float:
+	var shortest:=fposmod(target-displayed+720.0,1440.0)-720.0
+	var blend:=1.0-exp(-minf(maxf(delta,0.0),0.25)*1.3)
+	return fposmod(displayed+shortest*blend,1440.0)
+
+static func daylight_for_minutes(minutes: float) -> float:
+	var hour:=fposmod(minutes,1440.0)/60.0
+	return lerpf(0.24,1.0,smoothstep(5.5,7.5,hour)*(1.0-smoothstep(16.5,18.5,hour)))
 
 func snapshot() -> Dictionary:
 	var coverage := (1.0-cos(TAU*fmod(elapsed_seconds,weather_cycle_seconds)/weather_cycle_seconds))*0.5
@@ -70,10 +95,10 @@ func snapshot() -> Dictionary:
 		rain=_rain_amount
 		coverage=lerpf(.12,.85,clampf(_rain_amount/.55,0,1))
 	var weather := "Cerah" if coverage<0.25 else "Berawan" if coverage<0.62 else "Hujan ringan"
-	var hour := visual_minutes/60.0
-	var sunlight := smoothstep(5.5,7.5,hour)*(1.0-smoothstep(16.5,18.5,hour))
-	var daylight := lerpf(0.24,1.0,sunlight)
+	var daylight := daylight_for_minutes(visual_minutes)
+	var displayed_minutes:=_presented_minutes if _presentation_initialized else visual_minutes
+	var displayed_daylight:=_presented_daylight if _presentation_initialized else daylight
 	var minute := int(visual_minutes)
 	var wind := 9.0+coverage*22.0+sin(elapsed_seconds*0.21+story_day)*4.0
 	var current := 7.0+coverage*11.0+sin(elapsed_seconds*0.13)*3.0
-	return {"clock":"%02d:%02d" % [minute/60,minute%60],"minuteOfDay":visual_minutes,"weather":weather,"rain":rain,"clouds":coverage,"daylight":daylight,"night":_night,"day":story_day,"calendarDay":calendar_day,"authoritative":authoritative,"clockConnected":not authoritative or _since_sync<15.0,"clockWriter":_clock_writer,"wind_x":wind,"wind_y":2.0+coverage*3.0,"current_x":current,"current_y":sin(elapsed_seconds*0.08)*2.2,"sea_state":0.2+coverage*0.6,"reduced_motion":reduced_motion,"dayLengthMinutes":day_length_minutes,"clockPaused":clock_paused,"phase":"malam" if _night else "senja" if minute>=990 else "fajar" if minute<480 else "siang"}
+	return {"clock":"%02d:%02d" % [minute/60,minute%60],"minuteOfDay":visual_minutes,"presentedMinuteOfDay":displayed_minutes,"weather":weather,"rain":rain,"clouds":coverage,"daylight":daylight,"presentedDaylight":displayed_daylight,"night":_night,"day":story_day,"calendarDay":calendar_day,"authoritative":authoritative,"clockConnected":not authoritative or _since_sync<15.0,"clockWriter":_clock_writer,"wind_x":wind,"wind_y":2.0+coverage*3.0,"current_x":current,"current_y":sin(elapsed_seconds*0.08)*2.2,"sea_state":0.2+coverage*0.6,"reduced_motion":reduced_motion,"dayLengthMinutes":day_length_minutes,"clockPaused":clock_paused,"phase":"malam" if _night else "senja" if minute>=990 else "fajar" if minute<480 else "siang"}

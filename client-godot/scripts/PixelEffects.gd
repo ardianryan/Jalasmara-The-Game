@@ -45,7 +45,7 @@ func _process(delta: float) -> void:
 	_clock += delta
 	var state := get_node_or_null("/root/EnvironmentState")
 	var environment: Dictionary = state.snapshot() if state != null else {"daylight":0.9}
-	var daylight := float(environment.get("daylight",0.9))
+	var daylight := float(environment.get("presentedDaylight",environment.get("daylight",0.9)))
 	var wind := float(environment.get("wind_x",9.0))
 	var rain := float(environment.get("rain",0.0))
 	var reduced := bool(environment.get("reduced_motion",false))

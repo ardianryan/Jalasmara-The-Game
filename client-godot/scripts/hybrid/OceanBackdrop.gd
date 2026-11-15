@@ -158,7 +158,7 @@ func update_camera(center: Vector2, weather: Dictionary = {}, depth_m: float = -
 	_depth = maxf(0.0, (center.y - _surface) / 28.0) if depth_m < 0 else depth_m
 	_reduced = bool(weather.get("reduced_motion", false))
 	var deep := clampf(_depth / 110.0, 0.0, 1.0)
-	var daylight := float(weather.get("daylight", 0.8))
+	var daylight := float(weather.get("presentedDaylight",weather.get("daylight", 0.8)))
 	var clouds := float(weather.get("clouds", 0.0))
 	var brightness := lerpf(0.73,1.0,daylight) * (1.0 - clouds * 0.12)
 	var sea := Color("3c8590").lerp(Color("123b57"), deep) * brightness

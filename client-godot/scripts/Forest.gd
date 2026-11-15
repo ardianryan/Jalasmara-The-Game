@@ -908,7 +908,7 @@ func _add_forest_light(at: Vector2, size_scale: float, kind: String, shadows: bo
 func _update_lighting() -> void:
 	var environment = get_node_or_null("/root/EnvironmentState")
 	var data: Dictionary = environment.snapshot() if environment != null else {"daylight":0.9,"clouds":0.0}
-	var daylight := clampf(float(data.get("daylight",0.9)),0.0,1.0)
+	var daylight := clampf(float(data.get("presentedDaylight",data.get("daylight",0.9))),0.0,1.0)
 	var clouds := clampf(float(data.get("clouds",0.0)),0.0,1.0)
 	for entry in forest_lights:
 		var light: PointLight2D = entry.node

@@ -237,7 +237,7 @@ func _flashlight_status() -> Dictionary:
 func _update_lighting() -> void:
 	sunlight.shadow_enabled = bool(RenderQuality.get_profile().sunShadows)
 	var state := EnvironmentState.snapshot()
-	var daylight := float(state.get("daylight", 0.8))
+	var daylight := float(state.get("presentedDaylight",state.get("daylight", 0.8)))
 	if display.material is ShaderMaterial:
 		display.material.set_shader_parameter("daylight",daylight)
 	var cloud := float(state.get("clouds", 0.0))

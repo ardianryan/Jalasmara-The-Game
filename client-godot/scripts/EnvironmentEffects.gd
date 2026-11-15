@@ -113,6 +113,10 @@ func _ready() -> void:
 	_water_layer.add_child(_water_rect)
 	_modulate = CanvasModulate.new()
 	add_child(_modulate)
+	var state := get_node_or_null("/root/EnvironmentState")
+	var data: Dictionary=state.snapshot() if state != null else {"daylight":0.9,"clouds":0.0}
+	_tint=tint_for(_area,float(data.get("presentedDaylight",data.get("daylight",0.9))),float(data.get("clouds",0.0)))
+	_modulate.color=_tint
 	_layer = CanvasLayer.new()
 	_layer.layer = 5
 	add_child(_layer)
@@ -129,7 +133,7 @@ func splash(screen_point: Vector2) -> void:
 func _process(delta: float) -> void:
 	var state := get_node_or_null("/root/EnvironmentState")
 	var data: Dictionary = state.snapshot() if state != null and state.has_method("snapshot") else {"daylight":0.9,"rain":0.0,"clouds":0.0}
-	var daylight := float(data.get("daylight",0.9))
+	var daylight := float(data.get("presentedDaylight",data.get("daylight",0.9)))
 	var clouds := float(data.get("clouds",0.0))
 	var target := tint_for(_area,daylight,clouds)
 	_tint = _tint.lerp(target,1.0-exp(-delta*1.8))

@@ -1358,8 +1358,8 @@ static func smooth_lighting(previous: Dictionary,target: Dictionary,delta: float
 	return {"daylight":lerpf(float(previous.daylight),float(target.daylight),weight),"dusk":lerpf(float(previous.dusk),float(target.dusk),weight),"sun_color":old_sun.lerp(target.sun_color,weight),"sun_energy":lerpf(float(previous.sun_energy),float(target.sun_energy),weight),"ambient_color":old_ambient.lerp(target.ambient_color,weight),"ambient_energy":lerpf(float(previous.ambient_energy),float(target.ambient_energy),weight)}
 
 static func lighting_palette(place: String,weather: Dictionary) -> Dictionary:
-	var daylight:=clampf((float(weather.get("daylight",.8))-.24)/.76,0.0,1.0)
-	var minute_of_day:=float(weather.get("minuteOfDay",720.0))
+	var daylight:=clampf((float(weather.get("presentedDaylight",weather.get("daylight",.8)))-.24)/.76,0.0,1.0)
+	var minute_of_day:=float(weather.get("presentedMinuteOfDay",weather.get("minuteOfDay",720.0)))
 	var dusk:=smoothstep(960.0,1045.0,minute_of_day)*(1.0-smoothstep(1055.0,1120.0,minute_of_day))
 	var sun_color:=Color("a5c2c0").lerp(Color("fff0d7"),daylight).lerp(Color("ffd09b"),dusk*.88)
 	var ambient_night:=Color("9faeae") if place=="home" else Color("819da6")

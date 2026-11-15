@@ -262,7 +262,7 @@ func update_actors(delta: float) -> void:
 
 func _lighting_context() -> Dictionary:
 	var weather: Dictionary=EnvironmentState.snapshot()
-	var daylight:=clampf((float(weather.get("daylight",.8))-.24)/.76,0,1)
+	var daylight:=clampf((float(weather.get("presentedDaylight",weather.get("daylight",.8)))-.24)/.76,0,1)
 	var lamps: Array=[]
 	if daylight<1:
 		for lamp in renderer.get("_lanterns"):

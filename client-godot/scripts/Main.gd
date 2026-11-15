@@ -528,7 +528,7 @@ func _process(delta: float) -> void:
 			terrain.add_foreground_to(self)
 	var light_state := EnvironmentState.snapshot()
 	var clouds := float(light_state.clouds)
-	var daylight := float(light_state.daylight)
+	var daylight := float(light_state.get("presentedDaylight",light_state.daylight))
 	environment.configure("sea" if submerged else "hub")
 	if environment.has_method("update_depth"):
 		environment.update_depth(maxf(0,(nala.position.y-400)/28))

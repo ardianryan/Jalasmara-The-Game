@@ -111,7 +111,7 @@ func _update_parameters() -> void:
 	_material.set_shader_parameter("phase",_elapsed)
 	_material.set_shader_parameter("motion",0.12 if _reduced else 1.0)
 	_material.set_shader_parameter("sea_state",clampf(float(weather.get("sea_state",0.3)),0,1))
-	_material.set_shader_parameter("daylight",clampf(float(weather.get("daylight",0.9)),0,1))
+	_material.set_shader_parameter("daylight",clampf(float(weather.get("presentedDaylight",weather.get("daylight",0.9))),0,1))
 	_material.set_shader_parameter("rain",clampf(float(weather.get("rain",0)),0,1))
 	_material.set_shader_parameter("flow",Vector2(float(weather.get("current_x",7)),float(weather.get("current_y",0)))/20.0)
 

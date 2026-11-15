@@ -162,7 +162,7 @@ func _calibrate() -> void:
 	queue_redraw()
 
 func update_weather(weather: Dictionary) -> void:
-	_daylight = clampf(float(weather.get("daylight",0.8)),0,1)
+	_daylight = clampf(float(weather.get("presentedDaylight",weather.get("daylight",0.8))),0,1)
 	if not is_instance_valid(key_light): return
 	var clouds := clampf(float(weather.get("clouds",0)),0,1)
 	key_light.light_energy = lerpf(0.30,1.25,_daylight)*(1.0-clouds*0.25)
