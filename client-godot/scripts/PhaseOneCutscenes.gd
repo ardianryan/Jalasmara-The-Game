@@ -26,14 +26,14 @@ static func sequence(id: String, first_customer: String = "Pak Ranto") -> Dictio
 				{"shot":"0.3 · Asap dari bengkel Beno","tone":"warm","name":"Nala","emotion":"shock","text":"Bang Beno? Apa yang kau rakit sampai meledak? Dan kenapa warga di pasar tadi menatapku dengan mata linglung?"},
 				{"shot":"0.3 · Ajakan ke Kedai Waras","tone":"warm","name":"Mbah Wira","text":"Masuklah dulu ke Kedai Waras, Nala. Kabut di luar sana tidak ramah bagi pikiran yang belum diseduh rempah."},
 				{"shot":"0.4 · Kedai Waras","tone":"warm","name":"Mbah Wira","text":"Kakekmu hilang saat menyelidiki pipa di Palung Smara. Ia meninggalkan SmaraPedia dan rancangan Jala Kognisi. Bawa fragmen biota pada siang hari; malamnya kuracik untuk warga."},
-				{"shot":"0.4 · Jala Kognisi","tone":"teal","name":"Beno","emotion":"happy","text":"Perkenalkan, Jala Kognisi Tipe-1! Ingatan warga yang menguap diserap biota Segaran. Jala ini mengunci fragmennya saat kau menjawab pertanyaan ilmiah."},
+				{"shot":"0.4 · Jala Kognisi","tone":"teal","name":"Beno","emotion":"happy","text":"Perkenalkan, Jala Kognisi Tipe-1! Ingatan warga diserap biota Segaran. Tahan lalu lepaskan jala untuk menjaring fragmennya; resonansi di inti akan menguji pengetahuanmu."},
 				{"shot":"0.4 · Janji Nala","tone":"warm","name":"Nala","emotion":"happy","text":"Kalau begitu, jangan biarkan Kedai Waras tutup lagi, Mbah. Tunjukkan tempat menyelamnya!"},
 				{"shot":"Panduan perjalanan","tone":"warm","name":"Petualangan dimulai","text":"WASD atau joystick untuk bergerak; E untuk berinteraksi. Tahan lalu lepas spasi untuk menjala. M membuka peta, J jurnal, I tas. Tangga selam ada di Galangan Bubat."}
 			]}
 		"first_dive":
 			return {"title":"Tetes Pertama di Segaran","bgm":"underwater_segaran","lines":[
 				{"shot":"1.1 · Dangkalan Segaran","tone":"teal","sfx":"wave_crash_rock","name":"Nala","emotion":"happy","text":"Masker terpasang. Beno, kau mendengarku? Aku turun sekarang."},
-				{"shot":"1.1 · Radio sonar","tone":"teal","name":"Beno","text":"Tes, tes! Sonar aman! Saat jala mengenai biota seperti Ubur-Ubur Klorofil, resonansi ingatannya terkunci. Jawab cepat agar esensinya tetap utuh; awasi oksigenmu."}
+				{"shot":"1.1 · Radio sonar","tone":"teal","name":"Beno","text":"Tes, tes! Sonar aman! Tahan jala hingga lingkaran terbuka, lalu lepaskan untuk menjaring Ubur-Ubur Klorofil. Kuis muncul di titik resonansi terkunci. Awasi oksigenmu."}
 			]}
 		"first_kedai":
 			return {"title":"Malam Pertama di Kedai Waras","bgm":"kedai_waras_night","lines":[

@@ -16,7 +16,9 @@ func _run() -> void:
 		assert(frame==lookup.for_resident(str(resident.id)),"Repeated dialogue reuses the bounded atlas frame")
 		assert(not seen.has(frame.region),"Each person has a distinct original cell")
 		seen[frame.region]=true
-		assert(presenter._portrait(str(resident.name))==frame,"Actual dialogue resolves canonical identity before the old six-cell atlas")
+		var bust:AtlasTexture=presenter._portrait(str(resident.name))
+		assert(bust!=null and bust.atlas==frame,"Actual dialogue resolves the canonical portrait before the old six-cell atlas")
+		assert(bust.filter_clip and bust.region==Rect2(0,0,96,85),"Dialogue uses a bounded face and torso crop")
 		var image:Image=frame.get_image()
 		if image.is_compressed(): image.decompress()
 		assert(image.get_size()==Vector2i(96,128))

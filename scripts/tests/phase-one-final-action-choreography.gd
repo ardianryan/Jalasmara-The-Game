@@ -92,14 +92,16 @@ func _run() -> void:
 					assert(picture.save_png(ProjectSettings.globalize_path(path))==OK,"Cannot save "+path)
 					saved+=1
 				count+=1
-	environment.reduced_motion=true
+	var calm: Dictionary=story.sequence("victory")
+	frame.present(str(calm.title),calm.lines[1],2,calm.lines.size(),"victory")
+	frame._process(0.0)
+	for settle in range(2): await process_frame
 	var old_eye: Vector2=frame.action_layer._boss_sprite_point(frame.size,Vector2(57,65))
-	frame.boss_art.anchor_left=.24
-	frame.boss_art.anchor_right=.66
+	environment.reduced_motion=true
+	frame._process(0.0)
 	for settle in range(2): await process_frame
 	var shifted_eye: Vector2=frame.action_layer._boss_sprite_point(frame.size,Vector2(57,65))
 	assert(shifted_eye.x<old_eye.x-frame.size.x*.10,"Eye overlay does not follow Mina's approach")
-	var calm: Dictionary=story.sequence("victory")
 	frame.present(str(calm.title),calm.lines[1],2,calm.lines.size(),"victory")
 	frame._process(1.0)
 	assert(frame.action_layer.elapsed==3.0,"Reduced-motion action did not settle")
