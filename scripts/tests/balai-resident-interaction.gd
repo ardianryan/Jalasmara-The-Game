@@ -56,6 +56,8 @@ func run() -> void:
 	main.nala.frozen=true
 	main.nala.position=Vector2(940,310)
 	main._build_ui()
+	# This fixture isolates the Balai service page; day-two story playback is tested separately.
+	main.cutscene_seen_session["garden_crisis"] = true
 	main.homestead_ui=load("res://scripts/HomesteadUI.gd").new()
 	main.add_child(main.homestead_ui)
 	main.homestead_ui.configure(main,false)
