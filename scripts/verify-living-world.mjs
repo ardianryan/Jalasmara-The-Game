@@ -60,6 +60,7 @@ const scripts = [
   "scripts/tests/dialogue-cutin.gd",
   "scripts/tests/day-one-ranto-capture.gd",
   "scripts/tests/phase-one-shot-motion.gd",
+  "scripts/tests/phase-one-screenplay-polish-capture.gd",
   "scripts/tests/phase-one-backdrop-transition.gd",
   "scripts/tests/phase-one-director-capture.gd",
   "scripts/tests/world-atlas-layout.gd",

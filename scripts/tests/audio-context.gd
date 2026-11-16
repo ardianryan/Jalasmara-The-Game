@@ -43,6 +43,9 @@ func _run() -> void:
         quit(1)
         return
     audio.set_process(false)
+    # Isolate this playback check from the developer's persisted mute preference.
+    audio.muted = false
+    audio._apply_mute()
     audio.unlock_audio()
     audio._refresh_context()
     if audio.current_bgm_track != "title_theme":

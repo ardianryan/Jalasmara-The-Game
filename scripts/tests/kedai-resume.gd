@@ -21,7 +21,7 @@ func run() -> void:
 	for district in state.world.surface_hub.districts:
 		if district.npc=="Mbah Wira": wira=Vector2(district.x,district.y)
 	assert(wira!=Vector2.ZERO)
-	state.player={"coins":100,"version":0,"inventory":[{"fragmentId":"klorofil","stars":3,"quantity":1}],"progress":{"day":1,"stage":"night"}}
+	state.player={"coins":100,"version":0,"inventory":[{"fragmentId":"klorofil","stars":3,"quantity":1}],"progress":{"day":1,"stage":"night","tutorial":true}}
 	state.surface={"area":"hub","x":wira.x,"y":wira.y,"playerVersion":0,"positionAt":1234}
 	state.dive={}
 	state.adventure={}

@@ -1,5 +1,13 @@
 # Jalasmara visual evidence
 
+## Phase 1 screenplay, native game-size review, 16 November 2026
+
+| Griya arrival | First dive | Pak Ranto remembers |
+| --- | --- | --- |
+| ![Nala arrives by sampan at Griya Sasmita.](phase-one-screenplay-20261116/prologue-griya-arrival-667x375.png) | ![Nala enters Segaran water.](phase-one-screenplay-20261116/first-dive-667x375.png) | ![Pak Ranto recognizes chlorophyll in Kedai Waras.](phase-one-screenplay-20261116/ranto-recovery-667x375.png) |
+
+The same native Godot 4.7.2 capture includes the [garden confrontation](phase-one-screenplay-20261116/garden-lurah-667x375.png), [Gajah Mina introduction](phase-one-screenplay-20261116/gajah-mina-intro-844x390.png), [restored guardian](phase-one-screenplay-20261116/gajah-mina-restored-844x390.png), [Kedai feast](phase-one-screenplay-20261116/kedai-feast-844x390.png), and [moonlit ending](phase-one-screenplay-20261116/griya-ending-844x390.png). These eight original screenshots come from local game source `cccaffb` with uncommitted fixture-only corrections and cover selected frames of a 94-frame, 12-sequence, 16-scene native capture at 667×375 and 844×390. They are documentation, not distributed assets or evidence of browser/physical-device pacing. Individual hashes and acceptance limits are in the [integration report](../reviews/phase-one-screenplay-integration-2026-11-16.md).
+
 ## Coastal-life staging, 16 November 2026
 
 ![Public ready-game view of Bandar Hujung at 844×390.](coastal-life-staging-hub-20261116.png)
