@@ -17,6 +17,10 @@ var _emotion := "neutral"
 var _emote: Emote
 var _row:HBoxContainer
 var _column:VBoxContainer
+var _portrait_slot:Control
+var _portrait_frame:TextureRect
+var _message_row:HBoxContainer
+var _scroll_hint:Label
 var _panel_style:StyleBox
 var _compact_layout:=false
 var _portrait_tween:Tween
@@ -71,20 +75,28 @@ func _ready() -> void:
 	_row=row
 	row.add_theme_constant_override("separation",18)
 	add_child(row)
+	_portrait_slot = Control.new()
+	_portrait_slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_portrait_slot.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	row.add_child(_portrait_slot)
+	_portrait_frame = TextureRect.new()
+	_portrait_frame.texture = HudArt.texture("portrait-frame")
+	_portrait_frame.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_portrait_frame.stretch_mode = TextureRect.STRETCH_SCALE
+	_portrait_frame.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_portrait_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_portrait_frame.anchor_top = 1.0
+	_portrait_frame.anchor_bottom = 1.0
+	_portrait_slot.add_child(_portrait_frame)
 	portrait = TextureRect.new()
-	portrait.custom_minimum_size = Vector2(108,128)
 	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	portrait.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	row.add_child(portrait)
-	var portrait_border := TextureRect.new()
-	portrait_border.texture = HudArt.texture("portrait-frame")
-	portrait_border.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	portrait_border.stretch_mode = TextureRect.STRETCH_SCALE
-	portrait_border.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	portrait_border.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	portrait.add_child(portrait_border)
+	portrait.anchor_top = 1.0
+	portrait.anchor_bottom = 1.0
+	_portrait_slot.add_child(portrait)
+	portrait.hide()
 	_emote = Emote.new()
 	_emote.position = Vector2(68,-8)
 	_emote.size = Vector2(30,28)
@@ -100,12 +112,37 @@ func _ready() -> void:
 	nameplate.add_theme_color_override("font_color",Color("654733"))
 	nameplate.add_theme_font_size_override("font_size",22)
 	nameplate.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	column.add_child(nameplate)
+	nameplate.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	var name_style := StyleBoxFlat.new()
+	name_style.bg_color = Color("f0dab0")
+	name_style.border_color = Color("8a5a2b")
+	name_style.set_border_width_all(2)
+	name_style.content_margin_left = 8
+	name_style.content_margin_right = 8
+	name_style.content_margin_top = 2
+	name_style.content_margin_bottom = 2
+	nameplate.add_theme_stylebox_override("normal",name_style)
+	var name_row := HBoxContainer.new()
+	name_row.add_theme_constant_override("separation",8)
+	column.add_child(name_row)
+	name_row.add_child(nameplate)
+	_scroll_hint = Label.new()
+	_scroll_hint.text = "↓ Gulir teks"
+	_scroll_hint.add_theme_font_override("font",BODY)
+	_scroll_hint.add_theme_color_override("font_color",Color("795c3c"))
+	_scroll_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_scroll_hint.hide()
+	name_row.add_child(_scroll_hint)
+	_message_row = HBoxContainer.new()
+	_message_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	column.add_child(_message_row)
 	_scroll = ScrollContainer.new()
 	_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_scroll.size_flags_vertical = Control.SIZE_FILL
 	_scroll.follow_focus = true
-	column.add_child(_scroll)
+	_message_row.add_child(_scroll)
+	_scroll.get_v_scroll_bar().value_changed.connect(_on_scroll_changed)
 	text_view = RichTextLabel.new()
 	text_view.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	text_view.fit_content = true
@@ -124,7 +161,7 @@ func _ready() -> void:
 	HudArt.set_icon(next_button,"interact-hand",28)
 	next_button.custom_minimum_size.y = 56
 	next_button.pressed.connect(advance)
-	column.add_child(next_button)
+	_message_row.add_child(next_button)
 	get_viewport().size_changed.connect(_layout)
 	resized.connect(_schedule_layout)
 	_layout()
@@ -156,10 +193,12 @@ func present(speaker: String,text: String,emotion := "neutral") -> void:
 	text_view.visible_characters = -1 if EnvironmentState.reduced_motion else 0
 	portrait.texture = _portrait(_speaker)
 	portrait.visible = portrait.texture != null
+	_portrait_slot.visible = portrait.visible
 	_scroll.scroll_vertical = 0
 	_layout()
 	_schedule_layout()
 	_pop_portrait()
+	_refresh_scroll_hint.call_deferred()
 	next_button.grab_focus()
 
 func _pop_portrait() -> void:
@@ -211,39 +250,63 @@ func _layout() -> void:
 	var font_size:=preload("res://scripts/UiMetrics.gd").body(self)
 	var title_size:=maxi(font_size,ceili(18*ratio))
 	var padding:=Vector2(maxf(20,ceilf(20*ratio)),maxf(20,ceilf(12*ratio)))
-	var gap:=ceilf((1 if compact else 4)*ratio)
+	var gap:=ceilf(4*ratio)
 	_compact_layout=compact
 	_panel_style.content_margin_left=padding.x
 	_panel_style.content_margin_right=padding.x
 	_panel_style.content_margin_top=padding.y
 	_panel_style.content_margin_bottom=padding.y
-	_row.add_theme_constant_override("separation",ceili(12*ratio))
+	_row.add_theme_constant_override("separation",ceili(8*ratio))
 	_column.add_theme_constant_override("separation",int(gap))
+	_message_row.add_theme_constant_override("separation",ceili(6*ratio))
+	_scroll_hint.add_theme_font_size_override("font_size",ceili(14*ratio))
+	if portrait_screen and next_button.get_parent()!=_column:
+		next_button.reparent(_column)
+	elif not portrait_screen and next_button.get_parent()!=_message_row:
+		next_button.reparent(_message_row)
 	nameplate.add_theme_font_size_override("font_size",title_size)
 	text_view.add_theme_font_size_override("normal_font_size",font_size)
-	next_button.custom_minimum_size=Vector2(ceilf(104*ratio),ceilf(48*ratio))
+	next_button.custom_minimum_size=Vector2(ceilf(112*ratio),ceilf(48*ratio))
 	next_button.size_flags_horizontal=Control.SIZE_SHRINK_END
 	next_button.add_theme_font_size_override("font_size",font_size)
 	HudArt.apply_button(next_button)
 	HudArt.set_icon(next_button,"interact-hand",28)
-	portrait.custom_minimum_size=(Vector2(72,92) if compact else Vector2(96,112))*ratio
-	portrait.size_flags_vertical=Control.SIZE_SHRINK_CENTER
-	_emote.position=Vector2(50,-8)*ratio
+	var portrait_side:=ceilf((84 if portrait_screen else 124 if compact else 156)*ratio)
+	var frame_side:=ceilf((68 if portrait_screen else 92 if compact else 112)*ratio)
+	_portrait_slot.custom_minimum_size=Vector2(portrait_side,0)
+	_portrait_slot.visible=portrait.visible
+	_portrait_frame.offset_left=ceilf(8*ratio)
+	_portrait_frame.offset_right=_portrait_frame.offset_left+frame_side
+	_portrait_frame.anchor_top=0.0 if portrait_screen or not compact else 1.0
+	_portrait_frame.anchor_bottom=_portrait_frame.anchor_top
+	_portrait_frame.offset_top=ceilf(8*ratio) if portrait_screen or not compact else -frame_side
+	_portrait_frame.offset_bottom=_portrait_frame.offset_top+frame_side
+	portrait.offset_left=0
+	portrait.offset_right=portrait_side
+	portrait.anchor_top=0.0 if portrait_screen or not compact else 1.0
+	portrait.anchor_bottom=portrait.anchor_top
+	portrait.offset_top=-maxf(ceilf(40*ratio),padding.y+ceilf(16*ratio)) if portrait_screen or not compact else -portrait_side
+	portrait.offset_bottom=portrait.offset_top+portrait_side
+	_emote.position=Vector2(portrait_side-25*ratio,-8*ratio)
 	_emote.scale=Vector2.ONE*ratio
 	var width:=minf(ceilf(1040*ratio),view.x-ceilf(32*ratio)-insets.x-insets.z)
-	var text_width:=maxf(80,width-padding.x*2-(portrait.custom_minimum_size.x+ceilf(12*ratio) if portrait.visible else 0))
-	var title_height:=nameplate.get_theme_font("font").get_multiline_string_size(nameplate.text,HORIZONTAL_ALIGNMENT_LEFT,text_width,title_size).y
+	var name_available:float=width-padding.x*2-(portrait_side+ceilf(8*ratio) if portrait.visible else 0)
+	nameplate.custom_minimum_size.x=minf(name_available,ceilf(nameplate.get_theme_font("font").get_string_size(nameplate.text,HORIZONTAL_ALIGNMENT_LEFT,-1,title_size).x+20*ratio))
+	_scroll_hint.set_meta("has_space",name_available-nameplate.custom_minimum_size.x>=ceilf(94*ratio))
+	var text_width:=maxf(80,width-padding.x*2-(portrait_side+ceilf(8*ratio) if portrait.visible else 0)-(next_button.custom_minimum_size.x+ceilf(6*ratio) if not portrait_screen else 0))
+	var title_height:=nameplate.get_theme_font("font").get_multiline_string_size(nameplate.text,HORIZONTAL_ALIGNMENT_LEFT,nameplate.custom_minimum_size.x-ceilf(20*ratio),title_size).y+ceilf(4*ratio)
 	var line_height:=ceilf(BODY.get_height(font_size))
 	var body_height:=maxf(line_height,BODY.get_multiline_string_size(text_view.get_parsed_text(),HORIZONTAL_ALIGNMENT_LEFT,text_width,font_size).y+2)
-	var column_height:=title_height+body_height+gap*2+next_button.custom_minimum_size.y
 	var available:=view.y-ceilf(60*ratio)-ceilf(16*ratio)-insets.y-insets.w
-	var maximum:=minf(available,view.y*(.42 if compact else .38 if portrait_screen else .32))
-	var h:=minf(maximum,maxf(portrait.custom_minimum_size.y if portrait.visible else 0,column_height)+padding.y*2)
-	var body_space:=maxf(line_height,h-padding.y*2-title_height-gap*2-next_button.custom_minimum_size.y)
-	var visible_body:=maxf(line_height,floorf(body_space/line_height)*line_height)
+	var maximum:=minf(available,view.y*(.30 if portrait_screen else .32))
+	var action_height:=next_button.custom_minimum_size.y
+	var fixed_height:float=title_height+padding.y*2+gap+(action_height+gap if portrait_screen else 0)
+	var body_limit:=maxf(line_height,minf((72 if portrait_screen else 64)*ratio,maximum-fixed_height))
+	var body_target:=maxf(line_height,minf(body_limit,maxf(body_height,action_height if not portrait_screen else line_height)))
+	var visible_body:=maxf(line_height,floorf(body_target/line_height)*line_height)
 	_scroll.custom_minimum_size.y=visible_body
 	_scroll.size_flags_vertical=Control.SIZE_FILL
-	h=minf(maximum,maxf(portrait.custom_minimum_size.y if portrait.visible else 0,title_height+visible_body+gap*2+next_button.custom_minimum_size.y)+padding.y*2)
+	var h:=maxf(minf(maximum,fixed_height+maxf(visible_body,action_height if not portrait_screen else 0)),get_combined_minimum_size().y)
 	size=Vector2(width,h)
 	position=Vector2(insets.x+(view.x-insets.x-insets.z-width)/2,view.y-h-ceilf(8*ratio)-insets.w)
 
@@ -254,7 +317,17 @@ func _schedule_layout() -> void:
 
 func _finish_layout() -> void:
 	_layout_pending=false
-	if is_inside_tree(): _layout()
+	if is_inside_tree():
+		_layout()
+		_refresh_scroll_hint()
+
+func _on_scroll_changed(_value:float) -> void:
+	_refresh_scroll_hint()
+
+func _refresh_scroll_hint() -> void:
+	if not is_instance_valid(_scroll_hint) or not is_instance_valid(_scroll): return
+	var bar:=_scroll.get_v_scroll_bar()
+	_scroll_hint.visible=bool(_scroll_hint.get_meta("has_space",false)) and bar.max_value-bar.page-_scroll.scroll_vertical>1.0
 
 func advance() -> void:
 	AudioManager.play_sfx("wooden_click_light",1.0,-8.0)
@@ -267,6 +340,12 @@ func _input(event: InputEvent) -> void:
 	if not is_visible_in_tree() or not event is InputEventKey: return
 	if event.pressed and not event.echo and event.physical_keycode in [KEY_SPACE,KEY_ENTER]:
 		advance()
+		get_viewport().set_input_as_handled()
+	elif event.pressed and event.physical_keycode in [KEY_DOWN,KEY_UP,KEY_PAGEDOWN,KEY_PAGEUP]:
+		var sign:=1 if event.physical_keycode in [KEY_DOWN,KEY_PAGEDOWN] else -1
+		var step:=_scroll.size.y*.8 if event.physical_keycode in [KEY_PAGEDOWN,KEY_PAGEUP] else BODY.get_height(text_view.get_theme_font_size("normal_font_size"))
+		_scroll.scroll_vertical=clampi(_scroll.scroll_vertical+roundi(sign*step),0,maxi(0,roundi(_scroll.get_v_scroll_bar().max_value-_scroll.get_v_scroll_bar().page)))
+		_refresh_scroll_hint()
 		get_viewport().set_input_as_handled()
 
 func _process(delta: float) -> void:
