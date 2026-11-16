@@ -20,6 +20,8 @@ func _run() -> void:
 	root.add_child(scene)
 	var dialogue:Control=load("res://scripts/DialoguePresenter.gd").new()
 	root.add_child(dialogue)
+	var advances: Array = []
+	dialogue.advance_requested.connect(func(): advances.append(true))
 	DirAccess.make_dir_recursive_absolute(OUTPUT)
 	for physical in [Vector2i(667,375),Vector2i(844,390),Vector2i(390,844),Vector2i(1440,900)]:
 		root.size=physical
@@ -55,6 +57,10 @@ func _run() -> void:
 		var scroll:ScrollContainer=dialogue.get("_scroll")
 		var bar:=scroll.get_v_scroll_bar()
 		assert(bar.max_value-bar.page>1.0,"Long authored lines must remain scrollable")
+		dialogue.text_view.visible_characters=-1
+		dialogue.advance()
+		assert(scroll.scroll_vertical>0 and advances.is_empty(),"Continue must reveal hidden text before changing speakers")
+		scroll.scroll_vertical=0
 		var key:=InputEventKey.new()
 		key.pressed=true
 		key.physical_keycode=KEY_PAGEDOWN

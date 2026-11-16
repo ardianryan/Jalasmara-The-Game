@@ -59,6 +59,13 @@ func run() -> void:
 				presenter.get("_scroll").scroll_vertical=100000
 				await settle()
 				assert(presenter.get("_scroll").scroll_vertical>0,"Long authored text must remain scrollable")
+			elif entry[2]=="paragraph":
+				var scroll:ScrollContainer=presenter.get("_scroll")
+				if scroll.get_v_scroll_bar().max_value-scroll.get_v_scroll_bar().page>1:
+					while scroll.get_v_scroll_bar().max_value-scroll.get_v_scroll_bar().page-scroll.scroll_vertical>1:
+						presenter.advance()
+						await settle()
+					assert(advances.size()==prior,"Continue must expose hidden text before advancing")
 			var touch:=InputEventScreenTouch.new()
 			touch.index=0
 			touch.position=action.get_center()

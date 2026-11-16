@@ -330,12 +330,23 @@ func _on_scroll_changed(_value:float) -> void:
 func _refresh_scroll_hint() -> void:
 	if not is_instance_valid(_scroll_hint) or not is_instance_valid(_scroll): return
 	var bar:=_scroll.get_v_scroll_bar()
-	_scroll_hint.visible=bool(_scroll_hint.get_meta("has_space",false)) and bar.max_value-bar.page-_scroll.scroll_vertical>1.0
+	var has_more:=bar.max_value-bar.page-_scroll.scroll_vertical>1.0
+	_scroll_hint.visible=bool(_scroll_hint.get_meta("has_space",false)) and has_more
+	next_button.text="Gulir" if has_more and text_view.visible_characters<0 else "Lanjut"
 
 func advance() -> void:
 	AudioManager.play_sfx("wooden_click_light",1.0,-8.0)
 	if text_view.visible_characters>=0 and text_view.visible_characters<_total:
 		text_view.visible_characters = -1
+		_refresh_scroll_hint.call_deferred()
+		return
+	var bar:=_scroll.get_v_scroll_bar()
+	if bar.max_value-bar.page-_scroll.scroll_vertical>1.0:
+		_scroll.scroll_vertical=clampi(
+			_scroll.scroll_vertical+roundi(_scroll.size.y*.82),
+			0,maxi(0,roundi(bar.max_value-bar.page))
+		)
+		_refresh_scroll_hint()
 		return
 	advance_requested.emit()
 
@@ -361,7 +372,9 @@ func _process(delta: float) -> void:
 		if _blip_at>.10 and AudioManager.can_play_environment():
 			_blip_at = 0
 			AudioManager.play_sfx("wooden_click_light",float(SPEAKER_BLIP_PITCH.get(_speaker,1.0)),-28)
-	if count>=_total: text_view.visible_characters = -1
+	if count>=_total:
+		text_view.visible_characters = -1
+		_refresh_scroll_hint.call_deferred()
 
 func debug_state() -> Dictionary:
 	return {"speaker":_speaker,"emotion":_emotion,"visibleCharacters":text_view.visible_characters,"total":text_view.get_total_character_count(),"portrait":portrait.texture!=null,"position":[position.x,position.y],"size":[size.x,size.y],"compact":_compact_layout}
