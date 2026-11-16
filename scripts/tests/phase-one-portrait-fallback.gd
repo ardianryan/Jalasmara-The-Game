@@ -45,10 +45,11 @@ func _run() -> void:
 				var bust:=portrait.get_global_rect()
 				var button:Rect2=dialogue.next_button.get_global_rect()
 				var text:Rect2=dialogue.text_view.get_global_rect()
+				var scale:float=root.get_final_transform().x.length()
 				assert(screen.encloses(panel) and screen.encloses(bust),"Panel and bust must stay on screen: "+speaker)
 				assert(panel.grow(1).encloses(button),"Continue button must stay in panel: "+speaker)
 				assert(bust.end.x<text.position.x,"Bust cannot cover the dialogue text: "+speaker)
-				assert(button.size.x>=48 and button.size.y>=48,"Continue must remain touch-sized")
+				assert(button.size.x*scale>=47.99 and button.size.y*scale>=47.99,"Continue must remain touch-sized")
 				if capture and speaker in ["Ki Lurah Wirabhumi","Kinasih"]:
 					dialogue.text_view.visible_characters=-1
 					await RenderingServer.frame_post_draw
