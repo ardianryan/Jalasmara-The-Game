@@ -10,10 +10,10 @@ const DIRECTED_BEATS := {
 	"garden_crisis": [1, 2, 3],
 	"cave_warning": [1, 2],
 	"earthquake": [1, 3, 4],
-	"boss_intro": [1, 2],
+	"boss_intro": [1, 2, 3],
 	"boss_phase_two": [1, 2],
 	"victory": [1, 2, 3],
-	"epilogue": [1, 2, 3, 4, 5, 6, 7]
+	"epilogue": [1, 2, 3, 4, 5, 6, 7, 8]
 }
 const CHILD_ATLAS := preload("res://resources/art/village-expansion-v1/residents.png")
 const NALA_DIVING := {
@@ -22,6 +22,15 @@ const NALA_DIVING := {
 	"male_nusantara": preload("res://resources/art/player-gait/male-nusantara-diving-idle-8way-v1.png"),
 	"male_default": preload("res://resources/art/player-gait/male-default-diving-idle-8way-v1.png")
 }
+const NALA_DAILY := {
+	"female_nusantara": preload("res://resources/art/player-gait/female-nusantara-daily-idle-8way-v1.png"),
+	"female_default": preload("res://resources/art/player-gait/female-default-daily-idle-8way-v1.png"),
+	"male_nusantara": preload("res://resources/art/player-gait/male-nusantara-daily-idle-8way-v1.png"),
+	"male_default": preload("res://resources/art/player-gait/male-default-daily-idle-8way-v1.png")
+}
+const NPC_ATLAS := preload("res://resources/art/npc-atlas.png")
+const PIXEL_FONT := preload("res://resources/fonts/ark-pixel-12px-proportional-latin.otf")
+const BODY_FONT := preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2")
 const NPC_FACES := {
 	"lurah": preload("res://resources/art/npc-facing-v2/ki_lurah_wirabhumi-front.png"),
 	"raka": preload("res://resources/art/npc-facing-v2/inspektur_raka-front.png"),
@@ -66,7 +75,6 @@ func _draw() -> void:
 			else: _draw_finale(size, motion)
 
 func _draw_arrival_boat(view: Vector2, motion: float) -> void:
-	# A small deliberately pixel-stepped Nala and sampan, authored as editable shapes.
 	var unit:=maxf(1.0,view.y/270.0)
 	var crossing:=minf(motion/6.0,1.0)
 	var origin:=Vector2(view.x*(.18+crossing*.19),view.y*.53+sin(motion*2.0)*unit)
@@ -76,20 +84,12 @@ func _draw_arrival_boat(view: Vector2, motion: float) -> void:
 	draw_rect(Rect2(-38,1,74,3),Color("d39a55"))
 	draw_rect(Rect2(-31,5,55,3),Color("86512c"))
 	draw_rect(Rect2(-20,12,40,2),Color("b16b36"))
-	draw_rect(Rect2(-3,-6,4,7),Color("24333c"))
-	draw_rect(Rect2(3,-6,4,7),Color("27333a"))
-	draw_rect(Rect2(-5,-18,14,13),Color("9a4d2d"))
-	draw_rect(Rect2(-3,-17,8,10),Color("d8783c"))
-	draw_rect(Rect2(8,-14,4,9),Color("5b382b"))
-	draw_rect(Rect2(-2,-24,9,7),Color("c99468"))
-	draw_rect(Rect2(5,-23,3,5),Color("3f2b23"))
-	draw_rect(Rect2(-5,-26,15,3),Color("28343b"))
-	draw_rect(Rect2(-1,-29,8,3),Color("54646b"))
-	draw_rect(Rect2(7,-17,3,5),Color("c99468"))
 	var stroke:=sin(motion*4.0)*5.0
 	draw_line(Vector2(10,-7),Vector2(33+stroke,12),Color("f0c184"),2.0)
 	draw_line(Vector2(33+stroke,12),Vector2(39+stroke,17),Color("90d8d4"),2.0)
 	draw_set_transform(Vector2.ZERO)
+	_draw_nala_daily(origin+Vector2(-3,1)*unit,unit*.92,4)
+	_actor(Vector2(view.x*.08,view.y*.54),_unit(view),Color("9b734f"),false,0.0,"beno")
 	for i in range(3):
 		var wake:=origin+Vector2((-55.0-float(i)*17.0)*unit,(10.0+float(i%2)*4.0)*unit)
 		draw_rect(Rect2(wake,Vector2((12.0-float(i)*2.0)*unit,unit)),Color(.48,.94,.88,.28))
@@ -97,25 +97,29 @@ func _draw_arrival_boat(view: Vector2, motion: float) -> void:
 func _draw_fractured_pipe(view: Vector2, motion: float) -> void:
 	var unit:=maxf(1.0,view.y/270.0)
 	var break_ratio:=minf(motion/1.4,1.0)
-	# The crack aligns with the large background pipe instead of inventing a second pipe.
-	var origin:=Vector2(view.x*.84,view.y*.15)
-	draw_set_transform(origin,0.0,Vector2(unit,unit))
-	var crack:=PackedVector2Array([Vector2(-8,-11),Vector2(-1,-5),Vector2(-5,0),Vector2(4,6),Vector2(1,14)])
-	for i in range(crack.size()-1):
-		draw_line(crack[i],crack[i+1],Color(.10,.16,.19,.65*break_ratio),2.0)
-	draw_line(Vector2(-4,-7),Vector2(7,-2),Color(.99,.78,.51,.85*break_ratio),1.0)
-	draw_set_transform(Vector2.ZERO)
+	var origin:=Vector2(view.x*.77,view.y*.22)
 	for i in range(5):
 		var angle:=float(i)*TAU/5.0+.18
-		var end:=origin+Vector2(cos(angle),sin(angle))*(15.0+float(i%2)*5.0)*unit
-		draw_line(origin,end,Color(.44,.99,.94,.56*break_ratio),unit)
+		var end:=origin+Vector2(cos(angle),sin(angle))*(9.0+float(i%2)*5.0)*unit
+		draw_line(origin+Vector2(cos(angle),sin(angle))*4*unit,end,Color(.62,.98,.94,.35*break_ratio),unit)
 	for i in range(12):
 		var angle:=float(i)*2.399
 		var drift:=Vector2(cos(angle),sin(angle))*(6.0+break_ratio*(8.0+float(i%4)*4.0))*unit
 		var shard:=origin+drift
-		draw_rect(Rect2(shard,Vector2(2.0+float(i%3),2.0)*unit),Color(.68,.93,.84,.68*break_ratio))
+		draw_rect(Rect2(shard,Vector2(1.0+float(i%3),2.0)*unit),Color(.76,1.0,.92,.55*break_ratio))
+	for i in range(7):
+		var rise:=fposmod(motion*(8.0+float(i%2)*3.0)+float(i)*10.0,57.0)
+		var bubble:=origin+Vector2((-7.0-float(i%3)*5.0)*unit,-rise*unit)
+		draw_arc(bubble,(1.7+float(i%2))*unit,0,TAU,8,Color(.80,1.0,.98,.50*(1.0-rise/57.0)),unit)
 
 func _draw_ancient_map(view: Vector2, motion: float) -> void:
+	var actor_unit:=_unit(view)
+	var actor_ground:=view.y*.55
+	_draw_nala_daily(Vector2(view.x*.13,actor_ground),actor_unit,2)
+	_actor(Vector2(view.x*.21,actor_ground),actor_unit,Color("876943"),false,0.0,"wira")
+	_actor(Vector2(view.x*.75,actor_ground),actor_unit,Color("a79667"),false,0.0,"saras")
+	_actor(Vector2(view.x*.83,actor_ground),actor_unit,Color("866c51"),false,0.0,"lurah")
+	_actor(Vector2(view.x*.91,actor_ground),actor_unit,Color("6f7891"),false,0.0,"beno")
 	var center:=Vector2(view.x*.50,view.y*.38)
 	var unit:=maxf(1.0,view.y/270.0)
 	var path:=PackedVector2Array([
@@ -172,6 +176,13 @@ func _actor(feet: Vector2, unit: float, coat: Color, child: bool = false, stride
 	draw_rect(Rect2(7-step,-18,3,9),Color("cc9f7a"))
 	draw_set_transform(Vector2.ZERO)
 
+func _draw_nala_daily(feet: Vector2, unit: float, direction: int = 2) -> void:
+	var appearance:=str(GameState.player.get("appearance","female_nusantara"))
+	var atlas: Texture2D=NALA_DAILY.get(appearance,NALA_DAILY["female_nusantara"])
+	var source:=Rect2(direction*128+40,0,48,128)
+	var dest:=Rect2(feet+Vector2(-13,-55)*unit,Vector2(26,58)*unit)
+	draw_texture_rect_region(atlas,dest,source)
+
 func _draw_prologue(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
 	match motif_beat:
@@ -214,13 +225,30 @@ func _draw_capsule_ship(view: Vector2, motion: float) -> void:
 	var arrive:=_progress(motion,2.0)
 	var origin:=Vector2(view.x*(.66-arrive*.10),view.y*.50+sin(motion*1.5)*unit)
 	draw_set_transform(origin,0.0,Vector2(unit,unit))
-	draw_colored_polygon(PackedVector2Array([Vector2(-54,0),Vector2(53,0),Vector2(40,17),Vector2(-39,17)]),Color("1e2830"))
-	draw_rect(Rect2(-50,-4,97,5),Color("5b554e"))
-	draw_rect(Rect2(-26,-18,50,14),Color("2b343a"))
-	draw_rect(Rect2(-17,-15,23,5),Color("b96483"))
-	draw_line(Vector2(-36,-4),Vector2(-36,-34),Color("555e60"),2)
-	draw_rect(Rect2(-37,-33,15,10),Color("752b55"))
+	var hull:=PackedVector2Array([Vector2(-59,-2),Vector2(49,-2),Vector2(56,4),Vector2(45,16),Vector2(-43,17),Vector2(-54,10)])
+	draw_colored_polygon(hull,Color("1d2c37"))
+	draw_line(Vector2(-51,13),Vector2(43,13),Color("8c6954"),2)
+	draw_rect(Rect2(-57,-7,103,5),Color("ba8454"))
+	draw_rect(Rect2(-56,-6,101,2),Color("ebbe77"))
+	draw_rect(Rect2(-27,-24,53,17),Color("263a43"))
+	draw_rect(Rect2(-29,-26,57,4),Color("ae7950"))
+	draw_rect(Rect2(-22,-20,35,8),Color("65445d"))
+	draw_rect(Rect2(-20,-18,31,3),Color("ddac75"))
+	for i in range(5):
+		var x:float=-38.0+float(i)*18.0
+		draw_circle(Vector2(x,6),3,Color("c18b50"))
+		draw_circle(Vector2(x,6),1.5,Color("74b7bc"))
+	for x in [-42.0,-8.0,28.0]:
+		draw_line(Vector2(x,-7),Vector2(x,-16),Color("b39b72"),2)
+	draw_line(Vector2(-37,-25),Vector2(-37,-40),Color("817f70"),3)
+	draw_rect(Rect2(-39,-42,8,4),Color("4c4c53"))
+	draw_rect(Rect2(-15,-32,6,8),Color("3a4044"))
+	draw_rect(Rect2(-16,-34,8,2),Color("b87757"))
+	draw_line(Vector2(30,-23),Vector2(30,-46),Color("b99771"),2)
+	draw_colored_polygon(PackedVector2Array([Vector2(31,-46),Vector2(49,-43),Vector2(31,-37)]),Color("8b3955"))
+	draw_rect(Rect2(35,-43,5,3),Color("e3b57f"))
 	draw_set_transform(Vector2.ZERO)
+	_actor(origin+Vector2(27,-7)*unit,unit*.90,Color("e6e1d6"),false,0.0,"raka")
 	for i in range(5):
 		var feet:=Vector2(view.x*(.07+float(i)*.026),view.y*.54)
 		var resident_key: String=["ratih","tedi","wira","beno","saras"][i]
@@ -282,7 +310,7 @@ func _draw_first_dive(view: Vector2, motion: float) -> void:
 			draw_rect(Rect2(drop,Vector2(2,2)*unit),Color(.66,1.0,.95,splash*(1.0-splash*.5)))
 		draw_arc(Vector2(view.x*.49,view.y*.66),(4.0+splash*30.0)*unit,0,TAU,24,Color(.62,.98,.94,.50*splash),unit)
 	else:
-		_draw_diver(Vector2(view.x*.47,view.y*.51+sin(motion*1.8)*2*unit),unit,.13,false)
+		_draw_swimmer(Vector2(view.x*.47,view.y*.52+sin(motion*1.8)*2*unit),unit,motion)
 		for i in range(6):
 			var rise:=fposmod(float(i)*19.0-motion*(10.0+float(i%3)*3.0),91.0)
 			draw_arc(Vector2(view.x*.55+float(i%3)*6*unit,view.y*.58-rise*unit),(2.0+float(i%2))*unit,0,TAU,10,Color(.64,.96,.92,.42),unit)
@@ -300,26 +328,48 @@ func _draw_diver(pos: Vector2, unit: float, angle: float, thumb: bool) -> void:
 		draw_rect(Rect2(7*unit,-24*unit,3*unit,12*unit),Color("d7a783"))
 	draw_set_transform(Vector2.ZERO)
 
+func _draw_swimmer(pos: Vector2, unit: float, motion: float) -> void:
+	_draw_diver(pos,unit*1.22,PI*.5+sin(motion*1.7)*.055,false)
+	for i in range(4):
+		var drift:=fposmod(motion*(7.0+float(i)*2.0)+float(i)*13.0,46.0)
+		var bubble:=pos+Vector2((-35.0-drift)*unit,(-20.0-float(i%2)*5.0-drift*.25)*unit)
+		draw_arc(bubble,(1.6+float(i%2))*unit,0,TAU,8,Color(.72,1.0,.96,.40*(1.0-drift/46.0)),unit)
+
 func _draw_service(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
 	if motif_beat==1:
 		_draw_tea_and_net(view,motion,7)
-		_actor(Vector2(view.x*.51,view.y*.54),unit,Color("6c8562"))
-		var center:=Vector2(view.x*.51,view.y*.43)
-		var burst:=_progress(motion,1.6)
-		for i in range(12):
-			var angle:=float(i)*TAU/12.0
-			var end:=center+Vector2(cos(angle),sin(angle))*(8.0+burst*65.0)*unit
-			draw_line(center,end,Color(.70,.98,.45,(1.0-burst)*.54),(2.0+float(i%2))*unit)
-		for i in range(7):
-			var drop:=center+Vector2(sin(float(i)*2.2),cos(float(i)*2.2))*(14.0+burst*41.0)*unit
-			draw_rect(Rect2(drop,Vector2(3,3)*unit),Color(.55,.94,.75,.7*(1.0-burst*.5)))
+		_draw_darmi_tasting(view,motion)
 	else:
 		var retreat:=_progress(motion,2.0)
-		_actor(Vector2(view.x*(.77+retreat*.12),view.y*.54),unit,Color("dfe3d8"),false,sin(motion*5.0)*.5)
+		_actor(Vector2(view.x*(.77+retreat*.12),view.y*.54),unit,Color("dfe3d8"),false,sin(motion*5.0)*.5,"raka")
 		for i in range(11):
 			var p:=Vector2(view.x*(.73+float(i%4)*.04),view.y*.52-fposmod(motion*8.0+float(i)*12.0,71.0)*unit)
 			draw_rect(Rect2(p,Vector2(2,2)*unit),Color(.70,.37,.84,.18))
+
+func _draw_darmi_tasting(view: Vector2, motion: float) -> void:
+	var unit:=_unit(view)
+	var center:=Vector2(view.x*.52,view.y*.35)
+	var pulse:=.5+.5*sin(motion*3.8)
+	for i in range(12):
+		var angle:=float(i)*TAU/12.0
+		var ray_end:=center+Vector2(cos(angle),sin(angle))*(51.0+pulse*8.0)*unit
+		draw_line(center+Vector2(cos(angle),sin(angle))*34*unit,ray_end,Color(.69,1.0,.53,.30+pulse*.20),(2.0+float(i%2))*unit)
+	var frame:=Rect2(center+Vector2(-55,-52)*unit,Vector2(110,111)*unit)
+	draw_rect(frame,Color("25382d"))
+	draw_rect(frame,Color("d4a359"),false,3*unit)
+	draw_rect(Rect2(frame.position+Vector2(4,4)*unit,frame.size-Vector2(8,8)*unit),Color("a4bc6c"),false,unit)
+	var source:=Rect2(160,627,320,320)
+	var portrait:=Rect2(center+Vector2(-51,-48)*unit,Vector2(102,103)*unit)
+	draw_texture_rect_region(NPC_ATLAS,portrait,source)
+	for i in range(9):
+		var angle:=float(i)*2.399+motion*.24
+		var drift:=Vector2(cos(angle),sin(angle))*(58.0+float(i%3)*7.0)*unit
+		var sparkle:=center+drift
+		draw_rect(Rect2(sparkle,Vector2(2.0+float(i%2),2.0)*unit),Color(.79,1.0,.68,.45+.25*pulse))
+	var leaf:=Vector2(center.x+47*unit,center.y+36*unit)
+	draw_colored_polygon(PackedVector2Array([leaf,leaf+Vector2(12,-7)*unit,leaf+Vector2(9,2)*unit,leaf+Vector2(2,7)*unit]),Color("9be084"))
+	draw_line(leaf+Vector2(1,4)*unit,leaf+Vector2(9,-3)*unit,Color("3f855e"),unit)
 
 func _draw_garden(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
@@ -369,8 +419,7 @@ func _draw_cave(view: Vector2, motion: float) -> void:
 
 func _draw_earthquake(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
-	var table:=Vector2(view.x*.50,view.y*.54)
-	draw_colored_polygon(PackedVector2Array([table+Vector2(-44,0)*unit,table+Vector2(0,-22)*unit,table+Vector2(44,0)*unit,table+Vector2(0,18)*unit]),Color("806348"))
+	var map_center:=Vector2(view.x*.70,view.y*.53)
 	if motif_beat==1:
 		for i in range(5):
 			var council_key: String=["lurah","wira","beno","saras","raka"][i]
@@ -387,7 +436,8 @@ func _draw_earthquake(view: Vector2, motion: float) -> void:
 			var council_key: String=["lurah","wira","beno","saras"][i]
 			_actor(Vector2(view.x*(.27+float(i)*.14),view.y*.55),unit,Color("5c7f77").lerp(Color("b06b46"),float(i%2)),false,0.0,council_key)
 		if motif_beat==4:
-			draw_line(table+Vector2(-24,-2)*unit,table+Vector2(27,6)*unit,Color("76e3e4"),2*unit)
+			draw_line(map_center+Vector2(-16,-2)*unit,map_center+Vector2(17,4)*unit,Color(.47,.90,.89,.67),2*unit)
+			draw_circle(map_center+Vector2(17,4)*unit,2*unit,Color("b5f8dc"))
 
 func _draw_boss_intro(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
@@ -409,6 +459,14 @@ func _draw_boss_intro(view: Vector2, motion: float) -> void:
 			var phase:=fposmod(motion*.5+float(i)*.22,1.0)
 			var p:=Vector2(view.x*(.75+float(i%3)*.02),view.y*(.21+phase*.27))
 			draw_rect(Rect2(p,Vector2(2+float(i%2),2)*unit),Color(.78,.25,.88,.54*(1.0-phase)))
+		if motif_beat==3:
+			var card:=Rect2(Vector2(view.x*.19,view.y*.275),Vector2(view.x*.62,view.y*.305))
+			draw_rect(card,Color(.055,.10,.15,.91))
+			draw_rect(card,Color("d4a359"),false,3*unit)
+			draw_rect(Rect2(card.position+Vector2(5,5)*unit,card.size-Vector2(10,10)*unit),Color(.40,.86,.87,.80),false,unit)
+			draw_string(BODY_FONT,Vector2(card.position.x,card.position.y+29*unit),"PENJAGA SAMUDRA YANG TERCEMAR",HORIZONTAL_ALIGNMENT_CENTER,card.size.x,roundi(16*unit),Color("efcd9c"))
+			draw_string(PIXEL_FONT,Vector2(card.position.x,card.position.y+63*unit),"GAJAH MINA",HORIZONTAL_ALIGNMENT_CENTER,card.size.x,roundi(26*unit),Color("e8f9e7"))
+			draw_string(BODY_FONT,Vector2(card.position.x,card.position.y+88*unit),"100 m  ·  TAMANSARI",HORIZONTAL_ALIGNMENT_CENTER,card.size.x,roundi(16*unit),Color("9ce5df"))
 
 func _draw_crystal(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
@@ -424,7 +482,7 @@ func _draw_victory(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
 	if motif_beat==1:
 		var nala:=Vector2(view.x*.34,view.y*.53)
-		_draw_diver(nala,unit,0.0,false)
+		_draw_swimmer(nala,unit,motion)
 		var core:=Vector2(view.x*.76,view.y*.28)
 		var pull:=_progress(motion,2.5)
 		draw_line(nala+Vector2(8,-20)*unit,core,Color(.34,.98,.98,.89),3*unit)
@@ -436,18 +494,17 @@ func _draw_victory(view: Vector2, motion: float) -> void:
 		if pull>.7:
 			draw_rect(Rect2(view.x*.75,view.y*.31,4*unit,4*unit),Color(.34,.95,1.0,.91))
 	elif motif_beat==2:
-		var origin:=Vector2(view.x*.82,view.y*.22)
+		var origin:=Vector2(view.x*.735,view.y*.415)
 		var seal:=_progress(motion,1.7)
-		draw_colored_polygon(PackedVector2Array([origin+Vector2(-21,-5)*unit,origin+Vector2(20,-9)*unit,origin+Vector2(15,14)*unit,origin+Vector2(-19,12)*unit]),Color("829d96"))
-		draw_arc(origin,(7+seal*24)*unit,0,TAU,24,Color(.59,.98,.94,.55*(1.0-seal*.5)),2*unit)
+		draw_arc(origin,(5+seal*19)*unit,0,TAU,24,Color(.59,.98,.94,.45*(1.0-seal*.5)),2*unit)
 		var nala:=Vector2(view.x*.42,view.y*.53)
-		_draw_diver(nala,unit,0.0,false)
+		_draw_swimmer(nala,unit,motion)
 		var contact:=Vector2(view.x*.47,view.y*.46)
-		draw_line(Vector2(view.x*.64,view.y*.43),contact,Color("879c87"),9*unit)
-		draw_circle(contact,6*unit,Color("aabfa9"))
+		draw_arc(contact,5*unit,0,TAU,16,Color(.71,1.0,.95,.66),unit)
 		var slab:=Vector2(view.x*.52,view.y*(.46+.06*seal))
-		draw_rect(Rect2(slab,Vector2(15,10)*unit),Color("c6a669"))
-		draw_rect(Rect2(slab+Vector2(4,2)*unit,Vector2(4,4)*unit),Color("5fe9eb"))
+		draw_rect(Rect2(slab,Vector2(15,12)*unit),Color("c6a669"))
+		draw_rect(Rect2(slab,Vector2(15,12)*unit),Color("705a3e"),false,unit)
+		draw_rect(Rect2(slab+Vector2(5,3)*unit,Vector2(4,5)*unit),Color("5fe9eb"))
 	else:
 		var sweep:=_progress(motion,2.7)
 		draw_rect(Rect2(0,view.y*(.52-.48*sweep),view.x,5*unit),Color(.56,1.0,.93,.08*(1.0-sweep)))
@@ -486,4 +543,12 @@ func _draw_finale(view: Vector2, motion: float) -> void:
 		var x:=view.x*(.08+float((i*19)%83)*.01)
 		var y:=view.y*(.13+float((i*7)%52)*.01)+sin(motion*.8+float(i))*2*unit
 		draw_rect(Rect2(x,y,(1.0+float(i%2))*unit,(1.0+float(i%2))*unit),Color(.68,1.0,.91,.63))
+	if motif_beat != 8: return
+	var card:=Rect2(Vector2(view.x*.14,view.y*.275),Vector2(view.x*.72,view.y*.305))
+	draw_rect(card,Color(.075,.13,.15,.88))
+	draw_rect(card,Color("d4a359"),false,3*unit)
+	draw_rect(Rect2(card.position+Vector2(5,5)*unit,card.size-Vector2(10,10)*unit),Color(.43,.78,.75,.80),false,unit)
+	draw_string(PIXEL_FONT,Vector2(card.position.x,card.position.y+39*unit),"TERIMA KASIH TELAH BERMAIN",HORIZONTAL_ALIGNMENT_CENTER,card.size.x,roundi(20*unit),Color("f7ddae"))
+	draw_string(BODY_FONT,Vector2(card.position.x,card.position.y+64*unit),"JALA SMARA · FASE 1",HORIZONTAL_ALIGNMENT_CENTER,card.size.x,roundi(16*unit),Color("9cf1df"))
+	draw_string(BODY_FONT,Vector2(card.position.x,card.position.y+90*unit),"Bersiap menuju Zona Senja Abisal",HORIZONTAL_ALIGNMENT_CENTER,card.size.x,roundi(16*unit),Color("e8d8ae"))
 
