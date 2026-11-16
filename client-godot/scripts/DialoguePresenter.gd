@@ -3,6 +3,7 @@ extends PanelContainer
 signal advance_requested
 const HudArt = preload("res://scripts/HudSkin.gd")
 const BODY = preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2")
+const RANTO_PORTRAIT := preload("res://resources/art/cinematics-v2/pak-ranto-portrait.png")
 var text_view: RichTextLabel
 var nameplate: Label
 var portrait: TextureRect
@@ -33,6 +34,7 @@ const SPEAKER_INK := {
 	"Kinasih": Color("71547c"),
 	"Ki Lurah Wirabhumi": Color("684326"),
 	"Inspektur Raka": Color("79346d"),
+	"Pak Ranto": Color("77532e"),
 }
 
 const SPEAKER_BLIP_PITCH := {
@@ -213,6 +215,7 @@ func _pop_portrait() -> void:
 	_portrait_tween.tween_property(portrait,"scale",Vector2.ONE,.29)
 
 func _portrait(speaker: String) -> Texture2D:
+	if speaker=="Pak Ranto": return RANTO_PORTRAIT
 	var sheet: Texture2D
 	var grid := Vector2i(2,2)
 	var index := int({"Mbah Wira":0,"Beno":1,"Bu Darmi":2,"Inspektur Raka":3}.get(speaker,-1))

@@ -370,6 +370,15 @@ func _draw_customer_tasting(view: Vector2, motion: float) -> void:
 	var first_customer: String = PhaseOneCutscenes.first_customer_from_shift(GameState.shift)
 	if first_customer=="Bu Darmi": draw_texture_rect_region(NPC_ATLAS,portrait,source)
 	elif first_customer=="Pak Ranto": draw_texture_rect(ranto_portrait_texture(),portrait,false)
+	else:
+		var cup := Rect2(center+Vector2(-22,-3)*unit,Vector2(38,29)*unit)
+		draw_rect(cup,Color("5b3828"))
+		draw_rect(Rect2(cup.position+Vector2(3,3)*unit,cup.size-Vector2(6,8)*unit),Color("d2a15a"))
+		draw_rect(Rect2(cup.position+Vector2(7,5)*unit,Vector2(24,5)*unit),Color("8bbf8c"))
+		draw_arc(center+Vector2(15,9)*unit,12*unit,-PI*.45,PI*.55,12,Color("d2a15a"),3*unit)
+		for i in range(3):
+			var steam:=center+Vector2((-12+12*i)*unit,(-28+sin(motion*2.0+i)*3.0)*unit)
+			draw_line(steam,steam+Vector2(2,-14)*unit,Color("c9e2c8",.65),2*unit)
 	for i in range(9):
 		var angle:=float(i)*2.399+motion*.24
 		var drift:=Vector2(cos(angle),sin(angle))*(58.0+float(i%3)*7.0)*unit

@@ -16,6 +16,8 @@ func _run() -> void:
 	var action_script = load("res://scripts/CinematicActionLayer.gd")
 	var portrait: Texture2D = action_script.ranto_portrait_texture()
 	assert(portrait.get_width()==160 and portrait.get_height()==160,"Ranto portrait must retain its curated 160px source grid")
+	dialogue.present("Pelanggan Kedai","Pesanan tersimpan tanpa nama pada sesi lama.")
+	assert(dialogue.portrait.texture==null,"Missing legacy recipe snapshot must not borrow another resident's portrait")
 	var capture := OS.get_environment("CINEMATIC_CAPTURE")=="1"
 	if capture:
 		assert(DisplayServer.get_name()!="headless","Native framebuffer required for Ranto proof")
@@ -29,6 +31,10 @@ func _run() -> void:
 			for settle in range(4): await process_frame
 			frame.present(str(sequence.title),sequence.lines[0],1,sequence.lines.size(),"first_service")
 			dialogue.present(str(sequence.lines[0].name),str(sequence.lines[0].text),"shock")
+			if customer=="Pak Ranto":
+				assert(dialogue.portrait.texture==portrait,"Ranto dialogue must use the approved portrait")
+			else:
+				assert(dialogue.portrait.texture!=null and dialogue.portrait.texture!=portrait,"Saved Darmi shift must keep Darmi's portrait")
 			dialogue.text_view.visible_characters=-1
 			frame._process(1.2)
 			for settle in range(3): await process_frame
