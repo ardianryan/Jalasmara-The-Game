@@ -28,9 +28,6 @@ const NALA_DAILY := {
 	"male_nusantara": preload("res://resources/art/player-gait/male-nusantara-daily-idle-8way-v1.png"),
 	"male_default": preload("res://resources/art/player-gait/male-default-daily-idle-8way-v1.png")
 }
-const NPC_ATLAS := preload("res://resources/art/npc-atlas.png")
-const RANTO_PORTRAIT := preload("res://resources/art/cinematics-v2/pak-ranto-portrait.png")
-const PhaseOneCutscenes := preload("res://scripts/PhaseOneCutscenes.gd")
 const PIXEL_FONT := preload("res://resources/fonts/ark-pixel-12px-proportional-latin.otf")
 const BODY_FONT := preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2")
 const NPC_FACES := {
@@ -51,9 +48,6 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-
-static func ranto_portrait_texture() -> Texture2D:
-	return RANTO_PORTRAIT
 
 func has_directed_action(id: String, beat: int) -> bool:
 	return DIRECTED_BEATS.has(id) and beat in DIRECTED_BEATS[id]
@@ -357,34 +351,42 @@ func _draw_customer_tasting(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
 	var center:=Vector2(view.x*.52,view.y*.35)
 	var pulse:=.5+.5*sin(motion*3.8)
+	var frame:=Rect2(center+Vector2(-55,-52)*unit,Vector2(110,111)*unit)
+	draw_rect(frame,Color("35251d"))
+	draw_rect(frame,Color("d4a359"),false,3*unit)
+	draw_rect(Rect2(frame.position+Vector2(5,5)*unit,frame.size-Vector2(10,10)*unit),Color("6a4b30"),false,unit)
+	# A single character portrait stays in DialoguePresenter; the tasting card shows the brew.
+	var bloom:=center+Vector2(0,-7)*unit
 	for i in range(12):
 		var angle:=float(i)*TAU/12.0
-		var ray_end:=center+Vector2(cos(angle),sin(angle))*(51.0+pulse*8.0)*unit
-		draw_line(center+Vector2(cos(angle),sin(angle))*34*unit,ray_end,Color(.69,1.0,.53,.30+pulse*.20),(2.0+float(i%2))*unit)
-	var frame:=Rect2(center+Vector2(-55,-52)*unit,Vector2(110,111)*unit)
-	draw_rect(frame,Color("25382d"))
-	draw_rect(frame,Color("d4a359"),false,3*unit)
-	draw_rect(Rect2(frame.position+Vector2(4,4)*unit,frame.size-Vector2(8,8)*unit),Color("a4bc6c"),false,unit)
-	var source:=Rect2(160,627,320,320)
-	var portrait:=Rect2(center+Vector2(-51,-48)*unit,Vector2(102,103)*unit)
-	var first_customer: String = PhaseOneCutscenes.first_customer_from_shift(GameState.shift)
-	if first_customer=="Bu Darmi": draw_texture_rect_region(NPC_ATLAS,portrait,source)
-	elif first_customer=="Pak Ranto": draw_texture_rect(ranto_portrait_texture(),portrait,false)
-	else:
-		var cup := Rect2(center+Vector2(-22,-3)*unit,Vector2(38,29)*unit)
-		draw_rect(cup,Color("5b3828"))
-		draw_rect(Rect2(cup.position+Vector2(3,3)*unit,cup.size-Vector2(6,8)*unit),Color("d2a15a"))
-		draw_rect(Rect2(cup.position+Vector2(7,5)*unit,Vector2(24,5)*unit),Color("8bbf8c"))
-		draw_arc(center+Vector2(15,9)*unit,12*unit,-PI*.45,PI*.55,12,Color("d2a15a"),3*unit)
-		for i in range(3):
-			var steam:=center+Vector2((-12+12*i)*unit,(-28+sin(motion*2.0+i)*3.0)*unit)
-			draw_line(steam,steam+Vector2(2,-14)*unit,Color("c9e2c8",.65),2*unit)
+		var direction:=Vector2(cos(angle),sin(angle))
+		var ray_end:=bloom+direction*(31.0+pulse*5.0)*unit
+		draw_line(bloom+direction*22.0*unit,ray_end,Color(.48,1.0,.76,.34+pulse*.25),(1.0+float(i%3))*unit)
+	draw_arc(bloom,(26.0+pulse*3.0)*unit,PI*.97,PI*1.97,20,Color(.62,1.0,.78,.30+pulse*.22),unit)
+	var table:=center+Vector2(-47,21)*unit
+	draw_rect(Rect2(table,Vector2(94,7)*unit),Color("2e1d18"))
+	draw_rect(Rect2(table+Vector2(2,1)*unit,Vector2(90,3)*unit),Color("a36a3b"))
+	draw_rect(Rect2(table+Vector2(7,7)*unit,Vector2(80,4)*unit),Color("503322"))
+	var cup:=center+Vector2(-18,-7)*unit
+	draw_colored_polygon(PackedVector2Array([cup+Vector2(-5,0)*unit,cup+Vector2(42,0)*unit,cup+Vector2(36,26)*unit,cup+Vector2(2,26)*unit]),Color("342920"))
+	draw_colored_polygon(PackedVector2Array([cup,cup+Vector2(37,0)*unit,cup+Vector2(32,21)*unit,cup+Vector2(5,21)*unit]),Color("e7c68d"))
+	draw_rect(Rect2(cup+Vector2(6,4)*unit,Vector2(4,15)*unit),Color("fff0be"))
+	draw_rect(Rect2(cup+Vector2(29,4)*unit,Vector2(4,15)*unit),Color("b77945"))
+	draw_rect(Rect2(cup+Vector2(-3,-3)*unit,Vector2(43,6)*unit),Color("f8d695"))
+	draw_rect(Rect2(cup+Vector2(2,-2)*unit,Vector2(34,3)*unit),Color("4c8666"))
+	draw_rect(Rect2(cup+Vector2(6,-2)*unit,Vector2(21,1)*unit),Color("9fe6a0"))
+	draw_arc(cup+Vector2(40,11)*unit,10*unit,-PI*.48,PI*.48,12,Color("d5a560"),3*unit)
+	draw_rect(Rect2(cup+Vector2(12,7)*unit,Vector2(4,4)*unit),Color("6a9f6e"))
+	for i in range(3):
+		var steam:=center+Vector2((-10+10*i+sin(motion*1.3+float(i))*2.0)*unit,(-19-fposmod(motion*5.0+float(i)*9.0,22.0))*unit)
+		draw_line(steam,steam+Vector2(2,-6)*unit,Color(.78,1.0,.75,.25+.32*pulse),2*unit)
+		draw_line(steam+Vector2(2,-6)*unit,steam+Vector2(-1,-11)*unit,Color(.78,1.0,.75,.18+.22*pulse),2*unit)
 	for i in range(9):
 		var angle:=float(i)*2.399+motion*.24
-		var drift:=Vector2(cos(angle),sin(angle))*(58.0+float(i%3)*7.0)*unit
+		var drift:=Vector2(cos(angle),sin(angle))*(35.0+float(i%3)*5.0)*unit
 		var sparkle:=center+drift
-		draw_rect(Rect2(sparkle,Vector2(2.0+float(i%2),2.0)*unit),Color(.79,1.0,.68,.45+.25*pulse))
-	var leaf:=Vector2(center.x+47*unit,center.y+36*unit)
+		draw_rect(Rect2(sparkle,Vector2(2.0+float(i%2),2.0)*unit),Color(.79,1.0,.68,.58+.30*pulse))
+	var leaf:=Vector2(center.x+31*unit,center.y-13*unit)
 	draw_colored_polygon(PackedVector2Array([leaf,leaf+Vector2(12,-7)*unit,leaf+Vector2(9,2)*unit,leaf+Vector2(2,7)*unit]),Color("9be084"))
 	draw_line(leaf+Vector2(1,4)*unit,leaf+Vector2(9,-3)*unit,Color("3f855e"),unit)
 
