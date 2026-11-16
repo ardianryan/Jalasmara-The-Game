@@ -25,7 +25,7 @@ func run() -> void:
 	dive={"id":"boss-dive","mode":"boss","hits":2,"requiredHits":6,"challenge":{}}
 	assert(story.next_unseen_on_load(player,dive,{},has_seen)=="boss_intro")
 	dive.hits=3
-	assert(story.next_unseen_on_load(player,dive,{},has_seen)=="boss_intro")
+	assert(story.next_unseen_on_load(player,dive,{},has_seen)=="boss_phase_two")
 	seen.boss_intro=true
 	assert(story.next_unseen_on_load(player,dive,{},has_seen)=="boss_phase_two")
 	dive.challenge={"id":"unresolved-quiz"}

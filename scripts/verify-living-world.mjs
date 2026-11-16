@@ -56,6 +56,7 @@ const scripts = [
   "scripts/tests/field-book.gd",
   "scripts/tests/phase-one-story.gd",
   "scripts/tests/phase-one-cutscenes.gd",
+  "scripts/tests/phase-one-dialogue-fidelity.gd",
   "scripts/tests/phase-one-cutscene-replay.gd",
   "scripts/tests/dialogue-cutin.gd",
   "scripts/tests/day-one-ranto-capture.gd",
