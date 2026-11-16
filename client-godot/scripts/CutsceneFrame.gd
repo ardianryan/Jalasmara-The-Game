@@ -261,8 +261,9 @@ func present(title: String, beat: Dictionary, index: int, total: int, cinematic_
 		"garden_crisis": scene_key = "garden-crisis"
 		"cave_warning": scene_key = "jalatunda-cave"
 		"earthquake": scene_key = "balai-quake"
-		"boss_intro", "boss_phase_two": scene_key = "tamansari"
-		"victory": scene_key = "tamansari" if index <= 2 else "prologue"
+		"boss_intro": scene_key = "tamansari"
+		"boss_phase_two": scene_key = "tamansari-neutralized"
+		"victory": scene_key = "tamansari-neutralized" if index == 1 else ("tamansari-sealed" if index == 2 else "prologue")
 		"epilogue": scene_key = "kedai-interior" if index <= 3 else ("griya-map-room" if index <= 6 else "epilogue")
 	if scene_key!=backdrop_key:
 		backdrop_key = scene_key
@@ -274,7 +275,10 @@ func present(title: String, beat: Dictionary, index: int, total: int, cinematic_
 		"prologue":1,"tamansari":2,"epilogue":3,"kedai-interior":4,
 		"garden-crisis":5,"balai-quake":6,"jalatunda-cave":7,
 		"griya-map-room":8,"segaran-entry":9,"segaran-underwater":10,
+		"tamansari-neutralized":2,"tamansari-sealed":2,
 	}.get(scene_key,0))
+	if cinematic_id == "victory" and index == 3:
+		living_material.set_shader_parameter("plate",0)
 	living_material.set_shader_parameter("elapsed",backdrop_time)
 	_update_living_plate()
 	motif_id = cinematic_id
@@ -290,7 +294,7 @@ func present(title: String, beat: Dictionary, index: int, total: int, cinematic_
 	var tone := str(beat.get("tone", "warm"))
 	shade_target = {"warm":Color(0.34,0.19,0.08,0.19),"plum":Color(0.22,0.06,0.29,0.34),"teal":Color(0.02,0.32,0.34,0.20),"deep":Color(0.02,0.08,0.19,0.46)}.get(tone,Color.TRANSPARENT)
 	if EnvironmentState.reduced_motion: shade.color = shade_target
-	boss_art.visible = cinematic_id in ["boss_intro", "boss_phase_two", "victory"]
+	boss_art.visible = cinematic_id in ["boss_intro", "boss_phase_two"] or (cinematic_id == "victory" and index <= 2)
 	if cinematic_id=="boss_intro" and index==1: boss_phase = 0.0
 	_update_boss_tint()
 	queue_redraw()
