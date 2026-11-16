@@ -11,11 +11,15 @@ const LEGACY_SOLUTION =
 
 test("new day-one service is Ranto; published seed migration preserves an active Darmi shift", async () => {
   const previousMongoUrl = process.env.MONGO_URL;
+  const previousRedisUrl = process.env.REDIS_URL;
   const mongoUrl = new URL(
-    previousMongoUrl ?? "mongodb://127.0.0.1:27018/jalasmara?replicaSet=rs0",
+    process.env.TEST_MONGO_URL ??
+      "mongodb://127.0.0.1:27018/jalasmara?replicaSet=rs0",
   );
   mongoUrl.pathname = `/jalasmara_ranto_${randomUUID().replaceAll("-", "")}`;
   process.env.MONGO_URL = mongoUrl.toString();
+  process.env.REDIS_URL =
+    process.env.TEST_REDIS_URL ?? "redis://127.0.0.1:6380/14";
   let store: Awaited<ReturnType<typeof connect>> | undefined;
   try {
     store = await connect();
@@ -108,5 +112,7 @@ test("new day-one service is Ranto; published seed migration preserves an active
     }
     if (previousMongoUrl === undefined) delete process.env.MONGO_URL;
     else process.env.MONGO_URL = previousMongoUrl;
+    if (previousRedisUrl === undefined) delete process.env.REDIS_URL;
+    else process.env.REDIS_URL = previousRedisUrl;
   }
 });

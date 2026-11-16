@@ -1,5 +1,7 @@
 # Operasi Jalasmara
 
+**Pembaruan 16 November 2026:** Untuk perubahan yang mencakup API/Web dan game, ambil `full-source-image` dari run GitHub Actions yang sama dengan `verified-delivery`, lalu verifikasi `oci-manifest.json` dan image ID menurut [operasi GitHub](operations-github.md). Langkah build context lokal di bawah adalah jalur manual lama; jangan menggabungkan aset game baru dengan image API/Web lama. Backup, restore-test, hash, rollback dan public smoke di runbook ini tetap menjadi gerbang aktivasi staging.
+
 **Pembaruan 12 November 2026:** [GitHub Actions](operations-github.md) menjalankan CI dan menyimpan laporan serta kandidat delivery. Gitea/GitLab hanya mirror kode. Tahap aktivasi VPS di bawah tetap terpisah dari build dan tidak otomatis dijalankan oleh workflow.
 
 ## Topologi staging
