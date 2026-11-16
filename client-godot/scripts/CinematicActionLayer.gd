@@ -9,7 +9,7 @@ const DIRECTED_BEATS := {
 	"saras_visit": [2],
 	"garden_crisis": [1, 2, 3, 4, 5],
 	"cave_warning": [1, 2],
-	"earthquake": [1, 3, 4],
+	"earthquake": [1, 2, 3, 4, 5, 6],
 	"boss_intro": [1, 2, 3],
 	"boss_phase_two": [1, 2],
 	"victory": [1, 2, 3],
@@ -47,6 +47,23 @@ const NPC_FACES := {
 }
 const CHILD_CELLS := {"bagas": Vector2i(1,0),"kinasih": Vector2i(2,0),"danu": Vector2i(0,1),"gito": Vector2i(1,1),"cempaka": Vector2i(2,1)}
 const RESIDENT_CELLS := {"darmi": Rect2(0,627,627,627),"ujang": Rect2(1024,0,512,512),"sari": Rect2(512,512,512,512)}
+const FOCAL_SCALES := {
+	"prologue:4:raka": 1.70,
+	"prologue:5:lurah": 1.60,
+	"garden_crisis:1:darmi": 1.50,
+	"garden_crisis:2:gito": 1.60,
+	"garden_crisis:3:guard": 1.48,
+	"garden_crisis:4:lurah": 1.65,
+	"garden_crisis:5:kinasih": 1.60,
+	"earthquake:1:lurah": 1.65,
+	"earthquake:2:raka": 1.70,
+	"earthquake:3:kinasih": 1.60,
+	"earthquake:4:saras": 1.65,
+	"earthquake:5:beno": 1.65,
+	"earthquake:6:wira": 1.65,
+	"epilogue:7:nala": 1.70,
+	"epilogue:8:nala": 1.70,
+}
 var motif_id := ""
 var motif_beat := 0
 var motif_speaker := ""
@@ -188,6 +205,9 @@ func _draw_ancient_map(view: Vector2, motion: float) -> void:
 func _unit(view: Vector2) -> float:
 	return maxf(.8,view.y/375.0)
 
+func _focal_scale(role: String, fallback: float = 1.0) -> float:
+	return float(FOCAL_SCALES.get("%s:%d:%s" % [motif_id,motif_beat,role],fallback))
+
 func _pipe_outlet(view: Vector2, sealed: bool = false) -> Vector2:
 	var source:=LOWER_PIPE_SEAL_SOURCE if sealed else UPPER_PIPE_BREAK_SOURCE
 	var parent:=get_parent()
@@ -288,7 +308,7 @@ func _draw_prologue(view: Vector2, motion: float) -> void:
 			_draw_capsule_ship(view,motion)
 		5:
 			var ground:=view.y*.54
-			_actor(Vector2(view.x*.20,ground),unit*1.15,Color("7e623d"),false,0.0,"lurah")
+			_actor(Vector2(view.x*.20,ground),unit*_focal_scale("lurah"),Color("7e623d"),false,0.0,"lurah")
 			for i in range(5):
 				var child_key: String=["bagas","kinasih","gito","cempaka","danu"][i]
 				_actor(Vector2(view.x*(.07+float(i)*.022),ground+float(i%2)*3*unit),unit,Color("5c8580").lerp(Color("c4824a"),float(i%3)/2.0),true,sin(motion*4.0+float(i))*.2,child_key)
@@ -387,7 +407,7 @@ func _draw_capsule_ship(view: Vector2, motion: float) -> void:
 	draw_colored_polygon(PackedVector2Array([Vector2(31,-46),Vector2(49,-43),Vector2(31,-37)]),Color("8b3955"))
 	draw_rect(Rect2(35,-43,5,3),Color("e3b57f"))
 	draw_set_transform(Vector2.ZERO)
-	_actor(origin+Vector2(27,-7)*unit,unit*.90,Color("e6e1d6"),false,0.0,"raka")
+	_actor(origin+Vector2(27,-7)*unit,unit*_focal_scale("raka",.90),Color("e6e1d6"),false,0.0,"raka")
 	for i in range(5):
 		var feet:=Vector2(view.x*(.07+float(i)*.026),view.y*.54)
 		var resident_key: String=["ratih","tedi","wira","beno","saras"][i]
@@ -457,11 +477,11 @@ func _draw_diver(pos: Vector2, unit: float, angle: float, thumb: bool) -> void:
 	var appearance := str(GameState.player.get("appearance", "female_nusantara"))
 	var atlas: Texture2D = NALA_DIVING.get(appearance, NALA_DIVING["female_nusantara"])
 	var direction := 2 if thumb else 0
-	var source := Rect2(direction * 128, 0, 128, 128)
-	var scale := 68.0 * unit
-	# Rotation is around the torso, not the feet; the 128px source includes transparent margins.
-	draw_set_transform(pos + Vector2(0, -21 * unit), angle, Vector2.ONE)
-	draw_texture_rect_region(atlas, Rect2(Vector2(-scale*.5,-scale*.5),Vector2.ONE*scale), source)
+	var source := Rect2(direction * 128 + 40, 14, 48, 96)
+	# Crop the empty atlas gutters so the diver's 86-pixel silhouette reads at native size.
+	# Keep the feet at the previous anchor while rotating around the torso.
+	draw_set_transform(pos + Vector2(0, -32 * unit), angle, Vector2.ONE)
+	draw_texture_rect_region(atlas, Rect2(Vector2(-21,-36)*unit,Vector2(42,72)*unit), source)
 	if thumb:
 		draw_rect(Rect2(7*unit,-24*unit,3*unit,12*unit),Color("d7a783"))
 	draw_set_transform(Vector2.ZERO)
@@ -545,7 +565,10 @@ func _draw_garden(view: Vector2, motion: float) -> void:
 		for i in range(2):
 			var first_hit:=.18+float(i)*.20+.75
 			var recoil:=1.0-_progress(motion-first_hit,.43) if motion>=first_hit else 0.0
-			_draw_corporate_guard(Vector2(view.x*(.67+float(i)*.12),ground),unit*1.34,recoil)
+			var guard_scale:=_focal_scale("guard",1.34) if i==0 else 1.25
+			_draw_corporate_guard(Vector2(view.x*(.67+float(i)*.12),ground),unit*guard_scale,recoil)
+		if motif_beat==1:
+			_actor(Vector2(view.x*.47,ground),unit*_focal_scale("darmi"),Color("a1846a"),false,0.0,"darmi")
 		if motif_beat!=2:
 			_draw_seal_letter(Vector2(view.x*.735,view.y*.405),unit*.85)
 		if motif_beat==2:
@@ -553,7 +576,7 @@ func _draw_garden(view: Vector2, motion: float) -> void:
 				var launch:=.18+float(i)*.20
 				var t:=_progress(motion-launch,.75)
 				var guard_x:=.67 if i<2 else .79
-				var start:=Vector2(view.x*.22,ground-46*unit)
+				var start:=Vector2(view.x*.31,ground-46*unit)
 				var end:=Vector2(view.x*guard_x,ground-32*unit)
 				if motion>=launch and t<1.0:
 					var marble:=start.lerp(end,t)+Vector2(0,-sin(t*PI)*28*unit)
@@ -565,11 +588,13 @@ func _draw_garden(view: Vector2, motion: float) -> void:
 						draw_line(end+Vector2(side*2,-2)*unit,end+Vector2(side*(4+6*flash),(-6-4*flash))*unit,Color(1.0,.84,.55,flash),unit)
 			for i in range(5):
 				var child_key: String=["gito","bagas","kinasih","cempaka","danu"][i]
-				_actor(Vector2(view.x*(.13+float(i)*.04),ground-2*unit+float(i%2)*4*unit),unit*.9,Color("53766e"),true,0.0,child_key)
+				var child_x: float=[.31,.14,.38,.44,.50][i]
+				var child_scale:=_focal_scale(child_key,.90)
+				_actor(Vector2(view.x*child_x,ground-2*unit+float(i%2)*4*unit),unit*child_scale,Color("53766e"),true,0.0,child_key)
 	else:
 		var entrance:=smoothstep(0.0,1.0,_progress(motion,.85))
 		var lurah_feet:=Vector2(view.x*(.35+.12*entrance),ground)
-		_actor(lurah_feet,unit*1.15,Color("7e623d"),false,0.0,"lurah")
+		_actor(lurah_feet,unit*_focal_scale("lurah",1.15),Color("7e623d"),false,0.0,"lurah")
 		var staff:=lurah_feet+Vector2(14,0)*unit
 		var plant:=smoothstep(0.0,1.0,_progress(motion-.58,.35))
 		draw_line(staff+Vector2(0,-48-9*(1.0-plant))*unit,staff+Vector2(0,2-9*(1.0-plant))*unit,Color("4a3325"),3*unit)
@@ -584,8 +609,8 @@ func _draw_garden(view: Vector2, motion: float) -> void:
 		for i in range(2):
 			_draw_corporate_guard(Vector2(view.x*(.73+float(i)*.12),ground),unit*1.25,0.0)
 		if motif_beat==5:
-			_actor(Vector2(view.x*.30,ground),unit,Color("6c8e88"),true,0.0,"kinasih")
-			draw_rect(Rect2(view.x*.315,ground-29*unit,5*unit,7*unit),Color("7bd5c2"))
+			_actor(Vector2(view.x*.30,ground),unit*_focal_scale("kinasih"),Color("6c8e88"),true,0.0,"kinasih")
+			draw_rect(Rect2(view.x*.315,ground-45*unit,5*unit,7*unit),Color("7bd5c2"))
 
 func _draw_cave(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
@@ -609,18 +634,23 @@ func _draw_earthquake(view: Vector2, motion: float) -> void:
 	if motif_beat==1:
 		for i in range(5):
 			var council_key: String=["lurah","wira","beno","saras","raka"][i]
-			_actor(Vector2(view.x*(.31+float(i)*.09),view.y*.55),unit,Color("72583e").lerp(Color("a1846a"),float(i%3)/2.0),false,sin(motion*10+float(i))*.15,council_key)
+			_actor(Vector2(view.x*(.31+float(i)*.09),view.y*.55),unit*_focal_scale(council_key),Color("72583e").lerp(Color("a1846a"),float(i%3)/2.0),false,sin(motion*10+float(i))*.15,council_key)
 			var ring:=_progress(motion,1.2)
 			draw_arc(Vector2(view.x*.73,view.y*.54),(7.0+ring*25)*unit,0,TAU,12,Color(.74,.35,.85,.35*(1.0-ring)),unit)
+	elif motif_beat==2:
+		_actor(Vector2(view.x*.31,view.y*.55),unit*1.05,Color("72583e"),false,0.0,"lurah")
+		_actor(Vector2(view.x*.82,view.y*.63),unit*_focal_scale("raka"),Color("e6e1d6"),false,0.0,"raka")
 	elif motif_beat==3:
-		_actor(Vector2(view.x*.46,view.y*.55),unit,Color("6c8e88"),true,0.0,"kinasih")
+		_actor(Vector2(view.x*.42,view.y*.59),unit*_focal_scale("kinasih"),Color("6c8e88"),true,0.0,"kinasih")
 		for i in range(4):
 			var p:=Vector2(view.x*(.53+float(i)*.045),view.y*(.36-float(i%2)*.06)+sin(motion*1.6+float(i))*3*unit)
 			draw_circle(p,3*unit,Color(.45,.95,.94,.55))
 	else:
+		var speaker_key: String=["saras","beno","wira"][motif_beat-4]
 		for i in range(4):
 			var council_key: String=["lurah","wira","beno","saras"][i]
-			_actor(Vector2(view.x*(.27+float(i)*.14),view.y*.55),unit,Color("5c7f77").lerp(Color("b06b46"),float(i%2)),false,0.0,council_key)
+			var feet:=Vector2(view.x*.82,view.y*.63) if council_key==speaker_key else Vector2(view.x*(.27+float(i)*.14),view.y*.55)
+			_actor(feet,unit*_focal_scale(council_key),Color("5c7f77").lerp(Color("b06b46"),float(i%2)),false,0.0,council_key)
 		if motif_beat==4:
 			draw_line(map_center+Vector2(-16,-2)*unit,map_center+Vector2(17,4)*unit,Color(.47,.90,.89,.67),2*unit)
 			draw_circle(map_center+Vector2(17,4)*unit,2*unit,Color("b5f8dc"))
@@ -851,15 +881,15 @@ func _draw_feast(view: Vector2, motion: float) -> void:
 
 func _draw_finale(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
-	var nala_feet:=Vector2(view.x*.37,view.y*.69)
-	_draw_nala_daily(nala_feet+Vector2(0.0,sin(motion*1.1)*unit*.45),unit*.92,0)
+	var nala_feet:=Vector2(view.x*.28,view.y*.69)
+	_draw_nala_daily(nala_feet+Vector2(0.0,sin(motion*1.1)*unit*.45),unit*_focal_scale("nala",.92),0)
 	draw_line(Vector2(view.x*.40,view.y*.45),Vector2(view.x*.58,view.y*.37),Color(.60,.93,1.0,.16),2*unit)
 	for i in range(24):
 		var x:=view.x*(.08+float((i*19)%83)*.01)
 		var y:=view.y*(.13+float((i*7)%52)*.01)+sin(motion*.8+float(i))*2*unit
 		draw_rect(Rect2(x,y,(1.0+float(i%2))*unit,(1.0+float(i%2))*unit),Color(.68,1.0,.91,.63))
 	if motif_beat != 8: return
-	var card:=Rect2(Vector2(view.x*.14,view.y*.275),Vector2(view.x*.72,view.y*.305))
+	var card:=Rect2(Vector2(view.x*.42,view.y*.275),Vector2(view.x*.54,view.y*.305))
 	draw_rect(card,Color(.075,.13,.15,.88))
 	draw_rect(card,Color("d4a359"),false,3*unit)
 	draw_rect(Rect2(card.position+Vector2(5,5)*unit,card.size-Vector2(10,10)*unit),Color(.43,.78,.75,.80),false,unit)
