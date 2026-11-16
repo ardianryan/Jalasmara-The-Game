@@ -1,5 +1,13 @@
 # Jalasmara visual evidence
 
+## Phase 1 focal staging, native game-size review, 16 November 2026
+
+| Raka arrives | Gito defends the garden | Nala's first dive | Nala at the ending |
+| --- | --- | --- | --- |
+| ![Raka on the corporate ship.](phase-one-hero-staging-20261116/prologue-04-667x375.webp) | ![Gito and the Laskar at the garden gate.](phase-one-hero-staging-20261116/garden_crisis-02-667x375.webp) | ![Nala backflips toward the water.](phase-one-hero-staging-20261116/first_dive-01-667x375.webp) | ![Nala beside the Phase 1 ending card.](phase-one-hero-staging-20261116/epilogue-08-667x375.webp) |
+
+The accepted local source `ecfa97b` stages focal figures at roughly 61–66 opaque pixels high on a 667×375 game viewport, while the dialogue portrait provides the close view. The [hero-staging report](../reviews/phase-one-hero-staging-2026-11-16.md) includes Bu Darmi, Ki Lurah, Balai and 844×390 proofs with exact hashes, asset provenance and test limits. These native screenshots are development documentation, not distributed textures, browser playback or physical-device evidence.
+
 ## Phase 1 screenplay, native game-size review, 16 November 2026
 
 | Griya arrival | First dive | Pak Ranto remembers |
