@@ -2,6 +2,7 @@ extends PanelContainer
 
 signal advance_requested
 const HudArt = preload("res://scripts/HudSkin.gd")
+const VillagePortraits = preload("res://scripts/VillagePortraits.gd")
 const BODY = preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2")
 const RANTO_PORTRAIT := preload("res://resources/art/cinematics-v2/pak-ranto-portrait.png")
 var text_view: RichTextLabel
@@ -43,6 +44,20 @@ const SPEAKER_BLIP_PITCH := {
 	"Kinasih": 1.15,
 	"Saras": 1.04,
 	"Inspektur Raka": 0.93,
+}
+
+const RESIDENT_PORTRAITS := {
+	"Ki Lurah Wirabhumi": ["npc_ki_lurah_wirabhumi", 0],
+	"Mbok Ratih": ["npc_mbok_ratih", 1],
+	"Mang Ujang": ["npc_mang_ujang", 2],
+	"Kang Tedi": ["npc_kang_tedi", 3],
+	"Yu Sari": ["npc_yu_sari", 4],
+	"Saras": ["npc_saras", 5],
+	"Bagas": ["npc_kid_bagas", -1],
+	"Kinasih": ["npc_kid_kinasih", -1],
+	"Danu": ["npc_kid_danu", -1],
+	"Gito": ["npc_kid_gito", -1],
+	"Cempaka": ["npc_kid_cempaka", -1],
 }
 
 class Emote extends Control:
@@ -222,14 +237,26 @@ func _portrait(speaker: String) -> Texture2D:
 	if index>=0:
 		sheet = load("res://resources/art/npc-atlas.png")
 	else:
+		var fallback: Array=RESIDENT_PORTRAITS.get(speaker,[])
+		var resident_id:=str(fallback[0]) if not fallback.is_empty() else ""
+		index=int(fallback[1]) if not fallback.is_empty() else -1
 		for resident in GameState.world.get("surface_hub",{}).get("residents",[]):
 			if str(resident.name)==speaker:
-				var extra:Texture2D=preload("res://scripts/VillagePortraits.gd").for_resident(str(resident.get("id","")))
-				if extra!=null: return extra
-				sheet = load("res://resources/art/village-residents-v1.png")
-				grid = Vector2i(3,2)
-				index = int(resident.appearance)
+				resident_id=str(resident.get("id",resident_id))
+				var appearance:=int(resident.get("appearance",index))
+				if appearance>=0 and appearance<6: index=appearance
 				break
+		if not resident_id.is_empty():
+			var extra:Texture2D=VillagePortraits.for_resident(resident_id)
+			if extra!=null:
+				var bust:=AtlasTexture.new()
+				bust.atlas=extra
+				bust.region=Rect2(0,0,extra.get_width(),ceilf(extra.get_height()*.66))
+				bust.filter_clip=true
+				return bust
+		if index>=0:
+			sheet = load("res://resources/art/village-residents-v1.png")
+			grid = Vector2i(3,2)
 	if speaker=="Nala":
 		var path := "res://resources/art/"+str(GameState.player.get("appearance","male_default")).replace("_","-")+"-outfits-v1.png"
 		if ResourceLoader.exists(path):
