@@ -47,7 +47,7 @@ func _ready() -> void:
 	upper.color = Color("161129")
 	upper.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	upper.anchor_right = 1.0
-	upper.anchor_bottom = 0.11
+	upper.anchor_bottom = 0.15
 	add_child(upper)
 	lower = ColorRect.new()
 	lower.color = Color("161129")
@@ -67,10 +67,16 @@ func _ready() -> void:
 	skip_button.anchor_left = 0.84
 	skip_button.anchor_right = 1.0
 	skip_button.offset_right = -12
-	skip_button.offset_top = 4
-	skip_button.offset_bottom = 52
+	skip_button.offset_top = 3
+	skip_button.offset_bottom = 74
 	skip_button.pressed.connect(func(): skip_requested.emit())
-	preload("res://scripts/HudSkin.gd").apply_button(skip_button)
+	skip_button.add_theme_stylebox_override("normal", _skip_style(Color("503525"), Color("d4a359")))
+	skip_button.add_theme_stylebox_override("hover", _skip_style(Color("70492d"), Color("f3c677")))
+	skip_button.add_theme_stylebox_override("pressed", _skip_style(Color("342319"), Color("d4a359")))
+	skip_button.add_theme_stylebox_override("focus", _skip_style(Color.TRANSPARENT, Color("fff2c5")))
+	skip_button.add_theme_color_override("font_color", Color("f4ebd9"))
+	skip_button.add_theme_color_override("font_hover_color", Color("fff2c5"))
+	skip_button.add_theme_color_override("font_pressed_color", Color("f4ebd9"))
 	upper.add_child(skip_button)
 	shot_label = _label(lower, 21, Color("f4ebd9"))
 	shot_label.anchor_right = 0.84
@@ -234,20 +240,41 @@ func _label(parent: Control, font_size: int, color: Color) -> Label:
 	parent.add_child(label)
 	return label
 
+func _skip_style(fill: Color, border: Color) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = fill
+	style.border_color = border
+	style.set_border_width_all(2)
+	style.content_margin_left = 10
+	style.content_margin_right = 10
+	style.content_margin_top = 5
+	style.content_margin_bottom = 5
+	return style
+
 func present(title: String, beat: Dictionary, index: int, total: int, cinematic_id: String) -> void:
 	visible = true
 	var scene_key := ""
 	match cinematic_id:
-		"prologue", "earthquake", "first_service": scene_key = "prologue"
+		"prologue": scene_key = "prologue" if index <= 6 else "kedai-interior"
+		"first_dive": scene_key = "segaran-entry" if index == 1 else "segaran-underwater"
+		"first_kedai", "first_service", "saras_visit": scene_key = "kedai-interior"
+		"garden_crisis": scene_key = "garden-crisis"
+		"cave_warning": scene_key = "jalatunda-cave"
+		"earthquake": scene_key = "balai-quake"
 		"boss_intro", "boss_phase_two": scene_key = "tamansari"
-		"victory": scene_key = "tamansari" if index<=2 else "epilogue"
-		"epilogue": scene_key = "epilogue"
+		"victory": scene_key = "tamansari" if index <= 2 else "prologue"
+		"epilogue": scene_key = "kedai-interior" if index <= 3 else ("griya-map-room" if index <= 6 else "epilogue")
 	if scene_key!=backdrop_key:
 		backdrop_key = scene_key
-		backdrop = load("res://resources/art/cinematics-v1/"+scene_key+".png") if not scene_key.is_empty() else null
+		var art_set := "cinematics-v1" if scene_key in ["prologue", "tamansari", "epilogue"] else "cinematics-v2"
+		backdrop = load("res://resources/art/%s/%s.png" % [art_set, scene_key]) if not scene_key.is_empty() else null
 		backdrop_time = 0.0
 	living_plate.texture = backdrop
-	living_material.set_shader_parameter("plate",{"prologue":1,"tamansari":2,"epilogue":3}.get(scene_key,0))
+	living_material.set_shader_parameter("plate",{
+		"prologue":1,"tamansari":2,"epilogue":3,"kedai-interior":4,
+		"garden-crisis":5,"balai-quake":6,"jalatunda-cave":7,
+		"griya-map-room":8,"segaran-entry":9,"segaran-underwater":10,
+	}.get(scene_key,0))
 	living_material.set_shader_parameter("elapsed",backdrop_time)
 	_update_living_plate()
 	motif_id = cinematic_id

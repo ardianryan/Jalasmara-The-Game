@@ -59,12 +59,17 @@ func _check_controls(frame: Control, dialogue: Control, physical: Vector2i, labe
 func _run() -> void:
 	var capture := OS.get_environment("CINEMATIC_CAPTURE") == "1"
 	var strict_composition := OS.get_environment("CINEMATIC_REQUIRE_COMPOSITION") == "1"
+	var has_framebuffer := DisplayServer.get_name() != "headless"
+	assert(not capture or has_framebuffer, "Cinematic screenshots require a native renderer")
 	if capture: DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(OUTPUT))
 	var story = load("res://scripts/PhaseOneCutscenes.gd")
 	var frame: Control = load("res://scripts/CutsceneFrame.gd").new()
 	var dialogue: Control = load("res://scripts/DialoguePresenter.gd").new()
 	var environment: Node = root.get_node("EnvironmentState")
 	var state: Node = root.get_node("GameState")
+	var audio: Node = root.get_node("AudioManager")
+	var was_muted: bool = audio.muted
+	audio.muted = true
 	state.set("world", {"surface_hub": {"residents": [
 		{"id": "npc_ki_lurah_wirabhumi", "name": "Ki Lurah Wirabhumi", "appearance": 0},
 		{"id": "npc_saras", "name": "Saras", "appearance": 5},
@@ -108,21 +113,22 @@ func _run() -> void:
 				assert(frame.progress_label.text == "%d / %d" % [index, lines.size()], "Beat progress wrong: " + tag)
 				assert(not dialogue.text_view.get_parsed_text().is_empty(), "Dialogue text invisible: " + tag)
 				if id != "first_dive" and frame.backdrop == null: missing_backdrops.append(tag)
-				await RenderingServer.frame_post_draw
-				var image: Image = root.get_texture().get_image()
-				assert(image != null and image.get_width() > 0 and image.get_height() > 0, "No rendered frame: " + tag)
-				var colors := _distinct_middle_colors(image)
-				if id == "first_dive": assert(colors >= 2, "First-dive action frame is blank: " + tag)
-				if strict_composition and id != "first_dive":
-					assert(frame.backdrop != null, "Required scenic backdrop missing: " + tag)
-					assert(colors >= 8, "Scenic frame is visually blank: " + tag)
+				var colors := -1
+				if has_framebuffer:
+					await RenderingServer.frame_post_draw
+					var image: Image = root.get_texture().get_image()
+					assert(image != null and image.get_width() > 0 and image.get_height() > 0, "No rendered frame: " + tag)
+					colors = _distinct_middle_colors(image)
+					if id == "first_dive": assert(colors >= 2, "First-dive action frame is blank: " + tag)
+					if strict_composition and id != "first_dive": assert(colors >= 8, "Scenic frame is visually blank: " + tag)
+				if strict_composition: assert(frame.backdrop != null, "Required scenic backdrop missing: " + tag)
 				if capture:
 					frame._process(1.2)
 					for settle in range(2): await process_frame
 					await RenderingServer.frame_post_draw
 					var motion_image: Image = root.get_texture().get_image()
 					assert(motion_image.save_png(ProjectSettings.globalize_path(OUTPUT + tag + ".png")) == OK, "Could not save " + tag)
-				records.append({"tag": tag, "scene": scene, "shot": shot, "backdropKey": frame.backdrop_key, "backdrop": frame.backdrop != null, "middleColors": colors, "raster": [image.get_width(), image.get_height()]})
+					records.append({"tag": tag, "scene": scene, "shot": shot, "backdropKey": frame.backdrop_key, "backdrop": frame.backdrop != null, "middleColors": colors, "raster": [motion_image.get_width(), motion_image.get_height()]})
 				environment.reduced_motion = true
 				frame.present(str(sequence.title), beat, index, lines.size(), id)
 				dialogue.present(str(beat.get("name", "")), str(beat.text), str(beat.get("emotion", "neutral")))
@@ -151,6 +157,7 @@ func _run() -> void:
 	if not missing_backdrops.is_empty(): print("DIRECTOR QA GAP: ", JSON.stringify(missing_backdrops))
 	print("PHASE ONE DIRECTOR QA PASS: %d frames, 12 sequences, 16 numbered scenes, 667x375 and 844x390; strict composition=%s" % [records.size(), strict_composition])
 	environment.reduced_motion = false
+	audio.muted = was_muted
 	dialogue.free()
 	frame.free()
 	quit()

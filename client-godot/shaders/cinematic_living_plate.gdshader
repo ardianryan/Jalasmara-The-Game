@@ -50,6 +50,21 @@ void fragment() {
 		soft_mask = exp(-distance(uv, vec2(0.72, 0.45)) * 12.0) * 0.8;
 		tint = vec3(0.55, 0.65, 0.88);
 		glow = exp(-distance(uv, vec2(0.72, 0.45)) * 40.0) * 0.08;
+	} else if (plate == 8) {
+		// The UV-lit projection is centered above the map table.
+		soft_mask = exp(-distance(uv, vec2(0.50, 0.38)) * 9.0) * 0.65;
+		tint = vec3(0.48, 0.91, 0.96);
+		glow = exp(-distance(uv, vec2(0.50, 0.38)) * 38.0) * 0.10;
+	} else if (plate == 9) {
+		// The boat stays still while surface ripples move in the open water.
+		water_mask = smoothstep(0.50, 0.67, uv.x) * smoothstep(0.48, 0.67, uv.y);
+		soft_mask = smoothstep(0.67, 0.86, uv.x) * (1.0 - smoothstep(0.24, 0.38, uv.y));
+		tint = vec3(0.43, 0.88, 0.85);
+	} else if (plate == 10) {
+		// Broad caustics and near coral sway on separate slow planes.
+		water_mask = smoothstep(0.05, 0.34, uv.y);
+		soft_mask = smoothstep(0.53, 0.78, uv.y) * smoothstep(0.64, 0.85, uv.x);
+		tint = vec3(0.45, 0.88, 0.86);
 	}
 	float wave = sin(uv.y * 129.0 + elapsed * 1.8) * 0.0016 * water_mask;
 	float sway = sin(uv.y * 21.0 + elapsed * 0.75) * 0.0018 * soft_mask;

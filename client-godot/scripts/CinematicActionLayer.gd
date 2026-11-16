@@ -69,7 +69,7 @@ func _draw_arrival_boat(view: Vector2, motion: float) -> void:
 	# A small deliberately pixel-stepped Nala and sampan, authored as editable shapes.
 	var unit:=maxf(1.0,view.y/270.0)
 	var crossing:=minf(motion/6.0,1.0)
-	var origin:=Vector2(view.x*(.18+crossing*.19),view.y*.72+sin(motion*2.0)*unit)
+	var origin:=Vector2(view.x*(.18+crossing*.19),view.y*.53+sin(motion*2.0)*unit)
 	draw_set_transform(origin,0.0,Vector2(unit,unit))
 	var hull:=PackedVector2Array([Vector2(-43,0),Vector2(42,0),Vector2(33,12),Vector2(20,17),Vector2(-27,17),Vector2(-39,10)])
 	draw_colored_polygon(hull,Color("41291d"))
@@ -193,7 +193,7 @@ func _draw_prologue(view: Vector2, motion: float) -> void:
 		4:
 			_draw_capsule_ship(view,motion)
 		5:
-			var ground:=view.y*.72
+			var ground:=view.y*.54
 			_actor(Vector2(view.x*.20,ground),unit*1.15,Color("7e623d"),false,0.0,"lurah")
 			for i in range(5):
 				var child_key: String=["bagas","kinasih","gito","cempaka","danu"][i]
@@ -212,7 +212,7 @@ func _draw_prologue(view: Vector2, motion: float) -> void:
 func _draw_capsule_ship(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
 	var arrive:=_progress(motion,2.0)
-	var origin:=Vector2(view.x*(.66-arrive*.10),view.y*.62+sin(motion*1.5)*unit)
+	var origin:=Vector2(view.x*(.66-arrive*.10),view.y*.50+sin(motion*1.5)*unit)
 	draw_set_transform(origin,0.0,Vector2(unit,unit))
 	draw_colored_polygon(PackedVector2Array([Vector2(-54,0),Vector2(53,0),Vector2(40,17),Vector2(-39,17)]),Color("1e2830"))
 	draw_rect(Rect2(-50,-4,97,5),Color("5b554e"))
@@ -222,7 +222,7 @@ func _draw_capsule_ship(view: Vector2, motion: float) -> void:
 	draw_rect(Rect2(-37,-33,15,10),Color("752b55"))
 	draw_set_transform(Vector2.ZERO)
 	for i in range(5):
-		var feet:=Vector2(view.x*(.07+float(i)*.026),view.y*.72)
+		var feet:=Vector2(view.x*(.07+float(i)*.026),view.y*.54)
 		var resident_key: String=["ratih","tedi","wira","beno","saras"][i]
 		_actor(feet,unit*.9,Color("707972").lerp(Color("895e66"),float(i%3)/2.0),false,sin(motion*4.0+float(i))*.3,resident_key)
 		draw_rect(Rect2(feet+Vector2(4,-19)*unit,Vector2(3,4)*unit),Color("ae80ca"))
@@ -230,7 +230,7 @@ func _draw_capsule_ship(view: Vector2, motion: float) -> void:
 
 func _draw_tea_and_net(view: Vector2, motion: float, beat: int) -> void:
 	var unit:=_unit(view)
-	var desk_y:=view.y*.69
+	var desk_y:=view.y*.54
 	draw_rect(Rect2(view.x*.28,desk_y,view.x*.44,8*unit),Color("3b241b"))
 	draw_rect(Rect2(view.x*.28,desk_y,view.x*.44,3*unit),Color("c39960"))
 	var mug:=Vector2(view.x*.43,desk_y-14*unit)
@@ -258,10 +258,10 @@ func _draw_first_kedai(view: Vector2, motion: float) -> void:
 func _draw_saras(view: Vector2, motion: float) -> void:
 	if motif_beat!=2: return
 	var unit:=_unit(view)
-	var ground:=view.y*.68
+	var ground:=view.y*.54
 	_draw_tea_and_net(view,motion,7)
 	_actor(Vector2(view.x*.70,ground),unit,Color("a79667"),false,0.0,"saras")
-	var shard:=Vector2(view.x*(.67-.15*_progress(motion,1.8)),view.y*.58)
+	var shard:=Vector2(view.x*(.67-.15*_progress(motion,1.8)),view.y*.47)
 	draw_colored_polygon(PackedVector2Array([shard,shard+Vector2(10,-4)*unit,shard+Vector2(14,6)*unit,shard+Vector2(3,10)*unit]),Color("8e9e91"))
 	draw_rect(Rect2(shard+Vector2(5,2)*unit,Vector2(3,3)*unit),Color("b96bb4"))
 
@@ -304,7 +304,7 @@ func _draw_service(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
 	if motif_beat==1:
 		_draw_tea_and_net(view,motion,7)
-		_actor(Vector2(view.x*.51,view.y*.69),unit,Color("6c8562"))
+		_actor(Vector2(view.x*.51,view.y*.54),unit,Color("6c8562"))
 		var center:=Vector2(view.x*.51,view.y*.43)
 		var burst:=_progress(motion,1.6)
 		for i in range(12):
@@ -316,14 +316,14 @@ func _draw_service(view: Vector2, motion: float) -> void:
 			draw_rect(Rect2(drop,Vector2(3,3)*unit),Color(.55,.94,.75,.7*(1.0-burst*.5)))
 	else:
 		var retreat:=_progress(motion,2.0)
-		_actor(Vector2(view.x*(.77+retreat*.12),view.y*.68),unit,Color("dfe3d8"),false,sin(motion*5.0)*.5)
+		_actor(Vector2(view.x*(.77+retreat*.12),view.y*.54),unit,Color("dfe3d8"),false,sin(motion*5.0)*.5)
 		for i in range(11):
 			var p:=Vector2(view.x*(.73+float(i%4)*.04),view.y*.52-fposmod(motion*8.0+float(i)*12.0,71.0)*unit)
 			draw_rect(Rect2(p,Vector2(2,2)*unit),Color(.70,.37,.84,.18))
 
 func _draw_garden(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
-	var ground:=view.y*.73
+	var ground:=view.y*.54
 	for i in range(3):
 		var x:=view.x*(.43+float(i)*.075)
 		draw_rect(Rect2(x,ground-10*unit,32*unit,9*unit),Color("785338"))
@@ -369,23 +369,23 @@ func _draw_cave(view: Vector2, motion: float) -> void:
 
 func _draw_earthquake(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
-	var table:=Vector2(view.x*.50,view.y*.65)
+	var table:=Vector2(view.x*.50,view.y*.54)
 	draw_colored_polygon(PackedVector2Array([table+Vector2(-44,0)*unit,table+Vector2(0,-22)*unit,table+Vector2(44,0)*unit,table+Vector2(0,18)*unit]),Color("806348"))
 	if motif_beat==1:
 		for i in range(5):
 			var council_key: String=["lurah","wira","beno","saras","raka"][i]
-			_actor(Vector2(view.x*(.31+float(i)*.09),view.y*.77),unit,Color("72583e").lerp(Color("a1846a"),float(i%3)/2.0),false,sin(motion*10+float(i))*.15,council_key)
+			_actor(Vector2(view.x*(.31+float(i)*.09),view.y*.55),unit,Color("72583e").lerp(Color("a1846a"),float(i%3)/2.0),false,sin(motion*10+float(i))*.15,council_key)
 			var ring:=_progress(motion,1.2)
-			draw_arc(Vector2(view.x*.73,view.y*.74),(7.0+ring*25)*unit,0,TAU,12,Color(.74,.35,.85,.35*(1.0-ring)),unit)
+			draw_arc(Vector2(view.x*.73,view.y*.54),(7.0+ring*25)*unit,0,TAU,12,Color(.74,.35,.85,.35*(1.0-ring)),unit)
 	elif motif_beat==3:
-		_actor(Vector2(view.x*.46,view.y*.76),unit,Color("6c8e88"),true,0.0,"kinasih")
+		_actor(Vector2(view.x*.46,view.y*.55),unit,Color("6c8e88"),true,0.0,"kinasih")
 		for i in range(4):
 			var p:=Vector2(view.x*(.53+float(i)*.045),view.y*(.36-float(i%2)*.06)+sin(motion*1.6+float(i))*3*unit)
 			draw_circle(p,3*unit,Color(.45,.95,.94,.55))
 	else:
 		for i in range(4):
 			var council_key: String=["lurah","wira","beno","saras"][i]
-			_actor(Vector2(view.x*(.27+float(i)*.14),view.y*.77),unit,Color("5c7f77").lerp(Color("b06b46"),float(i%2)),false,0.0,council_key)
+			_actor(Vector2(view.x*(.27+float(i)*.14),view.y*.55),unit,Color("5c7f77").lerp(Color("b06b46"),float(i%2)),false,0.0,council_key)
 		if motif_beat==4:
 			draw_line(table+Vector2(-24,-2)*unit,table+Vector2(27,6)*unit,Color("76e3e4"),2*unit)
 
@@ -394,7 +394,7 @@ func _draw_boss_intro(view: Vector2, motion: float) -> void:
 	if motif_beat==1:
 		var sweep:=_progress(motion,2.2)
 		draw_rect(Rect2(Vector2.ZERO,view),Color(.01,.04,.10,.78*(1.0-_progress(motion,3.0))))
-		var origin:=Vector2(view.x*.27,view.y*.65)
+		var origin:=Vector2(view.x*.27,view.y*.52)
 		var target:=Vector2(view.x*(.48+sweep*.34),view.y*(.44-sweep*.11))
 		draw_colored_polygon(PackedVector2Array([origin,target+Vector2(-24,-25)*unit,target+Vector2(24,25)*unit]),Color(.31,.83,.93,.11+sweep*.15))
 		draw_line(origin,target,Color(.52,.94,.97,.33),unit)
@@ -423,7 +423,7 @@ func _draw_crystal(view: Vector2, motion: float) -> void:
 func _draw_victory(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
 	if motif_beat==1:
-		var nala:=Vector2(view.x*.34,view.y*.70)
+		var nala:=Vector2(view.x*.34,view.y*.53)
 		_draw_diver(nala,unit,0.0,false)
 		var core:=Vector2(view.x*.76,view.y*.28)
 		var pull:=_progress(motion,2.5)
@@ -440,12 +440,12 @@ func _draw_victory(view: Vector2, motion: float) -> void:
 		var seal:=_progress(motion,1.7)
 		draw_colored_polygon(PackedVector2Array([origin+Vector2(-21,-5)*unit,origin+Vector2(20,-9)*unit,origin+Vector2(15,14)*unit,origin+Vector2(-19,12)*unit]),Color("829d96"))
 		draw_arc(origin,(7+seal*24)*unit,0,TAU,24,Color(.59,.98,.94,.55*(1.0-seal*.5)),2*unit)
-		var nala:=Vector2(view.x*.42,view.y*.72)
+		var nala:=Vector2(view.x*.42,view.y*.53)
 		_draw_diver(nala,unit,0.0,false)
-		var contact:=Vector2(view.x*.47,view.y*.56)
+		var contact:=Vector2(view.x*.47,view.y*.46)
 		draw_line(Vector2(view.x*.64,view.y*.43),contact,Color("879c87"),9*unit)
 		draw_circle(contact,6*unit,Color("aabfa9"))
-		var slab:=Vector2(view.x*.52,view.y*(.59+.09*seal))
+		var slab:=Vector2(view.x*.52,view.y*(.46+.06*seal))
 		draw_rect(Rect2(slab,Vector2(15,10)*unit),Color("c6a669"))
 		draw_rect(Rect2(slab+Vector2(4,2)*unit,Vector2(4,4)*unit),Color("5fe9eb"))
 	else:
@@ -459,7 +459,7 @@ func _draw_victory(view: Vector2, motion: float) -> void:
 
 func _draw_feast(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
-	var ground:=view.y*.72
+	var ground:=view.y*.54
 	for i in range(5):
 		var lamp:=Vector2(view.x*(.16+float(i)*.18),view.y*.27)
 		draw_rect(Rect2(lamp,Vector2(7,9)*unit),Color("dd9d4a"))
@@ -475,7 +475,7 @@ func _draw_feast(view: Vector2, motion: float) -> void:
 			_actor(Vector2(view.x*(.25+float(i)*.052),ground+float(i%2)*4*unit),unit,Color("7c714b").lerp(Color("538377"),float(i%3)/2.0),false,sin(motion*3+float(i))*.2,villager_key)
 	if motif_beat==3:
 		var retreat:=_progress(motion,2.5)
-		var boat:=Vector2(view.x*(.79+retreat*.22),view.y*.62)
+		var boat:=Vector2(view.x*(.79+retreat*.22),view.y*.51)
 		draw_colored_polygon(PackedVector2Array([boat+Vector2(-25,0)*unit,boat+Vector2(26,0)*unit,boat+Vector2(17,9)*unit,boat+Vector2(-18,9)*unit]),Color("2b343a"))
 		draw_line(boat+Vector2(4,0)*unit,boat+Vector2(4,-29)*unit,Color("525d5c"),2*unit)
 		draw_rect(Rect2(boat+Vector2(4,-27)*unit,Vector2(14,8)*unit),Color("75365c"))
