@@ -65,6 +65,18 @@ void fragment() {
 		water_mask = smoothstep(0.05, 0.34, uv.y);
 		soft_mask = smoothstep(0.53, 0.78, uv.y) * smoothstep(0.64, 0.85, uv.x);
 		tint = vec3(0.45, 0.88, 0.86);
+	} else if (plate == 11) {
+		// Griya dock: keep the planks fixed while the open water and leaves move.
+		water_mask = smoothstep(0.61, 0.76, uv.x) * smoothstep(0.36, 0.53, uv.y);
+		soft_mask = (1.0 - smoothstep(0.09, 0.20, uv.y)) * (1.0 - smoothstep(0.23, 0.37, uv.x));
+		tint = vec3(0.43, 0.87, 0.82);
+		glow = exp(-distance(uv, vec2(0.18, 0.25)) * 48.0) * 0.07;
+	} else if (plate == 12) {
+		// Moonlit Griya: the veranda remains solid beside the tidal reflection.
+		water_mask = smoothstep(0.54, 0.70, uv.x) * smoothstep(0.36, 0.50, uv.y);
+		water_mask *= 1.0 - smoothstep(0.76, 0.93, uv.y);
+		glow = exp(-distance(uv, vec2(0.14, 0.25)) * 43.0) * 0.10;
+		tint = vec3(0.49, 0.83, 0.93);
 	}
 	float wave = sin(uv.y * 129.0 + elapsed * 1.8) * 0.0016 * water_mask;
 	float sway = sin(uv.y * 21.0 + elapsed * 0.75) * 0.0018 * soft_mask;

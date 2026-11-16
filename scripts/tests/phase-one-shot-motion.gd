@@ -2,11 +2,11 @@ extends SceneTree
 
 const OUTPUT := "res://../artifacts/godot/phase-one-shot-motion/"
 const SHOTS := [
-	["prologue", 4], ["prologue", 5], ["prologue", 7],
+	["prologue", 4], ["prologue", 5], ["prologue", 6], ["prologue", 7],
 	["first_dive", 1], ["first_service", 1], ["garden_crisis", 2],
 	["cave_warning", 2], ["earthquake", 1], ["boss_intro", 1],
 	["boss_phase_two", 1], ["victory", 1], ["victory", 2], ["victory", 3],
-	["epilogue", 2], ["epilogue", 4], ["epilogue", 7]
+	["epilogue", 2], ["epilogue", 4], ["epilogue", 7], ["epilogue", 8]
 ]
 
 func _initialize() -> void:
@@ -28,6 +28,14 @@ func run() -> void:
 			frame.present("Phase 1", {"shot":"Directed action", "tone":"teal"}, beat, 8, id)
 			assert(frame.action_layer.has_directed_action(id,beat),"No action: %s/%d" % [id,beat])
 			assert(frame.action_layer.motif_id == id and frame.action_layer.motif_beat == beat)
+			if id == "prologue" and beat == 6:
+				assert(frame.backdrop_key == "griya-arrival-dock")
+			if id == "epilogue" and beat >= 7:
+				assert(frame.backdrop_key == "griya-beranda-moonlit")
+			if id == "victory" and beat <= 2:
+				assert(frame.boss_atlas.atlas == load("res://resources/art/gajah-mina-motion-v2-healed/swim.png"))
+			if id == "boss_intro":
+				assert(frame.boss_atlas.atlas == load("res://resources/art/gajah-mina-motion-v1/swim.png"))
 			frame._process(2.8)
 			await process_frame
 			RenderingServer.force_draw()

@@ -2,6 +2,8 @@ extends Control
 signal skip_requested
 
 const BODY = preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2")
+const BOSS_CORRUPTED = preload("res://resources/art/gajah-mina-motion-v1/swim.png")
+const BOSS_HEALED = preload("res://resources/art/gajah-mina-motion-v2-healed/swim.png")
 const BACKDROP_TRANSITION_SEC := 0.38
 const SHOT_PAN_SEC := 0.85
 var shade: ColorRect
@@ -98,7 +100,7 @@ func _ready() -> void:
 	progress_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	boss_art = TextureRect.new()
 	boss_atlas = AtlasTexture.new()
-	boss_atlas.atlas = load("res://resources/art/gajah-mina-motion-v1/swim.png")
+	boss_atlas.atlas = BOSS_CORRUPTED
 	boss_atlas.region = Rect2(0,0,224,160)
 	boss_art.texture = boss_atlas
 	boss_art.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
@@ -304,7 +306,7 @@ func present(title: String, beat: Dictionary, index: int, total: int, cinematic_
 	visible = true
 	var scene_key := ""
 	match cinematic_id:
-		"prologue": scene_key = "prologue" if index <= 6 else "kedai-interior"
+		"prologue": scene_key = "prologue" if index <= 5 else ("griya-arrival-dock" if index == 6 else "kedai-interior")
 		"first_dive": scene_key = "segaran-entry" if index == 1 else "segaran-underwater"
 		"first_kedai", "first_service", "saras_visit": scene_key = "kedai-interior"
 		"garden_crisis": scene_key = "garden-crisis"
@@ -313,7 +315,7 @@ func present(title: String, beat: Dictionary, index: int, total: int, cinematic_
 		"boss_intro": scene_key = "tamansari"
 		"boss_phase_two": scene_key = "tamansari-neutralized"
 		"victory": scene_key = "tamansari-neutralized" if index == 1 else ("tamansari-sealed" if index == 2 else "prologue")
-		"epilogue": scene_key = "kedai-interior" if index <= 3 else ("griya-map-room" if index <= 6 else "epilogue")
+		"epilogue": scene_key = "kedai-interior" if index <= 3 else ("griya-map-room" if index <= 6 else "griya-beranda-moonlit")
 	if scene_key!=backdrop_key:
 		var outgoing_texture := backdrop
 		var outgoing_rect := _backdrop_rect() if backdrop != null else Rect2()
@@ -349,6 +351,7 @@ func present(title: String, beat: Dictionary, index: int, total: int, cinematic_
 		"prologue":1,"tamansari":2,"epilogue":3,"kedai-interior":4,
 		"garden-crisis":5,"balai-quake":6,"jalatunda-cave":7,
 		"griya-map-room":8,"segaran-entry":9,"segaran-underwater":10,
+		"griya-arrival-dock":11,"griya-beranda-moonlit":12,
 		"tamansari-neutralized":2,"tamansari-sealed":2,
 	}.get(scene_key,0))
 	if cinematic_id == "victory" and index == 3:
@@ -369,6 +372,7 @@ func present(title: String, beat: Dictionary, index: int, total: int, cinematic_
 	shade_target = {"warm":Color(0.34,0.19,0.08,0.19),"plum":Color(0.22,0.06,0.29,0.34),"teal":Color(0.02,0.32,0.34,0.20),"deep":Color(0.02,0.08,0.19,0.46)}.get(tone,Color.TRANSPARENT)
 	if EnvironmentState.reduced_motion: shade.color = shade_target
 	boss_art.visible = cinematic_id in ["boss_intro", "boss_phase_two"] or (cinematic_id == "victory" and index <= 2)
+	boss_atlas.atlas = BOSS_HEALED if cinematic_id == "victory" else BOSS_CORRUPTED
 	if cinematic_id=="boss_intro" and index==1: boss_phase = 0.0
 	_update_boss_tint()
 	queue_redraw()

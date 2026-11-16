@@ -75,9 +75,10 @@ func _draw() -> void:
 			else: _draw_finale(size, motion)
 
 func _draw_arrival_boat(view: Vector2, motion: float) -> void:
-	var unit:=maxf(1.0,view.y/270.0)
-	var crossing:=minf(motion/6.0,1.0)
-	var origin:=Vector2(view.x*(.18+crossing*.19),view.y*.53+sin(motion*2.0)*unit)
+	var unit:=_unit(view)
+	var arrival:=smoothstep(0.0,1.0,clampf(motion/2.0,0.0,1.0))
+	var disembark:=smoothstep(0.0,1.0,clampf((motion-1.7)/1.5,0.0,1.0))
+	var origin:=Vector2(view.x*(.99-arrival*.18),view.y*.66+sin(motion*2.0)*unit)
 	draw_set_transform(origin,0.0,Vector2(unit,unit))
 	var hull:=PackedVector2Array([Vector2(-43,0),Vector2(42,0),Vector2(33,12),Vector2(20,17),Vector2(-27,17),Vector2(-39,10)])
 	draw_colored_polygon(hull,Color("41291d"))
@@ -88,8 +89,12 @@ func _draw_arrival_boat(view: Vector2, motion: float) -> void:
 	draw_line(Vector2(10,-7),Vector2(33+stroke,12),Color("f0c184"),2.0)
 	draw_line(Vector2(33+stroke,12),Vector2(39+stroke,17),Color("90d8d4"),2.0)
 	draw_set_transform(Vector2.ZERO)
-	_draw_nala_daily(origin+Vector2(-3,1)*unit,unit*.92,4)
-	_actor(Vector2(view.x*.08,view.y*.54),_unit(view),Color("9b734f"),false,0.0,"beno")
+	var boat_feet:=origin+Vector2(-3,1)*unit
+	var dock_feet:=Vector2(view.x*.62,view.y*.68)
+	var nala_feet:=boat_feet.lerp(dock_feet,disembark)
+	nala_feet.y-=sin(disembark*PI)*12.0*unit
+	_draw_nala_daily(nala_feet,unit*.92,4)
+	_actor(Vector2(view.x*.39,view.y*.60),unit,Color("9b734f"),false,0.0,"beno")
 	for i in range(3):
 		var wake:=origin+Vector2((-55.0-float(i)*17.0)*unit,(10.0+float(i%2)*4.0)*unit)
 		draw_rect(Rect2(wake,Vector2((12.0-float(i)*2.0)*unit,unit)),Color(.48,.94,.88,.28))
@@ -527,6 +532,22 @@ func _draw_victory(view: Vector2, motion: float) -> void:
 	else:
 		var sweep:=_progress(motion,2.7)
 		draw_rect(Rect2(0,view.y*(.52-.48*sweep),view.x,5*unit),Color(.56,1.0,.93,.08*(1.0-sweep)))
+		var boat:=Vector2(view.x*.47,view.y*.65)
+		draw_colored_polygon(PackedVector2Array([
+			boat+Vector2(-24,0)*unit,boat+Vector2(25,0)*unit,
+			boat+Vector2(17,9)*unit,boat+Vector2(-20,9)*unit
+		]),Color("493329"))
+		draw_line(boat+Vector2(-22,2)*unit,boat+Vector2(23,2)*unit,Color("d7a563"),2*unit)
+		var emerge:=smoothstep(0.0,1.0,clampf(motion/1.7,0.0,1.0))
+		_draw_nala_daily(Vector2(view.x*.47,view.y*(.73-.10*emerge)),unit*.85,4)
+		var tablet:=Vector2(view.x*.47,view.y*(.42-.07*emerge))
+		draw_rect(Rect2(tablet,Vector2(12,9)*unit),Color("d8ad69"))
+		draw_rect(Rect2(tablet+Vector2(3,2)*unit,Vector2(5,4)*unit),Color("59e4df"))
+		_actor(Vector2(view.x*.37,view.y*.57),unit,Color("7c7958"),false,0.0,"beno")
+		for i in range(5):
+			var child_key: String=["gito","bagas","kinasih","cempaka","danu"][i]
+			var hop:=0.0 if EnvironmentState.reduced_motion else absf(sin(motion*4.0+float(i)*.9))*3.0*unit
+			_actor(Vector2(view.x*(.08+float(i)*.052),view.y*.57-hop),unit,Color("7c7958"),true,0.0,child_key)
 	for i in range(34):
 		var rise:=fposmod(motion*(15.0+float(i%5)*4.0)+float(i)*12.0,view.y*.75)
 		var x:=view.x*(.23+float((i*17)%67)*.009)
@@ -558,6 +579,9 @@ func _draw_feast(view: Vector2, motion: float) -> void:
 
 func _draw_finale(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
+	var nala_feet:=Vector2(view.x*.37,view.y*.69)
+	_draw_nala_daily(nala_feet+Vector2(0.0,sin(motion*1.1)*unit*.45),unit*.92,0)
+	draw_line(Vector2(view.x*.40,view.y*.45),Vector2(view.x*.58,view.y*.37),Color(.60,.93,1.0,.16),2*unit)
 	for i in range(24):
 		var x:=view.x*(.08+float((i*19)%83)*.01)
 		var y:=view.y*(.13+float((i*7)%52)*.01)+sin(motion*.8+float(i))*2*unit
