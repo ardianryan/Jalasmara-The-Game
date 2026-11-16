@@ -44,6 +44,8 @@ var cutscene_title := ""
 var cutscene_total := 0
 var cutscene_index := 0
 var cutscene_seen_session: Dictionary = {}
+var cutscene_queue: Array[Dictionary] = []
+var cutscene_active_done: Array[Callable] = []
 var attacks: Array = []
 var boss_motion = BossMotionScript.new()
 var touch_enabled := false
@@ -158,15 +160,10 @@ func _ready() -> void:
 	elif not GameState.dive.is_empty():
 		if PhaseOneCutscenes.ready_to_extract_on_load(GameState.dive):
 			call_deferred("_extract")
-		elif not modal_open:
-			var dive_opening: String = PhaseOneCutscenes.eligible_on_load(GameState.player,GameState.dive,GameState.shift)
-			if not dive_opening.is_empty(): _play_cutscene(dive_opening)
+		else:
+			_resume_cutscene_from_state()
 	else:
-		var opening: String = PhaseOneCutscenes.eligible_on_load(GameState.player,GameState.dive,GameState.shift)
-		if opening=="victory":
-			_play_cutscene("victory",func(): _play_cutscene("epilogue"))
-		elif not opening.is_empty():
-			_play_cutscene(opening)
+		_resume_cutscene_from_state()
 	if OS.has_feature("web"):
 		var window = JavaScriptBridge.get_interface("window")
 		window.jalasmaraReady = true
@@ -202,6 +199,7 @@ func set_interaction_modal(active: bool) -> void:
 	modal_open=active
 	if is_instance_valid(hud): hud.set_modal(active)
 	_restore_player_movement()
+	if not active: call_deferred("_resume_pending_cutscenes")
 
 func _service_movement_locked() -> bool:
 	return not GameState.shift.is_empty() and GameState.dive.is_empty()
@@ -425,8 +423,12 @@ func _close() -> void:
 	modal_open = false
 	hud.set_modal(false)
 	_restore_player_movement()
+	call_deferred("_resume_pending_cutscenes")
 	if not GameState.dive.is_empty():
-		ApiClient.call_api("/dive/reading",{"diveId":GameState.dive.id,"paused":ViewportLayout.host_paused})
+		call_deferred("_sync_dive_reading_after_modal")
+func _sync_dive_reading_after_modal() -> void:
+	if GameState.dive.is_empty(): return
+	ApiClient.call_api("/dive/reading",{"diveId":GameState.dive.id,"paused":modal_open or ViewportLayout.host_paused or GameState.dive.has("challenge")})
 func _show_message(title: String, text: String) -> void:
 	var box := _open(title,true,text.length()<=240 and text.count("\n")<=3)
 	_label(box,text)
@@ -437,9 +439,10 @@ func _talk(lines: Array, done := Callable()) -> void:
 	_next_line()
 func _next_line() -> void:
 	if chain_lines.is_empty():
+		var completion := chain_end
+		chain_end = Callable()
 		_close()
-		if chain_end.is_valid():
-			chain_end.call()
+		if completion.is_valid(): completion.call()
 		return
 	var line: Dictionary = chain_lines.pop_front()
 	if not cutscene_id.is_empty() and is_instance_valid(cutscene_frame):
@@ -471,18 +474,60 @@ func _cutscene_seen(id: String) -> bool:
 	if saved.load("user://phase-one-cutscenes.cfg")!=OK: return false
 	return bool(saved.get_value(str(GameState.player.get("id","")),id,false))
 
+func _resume_cutscene_from_state() -> void:
+	if GameState.player.is_empty() or not GameState.shift.is_empty(): return
+	if not cutscene_id.is_empty() or not cutscene_queue.is_empty(): return
+	var opening: String = PhaseOneCutscenes.next_unseen_on_load(GameState.player,GameState.dive,GameState.shift,Callable(self,"_cutscene_seen"))
+	if opening=="victory":
+		_play_cutscene("victory",func(): _play_cutscene("epilogue"))
+	elif not opening.is_empty():
+		_play_cutscene(opening)
+
+func _remember_cutscene_done(callbacks: Array, done: Callable) -> void:
+	if done.is_valid() and not callbacks.has(done): callbacks.append(done)
+
+func _queue_cutscene(id: String, done: Callable) -> void:
+	for entry in cutscene_queue:
+		if str(entry.id)==id:
+			_remember_cutscene_done(entry.done,done)
+			return
+	var callbacks: Array[Callable] = []
+	_remember_cutscene_done(callbacks,done)
+	cutscene_queue.append({"id":id,"done":callbacks})
+
+func _resume_pending_cutscenes() -> void:
+	if modal_open or not cutscene_id.is_empty() or ViewportLayout.host_paused: return
+	if not cutscene_queue.is_empty():
+		var entry: Dictionary = cutscene_queue.pop_front()
+		var callbacks: Array = entry.done
+		var queued_id := str(entry.id)
+		_play_cutscene(queued_id,func():
+			for callback in callbacks:
+				if callback.is_valid(): callback.call()
+		)
+		if cutscene_id.is_empty(): call_deferred("_resume_pending_cutscenes")
+		return
+	_resume_cutscene_from_state()
+
 func _play_cutscene(id: String, done := Callable()) -> void:
+	if id.is_empty(): return
 	if _cutscene_seen(id):
 		if done.is_valid(): done.call()
 		return
 	var sequence: Dictionary = PhaseOneCutscenes.sequence(id)
-	if sequence.is_empty() or modal_open:
-		if done.is_valid(): done.call()
+	if sequence.is_empty(): return
+	if cutscene_id==id:
+		_remember_cutscene_done(cutscene_active_done,done)
+		return
+	if modal_open or not cutscene_id.is_empty() or ViewportLayout.host_paused:
+		_queue_cutscene(id,done)
 		return
 	cutscene_id = id
 	cutscene_title = str(sequence.title)
 	cutscene_index = 0
 	cutscene_total = sequence.lines.size()
+	cutscene_active_done.clear()
+	_remember_cutscene_done(cutscene_active_done,done)
 	AudioManager.set_cinematic_bgm(str(sequence.get("bgm","")))
 	if id=="victory": AudioManager.play_victory_jingle()
 	_talk(sequence.lines,func():
@@ -494,7 +539,10 @@ func _play_cutscene(id: String, done := Callable()) -> void:
 		cutscene_id = ""
 		cutscene_frame.hide()
 		AudioManager.set_cinematic_bgm("")
-		if done.is_valid(): done.call()
+		var callbacks := cutscene_active_done.duplicate()
+		cutscene_active_done.clear()
+		for callback in callbacks:
+			if callback.is_valid(): callback.call()
 	)
 func _limit_gait_velocity(at: Vector2, speed: Vector2, delta: float) -> Vector2:
 	return preload("res://scripts/NalaPhysicalMotion.gd").limit_velocity(land_renderer,at,speed,delta)
@@ -515,6 +563,7 @@ func _gait_capacity(current: bool) -> bool:
 
 func _process(delta: float) -> void:
 	EnvironmentState.clock_paused = modal_open or ViewportLayout.host_paused or GameState.dive.has("challenge")
+	if not cutscene_queue.is_empty() and not modal_open and cutscene_id.is_empty(): _resume_pending_cutscenes()
 	if not nala:
 		return
 	var physical_gait: bool = is_instance_valid(land_renderer) and land_renderer.active and GameState.dive.is_empty() and nala.swim_sprite.appearance=="male_nusantara" and nala.outfit in ["daily","explorer"] and _gait_capacity(bool(nala.get_meta("nala_physical_walk_pilot",false)))
@@ -1177,8 +1226,7 @@ func _show_quiz() -> void:
 			if r.get("ok",false):
 				GameState.dive = r.dive
 				_close()
-				if PhaseOneCutscenes.eligible_on_load(GameState.player,GameState.dive,GameState.shift)=="boss_phase_two" and not _cutscene_seen("boss_phase_two"):
-					_play_cutscene("boss_phase_two")
+				_resume_cutscene_from_state()
 				if int(GameState.dive.get("hits",0))>=_required_hits():
 					_extract()
 		)

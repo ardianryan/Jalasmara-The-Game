@@ -96,7 +96,8 @@ static func eligible_on_load(player: Dictionary, dive: Dictionary, shift: Dictio
 	var day := int(progress.get("day",1))
 	if stage=="done" and dive.is_empty(): return "victory"
 	if not dive.is_empty():
-		if str(dive.get("mode",""))!="boss" or not dive.get("challenge",{}).is_empty(): return ""
+		if not dive.get("challenge",{}).is_empty(): return ""
+		if str(dive.get("mode",""))!="boss": return "first_dive" if day==1 and str(dive.get("mode",""))=="dive" else ""
 		var hits := int(dive.get("hits",0))
 		var required_hits := int(dive.get("requiredHits",6))
 		if required_hits<=0 or hits>=required_hits: return ""
@@ -105,6 +106,21 @@ static func eligible_on_load(player: Dictionary, dive: Dictionary, shift: Dictio
 	if stage=="boss": return "earthquake"
 	if day>=2 and day<3: return "garden_crisis"
 	return ""
+
+static func next_unseen_on_load(player: Dictionary, dive: Dictionary, shift: Dictionary, seen: Callable) -> String:
+	if player.is_empty() or not shift.is_empty(): return ""
+	if str(dive.get("mode",""))=="boss" and dive.get("challenge",{}).is_empty():
+		var hits := int(dive.get("hits",0))
+		var required_hits := int(dive.get("requiredHits",6))
+		if required_hits>0 and hits<required_hits:
+			if not bool(seen.call("boss_intro")): return "boss_intro"
+			if hits>=ceili(required_hits/2.0) and not bool(seen.call("boss_phase_two")): return "boss_phase_two"
+	var eligible := eligible_on_load(player,dive,shift)
+	if eligible.is_empty(): return ""
+	if eligible=="victory":
+		if not bool(seen.call("victory")): return "victory"
+		return "" if bool(seen.call("epilogue")) else "epilogue"
+	return "" if bool(seen.call(eligible)) else eligible
 
 static func ready_to_extract_on_load(dive: Dictionary) -> bool:
 	return str(dive.get("mode",""))=="boss" and dive.get("challenge",{}).is_empty() and int(dive.get("requiredHits",0))>0 and int(dive.get("hits",0))>=int(dive.get("requiredHits",0)) and float(dive.get("oxygen",0.0))>0.0
