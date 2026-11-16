@@ -2,6 +2,8 @@ extends Control
 signal skip_requested
 
 const BODY = preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2")
+const BACKDROP_TRANSITION_SEC := 0.38
+const SHOT_PAN_SEC := 0.85
 var shade: ColorRect
 var upper: ColorRect
 var lower: ColorRect
@@ -15,8 +17,14 @@ var backdrop: Texture2D
 var living_plate: TextureRect
 var living_material: ShaderMaterial
 var action_layer: Control
+var outgoing_plate: TextureRect
 var backdrop_key := ""
 var backdrop_time := 0.0
+var transition_elapsed := BACKDROP_TRANSITION_SEC
+var shot_pan := Vector2.ZERO
+var shot_pan_from := Vector2.ZERO
+var shot_pan_target := Vector2.ZERO
+var shot_pan_elapsed := SHOT_PAN_SEC
 var motif_id := ""
 var motif_beat := 0
 var motif_time := 0.0
@@ -105,12 +113,27 @@ func _ready() -> void:
 	add_child(boss_art)
 	move_child(boss_art, 2)
 	boss_art.hide()
+	outgoing_plate = TextureRect.new()
+	outgoing_plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	outgoing_plate.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	outgoing_plate.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	outgoing_plate.stretch_mode = TextureRect.STRETCH_SCALE
+	add_child(outgoing_plate)
+	move_child(outgoing_plate, upper.get_index())
+	outgoing_plate.hide()
 	visible = false
 
 func _process(delta: float) -> void:
 	if not visible: return
 	if EnvironmentState.reduced_motion:
 		shade.color = shade_target
+		transition_elapsed = BACKDROP_TRANSITION_SEC
+		outgoing_plate.hide()
+		outgoing_plate.texture = null
+		shot_pan = Vector2.ZERO
+		shot_pan_from = Vector2.ZERO
+		shot_pan_target = Vector2.ZERO
+		shot_pan_elapsed = SHOT_PAN_SEC
 		action_layer.elapsed = 3.0
 		action_layer.queue_redraw()
 		if living_plate.visible:
@@ -120,6 +143,16 @@ func _process(delta: float) -> void:
 		return
 	motif_time += delta
 	shade.color = shade.color.lerp(shade_target, clampf(delta * 3.5, 0.0, 1.0))
+	if outgoing_plate.visible:
+		transition_elapsed = minf(transition_elapsed + delta, BACKDROP_TRANSITION_SEC)
+		var transition := _transition_progress()
+		outgoing_plate.modulate = Color(1.0, 1.0, 1.0, 1.0 - transition)
+		if transition >= 1.0:
+			outgoing_plate.hide()
+			outgoing_plate.texture = null
+	shot_pan_elapsed = minf(shot_pan_elapsed + delta, SHOT_PAN_SEC)
+	var pan_progress := smoothstep(0.0, 1.0, shot_pan_elapsed / SHOT_PAN_SEC)
+	shot_pan = shot_pan_from.lerp(shot_pan_target, pan_progress)
 	action_layer.elapsed = motif_time
 	action_layer.queue_redraw()
 	backdrop_time += delta
@@ -209,6 +242,18 @@ func _update_living_plate() -> void:
 	living_plate.size=rect.size
 	living_plate.visible=not EnvironmentState.reduced_motion
 
+func _transition_progress() -> float:
+	return smoothstep(0.0, 1.0, clampf(transition_elapsed / BACKDROP_TRANSITION_SEC, 0.0, 1.0))
+
+func _shot_target(cinematic_id: String, index: int) -> Vector2:
+	match cinematic_id:
+		"prologue": return Vector2(lerpf(-6.0, 6.0, clampf(float(index - 1) / 5.0, 0.0, 1.0)), 0.0) if index <= 6 else Vector2.ZERO
+		"first_dive": return Vector2(-3.0, -3.0) if index == 1 else Vector2(3.0, 3.0)
+		"boss_intro": return Vector2(-5.0, 0.0)
+		"boss_phase_two": return Vector2(5.0, 0.0)
+		"epilogue": return Vector2(-4.0, 1.0) if index <= 3 else (Vector2(3.0, -2.0) if index <= 6 else Vector2(0.0, 4.0))
+	return Vector2.ZERO
+
 func _backdrop_rect() -> Rect2:
 	var source:=Vector2(backdrop.get_size())
 	var focus:=0.0 if EnvironmentState.reduced_motion else motif_time
@@ -217,7 +262,7 @@ func _backdrop_rect() -> Rect2:
 		zoom=1.12-0.04*clampf(focus/2.4,0.0,1.0)
 	var scale:=maxf(size.x/source.x,size.y/source.y)*zoom
 	var painted:=source*scale
-	var pan:=Vector2.ZERO if EnvironmentState.reduced_motion else Vector2(sin(backdrop_time*.22)*8.0,cos(backdrop_time*.17)*4.0)
+	var pan:=Vector2.ZERO if EnvironmentState.reduced_motion else Vector2(sin(backdrop_time*.22)*8.0,cos(backdrop_time*.17)*4.0)+shot_pan
 	if not EnvironmentState.reduced_motion:
 		if motif_id=="first_dive" and motif_beat==1:
 			pan.y-=12.0*clampf(focus/2.4,0.0,1.0)
@@ -228,6 +273,9 @@ func _backdrop_rect() -> Rect2:
 		elif (motif_id=="earthquake" and motif_beat==1) or (motif_id=="cave_warning" and motif_beat==2):
 			var decay:=1.0-clampf(focus/2.0,0.0,1.0)
 			pan+=Vector2(sin(focus*28.0)*4.0,cos(focus*19.0)*2.0)*decay
+	var margin := (painted-size)*0.5
+	if margin.x>1.0: pan.x = clampf(pan.x, -margin.x+1.0, margin.x-1.0)
+	if margin.y>1.0: pan.y = clampf(pan.y, -margin.y+1.0, margin.y-1.0)
 	return Rect2((size-painted)*.5+pan,painted)
 
 func _label(parent: Control, font_size: int, color: Color) -> Label:
@@ -252,6 +300,7 @@ func _skip_style(fill: Color, border: Color) -> StyleBoxFlat:
 	return style
 
 func present(title: String, beat: Dictionary, index: int, total: int, cinematic_id: String) -> void:
+	var was_visible := visible
 	visible = true
 	var scene_key := ""
 	match cinematic_id:
@@ -266,10 +315,35 @@ func present(title: String, beat: Dictionary, index: int, total: int, cinematic_
 		"victory": scene_key = "tamansari-neutralized" if index == 1 else ("tamansari-sealed" if index == 2 else "prologue")
 		"epilogue": scene_key = "kedai-interior" if index <= 3 else ("griya-map-room" if index <= 6 else "epilogue")
 	if scene_key!=backdrop_key:
+		var outgoing_texture := backdrop
+		var outgoing_rect := _backdrop_rect() if backdrop != null else Rect2()
 		backdrop_key = scene_key
 		var art_set := "cinematics-v1" if scene_key in ["prologue", "tamansari", "epilogue"] else "cinematics-v2"
 		backdrop = load("res://resources/art/%s/%s.png" % [art_set, scene_key]) if not scene_key.is_empty() else null
 		backdrop_time = 0.0
+		if was_visible and outgoing_texture != null and backdrop != null and not EnvironmentState.reduced_motion:
+			outgoing_plate.texture = outgoing_texture
+			outgoing_plate.position = outgoing_rect.position
+			outgoing_plate.size = outgoing_rect.size
+			outgoing_plate.modulate = Color.WHITE
+			outgoing_plate.show()
+			transition_elapsed = 0.0
+		else:
+			outgoing_plate.hide()
+			outgoing_plate.texture = null
+			transition_elapsed = BACKDROP_TRANSITION_SEC
+	if EnvironmentState.reduced_motion:
+		outgoing_plate.hide()
+		outgoing_plate.texture = null
+		transition_elapsed = BACKDROP_TRANSITION_SEC
+		shot_pan = Vector2.ZERO
+		shot_pan_from = Vector2.ZERO
+		shot_pan_target = Vector2.ZERO
+		shot_pan_elapsed = SHOT_PAN_SEC
+	else:
+		shot_pan_from = shot_pan
+		shot_pan_target = _shot_target(cinematic_id, index)
+		shot_pan_elapsed = 0.0
 	living_plate.texture = backdrop
 	living_material.set_shader_parameter("plate",{
 		"prologue":1,"tamansari":2,"epilogue":3,"kedai-interior":4,
