@@ -166,6 +166,31 @@ export async function seed(store: Store) {
       },
     );
   }
+  const current = await store.contents.findOne({
+    state: "published",
+    label: "Palung Smara · Fase 1",
+  });
+  if (!current) return;
+  const legacyCatalog = structuredClone(fresh);
+  const legacyDayOne = legacyCatalog.recipes.find((r) => r.id === "daun_kuning")!;
+  legacyDayOne.customer = "Bu Darmi";
+  legacyDayOne.complaint =
+    "Daun kebun apung saya menguning. Saya lupa apa yang dibutuhkan tanaman.";
+  legacyDayOne.solution =
+    "Periksa akar, cahaya, air, dan unsur hara sebelum menambah pupuk. Daun kuning dapat memiliki beberapa penyebab.";
+  if (JSON.stringify(current.catalog) !== JSON.stringify(legacyCatalog)) return;
+  const dayOne = fresh.recipes.find((r) => r.id === "daun_kuning")!;
+  await store.contents.updateOne(
+    { id: current.id, state: "published", catalog: current.catalog },
+    {
+      $set: {
+        "catalog.recipes.$[rec].customer": dayOne.customer,
+        "catalog.recipes.$[rec].complaint": dayOne.complaint,
+        "catalog.recipes.$[rec].solution": dayOne.solution,
+      },
+    },
+    { arrayFilters: [{ "rec.id": "daun_kuning" }] },
+  );
 }
 export async function currentContent(
   s: Store,

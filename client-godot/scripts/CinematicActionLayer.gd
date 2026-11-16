@@ -29,6 +29,8 @@ const NALA_DAILY := {
 	"male_default": preload("res://resources/art/player-gait/male-default-daily-idle-8way-v1.png")
 }
 const NPC_ATLAS := preload("res://resources/art/npc-atlas.png")
+const RANTO_PORTRAIT := preload("res://resources/art/cinematics-v2/pak-ranto-portrait.png")
+const PhaseOneCutscenes := preload("res://scripts/PhaseOneCutscenes.gd")
 const PIXEL_FONT := preload("res://resources/fonts/ark-pixel-12px-proportional-latin.otf")
 const BODY_FONT := preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2")
 const NPC_FACES := {
@@ -47,7 +49,11 @@ var elapsed := 0.0
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+
+static func ranto_portrait_texture() -> Texture2D:
+	return RANTO_PORTRAIT
 
 func has_directed_action(id: String, beat: int) -> bool:
 	return DIRECTED_BEATS.has(id) and beat in DIRECTED_BEATS[id]
@@ -339,7 +345,7 @@ func _draw_service(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
 	if motif_beat==1:
 		_draw_tea_and_net(view,motion,7)
-		_draw_darmi_tasting(view,motion)
+		_draw_customer_tasting(view,motion)
 	else:
 		var retreat:=_progress(motion,2.0)
 		_actor(Vector2(view.x*(.77+retreat*.12),view.y*.54),unit,Color("dfe3d8"),false,sin(motion*5.0)*.5,"raka")
@@ -347,7 +353,7 @@ func _draw_service(view: Vector2, motion: float) -> void:
 			var p:=Vector2(view.x*(.73+float(i%4)*.04),view.y*.52-fposmod(motion*8.0+float(i)*12.0,71.0)*unit)
 			draw_rect(Rect2(p,Vector2(2,2)*unit),Color(.70,.37,.84,.18))
 
-func _draw_darmi_tasting(view: Vector2, motion: float) -> void:
+func _draw_customer_tasting(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
 	var center:=Vector2(view.x*.52,view.y*.35)
 	var pulse:=.5+.5*sin(motion*3.8)
@@ -361,7 +367,9 @@ func _draw_darmi_tasting(view: Vector2, motion: float) -> void:
 	draw_rect(Rect2(frame.position+Vector2(4,4)*unit,frame.size-Vector2(8,8)*unit),Color("a4bc6c"),false,unit)
 	var source:=Rect2(160,627,320,320)
 	var portrait:=Rect2(center+Vector2(-51,-48)*unit,Vector2(102,103)*unit)
-	draw_texture_rect_region(NPC_ATLAS,portrait,source)
+	var first_customer: String = PhaseOneCutscenes.first_customer_from_shift(GameState.shift)
+	if first_customer=="Bu Darmi": draw_texture_rect_region(NPC_ATLAS,portrait,source)
+	elif first_customer=="Pak Ranto": draw_texture_rect(ranto_portrait_texture(),portrait,false)
 	for i in range(9):
 		var angle:=float(i)*2.399+motion*.24
 		var drift:=Vector2(cos(angle),sin(angle))*(58.0+float(i%3)*7.0)*unit

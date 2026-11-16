@@ -509,12 +509,15 @@ func _resume_pending_cutscenes() -> void:
 		return
 	_resume_cutscene_from_state()
 
+func _first_kedai_customer() -> String:
+	return PhaseOneCutscenes.first_customer_from_shift(GameState.shift)
+
 func _play_cutscene(id: String, done := Callable()) -> void:
 	if id.is_empty(): return
 	if _cutscene_seen(id):
 		if done.is_valid(): done.call()
 		return
-	var sequence: Dictionary = PhaseOneCutscenes.sequence(id)
+	var sequence: Dictionary = PhaseOneCutscenes.sequence(id,_first_kedai_customer())
 	if sequence.is_empty(): return
 	if cutscene_id==id:
 		_remember_cutscene_done(cutscene_active_done,done)

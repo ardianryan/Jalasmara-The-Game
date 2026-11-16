@@ -696,11 +696,11 @@ export function seedCatalog(): Catalog {
       {
         id: "daun_kuning",
         day: 1,
-        customer: "Bu Darmi",
+        customer: "Pak Ranto",
         complaint:
-          "Daun kebun apung saya menguning. Saya lupa apa yang dibutuhkan tanaman.",
+          "Daun tanaman di lapak saya pucat. Raka menyuruh saya membeli cairan pabrik, tetapi saya lupa bagaimana daun membuat makanan.",
         solution:
-          "Periksa akar, cahaya, air, dan unsur hara sebelum menambah pupuk. Daun kuning dapat memiliki beberapa penyebab.",
+          "Klorofil menyerap cahaya untuk fotosintesis. Tumbuhan juga memerlukan air dan karbon dioksida; daun pucat dapat memiliki penyebab lain, jadi periksa gejala sebelum membeli cairan.",
         fragmentId: "klorofil",
         reward: 100,
       },

@@ -1,7 +1,19 @@
 extends RefCounted
 
 # Cinematic beats are presentation only. Progress, rewards, and the six boss resonances stay server-owned.
-static func sequence(id: String) -> Dictionary:
+static func first_customer_from_shift(shift: Dictionary) -> String:
+	for recipe in shift.get("customers",[]):
+		if not (recipe is Dictionary) or str(recipe.get("id",""))!="daun_kuning": continue
+		var name := str(recipe.get("customer","")).strip_edges()
+		return name if not name.is_empty() else "Pelanggan Kedai"
+	return "Pak Ranto" if shift.is_empty() else "Pelanggan Kedai"
+
+static func sequence(id: String, first_customer: String = "Pak Ranto") -> Dictionary:
+	var customer := first_customer.strip_edges()
+	if customer.is_empty(): customer = "Pak Ranto"
+	var legacy_darmi := customer == "Bu Darmi"
+	var first_complaint := "Daun di kebunku pucat. Raka menyuruhku membeli cairan pabrik, tetapi aku lupa apa yang dibutuhkan daun untuk membuat makanan." if legacy_darmi else "Mbah Wira, nota pasar ini saja sulit kubaca. Daun tanaman di lapakku pucat; Raka menyuruhku membeli cairan pabrik. Aku lupa bagaimana daun membuat makanan." if customer == "Pak Ranto" else "Daun tanaman di rumahku pucat. Aku lupa bagaimana daun membuat makanan dan bingung harus mulai dari mana."
+	var first_welcome := "Duduklah, Darmi. Nala membawa fragmen dari Segaran. Kita racik Seduhan Tunas Klorofil dan pahami cara daun bekerja." if legacy_darmi else "Duduklah, Ranto. Nala membawa fragmen dari Segaran. Kita racik Seduhan Tunas Klorofil agar ingatanmu kembali jernih." if customer == "Pak Ranto" else "Duduklah. Nala membawa fragmen dari Segaran. Kita racik Seduhan Tunas Klorofil dan pahami cara daun bekerja."
 	match id:
 		"prologue":
 			return {"title":"Kabut di Atas Bandar Hujung","bgm":"title_theme","lines":[
@@ -23,12 +35,12 @@ static func sequence(id: String) -> Dictionary:
 			]}
 		"first_kedai":
 			return {"title":"Malam Pertama di Kedai Waras","bgm":"kedai_waras_night","lines":[
-				{"shot":"1.2 · Lentera kedai menyala","tone":"warm","name":"Bu Darmi","emotion":"thinking","text":"Daun di kebunku pucat. Raka menyuruhku membeli cairan pabrik, tetapi aku lupa apa yang dibutuhkan daun untuk membuat makanan."},
-				{"shot":"1.2 · Seduhan pertama","tone":"warm","name":"Mbah Wira","emotion":"happy","text":"Duduklah, Darmi. Nala membawa fragmen dari Segaran. Kita racik Seduhan Tunas Klorofil dan pahami cara daun bekerja."}
+				{"shot":"1.2 · Lentera kedai menyala","tone":"warm","name":customer,"emotion":"thinking","text":first_complaint},
+				{"shot":"1.2 · Seduhan pertama","tone":"warm","name":"Mbah Wira","emotion":"happy","text":first_welcome}
 			]}
 		"first_service":
 			return {"title":"Ingatan yang Menyala","bgm":"kedai_waras_night","lines":[
-				{"shot":"1.2 · Secangkir seduhan","tone":"warm","name":"Bu Darmi","emotion":"shock","text":"Klorofil! Cahaya, air, dan karbon dioksida membantu tumbuhan membuat makanan. Bagaimana aku bisa lupa?"},
+				{"shot":"1.2 · Secangkir seduhan","tone":"warm","name":customer,"emotion":"shock","text":"ASTAGA! Klorofil dan fotosintesis! Cahaya, air, dan karbon dioksida membantu tumbuhan membuat makanan. Bagaimana aku bisa lupa?"},
 				{"shot":"1.2 · Di luar jendela","tone":"plum","name":"Inspektur Raka","emotion":"thinking","text":"Kedai Waras buka lagi? Kita lihat berapa lama mereka bertahan."}
 			]}
 		"garden_crisis":
