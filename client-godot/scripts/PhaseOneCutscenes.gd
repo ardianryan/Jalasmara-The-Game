@@ -22,7 +22,9 @@ static func sequence(id: String, first_customer: String = "Pak Ranto") -> Dictio
 				{"shot":"0.1 · Pasar dan kebun","tone":"plum","name":"Mbah Wira","text":"Ingatan bukan benda mati, Nala. Ia mengalir seperti air pasang. Kini Pak Ranto lupa timbangan; Bu Darmi lupa cara merawat kebunnya."},
 				{"shot":"0.2 · Kapal korporasi di Dermaga Bubat","tone":"plum","name":"Inspektur Raka","emotion":"happy","text":"Mengapa lelah menghafal rumus dan menghitung takaran? Minumlah Kapsul Kognisi Instan dari PT Cakrawala Sintetis! Bebas pusing, patuh bekerja, hidup tenang!"},
 				{"shot":"0.2 · Penolakan","tone":"warm","name":"Ki Lurah Wirabhumi","emotion":"angry","text":"Bagas, Kinasih, Gito, Cempaka, Danu—berlindung di belakangku. Selama aku di sini, Bandar Hujung tidak menukar akal sehat dengan kapsul."},
-				{"shot":"0.3 · Kepulangan Nala","tone":"warm","sfx":"explosion_heavy","name":"Beno","emotion":"shock","text":"Uhuk! Hampir saja! Eh—Nala?! Kau benar-benar pulang? Maaf soal asap bengkel. Mbah Wira menunggumu di Kedai Waras."},
+				{"shot":"0.3 · Kepulangan Nala","tone":"warm","sfx":"explosion_heavy","name":"Beno","emotion":"shock","text":"Uhuk! Hampir saja! Eh—Nala?! Kau benar-benar pulang?!"},
+				{"shot":"0.3 · Asap dari bengkel Beno","tone":"warm","name":"Nala","emotion":"shock","text":"Bang Beno? Apa yang kau rakit sampai meledak? Dan kenapa warga di pasar tadi menatapku dengan mata linglung?"},
+				{"shot":"0.3 · Ajakan ke Kedai Waras","tone":"warm","name":"Mbah Wira","text":"Masuklah dulu ke Kedai Waras, Nala. Kabut di luar sana tidak ramah bagi pikiran yang belum diseduh rempah."},
 				{"shot":"0.4 · Kedai Waras","tone":"warm","name":"Mbah Wira","text":"Kakekmu hilang saat menyelidiki pipa di Palung Smara. Ia meninggalkan SmaraPedia dan rancangan Jala Kognisi. Bawa fragmen biota pada siang hari; malamnya kuracik untuk warga."},
 				{"shot":"0.4 · Jala Kognisi","tone":"teal","name":"Beno","emotion":"happy","text":"Perkenalkan, Jala Kognisi Tipe-1! Ingatan warga yang menguap diserap biota Segaran. Jala ini mengunci fragmennya saat kau menjawab pertanyaan ilmiah."},
 				{"shot":"0.4 · Janji Nala","tone":"warm","name":"Nala","emotion":"happy","text":"Kalau begitu, jangan biarkan Kedai Waras tutup lagi, Mbah. Tunjukkan tempat menyelamnya!"},
@@ -47,6 +49,7 @@ static func sequence(id: String, first_customer: String = "Pak Ranto") -> Dictio
 			return {"title":"Krisis Kebun Apung","bgm":"coastal_day","lines":[
 				{"shot":"2.1 · Rakit tani Bu Darmi","tone":"plum","name":"Bu Darmi","emotion":"thinking","text":"Daun kebunku menguning, tetapi media tanamnya terus tergenang. Petugas pabrik hendak menyegel rakit ini dan menyalahkan hitunganku."},
 				{"shot":"2.1 · Laskar Kognisi","tone":"warm","name":"Gito","emotion":"angry","text":"Pergi kalian! Jangan sita rakit Bu Darmi. Bagas, Kinasih, Cempaka, Danu—kita bantu Kak Nala!"},
+				{"shot":"2.1 · Ancaman petugas pabrik","tone":"plum","name":"Petugas Korporasi","emotion":"angry","text":"Rakit ini gagal panen karena pemiliknya tak becus menghitung kadar garam dan unsur hara! Sesuai aturan perusahaan, rakit tak produktif harus dibongkar!"},
 				{"shot":"2.1 · Tongkat ukur pasang-surut","tone":"warm","name":"Ki Lurah Wirabhumi","emotion":"angry","text":"Selama tongkat ulin ini menancap, tak ada rakit boleh dibongkar tanpa izin Balai Adat. Tolong Darmi; izin kebun kakekmu ada di papan balai setelahnya."},
 				{"shot":"2.1 · Petunjuk Kinasih","tone":"teal","name":"Kinasih","emotion":"happy","text":"Kakekmu bilang rahasia kebun ada di Hutan Pesisir dan Hutan Lamun Wringin, 25–60 meter. Cari Koral Nitrogen, Lentera Fotosintesis, dan Kerang Osmosis."}
 			]}
@@ -63,7 +66,7 @@ static func sequence(id: String, first_customer: String = "Pak Ranto") -> Dictio
 			]}
 		"earthquake":
 			return {"title":"Lagu Sandi Sang Penjaga","bgm":"village_hall","lines":[
-				{"shot":"3.2 · Pagi setelah giliran kedai ketiga","tone":"plum","sfx":"underwater_boom","name":"Ki Lurah Wirabhumi","emotion":"angry","text":"Raka! Apa yang dilakukan pabrikmu di bawah sana? Air muara bergelembung ungu dan dermaga berguncang!"},
+				{"shot":"3.2 · Pagi setelah kedai malam ketiga","tone":"plum","sfx":"underwater_boom","name":"Ki Lurah Wirabhumi","emotion":"angry","text":"Raka! Apa yang pabrikmu lakukan semalam? Air muara masih bergelembung ungu, dan pagi ini dermaga berguncang!"},
 				{"shot":"3.2 · Pengakuan Raka","tone":"plum","name":"Inspektur Raka","emotion":"shock","text":"Makhluk di dasar palung menghalangi pipa kami. Kami menyuntikkan asam pekat agar ia mati, tetapi ia malah mengamuk!"},
 				{"shot":"3.2 · Lagu Kinasih","tone":"teal","name":"Kinasih","text":"Gajah Mina bertapa di Tamansari, gadingnya batu, mahkotanya memori. Bila racun membelenggu dahi, basuhlah dengan kapur dan kasih yang murni."},
 				{"shot":"3.2 · Peta batu Balai Adat","tone":"warm","name":"Saras","emotion":"thinking","text":"Dia bukan monster jahat. Pipa melilit tubuhnya dan meracuni Inti Kristal Smara di dahinya. Jika ia mati, ekosistem dan ingatan Palung Smara ikut musnah."},
@@ -125,8 +128,9 @@ static func next_unseen_on_load(player: Dictionary, dive: Dictionary, shift: Dic
 		var hits := int(dive.get("hits",0))
 		var required_hits := int(dive.get("requiredHits",6))
 		if required_hits>0 and hits<required_hits:
-			if not bool(seen.call("boss_intro")): return "boss_intro"
-			if hits>=ceili(required_hits/2.0) and not bool(seen.call("boss_phase_two")): return "boss_phase_two"
+			if hits>=ceili(required_hits/2.0):
+				if not bool(seen.call("boss_phase_two")): return "boss_phase_two"
+			elif not bool(seen.call("boss_intro")): return "boss_intro"
 	var eligible := eligible_on_load(player,dive,shift)
 	if eligible.is_empty(): return ""
 	if eligible=="victory":

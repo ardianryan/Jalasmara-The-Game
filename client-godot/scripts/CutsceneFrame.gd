@@ -249,7 +249,7 @@ func _transition_progress() -> float:
 
 func _shot_target(cinematic_id: String, index: int) -> Vector2:
 	match cinematic_id:
-		"prologue": return Vector2(lerpf(-6.0, 6.0, clampf(float(index - 1) / 5.0, 0.0, 1.0)), 0.0) if index <= 6 else Vector2.ZERO
+		"prologue": return Vector2(lerpf(-6.0, 6.0, clampf(float(index - 1) / 5.0, 0.0, 1.0)), 0.0) if index <= 8 else Vector2.ZERO
 		"first_dive": return Vector2(-3.0, -3.0) if index == 1 else Vector2(3.0, 3.0)
 		"boss_intro": return Vector2(-5.0, 0.0)
 		"boss_phase_two": return Vector2(5.0, 0.0)
@@ -306,7 +306,7 @@ func present(title: String, beat: Dictionary, index: int, total: int, cinematic_
 	visible = true
 	var scene_key := ""
 	match cinematic_id:
-		"prologue": scene_key = "prologue" if index <= 5 else ("griya-arrival-dock" if index == 6 else "kedai-interior")
+		"prologue": scene_key = "prologue" if index <= 5 else ("griya-arrival-dock" if index <= 8 else "kedai-interior")
 		"first_dive": scene_key = "segaran-entry" if index == 1 else "segaran-underwater"
 		"first_kedai", "first_service", "saras_visit": scene_key = "kedai-interior"
 		"garden_crisis": scene_key = "garden-crisis"
