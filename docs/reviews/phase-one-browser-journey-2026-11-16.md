@@ -1,0 +1,32 @@
+# Phase 1 local browser cutscene replay — 16 November 2026
+
+## Scope and candidate
+
+This report covers a disposable local Chromium replay of authored Phase 1 cutscene checkpoints. It does **not** certify that a player can earn each checkpoint through normal gameplay, that every line of every sequence was watched, or that the result is already on staging.
+
+- Worktree: `Jalasmara-phase1-browser-journey`; branch: `work/phase1-browser-journey-20261116`, based on source `cccaffbab7b18c8212a9638009b3fa2980be4955`. This package changes only the browser harness, this review, and curated screenshots. It does not edit production runtime, API, shared state, CI, or owner accounts.
+- `npm run build` exited 0 in this worktree. The local PCK was 81,676,192 bytes, SHA-256 `ed2d8ae0d6688e973a712e99646dc70e393cc8d13455899dd91f7a490e07e0a6`. The harness checked matching public and dist PCK bytes, hashes, manifests, built HTML, compiled API, source SHA, and source/build timestamps before starting fixtures.
+- Engine/tooling actually used: Godot 4.7.2 Compatibility Web export, Playwright Chromium with SwiftShader, Node 26.12.1, `tsx` 4.23.15, ImageMagick 7.1.2-31, and Tesseract 5.5.4. ImageMagick and Tesseract serve only local screenshot verification; neither enters the game runtime.
+- The new screenshots are captures of this project's local build. No moodboard image or third-party sprite was copied into the package. Underlying art provenance remains in `docs/assets/provenance.md`.
+
+## Observed result
+
+Nine distinct early/middle sequences rendered with the expected first speaker, stage, selected BGM, portrait, and unclipped dialogue bounds at both 844×390 and 667×375: prologue, first dive, first Kedai visit, Pak Ranto's first service, garden crisis, Saras's visit, Jalatunda warning, earthquake, and boss introduction. The audio debug state reported the selected BGM as playing after a synthetic user gesture; this is not an audible quality test. Prologue Escape also caused the server tutorial flag to become true. Additional beats showed Raka after the first service and Saras's inscription dialogue.
+
+A separate clean fixture run passed for victory and epilogue at both sizes, including the switch to `coastal_dusk` in the map room and the final thank-you card. The epilogue replay advanced through the named closing speakers. The [contact sheet](../visual/phase-one-browser-journey/checkpoint-contact-sheet.webp) displays 12 representative frames from these **11 distinct sequences**; its SHA-256 is `58dd72d68428b4aafc25511fe6c7a76466e1e51995e4e3e95eb1538914993d51`.
+
+**Boss phase two is not accepted yet.** The first run appeared to reach it because its first speaker (`Saras`) and BGM (`boss_gajah_mina`) match the intro. Visual inspection and OCR of the [failed phase-two capture](../visual/phase-one-browser-journey/phase-two-replayed-intro.webp) show `Gajah Mina · Penjaga yang Tercemar` and `Lampu UV menyapu candi...`, rather than `Inti Smara Terbuka` and `Katup asam retak...`. Its screenshot SHA-256 is `f0967b6ebc8038602cd8a921800324cd1b155c3b8ed2dbd56deda50c57cf5c61`. The run's final Escape/no-dialogue assertion timed out after the repeated intro; its fixture cleanup still passed. No phase-two pass is claimed.
+
+The exact local trigger was: create a disposable day-3 `boss` player with required upgrades; call `POST /api/dive/start` with `{ "mode": "boss" }`; display and Escape-skip `boss_intro`; set only that fixture's Redis dive `hits` to 3 and mark the first three target records caught; reload `/play`. In `PhaseOneCutscenes.next_unseen_on_load`, an unseen `boss_intro` takes priority even when `hits >= 3`. A fast reload may precede persistence of `user://phase-one-cutscenes.cfg`; the current result does not prove whether that timing is the sole cause. The harness now checks the OCR-read title at 667×375, so it fails closed if the intro replays. It also waits three seconds after the boss intro skip before reload. The corrected harness has **not** yet been rerun against the integrated fix/source.
+
+## Fixture and evidence boundary
+
+The first run was `artifacts/browser/phase-one-journey-9885b6d5-4c9b-481c-88e6-febe7e64e35a/` (`results.json`: 10 reported checkpoints, 22 screenshots, outcome `failed`, cleanup `true`). The ending run was `artifacts/browser/phase-one-journey-4be8d65c-a39b-40b8-98e9-b257e2bbc4c9/` (`results.json`: victory and epilogue, seven screenshots, outcome `passed`, cleanup `true`). These full artifacts are ignored local files; only the two curated WebP files above are committed. All fixture accounts, content, shifts, receipts, and owned Redis keys were removed. The dedicated Mongo service on 127.0.0.1:27031 was stopped and its temporary 5.4 MB data directory removed. No owner account, shared volume, or staging service was used.
+
+Browser tests used a desktop Chromium viewport and SwiftShader. They did not emulate touch input, measure frame rate, record actual sound, or run on Windows/Samsung hardware. Progress stages, shift service, cave location, and boss hit count were seeded in isolated Mongo/Redis checkpoints. API progression is covered separately by `phase-one-journey-api.test.ts`; this harness checks presentation of the selected state.
+
+## Handoff to integrator
+
+The next accepted run should happen only after the boss cutscene priority/persistence fix is integrated. Build from the final source SHA, pin its new PCK manifest, and run `./node_modules/.bin/tsx scripts/tests/phase-one-browser-journey.mjs` against a new local Mongo replica-set database named `jalasmara_phase1_browser_journey_<unique hex>` on a port at or above 27020 and a disposable Redis DB 15 on a port at or above 6381. Set `PHASE1_BROWSER_MONGO_URL`, `PHASE1_BROWSER_REDIS_URL`, `PHASE1_EXPECT_SOURCE_SHA`, `PHASE1_EXPECT_PCK`, and `PHASE1_EXPECT_PCK_BYTES`. The harness rejects stale or dirty source/build combinations. `PHASE1_BROWSER_CASES=victory,epilogue` can narrow a diagnostic run; omit it for all 12.
+
+Review the new `results.json`, both viewport screenshots, OCR titles, browser console errors, and fixture cleanup status. Mark phase two accepted only when the title reads `Inti Smara Terbuka` and the full run passes. Then update `docs/agent-handoff.md` with the integrated commit, test result, and remaining physical-device/story-playthrough gaps. The isolated browser slot was released after the baseline runs; no export, Godot process, or browser session remains active from this package.
