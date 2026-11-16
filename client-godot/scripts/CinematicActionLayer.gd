@@ -2,7 +2,7 @@ extends Control
 
 # Code-driven screenplay accents reuse approved character atlases without adding physics.
 const DIRECTED_BEATS := {
-	"prologue": [2, 3, 4, 5, 6, 7, 8, 9],
+	"prologue": [1, 2, 3, 4, 5, 6, 7, 8, 9],
 	"first_dive": [1, 2],
 	"first_kedai": [1],
 	"first_service": [1, 2],
@@ -16,6 +16,8 @@ const DIRECTED_BEATS := {
 	"epilogue": [1, 2, 3, 4, 5, 6, 7, 8]
 }
 const CHILD_ATLAS := preload("res://resources/art/village-expansion-v1/residents.png")
+const VILLAGE_PORTRAITS := preload("res://resources/art/npc-atlas.png")
+const RANTO_PORTRAIT := preload("res://resources/art/cinematics-v2/pak-ranto-portrait.png")
 const NALA_DIVING := {
 	"female_nusantara": preload("res://resources/art/player-gait/female-nusantara-diving-idle-8way-v1.png"),
 	"female_default": preload("res://resources/art/player-gait/female-default-diving-idle-8way-v1.png"),
@@ -191,6 +193,8 @@ func _draw_nala_daily(feet: Vector2, unit: float, direction: int = 2) -> void:
 func _draw_prologue(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
 	match motif_beat:
+		1:
+			_draw_harbor_lesson(view,motion)
 		2:
 			var mouth:=Vector2(view.x*.84,view.y*.42)
 			for i in range(22):
@@ -198,14 +202,7 @@ func _draw_prologue(view: Vector2, motion: float) -> void:
 				var p:=mouth+Vector2((-17.0-phase*110.0)*unit,(17.0+phase*61.0)*unit)
 				draw_rect(Rect2(p,Vector2(2+float(i%3),2+float(i%2))*unit),Color(.72,.33,.82,.18+.26*phase))
 		3:
-			var marker:=Vector2(view.x*.30,view.y*.42)
-			draw_arc(marker,9*unit,PI,TAU,10,Color("b9f8ed"),2*unit)
-			draw_rect(Rect2(marker+Vector2(7,-7)*unit,Vector2(3,7)*unit),Color("b9f8ed"))
-			draw_rect(Rect2(marker+Vector2(1,7)*unit,Vector2(3,3)*unit),Color("b9f8ed"))
-			for i in range(10):
-				var fall:=fposmod(motion*13.0+float(i)*13.0,70.0)
-				var p:=marker+Vector2(float(i%5)*6.0,fall)*unit
-				draw_rect(Rect2(p,Vector2(2,2)*unit),Color(.21,.93,.99,.60*(1.0-fall/70.0)))
+			_draw_forgotten_work(view,motion)
 		4:
 			_draw_capsule_ship(view,motion)
 		5:
@@ -224,6 +221,59 @@ func _draw_prologue(view: Vector2, motion: float) -> void:
 				draw_circle(p,(3.0+float(i%3))*unit,Color(.25,.80,.96,.31*(1.0-lift/61.0)))
 		7,8,9:
 			_draw_tea_and_net(view,motion,motif_beat)
+
+func _draw_harbor_lesson(view: Vector2, motion: float) -> void:
+	var unit:=_unit(view)
+	var pier_y:=view.y*.54
+	var compass:=Vector2(view.x*.295,view.y*.475)
+	draw_rect(Rect2(compass-Vector2(8,6)*unit,Vector2(17,13)*unit),Color("5b3b25"))
+	draw_rect(Rect2(compass-Vector2(6,4)*unit,Vector2(13,9)*unit),Color("ddbd77"))
+	draw_line(compass+Vector2(-4,0)*unit,compass+Vector2(5,0)*unit,Color("476b6a"),unit)
+	draw_line(compass+Vector2(0,-3)*unit,compass+Vector2(0,4)*unit,Color("476b6a"),unit)
+	draw_colored_polygon(PackedVector2Array([
+		compass+Vector2(0,-4)*unit,compass+Vector2(-2,0)*unit,
+		compass+Vector2(2,0)*unit]),Color("9d4536"))
+	_actor(Vector2(view.x*.255,pier_y),unit,Color("7e623d"),false,0.0,"lurah")
+	for i in range(3):
+		var child_key: String=["bagas","kinasih","gito"][i]
+		var feet:=Vector2(view.x*(.105+float(i)*.051),pier_y+float(i%2)*2*unit)
+		if not EnvironmentState.reduced_motion: feet.y+=sin(motion*1.5+float(i)*.9)*unit
+		_actor(feet,unit*.9,Color("6a8c75"),true,0.0,child_key)
+	var pointer:=Vector2(view.x*.275,pier_y-15*unit)
+	draw_line(pointer,compass+Vector2(-3,1)*unit,Color("826347"),2*unit)
+	for i in range(3):
+		var wake:=Vector2(view.x*(.44+float(i)*.04),view.y*(.51+float(i%2)*.025))
+		draw_line(wake,wake+Vector2(7,1)*unit,Color(.66,1.0,.89,.32),unit)
+
+func _draw_forgotten_work(view: Vector2, motion: float) -> void:
+	var unit:=_unit(view)
+	var forget:=smoothstep(0.0,1.0,_progress(motion,2.2))
+	var market_y:=view.y*.54
+	var ranto:=Vector2(view.x*.19,market_y)
+	draw_texture_rect(RANTO_PORTRAIT,Rect2(ranto+Vector2(-18,-43)*unit,Vector2(36,37)*unit),false)
+	var scale_top:=ranto+Vector2(18,-26)*unit
+	draw_line(scale_top,scale_top+Vector2(0,22)*unit,Color("6e492c"),2*unit)
+	draw_line(scale_top+Vector2(-10,6)*unit,scale_top+Vector2(10,6)*unit,Color("d8b176"),2*unit)
+	for side in [-1.0,1.0]:
+		var pan:=scale_top+Vector2(side*10,17)*unit
+		draw_line(scale_top+Vector2(side*9,6)*unit,pan,Color("d8b176"),unit)
+		draw_line(pan+Vector2(-5,0)*unit,pan+Vector2(5,0)*unit,Color("d8b176"),2*unit)
+	var darmi:=Vector2(view.x*.82,market_y)
+	draw_texture_rect_region(VILLAGE_PORTRAITS,Rect2(darmi+Vector2(-18,-45)*unit,Vector2(37,46)*unit),Rect2(0,512,512,512))
+	var trough:=darmi+Vector2(-37,-9)*unit
+	draw_rect(Rect2(trough,Vector2(30,8)*unit),Color("6b4528"))
+	draw_rect(Rect2(trough+Vector2(2,1)*unit,Vector2(26,3)*unit),Color("9b7450"))
+	for i in range(3):
+		var stem:=trough+Vector2(6+float(i)*8,-4+forget*3)*unit
+		draw_line(stem,stem+Vector2(1,-8+forget*5)*unit,Color("6d8b5c").lerp(Color("8e7864"),forget),unit)
+		draw_rect(Rect2(stem+Vector2(0,-10+forget*5)*unit,Vector2(4,3)*unit),Color("7ca875").lerp(Color("9b8267"),forget))
+	for anchor in [ranto+Vector2(-1,-42)*unit,darmi+Vector2(0,-43)*unit]:
+		draw_string(PIXEL_FONT,anchor,"?",HORIZONTAL_ALIGNMENT_CENTER,14*unit,roundi(14*unit),Color(1.0,.90,.61,.35+.62*forget))
+	for i in range(12):
+		var origin:=ranto if i<6 else darmi
+		var fall:=fposmod(motion*13.0+float(i)*11.0,53.0)
+		var p:=origin+Vector2(float(i%6)*5.0-12.0,-34.0+fall)*unit
+		draw_rect(Rect2(p,Vector2(2,2)*unit),Color(.21,.93,.99,.42*(1.0-fall/53.0)*forget))
 
 func _draw_capsule_ship(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
@@ -347,10 +397,18 @@ func _draw_service(view: Vector2, motion: float) -> void:
 		_draw_customer_tasting(view,motion)
 	else:
 		var retreat:=_progress(motion,2.0)
-		_actor(Vector2(view.x*(.77+retreat*.12),view.y*.54),unit,Color("dfe3d8"),false,sin(motion*5.0)*.5,"raka")
-		for i in range(11):
-			var p:=Vector2(view.x*(.73+float(i%4)*.04),view.y*.52-fposmod(motion*8.0+float(i)*12.0,71.0)*unit)
-			draw_rect(Rect2(p,Vector2(2,2)*unit),Color(.70,.37,.84,.18))
+		var window_x:=view.x*(.79+retreat*.105)
+		var window_feet:=view.y*.475
+		draw_texture_rect_region(
+			NPC_FACES["raka"],
+			Rect2(Vector2(window_x-12*unit,window_feet-27*unit),Vector2(24,27)*unit),
+			Rect2(0,0,64,64),Color(.59,.67,.74,.92))
+		# The lower rail cuts across his feet, keeping him outside the open window.
+		draw_line(Vector2(view.x*.705,view.y*.49),Vector2(view.x*.965,view.y*.49),Color("64452f"),3*unit)
+		for i in range(7):
+			var drip:=fposmod(motion*16.0+float(i)*9.0,52.0)
+			var p:=Vector2(view.x*(.73+float(i)*.031),view.y*.31+drip*unit)
+			draw_line(p,p+Vector2(-2,6)*unit,Color(.55,.80,.87,.27),unit)
 
 func _draw_customer_tasting(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
@@ -556,20 +614,34 @@ func _draw_victory(view: Vector2, motion: float) -> void:
 
 func _draw_feast(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
-	var ground:=view.y*.54
 	for i in range(5):
 		var lamp:=Vector2(view.x*(.16+float(i)*.18),view.y*.27)
 		draw_rect(Rect2(lamp,Vector2(7,9)*unit),Color("dd9d4a"))
 		draw_circle(lamp+Vector2(3,4)*unit,(8+sin(motion*2+float(i)))*unit,Color(1.0,.78,.38,.12))
+	for table_fraction in [.405,.585]:
+		var table_x:=view.x*float(table_fraction)
+		var table_y:=view.y*.622
+		draw_colored_polygon(PackedVector2Array([
+			Vector2(table_x-24*unit,table_y),Vector2(table_x+24*unit,table_y),
+			Vector2(table_x+29*unit,table_y+5*unit),Vector2(table_x-29*unit,table_y+5*unit)
+		]),Color("a66a3c"))
+		draw_line(Vector2(table_x-24*unit,table_y),Vector2(table_x+24*unit,table_y),Color("dfad70"),2*unit)
+		for side in [-1.0,1.0]:
+			draw_rect(Rect2(table_x+side*21*unit,table_y+5*unit,3*unit,11*unit),Color("583720"))
+			var cup:=Vector2(table_x+side*10*unit,table_y-5*unit)
+			draw_rect(Rect2(cup,Vector2(6,5)*unit),Color("e0ae70"))
+			draw_rect(Rect2(cup+Vector2(1,1)*unit,Vector2(4,1)*unit),Color("699a6d"))
+	var people_positions := [Vector2(.22,.615),Vector2(.30,.65),Vector2(.36,.61),Vector2(.47,.65),Vector2(.54,.60),Vector2(.65,.64),Vector2(.70,.61)]
+	for i in range(people_positions.size()):
+		var villager_key: String=["ratih","tedi","wira","beno","saras","lurah","kinasih"][i]
+		var hop:=0.0 if motif_beat!=3 or EnvironmentState.reduced_motion else absf(sin(motion*3.0+float(i)*.8))*2*unit
+		var spot: Vector2 = people_positions[i]
+		_actor(Vector2(view.x*spot.x,view.y*spot.y-hop),unit,Color("7c714b"),false,0.0,villager_key)
 	if motif_beat<=2:
-		_actor(Vector2(view.x*.76,ground),unit,Color("e0e3d9"),false,-.3,"raka")
+		_actor(Vector2(view.x*.76,view.y*.54),unit,Color("e0e3d9"),false,-.3,"raka")
 		for i in range(2):
-			_actor(Vector2(view.x*(.82+float(i)*.04),ground),unit,Color("424a54"))
-		draw_rect(Rect2(view.x*.74,ground-23*unit,9*unit,11*unit),Color("b34e50"))
-	if motif_beat>=2:
-		for i in range(7):
-			var villager_key: String=["ratih","tedi","wira","beno","saras","lurah","kinasih"][i]
-			_actor(Vector2(view.x*(.25+float(i)*.052),ground+float(i%2)*4*unit),unit,Color("7c714b").lerp(Color("538377"),float(i%3)/2.0),false,sin(motion*3+float(i))*.2,villager_key)
+			_actor(Vector2(view.x*(.82+float(i)*.04),view.y*.54),unit,Color("424a54"))
+		draw_rect(Rect2(view.x*.74,view.y*.54-23*unit,9*unit,11*unit),Color("b34e50"))
 	if motif_beat==3:
 		var retreat:=_progress(motion,2.5)
 		var boat:=Vector2(view.x*(.79+retreat*.22),view.y*.51)
