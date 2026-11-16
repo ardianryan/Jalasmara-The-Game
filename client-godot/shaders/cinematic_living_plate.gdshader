@@ -28,6 +28,28 @@ void fragment() {
 		soft_mask += smoothstep(0.70, 0.87, uv.x) * smoothstep(0.53, 0.72, uv.y);
 		glow = exp(-distance(uv, vec2(0.21, 0.10)) * 51.0) * 0.12;
 		glow += exp(-distance(uv, vec2(0.47, 0.29)) * 56.0) * 0.10;
+	} else if (plate == 4) {
+		// Kedai: still timber, slow rain beyond the window and warm lantern breathing.
+		water_mask = smoothstep(0.67, 0.82, uv.x) * smoothstep(0.18, 0.32, uv.y);
+		water_mask *= 1.0 - smoothstep(0.70, 0.85, uv.y);
+		glow = exp(-distance(uv, vec2(0.22, 0.23)) * 47.0) * 0.14;
+		glow += exp(-distance(uv, vec2(0.74, 0.22)) * 47.0) * 0.10;
+	} else if (plate == 5) {
+		// Garden: foliage sways in its own plane while the raft water keeps its edge.
+		soft_mask = (1.0 - smoothstep(0.31, 0.45, uv.y)) * smoothstep(0.06, 0.17, uv.x);
+		water_mask = smoothstep(0.72, 0.87, uv.x) * smoothstep(0.53, 0.67, uv.y);
+		tint = vec3(0.49, 0.83, 0.69);
+	} else if (plate == 6) {
+		// Balai: the map table remains readable; only the open-water edge and lamps move.
+		water_mask = smoothstep(0.76, 0.90, uv.y);
+		glow = exp(-distance(uv, vec2(0.22, 0.20)) * 45.0) * 0.10;
+		glow += exp(-distance(uv, vec2(0.78, 0.20)) * 45.0) * 0.10;
+	} else if (plate == 7) {
+		// Jalatunda: discharge is attached to the wall at x=.72, y=.45.
+		water_mask = smoothstep(0.30, 0.62, uv.y);
+		soft_mask = exp(-distance(uv, vec2(0.72, 0.45)) * 12.0) * 0.8;
+		tint = vec3(0.55, 0.65, 0.88);
+		glow = exp(-distance(uv, vec2(0.72, 0.45)) * 40.0) * 0.08;
 	}
 	float wave = sin(uv.y * 129.0 + elapsed * 1.8) * 0.0016 * water_mask;
 	float sway = sin(uv.y * 21.0 + elapsed * 0.75) * 0.0018 * soft_mask;

@@ -21,6 +21,7 @@ var motif_id := ""
 var motif_beat := 0
 var motif_time := 0.0
 var skip_button: Button
+var shade_target := Color.TRANSPARENT
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -96,18 +97,23 @@ func _ready() -> void:
 	boss_art.modulate = Color(0.81,1.0,0.95,0.92)
 	boss_art.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(boss_art)
+	move_child(boss_art, 2)
 	boss_art.hide()
 	visible = false
 
 func _process(delta: float) -> void:
 	if not visible: return
 	if EnvironmentState.reduced_motion:
+		shade.color = shade_target
+		action_layer.elapsed = 3.0
 		action_layer.queue_redraw()
 		if living_plate.visible:
 			living_plate.hide()
 			queue_redraw()
+		_update_boss_tint()
 		return
 	motif_time += delta
+	shade.color = shade.color.lerp(shade_target, clampf(delta * 3.5, 0.0, 1.0))
 	action_layer.elapsed = motif_time
 	action_layer.queue_redraw()
 	backdrop_time += delta
@@ -118,6 +124,17 @@ func _process(delta: float) -> void:
 		boss_phase += delta
 		var cell := int(boss_phase*7.0)%12
 		boss_atlas.region = Rect2(cell*224,0,224,160)
+		_update_boss_tint()
+
+func _update_boss_tint() -> void:
+	if not boss_art.visible: return
+	if motif_id == "victory":
+		boss_art.modulate = Color(.73, 1.0, .98, .89)
+	elif motif_id == "boss_intro" and motif_beat == 1:
+		var reveal := 1.0 if EnvironmentState.reduced_motion else clampf((motif_time - .65) / 1.5, 0.0, 1.0)
+		boss_art.modulate = Color(.81, 1.0, .95, reveal * .92)
+	else:
+		boss_art.modulate = Color(.81, 1.0, .95, .92)
 
 func _draw() -> void:
 	if not visible: return
@@ -125,11 +142,7 @@ func _draw() -> void:
 	if view.x<1 or view.y<1: return
 	var motion := 0.0 if EnvironmentState.reduced_motion else motif_time
 	if backdrop!=null:
-		var source:=Vector2(backdrop.get_size())
-		var scale:=maxf(view.x/source.x,view.y/source.y)*1.08
-		var painted:=source*scale
-		var pan:=Vector2.ZERO if EnvironmentState.reduced_motion else Vector2(sin(backdrop_time*.22)*10.0,cos(backdrop_time*.17)*5.0)
-		draw_texture_rect(backdrop,Rect2((view-painted)*.5+pan,painted),false)
+		draw_texture_rect(backdrop,_backdrop_rect(),false)
 	if motif_id=="prologue":
 		if motif_beat<=1:
 			for i in range(6):
@@ -185,13 +198,31 @@ func _update_living_plate() -> void:
 	if backdrop==null:
 		living_plate.hide()
 		return
-	var source:=Vector2(backdrop.get_size())
-	var scale:=maxf(size.x/source.x,size.y/source.y)*1.08
-	var painted:=source*scale
-	var pan:=Vector2.ZERO if EnvironmentState.reduced_motion else Vector2(sin(backdrop_time*.22)*10.0,cos(backdrop_time*.17)*5.0)
-	living_plate.position=(size-painted)*.5+pan
-	living_plate.size=painted
+	var rect:=_backdrop_rect()
+	living_plate.position=rect.position
+	living_plate.size=rect.size
 	living_plate.visible=not EnvironmentState.reduced_motion
+
+func _backdrop_rect() -> Rect2:
+	var source:=Vector2(backdrop.get_size())
+	var focus:=0.0 if EnvironmentState.reduced_motion else motif_time
+	var zoom:=1.08
+	if motif_id=="boss_intro" and motif_beat==1:
+		zoom=1.12-0.04*clampf(focus/2.4,0.0,1.0)
+	var scale:=maxf(size.x/source.x,size.y/source.y)*zoom
+	var painted:=source*scale
+	var pan:=Vector2.ZERO if EnvironmentState.reduced_motion else Vector2(sin(backdrop_time*.22)*8.0,cos(backdrop_time*.17)*4.0)
+	if not EnvironmentState.reduced_motion:
+		if motif_id=="first_dive" and motif_beat==1:
+			pan.y-=12.0*clampf(focus/2.4,0.0,1.0)
+		elif motif_id=="boss_intro" and motif_beat==1:
+			pan.x-=13.0*clampf(focus/2.4,0.0,1.0)
+		elif motif_id=="epilogue" and motif_beat>=7:
+			pan.y+=10.0*clampf(focus/3.0,0.0,1.0)
+		elif (motif_id=="earthquake" and motif_beat==1) or (motif_id=="cave_warning" and motif_beat==2):
+			var decay:=1.0-clampf(focus/2.0,0.0,1.0)
+			pan+=Vector2(sin(focus*28.0)*4.0,cos(focus*19.0)*2.0)*decay
+	return Rect2((size-painted)*.5+pan,painted)
 
 func _label(parent: Control, font_size: int, color: Color) -> Label:
 	var label := Label.new()
@@ -230,7 +261,9 @@ func present(title: String, beat: Dictionary, index: int, total: int, cinematic_
 	shot_label.text = str(beat.get("shot", ""))
 	progress_label.text = "%d / %d" % [index, total]
 	var tone := str(beat.get("tone", "warm"))
-	shade.color = {"warm":Color(0.34,0.19,0.08,0.19),"plum":Color(0.22,0.06,0.29,0.34),"teal":Color(0.02,0.32,0.34,0.20),"deep":Color(0.02,0.08,0.19,0.46)}.get(tone,Color.TRANSPARENT)
+	shade_target = {"warm":Color(0.34,0.19,0.08,0.19),"plum":Color(0.22,0.06,0.29,0.34),"teal":Color(0.02,0.32,0.34,0.20),"deep":Color(0.02,0.08,0.19,0.46)}.get(tone,Color.TRANSPARENT)
+	if EnvironmentState.reduced_motion: shade.color = shade_target
 	boss_art.visible = cinematic_id in ["boss_intro", "boss_phase_two", "victory"]
 	if cinematic_id=="boss_intro" and index==1: boss_phase = 0.0
+	_update_boss_tint()
 	queue_redraw()
