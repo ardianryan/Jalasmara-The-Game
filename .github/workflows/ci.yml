@@ -57,9 +57,14 @@ jobs:
           npm run build -w @jalasmara/api
       - name: Prepare verified delivery bundle
         run: |
+          python3 scripts/test_ci_oci_delivery.py -v
           python3 scripts/package-web-release.py \
             --output .runtime/github-delivery \
             --export-source "$(git rev-parse HEAD)"
+          python3 scripts/ci_oci_delivery.py record-runtime \
+            --repo . \
+            --output .runtime/github-delivery/runtime-files.json \
+            --source "$(git rev-parse HEAD)"
       - name: Preserve reports even when verification fails
         if: always()
         uses: actions/upload-artifact@v4
@@ -73,5 +78,62 @@ jobs:
         with:
           name: verified-delivery
           path: .runtime/github-delivery/
+          if-no-files-found: error
+          retention-days: 3
+
+  build-full-source-image:
+    needs: verify-build-delivery
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout exact release verifier
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Download verified release context
+        uses: actions/download-artifact@v4
+        with:
+          name: verified-delivery
+          path: .runtime/github-delivery
+      - name: Verify source, context and compiled runtime records
+        run: |
+          python3 scripts/test_ci_oci_delivery.py -v
+          python3 scripts/ci_oci_delivery.py prepare \
+            --bundle .runtime/github-delivery \
+            --output .runtime/github-oci-context \
+            --source "$GITHUB_SHA"
+      - name: Build and compare complete API, web and game image
+        run: |
+          set -euo pipefail
+          TASK_IMAGE="jalasmara:ci-${GITHUB_SHA}"
+          docker build --platform linux/amd64 \
+            --label "org.opencontainers.image.revision=${GITHUB_SHA}" \
+            --tag "$TASK_IMAGE" .runtime/github-oci-context
+          mkdir -p .runtime/github-oci-delivery
+          python3 scripts/ci_oci_delivery.py verify-image \
+            --bundle .runtime/github-delivery \
+            --image "$TASK_IMAGE" \
+            --output .runtime/github-oci-delivery/image-proof.json \
+            --source "$GITHUB_SHA"
+          docker save "$TASK_IMAGE" | gzip -1 > .runtime/github-oci-delivery/image.tar.gz
+          gzip -t .runtime/github-oci-delivery/image.tar.gz
+          cp .runtime/github-delivery/manifest.json .runtime/github-oci-delivery/release-manifest.json
+          cp .runtime/github-delivery/runtime-files.json .runtime/github-oci-delivery/runtime-files.json
+          python3 scripts/ci_oci_delivery.py seal \
+            --bundle .runtime/github-delivery \
+            --proof .runtime/github-oci-delivery/image-proof.json \
+            --archive .runtime/github-oci-delivery/image.tar.gz \
+            --output .runtime/github-oci-delivery/oci-manifest.json \
+            --source "$GITHUB_SHA"
+          python3 scripts/ci_oci_delivery.py verify-bundle \
+            --directory .runtime/github-oci-delivery \
+            --source "$GITHUB_SHA"
+      - name: Store complete source image
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-source-image
+          path: .runtime/github-oci-delivery/
           if-no-files-found: error
           retention-days: 3
