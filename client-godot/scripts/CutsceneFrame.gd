@@ -6,6 +6,27 @@ const BOSS_CORRUPTED = preload("res://resources/art/gajah-mina-motion-v1/swim.pn
 const BOSS_HEALED = preload("res://resources/art/gajah-mina-motion-v2-healed/swim.png")
 const BACKDROP_TRANSITION_SEC := 0.38
 const SHOT_PAN_SEC := 0.85
+const BOSS_HEAL_SEC := 1.2
+const SURFACE_CLEAR_SEC := 2.7
+
+class SurfaceFogOverlay extends Control:
+	var elapsed := 0.0
+
+	func _draw() -> void:
+		var progress := smoothstep(0.0, 1.0, clampf((elapsed - 0.12) / SURFACE_CLEAR_SEC, 0.0, 1.0))
+		if progress >= 1.0: return
+		var front := progress * (size.x + 28.0)
+		var remain := 1.0 - progress
+		for i in range(16):
+			var x := fposmod(float(i) * 117.0 + elapsed * (4.0 + float(i % 3) * 2.0), size.x)
+			if x < front: continue
+			var y := size.y * (0.10 + float((i * 7) % 13) * 0.052)
+			var width := minf(size.x - x, 38.0 + float(i % 4) * 15.0)
+			draw_rect(Rect2(x, y, width, 7.0 + float(i % 3) * 5.0), Color(.37, .15, .48, .25 * remain))
+		if front < size.x:
+			draw_rect(Rect2(front, 0.0, size.x - front, size.y * .78), Color(.22, .08, .30, .27 * remain))
+			draw_line(Vector2(front, size.y * .12), Vector2(front + 12.0, size.y * .74), Color(.68, .98, .82, .24 * remain), 3.0)
+
 var shade: ColorRect
 var upper: ColorRect
 var lower: ColorRect
@@ -14,10 +35,13 @@ var shot_label: Label
 var progress_label: Label
 var boss_art: TextureRect
 var boss_atlas: AtlasTexture
+var boss_previous: TextureRect
+var boss_previous_atlas: AtlasTexture
 var boss_phase := 0.0
 var backdrop: Texture2D
 var living_plate: TextureRect
 var living_material: ShaderMaterial
+var surface_fog: SurfaceFogOverlay
 var action_layer: Control
 var outgoing_plate: TextureRect
 var backdrop_key := ""
@@ -38,6 +62,7 @@ func _ready() -> void:
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	shade = ColorRect.new()
+	shade.color = Color.TRANSPARENT
 	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(shade)
@@ -51,6 +76,11 @@ func _ready() -> void:
 	living_plate.material = living_material
 	add_child(living_plate)
 	move_child(living_plate, 0)
+	surface_fog = SurfaceFogOverlay.new()
+	surface_fog.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	surface_fog.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(surface_fog)
+	surface_fog.hide()
 	action_layer = preload("res://scripts/CinematicActionLayer.gd").new()
 	add_child(action_layer)
 	upper = ColorRect.new()
@@ -115,6 +145,22 @@ func _ready() -> void:
 	add_child(boss_art)
 	move_child(boss_art, 2)
 	boss_art.hide()
+	boss_previous = TextureRect.new()
+	boss_previous_atlas = AtlasTexture.new()
+	boss_previous_atlas.atlas = BOSS_CORRUPTED
+	boss_previous_atlas.region = Rect2(0,0,224,160)
+	boss_previous.texture = boss_previous_atlas
+	boss_previous.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	boss_previous.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	boss_previous.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	boss_previous.anchor_left = boss_art.anchor_left
+	boss_previous.anchor_top = boss_art.anchor_top
+	boss_previous.anchor_right = boss_art.anchor_right
+	boss_previous.anchor_bottom = boss_art.anchor_bottom
+	boss_previous.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(boss_previous)
+	move_child(boss_previous, boss_art.get_index())
+	boss_previous.hide()
 	outgoing_plate = TextureRect.new()
 	outgoing_plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	outgoing_plate.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
@@ -128,6 +174,7 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if not visible: return
 	if EnvironmentState.reduced_motion:
+		surface_fog.hide()
 		shade.color = shade_target
 		transition_elapsed = BACKDROP_TRANSITION_SEC
 		outgoing_plate.hide()
@@ -141,10 +188,19 @@ func _process(delta: float) -> void:
 		if living_plate.visible:
 			living_plate.hide()
 			queue_redraw()
+		boss_previous.hide()
+		_update_boss_position()
 		_update_boss_tint()
 		return
 	motif_time += delta
-	shade.color = shade.color.lerp(shade_target, clampf(delta * 3.5, 0.0, 1.0))
+	if surface_fog.visible:
+		surface_fog.elapsed = motif_time
+		if motif_time >= SURFACE_CLEAR_SEC + 0.12:
+			surface_fog.hide()
+		else:
+			surface_fog.queue_redraw()
+	_update_boss_position()
+	shade.color = shade.color.lerp(shade_target, 1.0 - exp(-delta / 0.42))
 	if outgoing_plate.visible:
 		transition_elapsed = minf(transition_elapsed + delta, BACKDROP_TRANSITION_SEC)
 		var transition := _transition_progress()
@@ -165,12 +221,26 @@ func _process(delta: float) -> void:
 		boss_phase += delta
 		var cell := int(boss_phase*7.0)%12
 		boss_atlas.region = Rect2(cell*224,0,224,160)
+		if boss_previous.visible:
+			boss_previous_atlas.region = boss_atlas.region
 		_update_boss_tint()
+
+func _update_boss_position() -> void:
+	var approach := 0.0
+	if motif_id == "victory" and motif_beat == 2:
+		approach = 1.0 if EnvironmentState.reduced_motion else smoothstep(0.0, 1.0, clampf(motif_time / 1.15, 0.0, 1.0))
+	boss_art.anchor_left = lerpf(0.50, 0.24, approach)
+	boss_art.anchor_right = lerpf(0.98, 0.66, approach)
 
 func _update_boss_tint() -> void:
 	if not boss_art.visible: return
 	if motif_id == "victory":
-		boss_art.modulate = Color(.73, 1.0, .98, .89)
+		var healing := 1.0 if EnvironmentState.reduced_motion or motif_beat != 1 else smoothstep(0.0, 1.0, clampf(motif_time / BOSS_HEAL_SEC, 0.0, 1.0))
+		boss_art.modulate = Color(.73, 1.0, .98, .89 * healing)
+		if boss_previous.visible:
+			var old_alpha := .92 * (1.0 - healing) / maxf(.11, 1.0 - .89 * healing)
+			boss_previous.modulate = Color(.81, 1.0, .95, old_alpha)
+			if healing >= 1.0: boss_previous.hide()
 	elif motif_id == "boss_intro" and motif_beat == 1:
 		var reveal := 1.0 if EnvironmentState.reduced_motion else clampf((motif_time - .65) / 1.5, 0.0, 1.0)
 		boss_art.modulate = Color(.81, 1.0, .95, reveal * .92)
@@ -184,7 +254,7 @@ func _draw() -> void:
 	var motion := 0.0 if EnvironmentState.reduced_motion else motif_time
 	if backdrop!=null:
 		draw_texture_rect(backdrop,_backdrop_rect(),false)
-	if motif_id=="prologue":
+	if motif_id=="prologue" and motif_beat<=5:
 		if motif_beat<=1:
 			for i in range(6):
 				var x:=view.x*(0.13+float(i)*0.15)
@@ -363,16 +433,26 @@ func present(title: String, beat: Dictionary, index: int, total: int, cinematic_
 	motif_time = 0.0
 	action_layer.motif_id = cinematic_id
 	action_layer.motif_beat = index
+	for property in action_layer.get_property_list():
+		if property.name == "motif_speaker":
+			action_layer.set("motif_speaker", str(beat.get("name", "")))
+			break
 	action_layer.elapsed = 0.0
 	action_layer.queue_redraw()
+	surface_fog.visible = cinematic_id == "victory" and index == 3 and not EnvironmentState.reduced_motion
+	surface_fog.elapsed = 0.0
+	surface_fog.queue_redraw()
 	title_label.text = title
 	shot_label.text = str(beat.get("shot", ""))
 	progress_label.text = "%d / %d" % [index, total]
 	var tone := str(beat.get("tone", "warm"))
 	shade_target = {"warm":Color(0.34,0.19,0.08,0.19),"plum":Color(0.22,0.06,0.29,0.34),"teal":Color(0.02,0.32,0.34,0.20),"deep":Color(0.02,0.08,0.19,0.46)}.get(tone,Color.TRANSPARENT)
-	if EnvironmentState.reduced_motion: shade.color = shade_target
+	if EnvironmentState.reduced_motion or not was_visible: shade.color = shade_target
 	boss_art.visible = cinematic_id in ["boss_intro", "boss_phase_two"] or (cinematic_id == "victory" and index <= 2)
 	boss_atlas.atlas = BOSS_HEALED if cinematic_id == "victory" else BOSS_CORRUPTED
+	boss_previous.visible = cinematic_id == "victory" and index == 1 and not EnvironmentState.reduced_motion
+	boss_previous_atlas.region = boss_atlas.region
 	if cinematic_id=="boss_intro" and index==1: boss_phase = 0.0
+	_update_boss_position()
 	_update_boss_tint()
 	queue_redraw()
