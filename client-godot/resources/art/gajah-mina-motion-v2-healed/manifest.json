@@ -1,0 +1,26 @@
+{
+  "source": "client-godot/resources/art/gajah-mina.png",
+  "sourceSha256": "29ac6c8f10caa139d0cf1290f4f161fb16c51d3a60fac64bc96cdc9d17da5d8b",
+  "healedStillSource": "assets/source-2d/gajah-mina-healed/healed-still-source.png",
+  "healedStillSourceSha256": "86c0e76299221af6c15971df44f95f9b12ec3bc8698d8966721e098ac475457f",
+  "healedBase": "assets/source-2d/gajah-mina-healed/healed-base-native.png",
+  "method": "curated single-still edit, native-grid alpha cleanup, original hinged cutouts and nearest-neighbor sinusoidal motion",
+  "cellSize": [
+    224,
+    160
+  ],
+  "artSize": [
+    192,
+    128
+  ],
+  "frames": 12,
+  "parts": [
+    "upper_fin",
+    "rear_fin",
+    "tail",
+    "front_fin",
+    "head"
+  ],
+  "healedBaseSha256": "f6f255ccce3776baf236f1acbc7e5020d03326b6b9e2bc2cbe176fa7193a58b5",
+  "swimSha256": "3e3dfd62db80ead05d4192e60824332a19f3822c45d19714a3dd324453410d44"
+}
