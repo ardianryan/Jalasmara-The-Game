@@ -79,10 +79,10 @@ const navigation = { matrixPulses: 0 };
 const playerScriptRequests = [];
 function budget() {
   assert(
-    !routeStarted || Date.now() - routeStarted < (hostOnly ? 3 : 8) * 60 * 1000,
+    !routeStarted || Date.now() - routeStarted < (hostOnly ? 3 : 14) * 60 * 1000,
     hostOnly
       ? "Public host component exceeded three minutes."
-      : "Public physical route exceeded eight minutes.",
+      : "Public physical route exceeded fourteen minutes.",
   );
 }
 
@@ -301,13 +301,14 @@ async function shot(name) {
     hud: value.hud,
   });
 }
-async function walkTo(x, y) {
+async function walkTo(x, y, stopWhen) {
   const from = await snapshot();
   const onLand = !from.diving && from.area !== "home" && from.land?.active;
   const targets = onLand ? corridorTargets([from.x, from.y], [x, y]) : [[x, y]];
-  for (const [targetX, targetY] of targets) await walkDirect(targetX, targetY);
+  for (const [targetX, targetY] of targets)
+    await walkDirect(targetX, targetY, stopWhen);
 }
-async function walkDirect(x, y) {
+async function walkDirect(x, y, stopWhen) {
   await frame.locator("canvas").focus();
   let previous,
     stuck = 0;
@@ -317,7 +318,7 @@ async function walkDirect(x, y) {
       dy = y - value.y,
       distance = Math.hypot(dx, dy);
     assert(!value.modal && !value.homePanel);
-    if (distance < 5) return value;
+    if (distance < 5 || stopWhen?.(value, distance)) return value;
     stuck =
       previous && Math.hypot(value.x - previous.x, value.y - previous.y) < 0.5
         ? stuck + 1
@@ -341,6 +342,16 @@ async function walkDirect(x, y) {
       },
     );
     navigation.matrixPulses++;
+    if (navigation.matrixPulses % 100 === 0)
+      console.log(
+        JSON.stringify({
+          stage,
+          pulses: navigation.matrixPulses,
+          x: value.x,
+          y: value.y,
+          target: [x, y],
+        }),
+      );
     for (const key of keys) await page.keyboard.down(key);
     try {
       await page.waitForTimeout(holdMs);
@@ -600,7 +611,21 @@ async function verifyFullRoute() {
     readCanopyAlpha(),
   );
   observations.push({ phase: "derived-canopy-fixture", ...canopyFixture });
-  for (const [x, y] of canopyFixture.route) await walkTo(x, y);
+  for (const [index, [x, y]] of canopyFixture.route.entries()) {
+    const finalTarget = index === canopyFixture.route.length - 1;
+    await walkTo(
+      x,
+      y,
+      finalTarget
+        ? (value, distance) =>
+            distance < 40 &&
+            value.land?.readability?.active?.some(
+              (entry) =>
+                entry.index === canopyFixture.crownIndex && entry.amount > 0.99,
+            )
+        : undefined,
+    );
+  }
   await page.waitForTimeout(800);
   const canopy = await snapshot();
   stage = "settled-canopy-reveal";

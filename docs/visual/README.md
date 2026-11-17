@@ -1,5 +1,11 @@
 # Jalasmara visual evidence
 
+## Phase 1 close-up staging, 18 November 2026
+
+![Public 667×375 hub screenshot after the Phase 1 close-up release.](phase-one-closeup-20261118/staging-hub-667x375.webp)
+
+This public Chromium/SwiftShader frame uses source `e424af5`, CI image `588b77bd` and PCK `293d415a`; it came from the successful six-check smoke with zero fixture residue. The [release report](../reviews/phase-one-closeup-staging-2026-11-18.md) records the full hashes and limits. The native cutscene frames immediately below show the corrected supporting cast; this public hub frame alone does not prove their motion or owner acceptance on physical devices.
+
 ## Phase 1 supporting cast correction, local native candidate, 18 November 2026
 
 | Nala lands on the dock | Pak Ranto as a framed Kedai cut-in | Laskar at the garden | Residents at the feast |
