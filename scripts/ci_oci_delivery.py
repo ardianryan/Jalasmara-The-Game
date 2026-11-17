@@ -255,21 +255,42 @@ def verify_archive_identity(archive_path, image_id, source):
     require(isinstance(image_id, str) and image_id.startswith("sha256:")
             and SHA256.fullmatch(image_id[7:]) is not None, "Invalid image ID")
     found = None
+    oci_index = None
+    image_descriptor_hash = None
     expanded = 0
     with tarfile.open(archive_path, "r|gz") as archive:
         for member in archive:
             expanded += member.size
             require(expanded <= 6 * 1024**3, "Image archive exceeds expanded size limit")
-            if member.name != "manifest.json":
-                continue
-            require(found is None and member.isfile() and member.size <= 1024 * 1024,
-                    "Invalid Docker image archive manifest")
-            found = json.load(archive.extractfile(member))
+            if member.name == "manifest.json":
+                require(found is None and member.isfile() and member.size <= 1024 * 1024,
+                        "Invalid Docker image archive manifest")
+                found = json.load(archive.extractfile(member))
+            elif member.name == "index.json":
+                require(oci_index is None and member.isfile() and member.size <= 1024 * 1024,
+                        "Invalid OCI image archive index")
+                oci_index = json.load(archive.extractfile(member))
+            elif member.name == "blobs/sha256/" + image_id[7:]:
+                require(image_descriptor_hash is None and member.isfile() and member.size <= 1024 * 1024,
+                        "Invalid OCI image descriptor")
+                image_descriptor_hash = hashlib.sha256(archive.extractfile(member).read()).hexdigest()
     require(isinstance(found, list) and len(found) == 1
             and isinstance(found[0], dict)
-            and found[0].get("Config") == image_id[7:] + ".json"
             and f"jalasmara:ci-{source}" in found[0].get("RepoTags", []),
             "Saved image ID or source tag differs from inspected OCI image")
+    if oci_index is None:
+        require(found[0].get("Config") == image_id[7:] + ".json",
+                "Saved image ID differs from legacy archive config")
+    else:
+        descriptors = oci_index.get("manifests") if isinstance(oci_index, dict) else None
+        require(isinstance(descriptors, list) and len(descriptors) == 1
+                and isinstance(descriptors[0], dict)
+                and descriptors[0].get("digest") == image_id
+                and image_descriptor_hash == image_id[7:]
+                and isinstance(found[0].get("Config"), str)
+                and found[0]["Config"].startswith("blobs/sha256/")
+                and SHA256.fullmatch(found[0]["Config"].split("/")[-1]) is not None,
+                "Saved OCI image digest differs from inspected image ID")
 
 
 def seal_image(bundle, proof_path, archive, output, source):

@@ -176,6 +176,26 @@ class ImageDeliveryTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Size mismatch"):
             delivery.verify_bundle(artifact, SOURCE)
 
+    def test_modern_docker_archive_binds_oci_descriptor_to_image_id(self):
+        descriptor = b'{"schemaVersion":2,"mediaType":"application/vnd.oci.image.manifest.v1+json"}'
+        digest = hashlib.sha256(descriptor).hexdigest()
+        archive = self.root / "modern-image.tar.gz"
+        with tarfile.open(archive, "w:gz") as stream:
+            items = {
+                "manifest.json": json.dumps([{
+                    "Config": "blobs/sha256/" + "a" * 64,
+                    "RepoTags": ["jalasmara:ci-" + SOURCE], "Layers": []}]).encode(),
+                "index.json": json.dumps({"schemaVersion": 2, "manifests": [{"digest": "sha256:" + digest}]}).encode(),
+                "blobs/sha256/" + digest: descriptor,
+            }
+            for name, data in items.items():
+                member = tarfile.TarInfo(name)
+                member.size = len(data)
+                stream.addfile(member, io.BytesIO(data))
+        delivery.verify_archive_identity(archive, "sha256:" + digest, SOURCE)
+        with self.assertRaisesRegex(ValueError, "OCI image digest"):
+            delivery.verify_archive_identity(archive, "sha256:" + "b" * 64, SOURCE)
+
 
 if __name__ == "__main__":
     unittest.main()
