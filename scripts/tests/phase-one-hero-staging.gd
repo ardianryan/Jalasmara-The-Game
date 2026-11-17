@@ -3,23 +3,63 @@ extends SceneTree
 var action: GDScript
 var story: GDScript
 const SIZES := [Vector2i(667,375),Vector2i(844,390)]
-const OUTPUT := "res://../artifacts/godot/phase-one-hero-staging/"
+const OUTPUT := "res://../artifacts/godot/phase-one-character-closeup/"
+const CAPTURE_ONLY := [{"id":"first_service","beat":1},{"id":"first_service","beat":2}]
 const CASES := [
-	{"id":"prologue","beat":4,"role":"raka","kind":"npc","feet":Vector2(.60,.50)},
-	{"id":"prologue","beat":5,"role":"lurah","kind":"npc","feet":Vector2(.20,.54)},
-	{"id":"garden_crisis","beat":1,"role":"darmi","kind":"resident","feet":Vector2(.47,.63)},
-	{"id":"garden_crisis","beat":2,"role":"gito","kind":"child","feet":Vector2(.31,.63)},
-	{"id":"garden_crisis","beat":3,"role":"guard","kind":"guard","feet":Vector2(.67,.63)},
+	{"id":"prologue","beat":3,"role":"ranto","kind":"ranto","feet":Vector2(.27,.67),"scale":1.0},
+	{"id":"prologue","beat":3,"role":"darmi","kind":"darmi_bust","feet":Vector2(.75,.67),"scale":1.0},
+	{"id":"prologue","beat":4,"role":"raka","kind":"npc","feet":Vector2(.64,.59)},
+	{"id":"prologue","beat":5,"role":"lurah","kind":"npc","feet":Vector2(.43,.66)},
+	{"id":"prologue","beat":6,"role":"beno","kind":"npc","feet":Vector2(.32,.68),"scale":2.53},
+	{"id":"prologue","beat":7,"role":"nala","kind":"nala","feet":Vector2(.46,.65),"scale":2.65},
+	{"id":"prologue","beat":8,"role":"wira","kind":"npc","feet":Vector2(.36,.68),"scale":2.50},
+	{"id":"prologue","beat":9,"role":"wira","kind":"npc","feet":Vector2(.50,.68),"scale":2.55},
+	{"id":"prologue","beat":10,"role":"beno","kind":"npc","feet":Vector2(.78,.68),"scale":2.55},
+	{"id":"prologue","beat":11,"role":"nala","kind":"nala","feet":Vector2(.22,.68),"scale":2.55},
+	{"id":"first_kedai","beat":1,"role":"wira","kind":"npc","feet":Vector2(.23,.68),"scale":2.40},
+	{"id":"garden_crisis","beat":1,"role":"darmi","kind":"resident","feet":Vector2(.47,.67)},
+	{"id":"garden_crisis","beat":2,"role":"gito","kind":"child","feet":Vector2(.31,.67)},
+	{"id":"garden_crisis","beat":3,"role":"guard","kind":"guard","feet":Vector2(.67,.63),"tier":"support"},
 	{"id":"garden_crisis","beat":4,"role":"lurah","kind":"npc","feet":Vector2(.47,.63)},
-	{"id":"garden_crisis","beat":5,"role":"kinasih","kind":"child","feet":Vector2(.30,.63)},
-	{"id":"earthquake","beat":1,"role":"lurah","kind":"npc","feet":Vector2(.31,.55)},
-	{"id":"earthquake","beat":2,"role":"raka","kind":"npc","feet":Vector2(.82,.63)},
-	{"id":"earthquake","beat":3,"role":"kinasih","kind":"child","feet":Vector2(.42,.59)},
-	{"id":"earthquake","beat":4,"role":"saras","kind":"npc","feet":Vector2(.82,.63)},
-	{"id":"earthquake","beat":5,"role":"beno","kind":"npc","feet":Vector2(.82,.63)},
-	{"id":"earthquake","beat":6,"role":"wira","kind":"npc","feet":Vector2(.82,.63)},
+	{"id":"garden_crisis","beat":5,"role":"kinasih","kind":"child","feet":Vector2(.30,.655)},
+	{"id":"saras_visit","beat":2,"role":"saras","kind":"npc","feet":Vector2(.68,.68),"scale":2.52},
+	{"id":"earthquake","beat":1,"role":"lurah","kind":"npc","feet":Vector2(.24,.64)},
+	{"id":"earthquake","beat":2,"role":"raka","kind":"npc","feet":Vector2(.82,.66)},
+	{"id":"earthquake","beat":3,"role":"kinasih","kind":"child","feet":Vector2(.42,.64)},
+	{"id":"earthquake","beat":4,"role":"saras","kind":"npc","feet":Vector2(.82,.66)},
+	{"id":"earthquake","beat":5,"role":"beno","kind":"npc","feet":Vector2(.82,.66)},
+	{"id":"earthquake","beat":6,"role":"wira","kind":"npc","feet":Vector2(.82,.66)},
+	{"id":"epilogue","beat":1,"role":"raka","kind":"npc","feet":Vector2(.79,.69),"scale":2.66},
+	{"id":"epilogue","beat":2,"role":"lurah","kind":"npc","feet":Vector2(.60,.69),"scale":2.52},
+	{"id":"epilogue","beat":3,"role":"gito","kind":"child","feet":Vector2(.69,.68),"scale":2.46},
+	{"id":"epilogue","beat":4,"role":"saras","kind":"npc","feet":Vector2(.80,.68)},
+	{"id":"epilogue","beat":5,"role":"lurah","kind":"npc","feet":Vector2(.80,.68)},
+	{"id":"epilogue","beat":6,"role":"beno","kind":"npc","feet":Vector2(.80,.68)},
 	{"id":"epilogue","beat":7,"role":"nala","kind":"nala","feet":Vector2(.28,.69)},
 	{"id":"epilogue","beat":8,"role":"nala","kind":"nala","feet":Vector2(.28,.69)},
+]
+const SUPPORT_SCALES := [
+	{"kind":"child","role":"bagas","group":"prologue_child"},
+	{"kind":"child","role":"kinasih","group":"prologue_child"},
+	{"kind":"child","role":"gito","group":"prologue_child"},
+	{"kind":"child","role":"cempaka","group":"prologue_child"},
+	{"kind":"child","role":"danu","group":"prologue_child"},
+	{"kind":"child","role":"bagas","group":"garden_child"},
+	{"kind":"child","role":"kinasih","group":"garden_child"},
+	{"kind":"child","role":"cempaka","group":"garden_child"},
+	{"kind":"child","role":"danu","group":"garden_child"},
+	{"kind":"npc","role":"lurah","group":"balai_council"},
+	{"kind":"npc","role":"wira","group":"balai_council"},
+	{"kind":"npc","role":"saras","group":"balai_council"},
+	{"kind":"npc","role":"beno","group":"balai_council"},
+	{"kind":"npc","role":"raka","group":"balai_council"},
+	{"kind":"npc","role":"ratih","group":"feast_ratih"},
+	{"kind":"npc","role":"tedi","group":"feast_tedi"},
+	{"kind":"resident","role":"darmi","group":"feast_darmi"},
+	{"kind":"resident","role":"ujang","group":"feast_ujang"},
+	{"kind":"resident","role":"sari","group":"feast_sari"},
+	{"kind":"npc","role":"wira","group":"feast_wira"},
+	{"kind":"npc","role":"beno","group":"feast_beno"}
 ]
 
 func _initialize() -> void:
@@ -32,7 +72,11 @@ func _region_for(kind: String, role: String) -> Dictionary:
 		"child":
 			var cell: Vector2i=action.CHILD_CELLS[role]
 			return {"texture":action.CHILD_ATLAS,"region":Rect2i(cell.x*96,cell.y*128,96,128),"height":44.0}
-		"resident": return {"texture":action.VILLAGE_PORTRAITS,"region":Rect2i(0,627,627,627),"height":44.0}
+		"resident":
+			var atlas: Texture2D=action.VILLAGE_PORTRAITS if role=="darmi" else action.VILLAGE_RESIDENTS
+			return {"texture":atlas,"region":Rect2i(action.RESIDENT_CELLS[role]),"height":44.0}
+		"darmi_bust": return {"texture":action.VILLAGE_PORTRAITS,"region":Rect2i(0,512,512,512),"height":100.0}
+		"ranto": return {"texture":action.RANTO_PORTRAIT,"region":Rect2i(0,0,160,160),"height":100.0}
 		"nala": return {"texture":action.NALA_DAILY["female_nusantara"],"region":Rect2i(2*128+40,0,48,128),"height":58.0}
 	return {}
 
@@ -61,6 +105,7 @@ func _run() -> void:
 	var audio: Node=root.get_node("AudioManager")
 	var state: Node=root.get_node("GameState")
 	var was_muted: bool=audio.muted
+	var was_reduced_motion: bool=environment.reduced_motion
 	var old_player: Dictionary=state.player.duplicate(true)
 	audio.muted=true
 	state.player={"appearance":"female_nusantara"}
@@ -74,6 +119,23 @@ func _run() -> void:
 	for physical in SIZES:
 		root.size=physical
 		for settle in range(4): await process_frame
+		var physical_scale:=root.get_final_transform().y.length()
+		for adjacent in [[6,7],[7,8]]:
+			var previous_pose: Dictionary=frame.action_layer._arrival_pose(frame.action_layer.size,3.0,adjacent[0])
+			var next_pose: Dictionary=frame.action_layer._arrival_pose(frame.action_layer.size,0.0,adjacent[1])
+			for anchor in ["boat_origin","nala_feet"]:
+				var distance: float=(Vector2(previous_pose[anchor])-Vector2(next_pose[anchor])).length()*physical_scale
+				assert(distance<=3.0,"Arrival discontinuity %d→%d %s: %.1f px" % [adjacent[0],adjacent[1],anchor,distance])
+				checked+=1
+		var final_arrival: Dictionary=frame.action_layer._arrival_pose(frame.action_layer.size,3.0,7)
+		var dock_foot_x: float=Vector2(final_arrival.nala_feet).x/frame.action_layer.size.x
+		assert(dock_foot_x<=.47,"Nala must land on the painted arrival pier, not over the water")
+		checked+=1
+		for support in SUPPORT_SCALES:
+			var support_spec:=_region_for(str(support.kind),str(support.role))
+			var support_height:=_ink_height(support_spec,float(action.SUPPORT_STAGE_SCALES[str(support.group)])*physical_scale*frame.action_layer._unit(frame.action_layer.size))
+			assert(support_height>=55.0 and support_height<=80.0,"Named support %s/%s ink %.1f px at %s" % [support.group,support.role,support_height,physical])
+			checked+=1
 		for scene_case in CASES:
 			var id: String=scene_case.id
 			var beat_index: int=scene_case.beat
@@ -83,28 +145,46 @@ func _run() -> void:
 			frame.present(str(sequence.title),beat,beat_index,sequence.lines.size(),id)
 			dialogue.present(str(beat.name),str(beat.text),str(beat.get("emotion","neutral")))
 			dialogue.text_view.visible_characters=-1
-			frame._process(2.0)
-			for settle in range(3): await process_frame
+			for second in range(3):
+				frame._process(0.5 if second==0 else 0.75)
+				for settle in range(3): await process_frame
+				if capture:
+					var picture: Image=root.get_texture().get_image()
+					var path:=OUTPUT+"%s-%02d-%s-t%d-%dx%d.png" % [id,beat_index,scene_case.role,second,physical.x,physical.y]
+					assert(picture.save_png(ProjectSettings.globalize_path(path))==OK,"Cannot save "+path)
+					saved+=1
 			assert(frame.action_layer.has_directed_action(id,beat_index),"Missing directed action: %s %d" % [id,beat_index])
 			var role: String=scene_case.role
-			var scale: float=frame.action_layer._focal_scale(role)
-			var screen_unit: float=frame.action_layer._unit(frame.action_layer.size)*root.get_final_transform().y.length()
+			var scale: float=float(scene_case.get("scale",frame.action_layer._focal_scale(role)))
+			var screen_unit: float=frame.action_layer._unit(frame.action_layer.size)*physical_scale
 			var ink_height:=_ink_height(_region_for(scene_case.kind,role),scale*screen_unit)
-			assert(ink_height>=59.0 and ink_height<=80.0,"Focal figure %s/%d %s ink %.1f px at %s" % [id,beat_index,role,ink_height,physical])
+			var minimum:=45.0 if scene_case.get("tier","")=="support" else 90.0
+			var maximum:=80.0 if scene_case.get("tier","")=="support" else 110.0
+			assert(ink_height>=minimum and ink_height<=maximum,"On-stage %s/%d %s ink %.1f px at %s" % [id,beat_index,role,ink_height,physical])
 			var feet: Vector2=Vector2(scene_case.feet)*Vector2(physical)
 			assert(feet.y-ink_height>frame.upper.size.y*root.get_final_transform().y.length()-5.0,"Focal head under title bar: %s/%d" % [id,beat_index])
 			assert(feet.y<dialogue.position.y+5.0,"Focal feet under dialogue: %s/%d" % [id,beat_index])
 			if id=="epilogue" and beat_index==8:
-				assert(feet.x+30.0<physical.x*.42,"Final Nala is behind the ending card")
-			if capture:
-				var picture: Image=root.get_texture().get_image()
-				var path:=OUTPUT+"%s-%02d-%dx%d.png" % [id,beat_index,physical.x,physical.y]
-				assert(picture.save_png(ProjectSettings.globalize_path(path))==OK,"Cannot save "+path)
-				saved+=1
+				assert(feet.x+34.0<physical.x*.42,"Final Nala is behind the ending card")
 			checked+=1
 		var diver: Dictionary={"texture":action.NALA_DIVING["female_nusantara"],"region":Rect2i(2*128+40,14,48,96),"height":72.0}
-		var diver_height:=_ink_height(diver,frame.action_layer._unit(frame.action_layer.size)*root.get_final_transform().y.length())
-		assert(diver_height>=60.0 and diver_height<=80.0,"First-dive Nala ink %.1f px at %s" % [diver_height,physical])
+		var diver_height:=_ink_height(diver,1.45*frame.action_layer._unit(frame.action_layer.size)*physical_scale)
+		assert(diver_height>=90.0 and diver_height<=110.0,"First-dive Nala ink %.1f px at %s" % [diver_height,physical])
+		if capture:
+			for sample in CAPTURE_ONLY:
+				var sample_id: String=sample.id
+				var sample_beat: int=sample.beat
+				var sample_sequence: Dictionary=story.sequence(sample_id)
+				var sample_line: Dictionary=sample_sequence.lines[sample_beat-1]
+				frame.present(str(sample_sequence.title),sample_line,sample_beat,sample_sequence.lines.size(),sample_id)
+				dialogue.present(str(sample_line.name),str(sample_line.text),str(sample_line.get("emotion","neutral")))
+				dialogue.text_view.visible_characters=-1
+				for second in range(3):
+					frame._process(0.5 if second==0 else 0.75)
+					for settle in range(3): await process_frame
+					var sample_path:=OUTPUT+"%s-%02d-t%d-%dx%d.png" % [sample_id,sample_beat,second,physical.x,physical.y]
+					assert(root.get_texture().get_image().save_png(ProjectSettings.globalize_path(sample_path))==OK,"Cannot save "+sample_path)
+					saved+=1
 		if capture:
 			var sequence: Dictionary=story.sequence("first_dive")
 			frame.present(str(sequence.title),sequence.lines[0],1,2,"first_dive")
@@ -112,13 +192,43 @@ func _run() -> void:
 			dialogue.text_view.visible_characters=-1
 			frame._process(1.7)
 			for settle in range(3): await process_frame
-			var path:=OUTPUT+"first_dive-01-%dx%d.png" % [physical.x,physical.y]
+			var path:=OUTPUT+"first_dive-01-t1-%dx%d.png" % [physical.x,physical.y]
 			assert(root.get_texture().get_image().save_png(ProjectSettings.globalize_path(path))==OK,"Cannot save "+path)
 			saved+=1
+		for reduced_case in [{"id":"garden_crisis","beat":2},{"id":"epilogue","beat":8}]:
+			environment.reduced_motion=true
+			var reduced_sequence: Dictionary=story.sequence(str(reduced_case.id))
+			var reduced_beat: Dictionary=reduced_sequence.lines[int(reduced_case.beat)-1]
+			frame.present(str(reduced_sequence.title),reduced_beat,int(reduced_case.beat),reduced_sequence.lines.size(),str(reduced_case.id))
+			dialogue.present(str(reduced_beat.name),str(reduced_beat.text),str(reduced_beat.get("emotion","neutral")))
+			dialogue.text_view.visible_characters=-1
+			frame._process(1.5)
+			for settle in range(3): await process_frame
+			assert(frame.action_layer.has_directed_action(str(reduced_case.id),int(reduced_case.beat)),"Reduced-motion action missing")
+			if capture:
+				var reduced_path:=OUTPUT+"reduced-motion-%s-%02d-%dx%d.png" % [reduced_case.id,reduced_case.beat,physical.x,physical.y]
+				assert(root.get_texture().get_image().save_png(ProjectSettings.globalize_path(reduced_path))==OK,"Cannot save "+reduced_path)
+				saved+=1
+			checked+=1
+		environment.reduced_motion=false
+		if capture:
+			for appearance in action.NALA_DAILY.keys():
+				state.player={"appearance":appearance}
+				var ending: Dictionary=story.sequence("epilogue")
+				var veranda: Dictionary=ending.lines[6]
+				frame.present(str(ending.title),veranda,7,ending.lines.size(),"epilogue")
+				dialogue.present(str(veranda.name),str(veranda.text),str(veranda.get("emotion","neutral")))
+				dialogue.text_view.visible_characters=-1
+				frame._process(1.0)
+				for settle in range(3): await process_frame
+				var appearance_path:=OUTPUT+"nala-daily-%s-%dx%d.png" % [appearance,physical.x,physical.y]
+				assert(root.get_texture().get_image().save_png(ProjectSettings.globalize_path(appearance_path))==OK,"Cannot save "+appearance_path)
+				saved+=1
+			state.player={"appearance":"female_nusantara"}
 	frame.free()
 	dialogue.free()
 	state.player=old_player
-	environment.reduced_motion=false
+	environment.reduced_motion=was_reduced_motion
 	audio.muted=was_muted
 	print("PHASE ONE HERO STAGING PASS: %d focal size/layout checks, %d native captures" % [checked,saved])
 	quit()
