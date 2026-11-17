@@ -1,5 +1,13 @@
 # Jalasmara visual evidence
 
+## Phase 1 supporting cast correction, local native candidate, 18 November 2026
+
+| Nala lands on the dock | Pak Ranto as a framed Kedai cut-in | Laskar at the garden | Residents at the feast |
+| --- | --- | --- | --- |
+| ![Nala stands on the painted dock beside the sampan.](phase-one-closeup-20261118/arrival-dock-667x375.webp) | ![Pak Ranto appears in a framed portrait within Kedai Waras.](phase-one-closeup-20261118/kedai-ranto-667x375.webp) | ![Children and guards stand on the garden pier.](phase-one-closeup-20261118/garden-ensemble-667x375.webp) | ![The village ensemble, Lurah, and Raka occupy the Kedai floor.](phase-one-closeup-20261118/epilogue-feast-667x375.webp) |
+
+These source `76fb375` images are Godot 4.7.2 native captures at the actual 667×375 game viewport. The [correction report](../reviews/phase-one-character-closeup-2026-11-18.md) records the tests, hashes and limits. They are a local visual candidate, not staging, browser, or physical-device acceptance.
+
 ## Phase 1 focal staging, native game-size review, 16 November 2026
 
 | Raka arrives | Gito defends the garden | Nala's first dive | Nala at the ending |
