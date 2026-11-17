@@ -35,7 +35,10 @@ npm ci --prefix tools/image-to-pixel --ignore-scripts
 node --test tools/image-to-pixel/convert.test.mjs
 mkdir -p reports
 npx tsx --test --test-concurrency=1 --test-reporter=junit --test-reporter-destination=reports/tests.xml apps/api/test/*.test.ts
-npm audit --json > reports/dependencies.json
+npm audit --json > reports/dependencies.json || test "$?" -eq 1
+npm audit --omit=dev --json > reports/dependencies-production.json
+node --test scripts/ci-audit-policy.test.mjs
+node scripts/ci-audit-policy.mjs reports/dependencies.json reports/dependencies-production.json package-lock.json
 npm ci --prefix tools/img2threejs --ignore-scripts
 npm audit --prefix tools/img2threejs --json > reports/asset-tool-dependencies.json
 npm audit --prefix tools/image-to-pixel --json > reports/worldkit-image-dependencies.json
