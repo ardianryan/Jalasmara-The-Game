@@ -49,7 +49,7 @@ const CHILD_CELLS := {"bagas": Vector2i(1,0),"kinasih": Vector2i(2,0),"danu": Ve
 const RESIDENT_CELLS := {"darmi": Rect2(0,627,627,627),"ujang": Rect2(1024,0,512,512),"sari": Rect2(512,512,512,512)}
 const SUPPORT_STAGE_SCALES := {
 	"prologue_child": 1.65,
-	"garden_child": 1.75,
+	"garden_child": 1.95,
 	"balai_council": 1.65,
 	"feast_ratih": 1.70,
 	"feast_tedi": 1.70,
@@ -71,8 +71,10 @@ const WIDE_STAGE_SCALES := {
 const REFUSAL_CHILD_X := [.055,.145,.235,.325,.415]
 const FEAST_SUPPORT_X := [.065,.15,.235,.32,.405,.49]
 const REFUSAL_CHILD_SCALE := 2.10
+const REFUSAL_CHILD_SCALES := [2.10,2.16,2.22,2.16,2.10]
 const BALAI_BACKGROUND_LURAH_SCALE := 2.28
 const FEAST_BACKGROUND_SCALE := 1.98
+const FEAST_LURAH_START_SCALE := 1.90
 const HARBOR_CHILD_X := [.055,.145,.235]
 const CAPSULE_CROWD_X := [.065,.145,.225,.305,.385]
 const VICTORY_CHILD_MARKS := [Vector2(.045,.62),Vector2(.13,.62),Vector2(.215,.62),Vector2(.30,.62),Vector2(.65,.59)]
@@ -403,7 +405,7 @@ func _draw_prologue(view: Vector2, motion: float) -> void:
 			_actor(Vector2(view.x*.56,ground),unit*_focal_scale("lurah"),Color("7e623d"),false,0.0,"lurah")
 			for i in range(5):
 				var child_key: String=["bagas","kinasih","gito","cempaka","danu"][i]
-				_actor(Vector2(view.x*REFUSAL_CHILD_X[i],ground-4*unit+float(i%2)*3*unit),unit*REFUSAL_CHILD_SCALE,Color("5c8580").lerp(Color("c4824a"),float(i%3)/2.0),true,0.0,child_key,_stage_lean(motion,i,.038))
+				_actor(Vector2(view.x*REFUSAL_CHILD_X[i],ground-4*unit+float(i%2)*3*unit),unit*float(REFUSAL_CHILD_SCALES[i]),Color("5c8580").lerp(Color("c4824a"),float(i%3)/2.0),true,0.0,child_key,_stage_lean(motion,i,.038))
 			var staff:=Vector2(view.x*.63,ground)
 			draw_line(staff+Vector2(0,-87)*unit,staff+Vector2(0,2)*unit,Color("4d3527"),3*unit)
 			draw_rect(Rect2(staff+Vector2(-3,-91)*unit,Vector2(7,5)*unit),Color("d6b577"))
@@ -1122,9 +1124,9 @@ func _draw_feast(view: Vector2, motion: float) -> void:
 			var floor_y := .655 if i%2==0 else .68
 			_actor(Vector2(view.x*FEAST_SUPPORT_X[i],view.y*floor_y-hop),unit*FEAST_BACKGROUND_SCALE,Color("7c714b"),false,0.0,villager_key,_stage_lean(motion,i,.026))
 	var lurah_steps:=smoothstep(0.0,1.0,_progress(motion,.85)) if motif_beat==2 else 0.0
-	var lurah_x:=lerpf(.685,.60,lurah_steps)
+	var lurah_x:=lerpf(.66,.60,lurah_steps)
 	var lurah_y:=lerpf(.655,.69,lurah_steps)
-	var lurah_scale:=lerpf(1.35,2.52,lurah_steps)
+	var lurah_scale:=lerpf(FEAST_LURAH_START_SCALE,2.52,lurah_steps)
 	if motif_beat==3:
 		lurah_x=lerpf(.60,.51,smoothstep(0.0,1.0,_progress(motion,1.5)))
 		lurah_y=.69

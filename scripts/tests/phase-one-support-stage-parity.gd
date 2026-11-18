@@ -50,6 +50,10 @@ func _run() -> void:
 		var unit: float = frame.action_layer._unit(frame.action_layer.size) * root.get_final_transform().y.length()
 		var refusal_x: Array = action.REFUSAL_CHILD_X
 		assert(refusal_x.size() == 5 and refusal_x[0] >= .05 and refusal_x[-1] <= .43, "Five children must fit on the refusal pier")
+		var refusal_scales: Array = action.REFUSAL_CHILD_SCALES
+		assert(refusal_scales.size() == refusal_x.size(), "Each refusal child needs an individual depth scale")
+		assert(float(refusal_scales[2]) > float(refusal_scales[0]), "Middle children should read nearer than the edge child")
+		checks += 2
 		for i in range(1, refusal_x.size()):
 			assert(float(refusal_x[i]) - float(refusal_x[i-1]) >= .085, "Refusal children have overlapping floor marks")
 			checks += 1
@@ -60,6 +64,11 @@ func _run() -> void:
 			checks += 1
 		var child_height := _ink_height(action.CHILD_ATLAS, Rect2i(96,0,96,128), 44.0 * action.REFUSAL_CHILD_SCALE * unit)
 		assert(child_height >= 65.0 and child_height <= 95.0, "Refusal child still miniature or oversized: %.1f" % child_height)
+		var garden_child_height := _ink_height(action.CHILD_ATLAS, Rect2i(96,0,96,128), 44.0 * action.SUPPORT_STAGE_SCALES["garden_child"] * unit)
+		assert(garden_child_height >= 70.0 and garden_child_height <= 85.0, "Garden child too small or too large: %.1f" % garden_child_height)
+		var feast_lurah_height := _ink_height(action.NPC_FACES["lurah"], Rect2i(0,0,64,64), 40.0 * action.FEAST_LURAH_START_SCALE * unit)
+		assert(feast_lurah_height >= 68.0 and feast_lurah_height <= 90.0, "Feast Lurah entrance still miniature: %.1f" % feast_lurah_height)
+		checks += 2
 		var lurah_height := _ink_height(action.NPC_FACES["lurah"], Rect2i(0,0,64,64), 40.0 * action.BALAI_BACKGROUND_LURAH_SCALE * unit)
 		assert(lurah_height >= 75.0 and lurah_height <= 105.0, "Balai Lurah still miniature or oversized: %.1f" % lurah_height)
 		for role in ["ratih","tedi","wira"]:
