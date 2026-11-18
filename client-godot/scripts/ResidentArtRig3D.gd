@@ -61,7 +61,9 @@ void fragment() { vec4 texel=texture(atlas_tex,part_uv); if(texel.a<0.5) discard
 	body_mesh.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(body_mesh)
 	if str(actor.resident_id)=="npc_kid_gito":
-		_configure_lookout_pose()
+		_configure_lookout_pose("gito-lookout.png")
+	elif str(actor.resident_id)=="npc_kid_bagas":
+		_configure_lookout_pose("bagas-telescope.png")
 	var index:=0
 	for name in data.parts:
 		var rect:Array=data.parts[name].rect
@@ -82,8 +84,8 @@ void fragment() { vec4 texel=texture(atlas_tex,part_uv); if(texel.a<0.5) discard
 	ready_rig=true
 	return true
 
-func _configure_lookout_pose() -> void:
-	var pose:Texture2D=load("res://resources/art/resident-rigs-v1/gito-lookout.png")
+func _configure_lookout_pose(filename:String) -> void:
+	var pose:Texture2D=load("res://resources/art/resident-rigs-v1/"+filename)
 	if pose==null: return
 	_lookout_mesh=MeshInstance3D.new()
 	_lookout_mesh.name="AuthoredLookoutPose"
@@ -306,6 +308,7 @@ func update_pose(tint:Color) -> void:
 	var held_side:="left" if lookout else "right"
 	_held.position=Vector3(_hands_local[held_side].x,-_hands_local[held_side].y,.18 if lookout else .12)
 	_held.scale=Vector3.ONE*float(actor.body_scale)
+	_held.visible=not (lookout and str(actor.resident_id)=="npc_kid_bagas")
 	var snapshots:Dictionary={}
 	for side in hands:
 		var point:Vector3=hands[side]

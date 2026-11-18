@@ -2,6 +2,7 @@ extends SceneTree
 
 var output:="res://../artifacts/godot/playable-resident-pixel-audit"
 var width:=667
+var resident_id:="npc_kid_gito"
 var stage:Node2D
 var renderer:Node2D
 var actor:Node2D
@@ -17,6 +18,7 @@ func _initialize() -> void:
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--width="): width=int(arg.trim_prefix("--width="))
 		if arg.begins_with("--output="): output=arg.trim_prefix("--output=")
+		if arg.begins_with("--resident="): resident_id=arg.trim_prefix("--resident=")
 	_run.call_deferred()
 
 func _capture(label:String) -> void:
@@ -77,7 +79,7 @@ func _run() -> void:
 	collision.configure(state.world.landMaps.hub)
 	player=load("res://scripts/Player.gd").new()
 	stage.add_child(player)
-	player.position=Vector2(1350,1325)
+	player.position=Vector2(1350,1325) if resident_id=="npc_kid_gito" else Vector2(340,655)
 	player.set_physics_process(false)
 	player.visible=false
 	player.swim_sprite.set_appearance("male_nusantara")
@@ -89,14 +91,14 @@ func _run() -> void:
 	stage.add_child(camera)
 	var profile:Dictionary={}
 	for resident in state.world.surface_hub.residents:
-		if str(resident.id)=="npc_kid_gito": profile=resident
+		if str(resident.id)==resident_id: profile=resident
 	assert(not profile.is_empty())
 	actor=load("res://scripts/HubActor.gd").new()
 	actor.actor_name=str(profile.name)
 	actor.appearance_index=int(profile.appearance)
 	actor.configure_activity(profile)
 	var directions:=[Vector2.RIGHT,Vector2.DOWN,Vector2.LEFT,Vector2.UP,Vector2(1,1).normalized(),Vector2(-1,1).normalized(),Vector2(-1,-1).normalized(),Vector2(1,-1).normalized()]
-	var station:=Vector2(1430,1330)
+	var station:=Vector2(1430,1330) if resident_id=="npc_kid_gito" else Vector2(420,660)
 	var found:=false
 	for radius in range(0,100,8):
 		if found: break
@@ -144,10 +146,12 @@ func _run() -> void:
 	renderer.actors_3d.update_actors(.1)
 	assert(str(actor.body_animation_state().workPhase)=="inspect")
 	assert(rig._lookout_mesh.visible and not rig.body_mesh.visible)
+	if resident_id=="npc_kid_bagas": assert(not rig._held.visible)
 	await _capture("lookout-inspect")
 	actor._body_animation.update(.1,Vector2.ZERO,false,false,false,false,false,actor.activity_kind)
 	renderer.actors_3d.update_actors(.1)
 	assert(not rig._lookout_mesh.visible and rig.body_mesh.visible)
+	assert(rig._held.visible)
 	await _capture("lookout-restored")
 	FileAccess.open(output+"/results.json",FileAccess.WRITE).store_string(JSON.stringify({"width":width,"ticks":ticks,"frames":frames,"maxPelvisDrop":max_drop,"deepDrops":deep_drops},"  "))
 	if not deep_drops.is_empty():
