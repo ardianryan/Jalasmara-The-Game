@@ -8,6 +8,7 @@ var bevels:=0
 var excluded:=0
 var _root_material: ShaderMaterial
 var _shade_material: ShaderMaterial
+var _stone_material: ShaderMaterial
 var _floors: Array=[]
 var _backing:=PackedVector2Array()
 var _routes: Array=[]
@@ -54,14 +55,16 @@ func build_surface(renderer: Node, surface: Dictionary, polygon: PackedVector2Ar
 				_quad(target,a[band],b[band],b[band+1],a[band+1],index+band,normal)
 		segments+=1
 	_emit(renderer,"NaturalTerrainLip",top,renderer._materials.get_material(material_id))
-	_emit(renderer,"NaturalTerrainSoil",soil,renderer._materials.get_material("stone" if material_id=="stone" else "dirt"))
-	_emit(renderer,"NaturalTerrainShoulder",stone,renderer._materials.get_material("stone"))
-	if _root_material==null:
+	if _stone_material==null:
 		var base: Color=renderer._materials.get_material("stone").get_shader_parameter("base_color")
-		_shade_material=renderer._materials.get_material("stone").duplicate()
+		_stone_material=renderer._materials.get_material("stone").duplicate()
+		_stone_material.set_shader_parameter("cliff_strata",true)
+		_shade_material=_stone_material.duplicate()
 		_shade_material.set_shader_parameter("base_color",Color(base.r*.72,base.g*.78,base.b*.82))
-		_root_material=renderer._materials.get_material("stone").duplicate()
+		_root_material=_stone_material.duplicate()
 		_root_material.set_shader_parameter("base_color",Color(base.r*.55,base.g*.63,base.b*.68))
+	_emit(renderer,"NaturalTerrainSoil",soil,_stone_material if material_id=="stone" else renderer._materials.get_material("dirt"))
+	_emit(renderer,"NaturalTerrainShoulder",stone,_stone_material)
 	_emit(renderer,"NaturalTerrainRockShade",shade,_shade_material)
 	_emit(renderer,"NaturalTerrainRoot",root,_root_material)
 	surfaces+=1

@@ -13,6 +13,7 @@ uniform float micro_mean = 0.5;
 uniform float micro_strength = 0.4;
 uniform int atlas_cell = 0;
 uniform bool soften_edge = false;
+uniform bool cliff_strata = false;
 uniform float wind_time = 0.0;
 uniform float wind_x = 0.0;
 uniform bool wind_reduced = false;
@@ -73,6 +74,14 @@ void fragment() {
 		float chip=step(.93,grain)*step(.46,vein);
 		float pale=step(.88,grain)*step(.62,vein);
 		color*=1.0-chip*.13+pale*.045;
+		if(cliff_strata && abs(normal_world.z)<.8) {
+			float shelf=at.z+mod(floor(planar.x/38.0)*7.0,11.0)-5.0;
+			float bed=floor(shelf/27.0);
+			float seam=(1.0-step(3.5,mod(shelf,27.0)))*step(.20,vein);
+			float tone=mod(bed,3.0)*.5;
+			color*=mix(vec3(.87,.94,.94),vec3(1.05,1.03,.99),tone);
+			color*=1.0-seam*.22;
+		}
 	}
 	if(kind==4 || kind==6) {
 		float seam=step(21.0,mod(planar.x,23.0));
