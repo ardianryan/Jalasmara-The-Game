@@ -77,7 +77,12 @@
         "village_stone_tread_0",
         "village_stone_tread_1",
         "village_stone_tread_2",
-        "village_stone_tread_3"
+        "village_stone_tread_3",
+        "village_dock_landing_stone_0",
+        "village_dock_landing_stone_1",
+        "village_dock_landing_stone_2",
+        "village_dock_landing_stone_3",
+        "village_dock_landing_wood_sill"
       ]
     },
     "forest": {
@@ -121,7 +126,8 @@
         7,
         11,
         40,
-        41
+        41,
+        78
       ],
       "floorHeight": 0,
       "groundHeight": 48
@@ -135,7 +141,8 @@
       "matches": [
         7,
         40,
-        41
+        41,
+        78
       ],
       "floorHeight": 48,
       "groundHeight": 48
@@ -149,7 +156,8 @@
       "matches": [
         7,
         40,
-        41
+        41,
+        78
       ],
       "floorHeight": 48,
       "groundHeight": 48
@@ -1531,7 +1539,8 @@
       "matches": [
         7,
         40,
-        41
+        41,
+        78
       ],
       "floorHeight": 48,
       "groundHeight": 48
@@ -1545,7 +1554,8 @@
       "matches": [
         7,
         40,
-        41
+        41,
+        78
       ],
       "floorHeight": 48,
       "groundHeight": 48
@@ -1560,7 +1570,8 @@
         7,
         11,
         40,
-        41
+        41,
+        78
       ],
       "floorHeight": 0,
       "groundHeight": 48
