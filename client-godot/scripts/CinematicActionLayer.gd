@@ -427,6 +427,9 @@ func _draw_harbor_lesson(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
 	var pier_y:=view.y*.57
 	var compass:=Vector2(view.x*.49,view.y*.475)
+	# Hold the wide harbor long enough to establish the village, then favor
+	# the teacher while keeping his feet on the painted pier.
+	var approach:=smoothstep(0.0,1.0,clampf((motion-.55)/.95,0.0,1.0))
 	draw_rect(Rect2(compass-Vector2(8,6)*unit,Vector2(17,13)*unit),Color("5b3b25"))
 	draw_rect(Rect2(compass-Vector2(6,4)*unit,Vector2(13,9)*unit),Color("ddbd77"))
 	draw_line(compass+Vector2(-4,0)*unit,compass+Vector2(5,0)*unit,Color("476b6a"),unit)
@@ -434,13 +437,16 @@ func _draw_harbor_lesson(view: Vector2, motion: float) -> void:
 	draw_colored_polygon(PackedVector2Array([
 		compass+Vector2(0,-4)*unit,compass+Vector2(-2,0)*unit,
 		compass+Vector2(2,0)*unit]),Color("9d4536"))
-	_actor(Vector2(view.x*HARBOR_LURAH_X,pier_y),unit*WIDE_STAGE_SCALES["harbor_lurah"],Color("7e623d"),false,0.0,"lurah")
 	for i in range(3):
 		var child_key: String=["bagas","kinasih","gito"][i]
-		var feet:=Vector2(view.x*HARBOR_CHILD_X[i],pier_y+float(i%2)*2*unit)
+		var near_x: float=[.055,.145,.235][i]
+		var feet:=Vector2(view.x*lerpf(HARBOR_CHILD_X[i],near_x,approach),pier_y+(float(i%2)*2.0+float(i%3)*3.0*approach)*unit)
 		if not EnvironmentState.reduced_motion: feet.y+=sin(motion*1.5+float(i)*.9)*unit
 		_actor(feet,unit*WIDE_STAGE_SCALES["harbor_child"],Color("6a8c75"),true,0.0,child_key)
-	var pointer:=Vector2(view.x*.465,pier_y-18*unit)
+	var lurah_feet:=Vector2(view.x*lerpf(HARBOR_LURAH_X,.36,approach),pier_y)
+	var lurah_scale:=lerpf(WIDE_STAGE_SCALES["harbor_lurah"],3.04,approach)
+	_actor(lurah_feet,unit*lurah_scale,Color("7e623d"),false,0.0,"lurah")
+	var pointer:=lurah_feet+Vector2(17,-18)*unit
 	draw_line(pointer,compass+Vector2(-3,1)*unit,Color("826347"),2*unit)
 	for i in range(3):
 		var wake:=Vector2(view.x*(.44+float(i)*.04),view.y*(.51+float(i%2)*.025))
@@ -592,10 +598,13 @@ func _draw_first_dive(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
 	if motif_beat==1:
 		var phase:=_progress(motion,3.6)
-		var turn:=clampf((phase-.17)/.53,0.0,1.0)
-		var pos:=Vector2(view.x*(.34+phase*.16),view.y*(.41+phase*.28)-sin(phase*PI)*24*unit)
+		var launch:=smoothstep(0.0,1.0,clampf((phase-.16)/.19,0.0,1.0))
+		var turn:=clampf((phase-.20)/.51,0.0,1.0)
+		var travel:=Vector2(view.x*(.34+phase*.16),view.y*(.41+phase*.28)-sin(phase*PI)*24*unit)
+		var pos:=Vector2(view.x*.34,view.y*.60).lerp(travel,launch)
+		var diver_scale:=lerpf(2.12,1.45,launch)
 		if phase<.95:
-			_draw_diver(pos,unit*1.45,turn*TAU,phase<.17)
+			_draw_diver(pos,unit*diver_scale,turn*TAU,phase<.20)
 		else:
 			_draw_diver(Vector2(view.x*.50,view.y*.72+(phase-.95)*view.y*.33),unit*1.45,-.12,false)
 		var splash:=clampf((phase-.68)/.32,0.0,1.0)
@@ -982,19 +991,23 @@ func _draw_victory(view: Vector2, motion: float) -> void:
 		_draw_victory_piers(view,unit)
 		_draw_victory_sampan(view,unit,motion)
 		var emerge:=smoothstep(0.0,1.0,clampf(motion/1.7,0.0,1.0))
-		_draw_nala_daily(Vector2(view.x*.52,view.y*(.70-.06*emerge)),unit*WIDE_STAGE_SCALES["victory_nala"],4)
-		var tablet:=Vector2(view.x*.52,view.y*(.42-.07*emerge))
+		var focus:=smoothstep(0.0,1.0,clampf((motion-.45)/1.0,0.0,1.0))
+		var nala_feet:=Vector2(view.x*lerpf(.52,.54,focus),view.y*(.70-.03*emerge))
+		_draw_nala_daily(nala_feet,unit*lerpf(WIDE_STAGE_SCALES["victory_nala"],2.70,focus),4)
+		var tablet:=nala_feet+Vector2(0,-81+15*emerge)*unit
 		draw_rect(Rect2(tablet,Vector2(12,9)*unit),Color("d8ad69"))
 		draw_rect(Rect2(tablet+Vector2(3,2)*unit,Vector2(5,4)*unit),Color("59e4df"))
-		_actor(Vector2(view.x*.40,view.y*.62),unit*WIDE_STAGE_SCALES["victory_beno"],Color("7c7958"),false,0.0,"beno")
+		var beno_feet:=Vector2(view.x*lerpf(.40,.39,focus),view.y*lerpf(.62,.68,focus))
+		_actor(beno_feet,unit*lerpf(WIDE_STAGE_SCALES["victory_beno"],2.46,focus),Color("7c7958"),false,0.0,"beno")
 		for i in range(5):
 			var child_key: String=["gito","bagas","kinasih","cempaka","danu"][i]
 			var hop:=0.0 if EnvironmentState.reduced_motion else absf(sin(motion*4.0+float(i)*.9))*3.0*unit
 			var mark: Vector2=VICTORY_CHILD_MARKS[i]
-			_actor(Vector2(view.x*mark.x,view.y*mark.y-hop),unit*WIDE_STAGE_SCALES["victory_child"],Color("7c7958"),true,0.0,child_key)
+			var depth:=float([.63,.60,.65,.62,.60][i])
+			_actor(Vector2(view.x*mark.x,view.y*lerpf(mark.y,depth,focus)-hop),unit*WIDE_STAGE_SCALES["victory_child"],Color("7c7958"),true,0.0,child_key)
 		for i in range(2):
 			var resident_key: String=["darmi","ujang"][i]
-			var resident_feet:=Vector2(view.x*(.78+float(i)*.12),view.y*.62)
+			var resident_feet:=Vector2(view.x*(.78+float(i)*.12),view.y*(.62+float(i)*.035*focus))
 			_actor(resident_feet,unit*WIDE_STAGE_SCALES["victory_resident"],Color("8c7654"),false,0.0,resident_key)
 			var release:=smoothstep(0.0,1.0,_progress(motion-.4-float(i)*.18,1.1))
 			var capsule:=resident_feet+Vector2(16+release*8,-28+release*25)*unit
