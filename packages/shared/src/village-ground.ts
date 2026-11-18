@@ -2,6 +2,7 @@ import type { LandMap, LandPoint, LandSurface } from "./land.js";
 
 const EPSILON = 1e-7;
 const PREFIX = "village_dirt_";
+const TREAD_PREFIX = "village_stone_tread_";
 const WIDTH = 72;
 const COURTS = new Set(["lower_court", "upper_court"]);
 const area = (polygon: readonly LandPoint[]) =>
@@ -108,15 +109,86 @@ function subtract(
   return outside;
 }
 
+const samePoint = (a: LandPoint, b: LandPoint) =>
+  Math.hypot(a[0] - b[0], a[1] - b[1]) < EPSILON;
+const LOWER_SPINE: LandPoint[] = [[600, 950], [1120, 1000], [1370, 950], [1600, 950]];
+const isLowerSpine = (route: readonly LandPoint[]) =>
+  route.length === LOWER_SPINE.length &&
+  LOWER_SPINE.every((point, index) => samePoint(route[index], point));
+const isCentralStairApproach = (a: LandPoint, b: LandPoint) =>
+  (samePoint(a, [1370, 950]) && samePoint(b, [1370, 815])) ||
+  (samePoint(b, [1370, 950]) && samePoint(a, [1370, 815]));
+
+function joinedSpine(route: readonly LandPoint[]): LandPoint[] {
+  const centerline: LandPoint[] = [route[0]];
+  for (let index = 1; index < route.length - 1; index++) {
+    const a = route[index - 1],
+      corner = route[index],
+      b = route[index + 1];
+    const beforeLength = Math.hypot(corner[0] - a[0], corner[1] - a[1]);
+    const afterLength = Math.hypot(b[0] - corner[0], b[1] - corner[1]);
+    const radius = Math.min(24, beforeLength / 4, afterLength / 4);
+    const before: LandPoint = [
+      corner[0] - ((corner[0] - a[0]) / beforeLength) * radius,
+      corner[1] - ((corner[1] - a[1]) / beforeLength) * radius,
+    ];
+    const after: LandPoint = [
+      corner[0] + ((b[0] - corner[0]) / afterLength) * radius,
+      corner[1] + ((b[1] - corner[1]) / afterLength) * radius,
+    ];
+    centerline.push(before);
+    for (const t of [0.25, 0.5, 0.75, 1])
+      centerline.push([
+        (1 - t) ** 2 * before[0] + 2 * (1 - t) * t * corner[0] + t ** 2 * after[0],
+        (1 - t) ** 2 * before[1] + 2 * (1 - t) * t * corner[1] + t ** 2 * after[1],
+      ]);
+  }
+  centerline.push(route[route.length - 1]);
+  const side = (sign: number): LandPoint[] =>
+    centerline.map((point, index) => {
+      const a = centerline[Math.max(0, index - 1)];
+      const b = centerline[Math.min(centerline.length - 1, index + 1)];
+      const length = Math.hypot(b[0] - a[0], b[1] - a[1]);
+      return [
+        point[0] - ((b[1] - a[1]) / length) * (WIDTH / 2) * sign,
+        point[1] + ((b[0] - a[0]) / length) * (WIDTH / 2) * sign,
+      ];
+    });
+  return [...side(1), ...side(-1).reverse()];
+}
+
+function centralStairTreads(): LandSurface[] {
+  return [838, 862, 886, 908].map((y, index) => ({
+    id: `${TREAD_PREFIX}${index}`,
+    polygon: [
+      [1340 + (index % 2) * 3, y - 8],
+      [1399 - (index % 2) * 2, y - 9],
+      [1405 - (index % 2) * 2, y - 3],
+      [1401, y + 8],
+      [1340, y + 9],
+      [1335 + (index % 2) * 2, y + 2],
+    ],
+    material: "stone",
+    elevation: 1,
+    priority: 4,
+    walkable: false,
+  }));
+}
+
 function routePaint(map: LandMap): { id: string; polygon: LandPoint[] }[] {
   const paint: { id: string; polygon: LandPoint[] }[] = [];
   const segments = new Set<string>(),
     joins = new Set<string>();
   for (const route of map.routes) {
+    if (isLowerSpine(route)) {
+      paint.push({ id: "joined_lower_spine", polygon: joinedSpine(route) });
+      continue;
+    }
     for (let index = 1; index < route.length; index++) {
       const a = route[index - 1],
         b = route[index],
         length = Math.hypot(b[0] - a[0], b[1] - a[1]);
+      if (isCentralStairApproach(a, b)) continue;
       if (length < EPSILON) continue;
       const key = [a.join(","), b.join(",")].sort().join(";");
       if (segments.has(key)) continue;
@@ -133,6 +205,11 @@ function routePaint(map: LandMap): { id: string; polygon: LandPoint[] }[] {
         ],
       });
       for (const point of [a, b]) {
+        if (
+          samePoint(point, [1370, 950]) ||
+          samePoint(point, [1370, 815]) ||
+          samePoint(point, [1370, 735])
+        ) continue;
         if (joins.has(point.join(","))) continue;
         joins.add(point.join(","));
         paint.push({
@@ -153,7 +230,7 @@ export function decorateVillageGround(map: LandMap): LandMap {
   const result = structuredClone(map);
   if (map.id !== "hub") return result;
   result.surfaces = result.surfaces.filter(
-    (surface) => !surface.id.startsWith(PREFIX),
+    (surface) => !surface.id.startsWith(PREFIX) && !surface.id.startsWith(TREAD_PREFIX),
   );
   const courts = result.surfaces.filter((surface) => COURTS.has(surface.id));
   const protectedSurfaces = result.surfaces.filter(
@@ -185,7 +262,9 @@ export function decorateVillageGround(map: LandMap): LandMap {
             "Village ground paint exceeded its bounded clipping budget",
           );
       }
-      for (const [index, polygon] of pieces.entries())
+      for (const [index, polygon] of pieces.entries()) {
+        if (path.id === "joined_lower_spine" && Math.abs(area(polygon)) < 500)
+          continue;
         additions.push({
           id: `${PREFIX}${court.id}_${path.id}_${index}`,
           polygon,
@@ -194,10 +273,17 @@ export function decorateVillageGround(map: LandMap): LandMap {
           priority: 4,
           walkable: false,
         });
+      }
     }
   }
   if (additions.length > 512)
     throw new Error("Village ground paint exceeded its bounded surface budget");
   result.surfaces.push(...additions);
+  if (
+    result.routes.some(isLowerSpine) &&
+    result.stairs.some((stair) => stair.id === "central_stone_steps") &&
+    courts.some((court) => court.id === "lower_court")
+  )
+    result.surfaces.push(...centralStairTreads());
   return result;
 }

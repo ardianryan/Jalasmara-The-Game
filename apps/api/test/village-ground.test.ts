@@ -12,6 +12,7 @@ import {
 } from "../../../packages/shared/src/land.ts";
 import { decorateVillageGround } from "../../../packages/shared/src/village-ground.ts";
 const prefix = "village_dirt_";
+const treadPrefix = "village_stone_tread_";
 const original = structuredClone(LAND_MAPS.hub);
 original.surfaces = original.surfaces.filter(
   (surface) => !surface.id.startsWith(prefix),
@@ -39,6 +40,21 @@ function insideOrBoundary(at: { x: number; y: number }, polygon: LandPoint[]) {
         landDistanceToSegment(at, a, polygon[(i + 1) % polygon.length]) < 1e-6,
     )
   );
+}
+function simplePolygon(polygon: LandPoint[]) {
+  const orient = (a: LandPoint, b: LandPoint, c: LandPoint) =>
+    (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
+  for (let i = 0; i < polygon.length; i++) {
+    const a = polygon[i], b = polygon[(i + 1) % polygon.length];
+    for (let j = i + 2; j < polygon.length; j++) {
+      if ((j + 1) % polygon.length === i) continue;
+      const c = polygon[j], d = polygon[(j + 1) % polygon.length];
+      const abC = orient(a, b, c), abD = orient(a, b, d);
+      const cdA = orient(c, d, a), cdB = orient(c, d, b);
+      if (abC * abD < 0 && cdA * cdB < 0) return false;
+    }
+  }
+  return true;
 }
 function fixture(): LandMap {
   return {
@@ -255,6 +271,46 @@ test("actual village walkability, authored route clearance and old stone service
       `${courtId}: cheerful grass must cover most reachable court ground, actual ${green}/${total}`,
     );
   }
+});
+
+test("lower spine is joined without a dirt V and four grounded stone treads approach the central stairs", () => {
+  const spine = additions.filter((surface) =>
+    surface.id.includes("joined_lower_spine"),
+  );
+  assert.equal(spine.length, 3);
+  assert(spine.every((surface) => area(surface.polygon) >= 500));
+  assert(spine.every((surface) => simplePolygon(surface.polygon)));
+  const removedSpur = painted.surfaces.filter(
+    (surface) =>
+      surface.id.startsWith(prefix) &&
+      surface.polygon.every(([x, y]) => x >= 1330 && x <= 1410 && y < 914),
+  );
+  assert.equal(removedSpur.length, 0, "central approach must not remain a dirt stripe");
+  const treads = painted.surfaces.filter((surface) =>
+    surface.id.startsWith(treadPrefix),
+  );
+  assert.equal(treads.length, 4);
+  const lower = original.surfaces.find((surface) => surface.id === "lower_court")!;
+  const stoneStair = original.surfaces.find((surface) => surface.id === "central_stone_steps_floor")!;
+  for (const [index, surface] of treads.entries()) {
+    assert.equal(surface.material, "stone");
+    assert.equal(surface.elevation, lower.elevation);
+    assert.equal(surface.walkable, false);
+    assert(area(surface.polygon) > 500);
+    assert(simplePolygon(surface.polygon));
+    assert(surface.polygon.every(([x, y]) => x >= 1334 && x <= 1406 && y > 815 && y <= 920));
+    assert(surface.polygon.every(([x, y]) => !landPointInPolygon({ x, y }, stoneStair.polygon)));
+    assert(surface.polygon.every(([x, y]) => insideOrBoundary({ x, y }, lower.polygon)), `${index}`);
+  }
+  const routeY = 950 + (900 - 600) * 50 / 520;
+  assert.equal(mapFootMaterial(painted, { x: 900, y: routeY }), "dirt");
+  assert.equal(mapFootMaterial(painted, { x: 900, y: routeY - 35 }), "dirt");
+  assert.equal(mapFootMaterial(painted, { x: 900, y: routeY + 35 }), "dirt");
+  assert.deepEqual(
+    decorateVillageGround(painted),
+    painted,
+    "Stone tread decoration must also be idempotent",
+  );
 });
 
 test("forest and noncourt floors are untouched and invalid concave court authoring is rejected", () => {
