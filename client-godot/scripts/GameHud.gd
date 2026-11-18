@@ -322,7 +322,7 @@ func _build_utilities() -> void:
 func _build_actions() -> void:
 	_deck = _panel(Rect2(766,432,180,94) if touch_enabled else Rect2(784,448,162,78),false)
 	_action_plate = _panel(Rect2(632,402,310,40),false)
-	_action_plate.quiet=true
+	_action_plate.compact_notice=true
 	_action_label = _label(root_control,"",Vector2(632,402) if touch_enabled else Vector2(622,418),Vector2(310,27),15 if touch_enabled else 12)
 	_action_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	var net_rect := Rect2(774,438,80,80) if touch_enabled else Rect2(792,454,70,66)
@@ -487,23 +487,20 @@ func _layout() -> void:
 	_deck.position=Vector2(_net.position.x-6,bottom-action_side-6) if _net.visible else _action.position-Vector2(6,6)
 	_deck.scale=Vector2.ONE if touch_enabled else Vector2.ONE*ratio
 	_deck.size=Vector2(right-_deck.position.x+6,action_side+12)/(1.0 if touch_enabled else ratio)
-	var prompt_width:=minf((280 if physical.y<=480 and physical.x>physical.y else 380)*unit,viewport.x-32)
+	_action_label.add_theme_font_override("font",preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2"))
+	_action_label.add_theme_font_size_override("font_size",body)
+	var prompt_font:Font=_action_label.get_theme_font("font")
+	var prompt_width:=minf(ceilf(prompt_font.get_string_size(_action_label.text,HORIZONTAL_ALIGNMENT_LEFT,-1,body).x)+12*unit,minf(274*unit,viewport.x*0.4))
+	prompt_width=maxf(prompt_width,80*unit)
 	_action_label.position=Vector2(right-prompt_width,bottom-action_side-line*2-12)
 	_action_label.size=Vector2(prompt_width,line*2)
 	_action_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
-	_action_label.add_theme_font_override("font",preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2"))
-	_action_label.add_theme_font_size_override("font_size",body)
-	var action_height_needed:=_action_label.get_theme_font("font").get_multiline_string_size(_action_label.text,HORIZONTAL_ALIGNMENT_RIGHT,_action_label.size.x,body).y+4
-	if action_height_needed>line*2 and physical.y<=480 and physical.x>physical.y:
-		prompt_width=minf(380*unit,viewport.x-32)
-		_action_label.position.x=right-prompt_width
-		_action_label.size.x=prompt_width
-		action_height_needed=_action_label.get_theme_font("font").get_multiline_string_size(_action_label.text,HORIZONTAL_ALIGNMENT_RIGHT,_action_label.size.x,body).y+4
-	var action_height:=clampf(action_height_needed,line,line*2)
+	var action_height_needed:=prompt_font.get_multiline_string_size(_action_label.text,HORIZONTAL_ALIGNMENT_RIGHT,prompt_width,body).y+4
+	var action_height:=maxf(line,action_height_needed)
 	_action_label.size.y=action_height
-	_action_label.position.y=bottom-action_side-action_height-12
-	_action_plate.position=_action_label.position-Vector2(6,3)
-	_action_plate.size=_action_label.size+Vector2(12,6)
+	_action_label.position.y=bottom-action_side-action_height-10
+	_action_plate.position=_action_label.position-Vector2(7*unit,3*unit)
+	_action_plate.size=_action_label.size+Vector2(14*unit,6*unit)
 	_action_plate.visible=_action_label.visible
 	var instrument_scale:=1.25 if compact_dive else 1.4 if touch_enabled else ratio
 	_instrument.scale=Vector2.ONE*instrument_scale

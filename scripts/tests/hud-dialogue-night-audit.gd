@@ -43,9 +43,15 @@ func run() -> void:
 		assert(hud.status_label.text=="Kedai Waras sudah buka.","The duplicate instruction belongs in the action prompt, not the notice")
 		assert(hud.status_label.tooltip_text=="Kedai Waras sudah buka. Bicaralah dengan Mbah Wira untuk melayani warga.","The notice must retain its full text")
 		var action:Button=hud.get("_action")
+		var prompt:Control=hud.get("_action_plate")
+		var prompt_label:Label=hud.get("_action_label")
 		var sound:Button=hud.get("_sound_button")
 		assert(minf(action.get_global_rect().size.x,action.get_global_rect().size.y)*scale>=48.0 if fixture.touch else true)
 		assert(minf(sound.get_global_rect().size.x,sound.get_global_rect().size.y)*scale>=48.0 if fixture.touch else true)
+		assert(bool(prompt.get("compact_notice")),"Action prompt must use the tactile wood and brass plate")
+		assert(prompt.get_global_rect().size.x*scale<=252.0,"Action prompt must not become a wide horizontal strip")
+		assert(prompt.get_global_rect().end.y<action.get_global_rect().position.y,"Prompt must stay above the action button")
+		assert(prompt_label.get_theme_font("font").get_multiline_string_size(prompt_label.text,HORIZONTAL_ALIGNMENT_RIGHT,prompt_label.size.x,prompt_label.get_theme_font_size("font_size")).y<=prompt_label.size.y,"Action text must fit the plate")
 		var tag:="%sx%s"%[fixture.size.x,fixture.size.y]
 		if DisplayServer.get_name()!="headless":
 			await RenderingServer.frame_post_draw
