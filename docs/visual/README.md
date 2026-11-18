@@ -1,5 +1,9 @@
 # Jalasmara visual evidence
 
+## Source-pinned local Phase 1 browser replay, 18 November 2026
+
+The [667×375 Gajah Mina intro](phase1-browser-current-20261118/boss-intro-667x375.png) and [ending card](phase1-browser-current-20261118/ending-card-667x375.png) come from local Chromium/SwiftShader replay of source `1249b90118672817f67820162e9086d9f2866d93`, PCK SHA-256 `4425ddabd7fc2da2aa0b3dafe3bbef094ae3fd146b73a2f2d498343f9cca3532` (81,698,736 bytes). The full 12-scene results are in `artifacts/browser/phase-one-journey-4b09ce88-08b6-4e27-8b35-3a0a3591e1b0/results.json`; [review and limits](../reviews/moodboard-parity-pass-2026-11-18.md). These are original project captures, not staging, physical-device or moodboard assets. Their source SHA precedes this documentation commit; runtime files are unchanged by the documentation.
+
 ## Local support-stage actor scale, 18 November 2026
 
 The [five children at the capsule refusal](cutscene-support-stage-20261118/refusal-667x375.webp), [Ki Lurah at the Balai](cutscene-support-stage-20261118/balai-667x375.webp), and [Kedai supporting cast](cutscene-support-stage-20261118/feast-667x375.webp) are original 667×375 native Godot captures from the accepted local source; the [844×390 refusal frame](cutscene-support-stage-20261118/refusal-844x390.webp) checks the wider layout. The [support-stage review](../reviews/cutscene-support-stage-parity-2026-11-18.md) records source/test provenance. These are not staging or physical-device evidence. Rejected [reef face](../reviews/reef-rear-volume-diagnostic-2026-11-18.md), [reef foreground](../reviews/reef-foreground-geology-trial-2026-11-18.md), [joined path](../reviews/land-route-composition-trial-2026-11-18.md), and [path material](../reviews/land-route-material-diagnostic-2026-11-18.md) comparisons are retained for diagnosis only.
