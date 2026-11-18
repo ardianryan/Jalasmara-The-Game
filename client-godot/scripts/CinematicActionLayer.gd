@@ -23,6 +23,8 @@ const LURAH_TEACHING_POINT := preload("res://resources/art/cinematics-v2/close-p
 const GITO_SLING_RELEASE := preload("res://resources/art/cinematics-v2/close-pose/gito-sling-release.png")
 const VICTORY_CHILD_POSES := preload("res://resources/art/cinematics-v2/victory-child-poses.png")
 const GARDEN_KINASIH_CLUE := preload("res://resources/art/cinematics-v2/garden-kinasih-clue.png")
+const WIRA_TEA_OFFER := preload("res://resources/art/cinematics-v2/close-pose/mbah-wira-tea-offer.png")
+const KEDAI_INTERIOR := preload("res://resources/art/cinematics-v2/kedai-interior.png")
 const PHASE_ONE_STORY := preload("res://scripts/PhaseOneCutscenes.gd")
 const RANTO_PORTRAIT := preload("res://resources/art/cinematics-v2/pak-ranto-portrait.png")
 const NALA_DIVING := {
@@ -598,7 +600,7 @@ func _draw_first_kedai(view: Vector2, motion: float) -> void:
 		draw_rect(Rect2(lamp-Vector2(5,1)*unit,Vector2(10,11)*unit),Color("cf9146"))
 		draw_circle(lamp+Vector2(0,5)*unit,(10.0+sin(motion*2+float(i))*2)*unit,Color(1.0,.77,.34,.08))
 	_draw_tea_and_net(view,motion,7)
-	_actor(Vector2(view.x*.23,view.y*.68),unit*2.40,Color("876943"),false,0.0,"wira")
+	_draw_first_kedai_wira(view,motion)
 	var customer:=_tasting_subject()
 	if customer=="Bu Darmi":
 		_actor(Vector2(view.x*.77,view.y*.68),unit*2.22,Color("a1846a"),false,0.0,"darmi")
@@ -612,6 +614,24 @@ func _draw_first_kedai(view: Vector2, motion: float) -> void:
 		draw_texture_rect(RANTO_PORTRAIT,portrait,false)
 		for corner in [frame.position,frame.position+Vector2(frame.size.x-7*unit,0),frame.end-Vector2(7,7)*unit,frame.position+Vector2(0,frame.size.y-7*unit)]:
 			draw_rect(Rect2(corner,Vector2(7,7)*unit),Color("e8be77"))
+
+func _draw_first_kedai_wira(view: Vector2, motion: float) -> void:
+	var unit:=_unit(view)
+	var offer:=1.0 if EnvironmentState.reduced_motion else smoothstep(0.0,1.0,_progress(motion-.18,1.20))
+	var art_side:=225*unit
+	var art_dest:=Rect2(Vector2(view.x*.17+offer*9*unit,view.y*.215-offer*4*unit),Vector2(art_side,art_side))
+	draw_texture_rect(WIRA_TEA_OFFER,art_dest,false)
+	# Repaint the original counter fascia over his legs, sharing the plate's pan
+	# and pixel grid. The offered cup stays above the countertop.
+	if get_parent()!=null and get_parent().has_method("_backdrop_rect"):
+		var plate: Rect2=get_parent().call("_backdrop_rect")
+		var source:=Rect2(0,259,492,104)
+		var ratio:=plate.size/Vector2(960,540)
+		var counter_dest:=Rect2(plate.position+source.position*ratio,source.size*ratio)
+		draw_texture_rect_region(KEDAI_INTERIOR,counter_dest,source)
+	var cup:=art_dest.position+Vector2(165,83)*art_dest.size.x/192.0
+	var glint:=.48 if EnvironmentState.reduced_motion else .27+.23*absf(sin(motion*2.6))
+	draw_arc(cup,5*unit,PI*.96,TAU*1.9,12,Color(.98,.83,.49,glint),unit)
 
 func _draw_saras(view: Vector2, motion: float) -> void:
 	if motif_beat!=2: return
