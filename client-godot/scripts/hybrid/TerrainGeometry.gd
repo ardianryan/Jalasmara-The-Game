@@ -185,8 +185,8 @@ func _build_cave_backwall() -> void:
 	var center := Vector2(785,910)
 	# Irregular rear ledges share world UVs with the rock face, not alpha cards.
 	for band in range(3):
-		var outer_weight: float=[1.0,.76,.42][band]
-		var inner_weight: float=[.76,.42,0.0][band]
+		var outer_weight: float=[1.0,.78,.58][band]
+		var inner_weight: float=[.78,.58,.42][band]
 		for index in range(outline.size()):
 			var next:=(index+1)%outline.size()
 			var corners:Array[Vector3]=[]
@@ -205,6 +205,7 @@ func _build_cave_backwall() -> void:
 	wall.material_override = _materials[1]
 	wall.set_meta("rear_outline",outline)
 	wall.set_meta("relief_bands",3)
+	wall.set_meta("inner_opening_weight",.42)
 	add_child(wall)
 
 func _build_model_rocks() -> void:

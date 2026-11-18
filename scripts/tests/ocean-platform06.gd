@@ -6,6 +6,12 @@ func _initialize() -> void:
 func _project(vertex:Vector3) -> Vector2:
 	return Vector2(vertex.x,-vertex.y+sin(deg_to_rad(12.0))*vertex.z)
 
+func _inside_triangle(point:Vector2,a:Vector2,b:Vector2,c:Vector2) -> bool:
+	var first:float=(b-a).cross(point-a)
+	var second:float=(c-b).cross(point-b)
+	var third:float=(a-c).cross(point-c)
+	return not ((first<-.001 or second<-.001 or third<-.001) and (first>.001 or second>.001 or third>.001))
+
 func run() -> void:
 	var world:Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://../.runtime/world-map.json"))
 	var unchanged:=JSON.stringify(world)
@@ -71,7 +77,11 @@ func run() -> void:
 	for count in edges.values():
 		assert(int(count)<=2,"No doubled overlapping rear-wall triangles")
 		if int(count)==1: open_edges+=1
-	assert(open_edges==outline.size(),"Only the outer perimeter may be open; shared relief bands must meet without cracks")
+	assert(open_edges==outline.size()*2,"Open cave mouth needs exactly one outer and one inner perimeter")
+	assert(wall.get_meta("relief_bands")==3 and is_equal_approx(float(wall.get_meta("inner_opening_weight")),.42))
+	var opening:=Vector2(785,910)
+	for triangle in range(0,wall_vertices.size(),3):
+		assert(not _inside_triangle(opening,_project(wall_vertices[triangle]),_project(wall_vertices[triangle+1]),_project(wall_vertices[triangle+2])),"Cave mouth must leave the swimmer lane visually open")
 	var wall_colors:PackedColorArray=wall_arrays[Mesh.ARRAY_COLOR]
 	var min_depth:=0.0
 	var max_depth:=-10000.0
@@ -79,7 +89,7 @@ func run() -> void:
 		assert(vertex.z < -500,"All cave relief remains farther back than anchored roots")
 		min_depth=minf(min_depth,vertex.z)
 		max_depth=maxf(max_depth,vertex.z)
-	assert(max_depth-min_depth>130,"Rear wall must retain actual relief, not a cutout plane")
+	assert(max_depth-min_depth>70,"Open rear wall must retain actual relief, not a cutout plane")
 	assert(shades[0].get_luminance()>wall_colors[0].get_luminance()+.1,"Support and distant wall need distinct material value")
 	for center in [Vector2(660,900),Vector2(750,900),Vector2(840,900)]:
 		geology.update_camera(center)
@@ -87,6 +97,6 @@ func run() -> void:
 	assert(terrain.find_children("*","CollisionObject3D",true,false).is_empty())
 	assert(terrain.get_meta("model_rock_mounts").size()==3,"All three previous GLB mounts remain present")
 	assert(JSON.stringify(world)==unchanged,"No terrain, routes, targets or save definitions may change")
-	print("OCEAN06 PASS: mesh shoulders/base inside existing volumes; rear-only flare; 30-point recessed cave relief; camera-locked roots; previous mounts retained; no colliders/world mutations")
+	print("OCEAN06 PASS: mesh shoulders/base inside existing volumes; three-band open cave mouth; camera-locked roots; previous mounts retained; no colliders/world mutations")
 	terrain.free()
 	quit()
