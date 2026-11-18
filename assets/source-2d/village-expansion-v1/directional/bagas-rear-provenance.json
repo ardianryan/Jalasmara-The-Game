@@ -1,0 +1,20 @@
+{
+  "asset": "Bagas north/northwest/northeast rear head, pack and heels",
+  "status": "bounded native review accepted locally; merge and release pending",
+  "source": "../cutouts/residents.png",
+  "sourceSha256": "6dc5fbb107327c97205660817cf245661bea838d50be606735fe2c6a247d413e",
+  "authoring": "Project-owned 96x128 source-grid pixels drawn by tools/npc-rig/author_bagas_rear_candidate.py with Pillow; no moodboard or generated image pixels",
+  "outputs": [
+    "bagas-rear-study.png",
+    "bagas-rear-composed-study.png",
+    "bagas-rear-nw-study.png",
+    "bagas-rear-ne-study.png",
+    "../../../../client-godot/resources/art/resident-rigs-v1/bagas-rear-upper.png",
+    "../../../../client-godot/resources/art/resident-rigs-v1/bagas-rear-nw-upper.png",
+    "../../../../client-godot/resources/art/resident-rigs-v1/bagas-rear-ne-upper.png",
+    "../../../../client-godot/resources/art/resident-rigs-v1/bagas-rear-foot-left.png",
+    "../../../../client-godot/resources/art/resident-rigs-v1/bagas-rear-foot-right.png"
+  ],
+  "license": "Original Jalasmara artwork under project LICENSE section 2",
+  "limits": "Bagas three northward headings use authored back/three-quarter pixels; front-three-quarter inspect telescope and other headings remain unchanged"
+}

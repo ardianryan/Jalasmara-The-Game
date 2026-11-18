@@ -84,7 +84,7 @@ func _run() -> void:
 				await process_frame
 				RenderingServer.force_draw()
 				root.get_texture().get_image().save_png(output+"/gito-walk-%02d.png"%sample)
-			var expected_views:=2 if str(profile.id)=="npc_kid_gito" else 1
+			var expected_views:=4 if str(profile.id)=="npc_kid_bagas" else 2 if str(profile.id)=="npc_kid_gito" else 1
 			assert(status.authoredViews==expected_views and not status.mirrored and status.separateProp)
 			assert(is_equal_approx(float(status.contacts.turnCosine),.8),"Resident path corners need the explicit tighter turn handover")
 			var left_leg:Dictionary=status.links.leg_left
@@ -269,7 +269,7 @@ func _run() -> void:
 				root.get_texture().get_image().save_png(output+"/gito-dock-%02d.png"%step)
 	stage.free()
 	await process_frame
-	print("RESIDENT ART RIG PASS:6 original pixel partitions plus Gito rear overlay, ",samples," measured locomotion/turn/stop poses, actual alpha soles, fixed limb lengths, child stride scaling, separate role props, pause; max pelvis drop=",maximum_drop,". Other alternate-view art requires separate review.")
+	print("RESIDENT ART RIG PASS:6 original pixel partitions plus Gito/Bagas rear overlays, ",samples," measured locomotion/turn/stop poses, actual alpha soles, fixed limb lengths, child stride scaling, separate role props, pause; max pelvis drop=",maximum_drop,". Other alternate-view art requires separate review.")
 	quit()
 
 func _part_pixel(rig:Node3D,name:String,pixel:Array) -> Vector3:

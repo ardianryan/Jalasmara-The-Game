@@ -3,6 +3,7 @@ extends SceneTree
 var output:="res://../artifacts/godot/playable-resident-pixel-audit"
 var width:=667
 var resident_id:="npc_kid_gito"
+var baseline_mode:=false
 var stage:Node2D
 var renderer:Node2D
 var actor:Node2D
@@ -19,6 +20,7 @@ func _initialize() -> void:
 		if arg.begins_with("--width="): width=int(arg.trim_prefix("--width="))
 		if arg.begins_with("--output="): output=arg.trim_prefix("--output=")
 		if arg.begins_with("--resident="): resident_id=arg.trim_prefix("--resident=")
+		if arg=="--baseline-rear": baseline_mode=true
 	_run.call_deferred()
 
 func _capture(label:String) -> void:
@@ -45,8 +47,9 @@ func _step(velocity:Vector2,elapsed:float) -> void:
 	actor._body_animation.update(.1,actor.moved_velocity,false,false,false,false,false,actor.activity_kind)
 	renderer.actors_3d.update_actors(.1)
 	var pose:Dictionary=renderer.actors_3d._body_rig(actor).pose_snapshot()
-	if resident_id=="npc_kid_gito":
-		assert(str(pose.view)==("rear" if str(actor.body_animation_state().direction)=="north" else "front_three_quarter"),"Gito rear source must follow north-facing travel only")
+	if resident_id in ["npc_kid_gito","npc_kid_bagas"] and not baseline_mode:
+		var expected_view:="rear_nw" if resident_id=="npc_kid_bagas" and velocity.x<-.35*absf(velocity.y) and velocity.y<0 else "rear_ne" if resident_id=="npc_kid_bagas" and velocity.x>.35*absf(velocity.y) and velocity.y<0 else "rear" if str(actor.body_animation_state().direction)=="north" else "front_three_quarter"
+		assert(str(pose.view)==expected_view,"Authored source must follow reviewed northward heading")
 	max_drop=maxf(max_drop,float(pose.pelvisDrop))
 	if float(pose.pelvisDrop)>=9*float(actor.body_scale):
 		deep_drops.append({"at":[actor.position.x,actor.position.y],"velocity":[actor.moved_velocity.x,actor.moved_velocity.y],"drop":pose.pelvisDrop,"shift":pose.get("pelvisShiftX",0),"links":pose.links})
@@ -128,6 +131,9 @@ func _run() -> void:
 	renderer._process(.1)
 	var rig:Node3D=renderer.actors_3d._body_rig(actor)
 	assert(rig.get_script().resource_path.ends_with("ResidentArtRig3D.gd"))
+	if baseline_mode:
+		assert(resident_id=="npc_kid_bagas","Baseline capture is scoped to Bagas")
+		rig._rear_mesh=null
 	await _capture("idle")
 	for index in range(directions.size()):
 		var start:=actor.position
@@ -135,11 +141,11 @@ func _run() -> void:
 			_step(directions[index],.1)
 			if failed: return
 			if tick in [2,6]: await _capture("heading-%d-step-%d"%[index,tick])
-		if resident_id=="npc_kid_gito" and index==3:
+		if resident_id in ["npc_kid_gito","npc_kid_bagas"] and index==3 and not baseline_mode:
 			actor.moved_velocity=Vector2.ZERO
 			actor._body_animation.update(.2,Vector2.ZERO,false,false,false,false,false,actor.activity_kind)
 			renderer.actors_3d.update_actors(.2)
-			assert(str(rig.pose_snapshot().view)=="rear","Stopped north-facing Gito must keep authored rear view")
+			assert(str(rig.pose_snapshot().view)=="rear","Stopped north-facing resident must keep authored rear view")
 			await _capture("heading-3-stop-rear")
 		for tick in range(8):
 			_step(-directions[index],.1)
@@ -149,11 +155,34 @@ func _run() -> void:
 		actor._body_animation.update(.2,Vector2.ZERO,false,false,false,false,false,actor.activity_kind)
 		renderer.actors_3d.update_actors(.2)
 		await _capture("heading-%d-idle"%index)
+	if resident_id=="npc_kid_bagas":
+		actor.position=station
+		actor.moved_velocity=Vector2.ZERO
+		rig._contacts.clear()
+		rig._plant._ready=false
+		for leg in [
+			{"name":"nw","velocity":Vector2(-1,-1).normalized()},
+			{"name":"north","velocity":Vector2.UP},
+			{"name":"ne","velocity":Vector2(1,-1).normalized()},
+		]:
+			for tick in range(4): _step(leg.velocity,.1)
+			await _capture("turn-"+str(leg.name))
+		actor.moved_velocity=Vector2.ZERO
+		actor._body_animation.update(.2,Vector2.ZERO,false,false,false,false,false,actor.activity_kind)
+		renderer.actors_3d.update_actors(.2)
+		if not baseline_mode: assert(str(rig.pose_snapshot().view)=="rear_ne","Bagas must hold his authored NE rear view when stopping")
+		await _capture("turn-ne-stop")
+		actor.position=station
+		actor.moved_velocity=Vector2.ZERO
+		rig._contacts.clear()
+		rig._plant._ready=false
+		renderer.actors_3d.update_actors(.1)
 	actor._body_animation.update(.81,Vector2.ZERO,true,false,false,false,false,actor.activity_kind)
 	actor._body_animation.update(3.25,Vector2.ZERO,true,false,false,false,false,actor.activity_kind)
 	renderer.actors_3d.update_actors(.1)
 	assert(str(actor.body_animation_state().workPhase)=="inspect")
 	assert(rig._lookout_mesh.visible and not rig.body_mesh.visible)
+	if not baseline_mode: assert(not rig._rear_mesh.visible,"Lookout inspect must take precedence over rear travel pose")
 	if resident_id=="npc_kid_bagas": assert(not rig._held.visible)
 	await _capture("lookout-inspect")
 	actor._body_animation.update(.1,Vector2.ZERO,false,false,false,false,false,actor.activity_kind)

@@ -28,6 +28,8 @@ var _rear_mesh:MeshInstance3D
 var _rear_material:ShaderMaterial
 var _rear_feet:Dictionary={}
 var _rear_foot_materials:Dictionary={}
+var _rear_textures:Dictionary={}
+var _rear_view:=""
 var _integration:Dictionary={}
 var ready_rig:=false
 
@@ -66,9 +68,10 @@ void fragment() { vec4 texel=texture(atlas_tex,part_uv); if(texel.a<0.5) discard
 	add_child(body_mesh)
 	if str(actor.resident_id)=="npc_kid_gito":
 		_configure_lookout_pose("gito-lookout.png")
-		_configure_rear_pose()
+		_configure_rear_pose("gito")
 	elif str(actor.resident_id)=="npc_kid_bagas":
 		_configure_lookout_pose("bagas-telescope.png")
+		_configure_rear_pose("bagas")
 	var index:=0
 	for name in data.parts:
 		var rect:Array=data.parts[name].rect
@@ -112,11 +115,15 @@ void fragment() { vec4 texel=texture(pose_tex,UV); if(texel.a<0.5) discard; ALBE
 	_lookout_mesh.visible=false
 	add_child(_lookout_mesh)
 
-func _configure_rear_pose() -> void:
-	var pose:Texture2D=load("res://resources/art/resident-rigs-v1/gito-rear-upper.png")
+func _configure_rear_pose(person:String) -> void:
+	var pose:Texture2D=load("res://resources/art/resident-rigs-v1/"+person+"-rear-upper.png")
 	if pose==null: return
+	_rear_textures["north"]=pose
+	if person=="bagas":
+		for side in ["nw","ne"]:
+			_rear_textures[side]=load("res://resources/art/resident-rigs-v1/bagas-rear-"+side+"-upper.png")
 	_rear_mesh=MeshInstance3D.new()
-	_rear_mesh.name="AuthoredGitoRearUpper"
+	_rear_mesh.name="AuthoredRearUpper"
 	var quad:=QuadMesh.new()
 	quad.size=Vector2(96,128)*_factor
 	_rear_mesh.mesh=quad
@@ -135,10 +142,10 @@ void fragment() { vec4 texel=texture(pose_tex,UV); if(texel.a<0.5) discard; ALBE
 	_rear_mesh.visible=false
 	add_child(_rear_mesh)
 	for side in ["left","right"]:
-		var foot_texture:Texture2D=load("res://resources/art/resident-rigs-v1/gito-rear-foot-"+side+".png")
+		var foot_texture:Texture2D=load("res://resources/art/resident-rigs-v1/"+person+"-rear-foot-"+side+".png")
 		if foot_texture==null: continue
 		var foot_mesh:=MeshInstance3D.new()
-		foot_mesh.name="AuthoredGitoRearFoot"+side.capitalize()
+		foot_mesh.name="AuthoredRearFoot"+side.capitalize()
 		var foot_quad:=QuadMesh.new()
 		foot_quad.size=Vector2.ONE
 		foot_mesh.mesh=foot_quad
@@ -279,8 +286,17 @@ func update_pose(tint:Color) -> void:
 	_body_material.set_shader_parameter("readable_tint",tint)
 	var state:Dictionary=actor.body_animation_state()
 	var lookout:bool=_lookout_mesh!=null and str(state.get("clip",""))=="work_loop" and str(state.get("workPhase",""))=="inspect"
-	var rear:bool=_rear_mesh!=null and not lookout and str(state.get("direction",""))=="north"
+	if _rear_mesh!=null and str(actor.resident_id)=="npc_kid_bagas":
+		var travel:Vector2=actor.moved_velocity
+		if travel.length()>.1:
+			_rear_view="nw" if travel.y<-.1 and travel.x<-.35*absf(travel.y) else "ne" if travel.y<-.1 and travel.x>.35*absf(travel.y) else "north" if travel.y<-.1 else ""
+		elif str(state.get("clip",""))=="work_loop": _rear_view=""
+	elif _rear_mesh!=null:
+		_rear_view="north" if str(state.get("direction",""))=="north" else ""
+	var rear:bool=_rear_mesh!=null and not lookout and not _rear_view.is_empty()
 	if _rear_mesh!=null:
+		if rear and _rear_textures.has(_rear_view) and _rear_textures[_rear_view]!=null:
+			_rear_material.set_shader_parameter("pose_tex",_rear_textures[_rear_view])
 		_rear_material.set_shader_parameter("readable_tint",tint)
 		_rear_mesh.visible=rear
 		for name in _rear_feet:
@@ -431,7 +447,7 @@ func _build_prop(kind:String) -> void:
 		_box(Vector3(0,-11,0),Vector3(7,3,2),"bb8a51")
 
 func debug_status() -> Dictionary:
-	return {"id":str(actor.resident_id),"authoredViews":2 if _rear_mesh!=null else 1,"view":"rear" if _rear_mesh!=null and _rear_mesh.visible else "front_three_quarter","mirrored":false,"bodyScale":float(actor.body_scale),"pelvisDrop":_drop,"pelvisShiftX":_pelvis_shift_x,"contacts":_contacts.duplicate(true),"integration":_integration.duplicate(true),"workFacing":[_work_facing.x,_work_facing.y],"separateProp":_held.get_child_count()>0,"hands":hands.duplicate(),"links":_links.duplicate(true),"clip":str(_state.get("clip","idle")),"lookoutPose":_lookout_mesh!=null and _lookout_mesh.visible,"parts":sprites.size(),"bodyDrawCalls":4 if _rear_mesh!=null and _rear_mesh.visible else 1,"rootMotion":false,"logicalDirection":str(_state.get("direction","south")),"source":"original reviewed resident pixel partitions plus authored Gito rear upper and heels"}
+	return {"id":str(actor.resident_id),"authoredViews":4 if str(actor.resident_id)=="npc_kid_bagas" and _rear_mesh!=null else 2 if _rear_mesh!=null else 1,"view":"rear_"+_rear_view if _rear_mesh!=null and _rear_mesh.visible and _rear_view in ["nw","ne"] else "rear" if _rear_mesh!=null and _rear_mesh.visible else "front_three_quarter","mirrored":false,"bodyScale":float(actor.body_scale),"pelvisDrop":_drop,"pelvisShiftX":_pelvis_shift_x,"contacts":_contacts.duplicate(true),"integration":_integration.duplicate(true),"workFacing":[_work_facing.x,_work_facing.y],"separateProp":_held.get_child_count()>0,"hands":hands.duplicate(),"links":_links.duplicate(true),"clip":str(_state.get("clip","idle")),"lookoutPose":_lookout_mesh!=null and _lookout_mesh.visible,"parts":sprites.size(),"bodyDrawCalls":4 if _rear_mesh!=null and _rear_mesh.visible else 1,"rootMotion":false,"logicalDirection":str(_state.get("direction","south")),"source":"original resident pixel partitions plus authored northward rear upper and heels for Gito or Bagas"}
 
 func pose_snapshot() -> Dictionary:
 	return debug_status()
