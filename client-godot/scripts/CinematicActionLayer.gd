@@ -62,13 +62,14 @@ const SUPPORT_STAGE_SCALES := {
 const WIDE_STAGE_SCALES := {
 	"harbor_lurah": 2.30,
 	"harbor_child": 1.75,
-	"capsule_crowd": 1.30,
+	"capsule_crowd": 1.68,
 	"victory_nala": 2.38,
 	"victory_beno": 1.78,
 	"victory_child": 1.72,
 	"victory_resident": 1.55
 }
 const HARBOR_CHILD_X := [.055,.145,.235]
+const CAPSULE_CROWD_X := [.065,.145,.225,.305,.385]
 const VICTORY_CHILD_MARKS := [Vector2(.045,.62),Vector2(.13,.62),Vector2(.215,.62),Vector2(.30,.62),Vector2(.65,.59)]
 const FOCAL_SCALES := {
 	"prologue:4:raka": 2.68,
@@ -492,7 +493,7 @@ func _draw_capsule_ship(view: Vector2, motion: float) -> void:
 	draw_rect(Rect2(horn+Vector2(-5,0)*unit,Vector2(6,5)*unit),Color("4b4240"))
 	for i in range(5):
 		var reach:=smoothstep(0.0,1.0,_progress(motion-.24-float(i)*.17,.72))
-		var feet:=Vector2(view.x*(.055+float(i)*.057)+reach*4*unit,view.y*(.56+float(i%2)*.013))
+		var feet:=Vector2(view.x*CAPSULE_CROWD_X[i]+reach*4*unit,view.y*(.56+float(i%2)*.013))
 		var resident_key: String=["ratih","tedi","wira","beno","saras"][i]
 		_actor(feet,unit*WIDE_STAGE_SCALES["capsule_crowd"],Color("707972").lerp(Color("895e66"),float(i%3)/2.0),false,sin(motion*4.0+float(i))*.3,resident_key)
 		var capsule:=feet+Vector2(9-5*reach,-16-12*reach)*unit

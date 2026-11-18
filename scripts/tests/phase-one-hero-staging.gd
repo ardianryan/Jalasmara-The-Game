@@ -17,7 +17,7 @@ const CAPTURE_ONLY := [
 const WIDE_SHOT_CASES := [
 	{"key":"harbor_lurah","kind":"npc","role":"lurah","feet":Vector2(.36,.57),"minimum":78.0,"maximum":110.0},
 	{"key":"harbor_child","kind":"child","role":"bagas","feet":Vector2(.055,.57),"minimum":55.0,"maximum":90.0},
-	{"key":"capsule_crowd","kind":"npc","role":"ratih","feet":Vector2(.055,.56),"minimum":40.0,"maximum":70.0},
+	{"key":"capsule_crowd","kind":"npc","role":"ratih","feet":Vector2(.065,.56),"minimum":52.0,"maximum":82.0},
 	{"key":"victory_nala","kind":"nala","role":"nala","feet":Vector2(.52,.64),"minimum":85.0,"maximum":110.0},
 	{"key":"victory_beno","kind":"npc","role":"beno","feet":Vector2(.40,.62),"minimum":55.0,"maximum":85.0},
 	{"key":"victory_child","kind":"child","role":"gito","feet":Vector2(.045,.62),"minimum":55.0,"maximum":90.0},
@@ -169,6 +169,9 @@ func _run() -> void:
 			checked+=1
 		for i in range(1,action.HARBOR_CHILD_X.size()):
 			assert(action.HARBOR_CHILD_X[i]-action.HARBOR_CHILD_X[i-1]>=.08,"Harbor children need separate silhouettes")
+			checked+=1
+		for i in range(1,action.CAPSULE_CROWD_X.size()):
+			assert(action.CAPSULE_CROWD_X[i]-action.CAPSULE_CROWD_X[i-1]>=.075,"Capsule crowd adults must not collapse into one silhouette")
 			checked+=1
 		for i in range(1,4):
 			assert(action.VICTORY_CHILD_MARKS[i].x-action.VICTORY_CHILD_MARKS[i-1].x>=.08,"Victory dock children need separate silhouettes")
