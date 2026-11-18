@@ -18,6 +18,7 @@ const DIRECTED_BEATS := {
 const CHILD_ATLAS := preload("res://resources/art/village-expansion-v1/residents.png")
 const VILLAGE_PORTRAITS := preload("res://resources/art/npc-atlas.png")
 const VILLAGE_RESIDENTS := preload("res://resources/art/village-residents-v1.png")
+const LURAH_TEACHING_CLOSE := preload("res://resources/art/cinematics-v2/close-pose/ki-lurah-teaching.png")
 const PHASE_ONE_STORY := preload("res://scripts/PhaseOneCutscenes.gd")
 const RANTO_PORTRAIT := preload("res://resources/art/cinematics-v2/pak-ranto-portrait.png")
 const NALA_DIVING := {
@@ -430,6 +431,7 @@ func _draw_harbor_lesson(view: Vector2, motion: float) -> void:
 	# Hold the wide harbor long enough to establish the village, then favor
 	# the teacher while keeping his feet on the painted pier.
 	var approach:=smoothstep(0.0,1.0,clampf((motion-.55)/.95,0.0,1.0))
+	_draw_lesson_foredeck(view,approach)
 	draw_rect(Rect2(compass-Vector2(8,6)*unit,Vector2(17,13)*unit),Color("5b3b25"))
 	draw_rect(Rect2(compass-Vector2(6,4)*unit,Vector2(13,9)*unit),Color("ddbd77"))
 	draw_line(compass+Vector2(-4,0)*unit,compass+Vector2(5,0)*unit,Color("476b6a"),unit)
@@ -443,14 +445,40 @@ func _draw_harbor_lesson(view: Vector2, motion: float) -> void:
 		var feet:=Vector2(view.x*lerpf(HARBOR_CHILD_X[i],near_x,approach),pier_y+(float(i%2)*2.0+float(i%3)*3.0*approach)*unit)
 		if not EnvironmentState.reduced_motion: feet.y+=sin(motion*1.5+float(i)*.9)*unit
 		_actor(feet,unit*lerpf(WIDE_STAGE_SCALES["harbor_child"],1.72,approach),Color("6a8c75"),true,0.0,child_key)
-	var lurah_feet:=Vector2(view.x*lerpf(HARBOR_LURAH_X,.34,approach),pier_y)
-	var lurah_scale:=lerpf(WIDE_STAGE_SCALES["harbor_lurah"],2.35,approach)
-	_actor(lurah_feet,unit*lurah_scale,Color("7e623d"),false,0.0,"lurah")
-	var pointer:=lurah_feet+Vector2(17,-18)*unit
-	draw_line(pointer,compass+Vector2(-3,1)*unit,Color("826347"),2*unit)
+	var lurah_feet:=Vector2(view.x*lerpf(HARBOR_LURAH_X,.45,approach),lerpf(pier_y,view.y*.675,approach))
+	var close_size:=lerpf(98.0,141.0,approach)*unit
+	var close_rect:=Rect2(lurah_feet+Vector2(-close_size*.51,-close_size*.99),Vector2(close_size,close_size))
+	draw_line(lurah_feet+Vector2(-16,1)*unit,lurah_feet+Vector2(18,1)*unit,Color(.15,.12,.11,.24),maxf(1.0,2.0*unit))
+	draw_texture_rect(LURAH_TEACHING_CLOSE,close_rect,false)
+	if approach<.45:
+		var pointer:=lurah_feet+Vector2(18,-23)*unit
+		draw_line(pointer,compass+Vector2(-3,1)*unit,Color("826347",1.0-approach/.45),2*unit)
 	for i in range(3):
 		var wake:=Vector2(view.x*(.44+float(i)*.04),view.y*(.51+float(i%2)*.025))
 		draw_line(wake,wake+Vector2(7,1)*unit,Color(.66,1.0,.89,.32),unit)
+
+func _draw_lesson_foredeck(view: Vector2, approach: float) -> void:
+	if approach<=.01: return
+	var unit:=_unit(view)
+	var opacity:=smoothstep(.0,.75,approach)
+	var deck:=PackedVector2Array([
+		Vector2(0,view.y*.565),Vector2(view.x*.58,view.y*.572),
+		Vector2(view.x*.66,view.y*.713),Vector2(0,view.y*.716)
+	])
+	draw_colored_polygon(deck,Color(.31,.20,.13,.94*opacity))
+	draw_line(deck[0],deck[1],Color(.72,.49,.29,opacity),2.0*unit)
+	draw_line(deck[3],deck[2],Color(.18,.12,.09,opacity),3.0*unit)
+	for i in range(1,6):
+		var t:=float(i)/6.0
+		var from:=deck[0].lerp(deck[3],t)
+		var to:=deck[1].lerp(deck[2],t)
+		draw_line(from,to,Color(.15,.11,.09,.85*opacity),unit)
+		draw_line(from+Vector2(0,2)*unit,to+Vector2(0,2)*unit,Color(.49,.32,.19,.58*opacity),unit)
+	for x_fraction in [.19,.39,.58]:
+		var x:=view.x*float(x_fraction)
+		var y:=lerpf(view.y*.565,view.y*.572,x/view.x/.58)
+		draw_rect(Rect2(Vector2(x,y),Vector2(4,29)*unit),Color(.20,.14,.10,opacity))
+		draw_rect(Rect2(Vector2(x,y),Vector2(4,3)*unit),Color(.67,.45,.26,opacity))
 
 func _draw_forgotten_work(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
