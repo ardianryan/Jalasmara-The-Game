@@ -23,6 +23,7 @@ func build_surface(renderer: Node, surface: Dictionary, polygon: PackedVector2Ar
 	var shade: Dictionary=_buffer()
 	var root: Dictionary=_buffer()
 	var nodes: Array=profile.nodes
+	var material_id:=str(surface.get("material","grass"))
 	for index in range(nodes.size()):
 		if not profile.active[index]: continue
 		var next: int=(index+1)%nodes.size()
@@ -32,29 +33,35 @@ func build_surface(renderer: Node, surface: Dictionary, polygon: PackedVector2Ar
 		var normal:=Vector3(outward.x,outward.y,0)
 		_quad(top,a[0],b[0],b[1],a[1],index,Vector3(0,0,1))
 		_quad(soil,a[1],b[1],b[2],a[2],index,normal)
+		if material_id=="grass" and (b[1]-a[1]).length()>6.0:
+			var grass_seed:=_noise(Vector2((a[1].x+b[1].x)*.5,(a[1].y+b[1].y)*.5)*.071+Vector2(7.0,19.0))
+			if grass_seed>.76:
+				var root_left: Vector3=a[1]+normal*1.5
+				var root_right: Vector3=b[1]+normal*1.5
+				var hanging_tip: Vector3=(a[2]+b[2])*.5+normal*1.5
+				_triangle(top,root_left,root_right,(root_left+root_right+hanging_tip)*.333,normal)
 		for band in range(2,5):
 			var midpoint: Vector3=(a[band]+b[band]+a[band+1]+b[band+1])*.25
-			var tone:=_noise(Vector2(midpoint.x,midpoint.y)*.016+Vector2(float(band)*1.8,float(band)*.7))
-			var is_stone:=tone>.43
+			var tone:=_noise(Vector2(midpoint.x,midpoint.y)*.008+Vector2(float(band)*.75,float(band)*.22))
+			var is_stone:=tone>(.28 if band==2 else .62)
 			var target: Dictionary=stone if is_stone else shade
-			if band==4: target=root if tone>.67 else shade
-			if band<4 and tone>.34 and tone<.68:
+			if band==4: target=root if tone>.38 else shade
+			if band<4 and tone>.47 and tone<.52:
 				var partner: Dictionary=shade if is_stone else stone
 				_triangle(target,a[band],b[band],b[band+1],normal)
 				_triangle(partner,a[band],b[band+1],a[band+1],normal)
 			else:
 				_quad(target,a[band],b[band],b[band+1],a[band+1],index+band,normal)
 		segments+=1
-	var material_id:=str(surface.get("material","grass"))
 	_emit(renderer,"NaturalTerrainLip",top,renderer._materials.get_material(material_id))
 	_emit(renderer,"NaturalTerrainSoil",soil,renderer._materials.get_material("stone" if material_id=="stone" else "dirt"))
 	_emit(renderer,"NaturalTerrainShoulder",stone,renderer._materials.get_material("stone"))
 	if _root_material==null:
 		var base: Color=renderer._materials.get_material("stone").get_shader_parameter("base_color")
 		_shade_material=renderer._materials.get_material("stone").duplicate()
-		_shade_material.set_shader_parameter("base_color",Color(base.r*.84,base.g*.87,base.b*.89))
+		_shade_material.set_shader_parameter("base_color",Color(base.r*.72,base.g*.78,base.b*.82))
 		_root_material=renderer._materials.get_material("stone").duplicate()
-		_root_material.set_shader_parameter("base_color",Color(base.r*.68,base.g*.73,base.b*.77))
+		_root_material.set_shader_parameter("base_color",Color(base.r*.55,base.g*.63,base.b*.68))
 	_emit(renderer,"NaturalTerrainRockShade",shade,_shade_material)
 	_emit(renderer,"NaturalTerrainRoot",root,_root_material)
 	surfaces+=1
@@ -122,7 +129,7 @@ func make_profile(renderer: Node, surface: Dictionary, polygon: PackedVector2Arr
 		var lip_z:=height-minf(.45+noise*.75,drop*.06)
 		var soil_z:=height-minf(10.0+noise*5.0,drop*.30)
 		node["support"]=support
-		node["rings"]=[Vector3(node.world.x,node.world.y,height+.10),Vector3(lip_xy.x,lip_xy.y,lip_z),Vector3(soil_xy.x,soil_xy.y,soil_z),Vector3(upper_xy.x,upper_xy.y,lerpf(soil_z,bottom,.30+noise*.08)),Vector3(belly_xy.x,belly_xy.y,lerpf(soil_z,bottom,.66+float(node.wave)*.08)),Vector3(toe_xy.x,toe_xy.y,bottom)]
+		node["rings"]=[Vector3(node.world.x,node.world.y,height+.10),Vector3(lip_xy.x,lip_xy.y,lip_z),Vector3(soil_xy.x,soil_xy.y,soil_z),Vector3(upper_xy.x,upper_xy.y,lerpf(soil_z,bottom,.28+noise*.13)),Vector3(belly_xy.x,belly_xy.y,lerpf(soil_z,bottom,.61+float(node.wave)*.17)),Vector3(toe_xy.x,toe_xy.y,bottom)]
 	return {"nodes":nodes,"active":active,"bevels":corner_count,"excluded":cutouts}
 
 func _node(logical: Vector2, at: Vector2, outward: Vector2, height: float) -> Dictionary:
@@ -158,8 +165,8 @@ func _shape_node(renderer: Node, node: Dictionary, outline: PackedVector2Array, 
 	width=maxf(8.0,width)
 	node.toe=width
 	node.lip=minf(float(node.lip),width*.26)
-	node.upper=width*(.38+float(node.noise)*.05)
-	node.belly=width*(.69+float(node.wave)*.05)
+	node.upper=width*(.32+float(node.noise)*.16)
+	node.belly=width*(.59+float(node.wave)*.23)
 
 func _noise(point: Vector2) -> float:
 	var at:=point*.68
