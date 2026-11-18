@@ -68,6 +68,11 @@ const WIDE_STAGE_SCALES := {
 	"victory_child": 1.72,
 	"victory_resident": 1.55
 }
+const REFUSAL_CHILD_X := [.055,.145,.235,.325,.415]
+const FEAST_SUPPORT_X := [.065,.15,.235,.32,.405,.49]
+const REFUSAL_CHILD_SCALE := 2.10
+const BALAI_BACKGROUND_LURAH_SCALE := 2.28
+const FEAST_BACKGROUND_SCALE := 1.98
 const HARBOR_CHILD_X := [.055,.145,.235]
 const CAPSULE_CROWD_X := [.065,.145,.225,.305,.385]
 const VICTORY_CHILD_MARKS := [Vector2(.045,.62),Vector2(.13,.62),Vector2(.215,.62),Vector2(.30,.62),Vector2(.65,.59)]
@@ -246,8 +251,8 @@ func _unit(view: Vector2) -> float:
 func _draw_near_pier(view: Vector2) -> void:
 	var unit:=_unit(view)
 	var deck:=PackedVector2Array([
-		Vector2(0,view.y*.585),Vector2(view.x*.46,view.y*.575),
-		Vector2(view.x*.49,view.y*.715),Vector2(0,view.y*.74)
+		Vector2(0,view.y*.585),Vector2(view.x*.62,view.y*.575),
+		Vector2(view.x*.65,view.y*.715),Vector2(0,view.y*.74)
 	])
 	draw_colored_polygon(deck,Color("694326"))
 	draw_line(deck[0],deck[1],Color("d9a05b"),3*unit)
@@ -258,7 +263,7 @@ func _draw_near_pier(view: Vector2) -> void:
 		var far:=Vector2(lerpf(deck[1].x,deck[2].x,t),lerpf(deck[1].y,deck[2].y,t))
 		draw_line(near,far,Color("362b22"),unit)
 		draw_line(near+Vector2(0,2)*unit,far+Vector2(0,2)*unit,Color("a87945"),unit)
-	for x_fraction in [.11,.30,.45]:
+	for x_fraction in [.11,.30,.48,.62]:
 		var post:=Vector2(view.x*float(x_fraction),view.y*.58)
 		draw_rect(Rect2(post,Vector2(5,72)*unit),Color("4d3828"))
 		draw_rect(Rect2(post,Vector2(5,4)*unit),Color("b68751"))
@@ -373,11 +378,11 @@ func _draw_prologue(view: Vector2, motion: float) -> void:
 		5:
 			var ground:=view.y*.66
 			_draw_near_pier(view)
-			_actor(Vector2(view.x*.43,ground),unit*_focal_scale("lurah"),Color("7e623d"),false,0.0,"lurah")
+			_actor(Vector2(view.x*.56,ground),unit*_focal_scale("lurah"),Color("7e623d"),false,0.0,"lurah")
 			for i in range(5):
 				var child_key: String=["bagas","kinasih","gito","cempaka","danu"][i]
-				_actor(Vector2(view.x*(.06+float(i)*.068),ground-4*unit+float(i%2)*3*unit),unit*SUPPORT_STAGE_SCALES["prologue_child"],Color("5c8580").lerp(Color("c4824a"),float(i%3)/2.0),true,sin(motion*4.0+float(i))*.2,child_key)
-			var staff:=Vector2(view.x*.49,ground)
+				_actor(Vector2(view.x*REFUSAL_CHILD_X[i],ground-4*unit+float(i%2)*3*unit),unit*REFUSAL_CHILD_SCALE,Color("5c8580").lerp(Color("c4824a"),float(i%3)/2.0),true,sin(motion*4.0+float(i))*.2,child_key)
+			var staff:=Vector2(view.x*.63,ground)
 			draw_line(staff+Vector2(0,-87)*unit,staff+Vector2(0,2)*unit,Color("4d3527"),3*unit)
 			draw_rect(Rect2(staff+Vector2(-3,-91)*unit,Vector2(7,5)*unit),Color("d6b577"))
 		6,7,8:
@@ -781,7 +786,7 @@ func _draw_earthquake(view: Vector2, motion: float) -> void:
 			var actor_scale:=_focal_scale("lurah") if i==0 else 2.05
 			_actor(pose.feet,unit*actor_scale,Color("72583e").lerp(Color("a1846a"),float(i%3)/2.0),false,pose.stride,council_key)
 	elif motif_beat==2:
-		_actor(Vector2(view.x*.24,view.y*.64),unit*SUPPORT_STAGE_SCALES["balai_council"],Color("72583e"),false,0.0,"lurah")
+		_actor(Vector2(view.x*.29,view.y*.64),unit*BALAI_BACKGROUND_LURAH_SCALE,Color("72583e"),false,0.0,"lurah")
 		_actor(Vector2(view.x*.82,view.y*.66),unit*_focal_scale("raka"),Color("e6e1d6"),false,0.0,"raka")
 	elif motif_beat==3:
 		_actor(Vector2(view.x*.42,view.y*.64),unit*_focal_scale("kinasih"),Color("6c8e88"),true,0.0,"kinasih")
@@ -1088,13 +1093,12 @@ func _draw_feast(view: Vector2, motion: float) -> void:
 			var pose:=_feast_witness_pose(view,motion,i)
 			_actor(pose.feet,unit*2.45,Color("7c714b"),false,pose.stride,witness_key)
 	else:
-		var people_positions := [Vector2(.08,.67),Vector2(.16,.68),Vector2(.24,.67),Vector2(.32,.68),Vector2(.40,.67),Vector2(.48,.68)]
 		var people_keys := ["ratih","tedi","darmi","ujang","sari","wira"]
-		for i in range(people_positions.size()):
+		for i in range(people_keys.size()):
 			var villager_key: String=people_keys[i]
 			var hop:=0.0 if motif_beat!=3 or EnvironmentState.reduced_motion else absf(sin(motion*3.0+float(i)*.8))*2*unit
-			var spot: Vector2=people_positions[i]
-			_actor(Vector2(view.x*spot.x,view.y*spot.y-hop),unit*SUPPORT_STAGE_SCALES["feast_"+villager_key],Color("7c714b"),false,0.0,villager_key)
+			var floor_y := .655 if i%2==0 else .68
+			_actor(Vector2(view.x*FEAST_SUPPORT_X[i],view.y*floor_y-hop),unit*FEAST_BACKGROUND_SCALE,Color("7c714b"),false,0.0,villager_key)
 	var lurah_steps:=smoothstep(0.0,1.0,_progress(motion,.85)) if motif_beat==2 else 0.0
 	var lurah_x:=lerpf(.685,.60,lurah_steps)
 	var lurah_y:=lerpf(.655,.69,lurah_steps)
