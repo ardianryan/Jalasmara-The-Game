@@ -993,6 +993,13 @@ func _draw_victory_piers(view: Vector2, unit: float) -> void:
 		draw_rect(Rect2(mouth_x-5*unit,view.y*.55,10*unit,4*unit),Color("c6965d"))
 		draw_rect(Rect2(mouth_x-3*unit,view.y*.61,6*unit,2*unit),Color("b18a58"))
 
+func _feast_witness_pose(view: Vector2, motion: float, index: int) -> Dictionary:
+	var arrival:=smoothstep(0.0,1.0,_progress(motion-float(index)*.12,.92))
+	var x:=lerpf(.12,.18,arrival) if index==0 else lerpf(.45,.39,arrival)
+	var feet:=Vector2(view.x*x,view.y*.665)
+	var stride:=sin(motion*11.0+float(index)*PI)*.42 if arrival<1.0 else 0.0
+	return {"feet":feet,"stride":stride}
+
 func _draw_feast(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
 	for i in range(5):
@@ -1012,15 +1019,24 @@ func _draw_feast(view: Vector2, motion: float) -> void:
 			var cup:=Vector2(table_x+side*13*unit,table_y-5*unit)
 			draw_rect(Rect2(cup,Vector2(6,5)*unit),Color("e0ae70"))
 			draw_rect(Rect2(cup+Vector2(1,1)*unit,Vector2(4,1)*unit),Color("699a6d"))
-	var people_positions := [Vector2(.08,.67),Vector2(.16,.68),Vector2(.24,.67),Vector2(.32,.68),Vector2(.40,.67),Vector2(.48,.68)]
-	var people_keys := ["ratih","tedi","darmi","ujang","sari","wira"] if motif_beat!=2 else ["ratih","tedi","darmi","ujang","sari","beno"]
 	var stand_t:=smoothstep(0.0,1.0,_progress(motion,1.1)) if motif_beat==2 else 0.0
-	for i in range(people_positions.size()):
-		var villager_key: String=people_keys[i]
-		var hop:=0.0 if motif_beat!=3 or EnvironmentState.reduced_motion else absf(sin(motion*3.0+float(i)*.8))*2*unit
-		var spot: Vector2 = people_positions[i]
-		var rise:=stand_t*(2.0+float(i%2))*unit
-		_actor(Vector2(view.x*spot.x,view.y*spot.y-hop-rise),unit*SUPPORT_STAGE_SCALES["feast_"+villager_key],Color("7c714b"),false,0.0,villager_key)
+	if motif_beat==2:
+		var back_keys: Array[String]=["darmi","ujang","sari","beno"]
+		var back_x: Array[float]=[.08,.29,.48,.55]
+		for i in range(back_keys.size()):
+			_actor(Vector2(view.x*back_x[i],view.y*.625),unit*SUPPORT_STAGE_SCALES["feast_"+back_keys[i]],Color("7c714b"),false,0.0,back_keys[i])
+		for i in range(2):
+			var witness_key: String=["ratih","tedi"][i]
+			var pose:=_feast_witness_pose(view,motion,i)
+			_actor(pose.feet,unit*2.45,Color("7c714b"),false,pose.stride,witness_key)
+	else:
+		var people_positions := [Vector2(.08,.67),Vector2(.16,.68),Vector2(.24,.67),Vector2(.32,.68),Vector2(.40,.67),Vector2(.48,.68)]
+		var people_keys := ["ratih","tedi","darmi","ujang","sari","wira"]
+		for i in range(people_positions.size()):
+			var villager_key: String=people_keys[i]
+			var hop:=0.0 if motif_beat!=3 or EnvironmentState.reduced_motion else absf(sin(motion*3.0+float(i)*.8))*2*unit
+			var spot: Vector2=people_positions[i]
+			_actor(Vector2(view.x*spot.x,view.y*spot.y-hop),unit*SUPPORT_STAGE_SCALES["feast_"+villager_key],Color("7c714b"),false,0.0,villager_key)
 	var lurah_steps:=smoothstep(0.0,1.0,_progress(motion,.85)) if motif_beat==2 else 0.0
 	var lurah_x:=lerpf(.685,.60,lurah_steps)
 	var lurah_y:=lerpf(.655,.69,lurah_steps)
