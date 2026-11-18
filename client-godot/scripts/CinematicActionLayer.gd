@@ -742,11 +742,14 @@ func _draw_garden(view: Vector2, motion: float) -> void:
 		if motif_beat!=2:
 			_draw_seal_letter(Vector2(view.x*.735,view.y*.405),unit*.85)
 		if motif_beat==2:
+			var gito_feet:=Vector2(view.x*.31,view.y*.67)
+			var gito_unit:=unit*_focal_scale("gito",SUPPORT_STAGE_SCALES["garden_child"])
+			var gito_hand:=gito_feet+Vector2(9,-17)*gito_unit
 			for i in range(3):
 				var launch:=.18+float(i)*.20
 				var t:=_progress(motion-launch,.75)
 				var guard_x:=.67 if i<2 else .79
-				var start:=Vector2(view.x*.31,view.y*.67-46*unit)
+				var start:=gito_hand
 				var end:=Vector2(view.x*guard_x,view.y*.63-32*unit)
 				if motion>=launch and t<1.0:
 					var marble:=start.lerp(end,t)+Vector2(0,-sin(t*PI)*28*unit)
@@ -763,7 +766,16 @@ func _draw_garden(view: Vector2, motion: float) -> void:
 				var child_ground:=view.y*.67 if child_key=="gito" else view.y*.63+float(i%2)*2*unit
 				var rally:=smoothstep(0.0,1.0,_progress(motion-.12-float(i)*.13,.52))
 				var child_feet:=Vector2(view.x*child_x,child_ground-sin(rally*PI)*4*unit)
-				_actor(child_feet,unit*child_scale,Color("53766e"),true,0.0,child_key,_stage_lean(motion,i,.040))
+				var throw_pose:=0.0
+				if child_key=="gito" and not EnvironmentState.reduced_motion:
+					for shot in range(3):
+						throw_pose=maxf(throw_pose,sin(_progress(motion-.12-float(shot)*.20,.28)*PI))
+				_actor(child_feet,unit*child_scale,Color("53766e"),true,0.0,child_key,_stage_lean(motion,i,.040)+throw_pose*.075)
+				if child_key=="gito":
+					var wrist:=child_feet+Vector2(9,-17)*unit*child_scale
+					var pouch:=wrist+Vector2(4+throw_pose*3,-5-throw_pose*4)*unit
+					draw_line(wrist,pouch,Color("483027"),maxf(1.0,unit*2.0))
+					draw_rect(Rect2(pouch-Vector2(2,1)*unit,Vector2(4,3)*unit),Color("c18b4d"))
 				if rally<1.0:
 					var shadow:=Vector2(view.x*child_x,child_ground)
 					draw_line(shadow-Vector2(6,0)*unit,shadow+Vector2(6,0)*unit,Color(.12,.13,.13,.28),unit)
@@ -1012,10 +1024,20 @@ func _draw_victory(view: Vector2, motion: float) -> void:
 		_actor(beno_feet,unit*lerpf(WIDE_STAGE_SCALES["victory_beno"],2.46,focus),Color("7c7958"),false,0.0,"beno")
 		for i in range(5):
 			var child_key: String=["gito","bagas","kinasih","cempaka","danu"][i]
-			var hop:=0.0 if EnvironmentState.reduced_motion else absf(sin(motion*4.0+float(i)*.9))*3.0*unit
+			var cheer:=0.0
+			if not EnvironmentState.reduced_motion and (i==2 or i==3):
+				var cheer_time:=motion-.62-float(i-2)*.28
+				if cheer_time>=0.0 and cheer_time<=.70:
+					cheer=sin(cheer_time/.70*PI)
+			var hop:=cheer*7.0*unit
 			var mark: Vector2=VICTORY_CHILD_MARKS[i]
 			var depth:=float([.63,.60,.65,.62,.60][i])
-			_actor(Vector2(view.x*mark.x,view.y*lerpf(mark.y,depth,focus)-hop),unit*WIDE_STAGE_SCALES["victory_child"],Color("7c7958"),true,0.0,child_key)
+			var floor_feet:=Vector2(view.x*mark.x,view.y*lerpf(mark.y,depth,focus))
+			_actor(floor_feet-Vector2(0,hop),unit*WIDE_STAGE_SCALES["victory_child"],Color("7c7958"),true,0.0,child_key,cheer*(.08 if i==2 else -.08))
+			if cheer>.01:
+				draw_line(floor_feet+Vector2(-5,2)*unit,floor_feet+Vector2(5,2)*unit,Color(.14,.12,.11,.19*cheer),unit)
+				var streamer:=floor_feet+Vector2(10,-35)*unit*WIDE_STAGE_SCALES["victory_child"]-Vector2(0,hop)
+				draw_line(streamer,streamer+Vector2(5,-4)*unit,Color("7bf1d4",cheer*.9),2*unit)
 		for i in range(2):
 			var resident_key: String=["darmi","ujang"][i]
 			var resident_feet:=Vector2(view.x*(.78+float(i)*.12),view.y*(.62+float(i)*.035*focus))
