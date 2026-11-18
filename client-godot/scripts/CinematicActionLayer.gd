@@ -24,6 +24,8 @@ const GITO_SLING_RELEASE := preload("res://resources/art/cinematics-v2/close-pos
 const VICTORY_CHILD_POSES := preload("res://resources/art/cinematics-v2/victory-child-poses.png")
 const GARDEN_KINASIH_CLUE := preload("res://resources/art/cinematics-v2/garden-kinasih-clue.png")
 const WIRA_TEA_OFFER := preload("res://resources/art/cinematics-v2/close-pose/mbah-wira-tea-offer.png")
+const RATIH_DACIN := preload("res://resources/art/cinematics-v2/close-pose/mbok-ratih-dacin.png")
+const TEDI_WRENCH := preload("res://resources/art/cinematics-v2/close-pose/kang-tedi-wrench.png")
 const KEDAI_INTERIOR := preload("res://resources/art/cinematics-v2/kedai-interior.png")
 const PHASE_ONE_STORY := preload("res://scripts/PhaseOneCutscenes.gd")
 const RANTO_PORTRAIT := preload("res://resources/art/cinematics-v2/pak-ranto-portrait.png")
@@ -1223,12 +1225,18 @@ func _draw_victory_sampan(view: Vector2, unit: float, motion: float) -> void:
 		var wake:=boat+Vector2(side*29,9)*boat_unit
 		draw_line(wake,wake+Vector2(side*10,1)*unit,Color(.59,.91,.83,.43),unit)
 
-func _feast_witness_pose(view: Vector2, motion: float, index: int) -> Dictionary:
-	var arrival:=smoothstep(0.0,1.0,_progress(motion-float(index)*.12,.92))
-	var x:=lerpf(.12,.18,arrival) if index==0 else lerpf(.45,.39,arrival)
-	var feet:=Vector2(view.x*x,view.y*.665)
-	var stride:=sin(motion*11.0+float(index)*PI)*.42 if arrival<1.0 else 0.0
-	return {"feet":feet,"stride":stride}
+func _draw_feast_foreground_witnesses(view: Vector2, motion: float) -> void:
+	var unit:=_unit(view)
+	var side:=202.0*unit
+	var ground:=view.y*.69
+	for i in range(2):
+		var arrival:=1.0 if EnvironmentState.reduced_motion else smoothstep(0.0,1.0,_progress(motion-.12-float(i)*.10,.78))
+		var x:float=view.x*(.055 if i==0 else .31)+(-10.0+10.0*arrival)*unit
+		var top:=ground-side*.975
+		var art: Texture2D=RATIH_DACIN if i==0 else TEDI_WRENCH
+		var shoe_x:float=x+side*(.40 if i==0 else .36)
+		draw_line(Vector2(shoe_x-17*unit,ground),Vector2(shoe_x+17*unit,ground),Color(.18,.10,.07,.24),2*unit)
+		draw_texture_rect(art,Rect2(Vector2(x,top),Vector2(side,side)),false)
 
 func _draw_feast(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
@@ -1251,14 +1259,13 @@ func _draw_feast(view: Vector2, motion: float) -> void:
 			draw_rect(Rect2(cup+Vector2(1,1)*unit,Vector2(4,1)*unit),Color("699a6d"))
 	var stand_t:=smoothstep(0.0,1.0,_progress(motion,1.1)) if motif_beat==2 else 0.0
 	if motif_beat==2:
-		var back_keys: Array[String]=["darmi","ujang","sari","beno"]
-		var back_x: Array[float]=[.08,.29,.48,.55]
+		# The legacy "darmi" cutout uses Ratih's source portrait and would
+		# duplicate the new near-plane Ratih in this beat.
+		var back_keys: Array[String]=["ujang","sari","beno"]
+		var back_x: Array[float]=[.29,.48,.55]
 		for i in range(back_keys.size()):
 			_actor(Vector2(view.x*back_x[i],view.y*.625),unit*SUPPORT_STAGE_SCALES["feast_"+back_keys[i]],Color("7c714b"),false,0.0,back_keys[i],_stage_lean(motion,i,.022))
-		for i in range(2):
-			var witness_key: String=["ratih","tedi"][i]
-			var pose:=_feast_witness_pose(view,motion,i)
-			_actor(pose.feet,unit*2.45,Color("7c714b"),false,pose.stride,witness_key)
+		_draw_feast_foreground_witnesses(view,motion)
 	else:
 		var people_keys := ["ratih","tedi","darmi","ujang","sari","wira"]
 		for i in range(people_keys.size()):
