@@ -59,6 +59,15 @@ const SUPPORT_STAGE_SCALES := {
 	"feast_wira": 1.70,
 	"feast_beno": 1.70
 }
+const WIDE_STAGE_SCALES := {
+	"harbor_lurah": 2.30,
+	"harbor_child": 1.38,
+	"capsule_crowd": 1.30,
+	"victory_nala": 2.38,
+	"victory_beno": 1.78,
+	"victory_child": 1.43,
+	"victory_resident": 1.55
+}
 const FOCAL_SCALES := {
 	"prologue:4:raka": 2.68,
 	"prologue:5:lurah": 2.65,
@@ -374,8 +383,8 @@ func _draw_prologue(view: Vector2, motion: float) -> void:
 
 func _draw_harbor_lesson(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
-	var pier_y:=view.y*.54
-	var compass:=Vector2(view.x*.295,view.y*.475)
+	var pier_y:=view.y*.57
+	var compass:=Vector2(view.x*.44,view.y*.475)
 	draw_rect(Rect2(compass-Vector2(8,6)*unit,Vector2(17,13)*unit),Color("5b3b25"))
 	draw_rect(Rect2(compass-Vector2(6,4)*unit,Vector2(13,9)*unit),Color("ddbd77"))
 	draw_line(compass+Vector2(-4,0)*unit,compass+Vector2(5,0)*unit,Color("476b6a"),unit)
@@ -383,13 +392,13 @@ func _draw_harbor_lesson(view: Vector2, motion: float) -> void:
 	draw_colored_polygon(PackedVector2Array([
 		compass+Vector2(0,-4)*unit,compass+Vector2(-2,0)*unit,
 		compass+Vector2(2,0)*unit]),Color("9d4536"))
-	_actor(Vector2(view.x*.255,pier_y),unit,Color("7e623d"),false,0.0,"lurah")
+	_actor(Vector2(view.x*.33,pier_y),unit*WIDE_STAGE_SCALES["harbor_lurah"],Color("7e623d"),false,0.0,"lurah")
 	for i in range(3):
 		var child_key: String=["bagas","kinasih","gito"][i]
-		var feet:=Vector2(view.x*(.105+float(i)*.051),pier_y+float(i%2)*2*unit)
+		var feet:=Vector2(view.x*(.045+float(i)*.065),pier_y+float(i%2)*2*unit)
 		if not EnvironmentState.reduced_motion: feet.y+=sin(motion*1.5+float(i)*.9)*unit
-		_actor(feet,unit*.9,Color("6a8c75"),true,0.0,child_key)
-	var pointer:=Vector2(view.x*.275,pier_y-15*unit)
+		_actor(feet,unit*WIDE_STAGE_SCALES["harbor_child"],Color("6a8c75"),true,0.0,child_key)
+	var pointer:=Vector2(view.x*.38,pier_y-18*unit)
 	draw_line(pointer,compass+Vector2(-3,1)*unit,Color("826347"),2*unit)
 	for i in range(3):
 		var wake:=Vector2(view.x*(.44+float(i)*.04),view.y*(.51+float(i%2)*.025))
@@ -472,10 +481,13 @@ func _draw_capsule_ship(view: Vector2, motion: float) -> void:
 	draw_line(horn+Vector2(16,-5)*unit,horn+Vector2(16,8)*unit,Color("f6d299"),2*unit)
 	draw_rect(Rect2(horn+Vector2(-5,0)*unit,Vector2(6,5)*unit),Color("4b4240"))
 	for i in range(5):
-		var feet:=Vector2(view.x*(.07+float(i)*.026),view.y*.54)
+		var reach:=smoothstep(0.0,1.0,_progress(motion-.24-float(i)*.17,.72))
+		var feet:=Vector2(view.x*(.055+float(i)*.057)+reach*4*unit,view.y*(.56+float(i%2)*.013))
 		var resident_key: String=["ratih","tedi","wira","beno","saras"][i]
-		_actor(feet,unit*.9,Color("707972").lerp(Color("895e66"),float(i%3)/2.0),false,sin(motion*4.0+float(i))*.3,resident_key)
-		draw_rect(Rect2(feet+Vector2(4,-19)*unit,Vector2(3,4)*unit),Color("ae80ca"))
+		_actor(feet,unit*WIDE_STAGE_SCALES["capsule_crowd"],Color("707972").lerp(Color("895e66"),float(i%3)/2.0),false,sin(motion*4.0+float(i))*.3,resident_key)
+		var capsule:=feet+Vector2(9-5*reach,-16-12*reach)*unit
+		draw_rect(Rect2(capsule,Vector2(4,6)*unit),Color("ae80ca"))
+		draw_rect(Rect2(capsule+Vector2(1,1)*unit,Vector2(2,2)*unit),Color("d4a2e4"))
 	for side in [-1.0,1.0]:
 		var shoulder:=origin+Vector2(side*52,12)*near_unit
 		draw_arc(shoulder,7*unit,0.0,PI,8,Color(.61,.95,.91,.40),unit)
@@ -882,26 +894,32 @@ func _draw_victory(view: Vector2, motion: float) -> void:
 		if sweep<1.0:
 			draw_line(Vector2(view.x*sweep,view.y*.15),Vector2(view.x*sweep,view.y*.69),Color(.55,1.0,.92,.30*(1.0-sweep)),3*unit)
 		draw_rect(Rect2(0,view.y*(.52-.48*sweep),view.x,5*unit),Color(.56,1.0,.93,.08*(1.0-sweep)))
-		var boat:=Vector2(view.x*.47,view.y*.65)
+		_draw_victory_piers(view,unit)
+		var boat:=Vector2(view.x*.52,view.y*.64)
+		var boat_unit:=unit*2.25
 		draw_colored_polygon(PackedVector2Array([
-			boat+Vector2(-24,0)*unit,boat+Vector2(25,0)*unit,
-			boat+Vector2(17,9)*unit,boat+Vector2(-20,9)*unit
+			boat+Vector2(-26,0)*boat_unit,boat+Vector2(27,0)*boat_unit,
+			boat+Vector2(20,10)*boat_unit,boat+Vector2(-21,10)*boat_unit
 		]),Color("493329"))
-		draw_line(boat+Vector2(-22,2)*unit,boat+Vector2(23,2)*unit,Color("d7a563"),2*unit)
+		draw_line(boat+Vector2(-25,1)*boat_unit,boat+Vector2(25,1)*boat_unit,Color("d7a563"),2*unit)
+		draw_line(boat+Vector2(-19,5)*boat_unit,boat+Vector2(17,5)*boat_unit,Color("93603d"),unit)
+		for side in [-1.0,1.0]:
+			var wake:=boat+Vector2(side*29,10)*boat_unit
+			draw_line(wake,wake+Vector2(side*12,2)*unit,Color(.56,.94,.88,.38),2*unit)
 		var emerge:=smoothstep(0.0,1.0,clampf(motion/1.7,0.0,1.0))
-		_draw_nala_daily(Vector2(view.x*.47,view.y*(.73-.10*emerge)),unit*.85,4)
-		var tablet:=Vector2(view.x*.47,view.y*(.42-.07*emerge))
+		_draw_nala_daily(Vector2(view.x*.52,view.y*(.70-.06*emerge)),unit*WIDE_STAGE_SCALES["victory_nala"],4)
+		var tablet:=Vector2(view.x*.52,view.y*(.42-.07*emerge))
 		draw_rect(Rect2(tablet,Vector2(12,9)*unit),Color("d8ad69"))
 		draw_rect(Rect2(tablet+Vector2(3,2)*unit,Vector2(5,4)*unit),Color("59e4df"))
-		_actor(Vector2(view.x*.37,view.y*.57),unit,Color("7c7958"),false,0.0,"beno")
+		_actor(Vector2(view.x*.38,view.y*.62),unit*WIDE_STAGE_SCALES["victory_beno"],Color("7c7958"),false,0.0,"beno")
 		for i in range(5):
 			var child_key: String=["gito","bagas","kinasih","cempaka","danu"][i]
 			var hop:=0.0 if EnvironmentState.reduced_motion else absf(sin(motion*4.0+float(i)*.9))*3.0*unit
-			_actor(Vector2(view.x*(.08+float(i)*.052),view.y*.57-hop),unit,Color("7c7958"),true,0.0,child_key)
+			_actor(Vector2(view.x*(.05+float(i)*.057),view.y*.62-hop),unit*WIDE_STAGE_SCALES["victory_child"],Color("7c7958"),true,0.0,child_key)
 		for i in range(2):
 			var resident_key: String=["darmi","ujang"][i]
-			var resident_feet:=Vector2(view.x*(.69+float(i)*.12),view.y*.58)
-			_actor(resident_feet,unit*1.15,Color("8c7654"),false,0.0,resident_key)
+			var resident_feet:=Vector2(view.x*(.71+float(i)*.15),view.y*.62)
+			_actor(resident_feet,unit*WIDE_STAGE_SCALES["victory_resident"],Color("8c7654"),false,0.0,resident_key)
 			var release:=smoothstep(0.0,1.0,_progress(motion-.4-float(i)*.18,1.1))
 			var capsule:=resident_feet+Vector2(16+release*8,-28+release*25)*unit
 			draw_rect(Rect2(capsule,Vector2(5,9)*unit),Color("a854b3"))
@@ -911,6 +929,34 @@ func _draw_victory(view: Vector2, motion: float) -> void:
 		var x:=view.x*(.23+float((i*17)%67)*.009)
 		var y:=view.y*.79-rise
 		draw_rect(Rect2(x,y,(1.0+float(i%3))*unit,(1.0+float(i%3))*unit),Color(.38,.99,.96,.28+float(i%3)*.13))
+
+func _draw_victory_piers(view: Vector2, unit: float) -> void:
+	# One continuous dock wraps around the boat berth. The rear gangway joins
+	# both foreground wings, so every resident has a visible timber surface.
+	var rear:=Rect2(0,view.y*.53,view.x,view.y*.07)
+	var left:=Rect2(0,view.y*.60,view.x*.43,view.y*.12)
+	var right:=Rect2(view.x*.68,view.y*.60,view.x*.32,view.y*.12)
+	for deck in [rear,left,right]:
+		draw_rect(deck,Color("704d31"))
+	for row in range(1,7):
+		var y:=view.y*(.53+float(row)*.03)
+		var spans: Array=[Vector2(0,view.x)] if y<view.y*.60 else [Vector2(0,left.end.x),Vector2(right.position.x,view.x)]
+		for span in spans:
+			draw_line(Vector2(span.x,y),Vector2(span.y,y),Color("4c3829"),unit)
+			draw_line(Vector2(span.x,y+2*unit),Vector2(span.y,y+2*unit),Color("9f7148"),unit)
+			for board in range(1,19):
+				var seam_x: float=span.x+(float(board)+float(row%2)*.5)*38*unit
+				if seam_x>=span.y-6*unit: break
+				draw_line(Vector2(seam_x,y-6*unit),Vector2(seam_x,y-unit),Color("493326"),unit)
+				draw_rect(Rect2(seam_x+3*unit,y-5*unit,2*unit,2*unit),Color("c39a62"))
+	draw_line(Vector2(0,view.y*.53),Vector2(view.x,view.y*.53),Color("d49f64"),2*unit)
+	draw_line(Vector2(0,view.y*.72),Vector2(left.end.x,view.y*.72),Color("d49f64"),2*unit)
+	draw_line(Vector2(right.position.x,view.y*.72),Vector2(view.x,view.y*.72),Color("d49f64"),2*unit)
+	for mouth_x in [left.end.x,right.position.x]:
+		draw_line(Vector2(mouth_x,view.y*.60),Vector2(mouth_x,view.y*.72),Color("302923"),3*unit)
+		draw_rect(Rect2(mouth_x-4*unit,view.y*.55,8*unit,view.y*.17),Color("4c3526"))
+		draw_rect(Rect2(mouth_x-5*unit,view.y*.55,10*unit,4*unit),Color("c6965d"))
+		draw_rect(Rect2(mouth_x-3*unit,view.y*.61,6*unit,2*unit),Color("b18a58"))
 
 func _draw_feast(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)

@@ -4,7 +4,20 @@ var action: GDScript
 var story: GDScript
 const SIZES := [Vector2i(667,375),Vector2i(844,390)]
 const OUTPUT := "res://../artifacts/godot/phase-one-character-closeup/"
-const CAPTURE_ONLY := [{"id":"first_service","beat":1},{"id":"first_service","beat":2}]
+const CAPTURE_ONLY := [
+	{"id":"first_service","beat":1},{"id":"first_service","beat":2},
+	{"id":"prologue","beat":1},{"id":"prologue","beat":4},
+	{"id":"victory","beat":3}
+]
+const WIDE_SHOT_CASES := [
+	{"key":"harbor_lurah","kind":"npc","role":"lurah","feet":Vector2(.33,.57),"minimum":78.0,"maximum":110.0},
+	{"key":"harbor_child","kind":"child","role":"bagas","feet":Vector2(.045,.57),"minimum":45.0,"maximum":70.0},
+	{"key":"capsule_crowd","kind":"npc","role":"ratih","feet":Vector2(.055,.56),"minimum":40.0,"maximum":70.0},
+	{"key":"victory_nala","kind":"nala","role":"nala","feet":Vector2(.52,.64),"minimum":85.0,"maximum":110.0},
+	{"key":"victory_beno","kind":"npc","role":"beno","feet":Vector2(.38,.62),"minimum":55.0,"maximum":85.0},
+	{"key":"victory_child","kind":"child","role":"gito","feet":Vector2(.05,.62),"minimum":45.0,"maximum":75.0},
+	{"key":"victory_resident","kind":"resident","role":"darmi","feet":Vector2(.71,.62),"minimum":50.0,"maximum":85.0}
+]
 const CASES := [
 	{"id":"prologue","beat":3,"role":"ranto","kind":"ranto","feet":Vector2(.27,.67),"scale":1.0},
 	{"id":"prologue","beat":3,"role":"darmi","kind":"darmi_bust","feet":Vector2(.75,.67),"scale":1.0},
@@ -91,6 +104,10 @@ func _assert_nala_crop(atlas: Texture2D, crop: Rect2i, label: String) -> void:
 		var ink: Rect2i=full.get_used_rect()
 		assert(crop.encloses(ink),"Nala atlas crop clips %s direction %d: %s" % [label,direction,ink])
 
+func _capture_image() -> Image:
+	RenderingServer.force_draw(false)
+	return root.get_texture().get_image()
+
 func _run() -> void:
 	var capture:=OS.get_environment("CINEMATIC_CAPTURE")=="1"
 	var case_filter:=OS.get_environment("CINEMATIC_CASE_FILTER")
@@ -136,6 +153,14 @@ func _run() -> void:
 			var support_height:=_ink_height(support_spec,float(action.SUPPORT_STAGE_SCALES[str(support.group)])*physical_scale*frame.action_layer._unit(frame.action_layer.size))
 			assert(support_height>=55.0 and support_height<=80.0,"Named support %s/%s ink %.1f px at %s" % [support.group,support.role,support_height,physical])
 			checked+=1
+		for wide_case in WIDE_SHOT_CASES:
+			var wide_spec:=_region_for(str(wide_case.kind),str(wide_case.role))
+			var wide_height:=_ink_height(wide_spec,float(action.WIDE_STAGE_SCALES[str(wide_case.key)])*physical_scale*frame.action_layer._unit(frame.action_layer.size))
+			assert(wide_height>=float(wide_case.minimum) and wide_height<=float(wide_case.maximum),"Wide shot %s ink %.1f px at %s" % [wide_case.key,wide_height,physical])
+			var wide_feet: Vector2=Vector2(wide_case.feet)*Vector2(physical)
+			assert(wide_feet.y-wide_height>frame.upper.size.y*physical_scale-5.0,"Wide shot %s head behind title" % wide_case.key)
+			assert(wide_feet.y<dialogue.position.y+5.0,"Wide shot %s feet behind dialogue" % wide_case.key)
+			checked+=1
 		for scene_case in CASES:
 			var id: String=scene_case.id
 			var beat_index: int=scene_case.beat
@@ -149,7 +174,7 @@ func _run() -> void:
 				frame._process(0.5 if second==0 else 0.75)
 				for settle in range(3): await process_frame
 				if capture:
-					var picture: Image=root.get_texture().get_image()
+					var picture: Image=_capture_image()
 					var path:=OUTPUT+"%s-%02d-%s-t%d-%dx%d.png" % [id,beat_index,scene_case.role,second,physical.x,physical.y]
 					assert(picture.save_png(ProjectSettings.globalize_path(path))==OK,"Cannot save "+path)
 					saved+=1
@@ -183,7 +208,7 @@ func _run() -> void:
 					frame._process(0.5 if second==0 else 0.75)
 					for settle in range(3): await process_frame
 					var sample_path:=OUTPUT+"%s-%02d-t%d-%dx%d.png" % [sample_id,sample_beat,second,physical.x,physical.y]
-					assert(root.get_texture().get_image().save_png(ProjectSettings.globalize_path(sample_path))==OK,"Cannot save "+sample_path)
+					assert(_capture_image().save_png(ProjectSettings.globalize_path(sample_path))==OK,"Cannot save "+sample_path)
 					saved+=1
 		if capture:
 			var sequence: Dictionary=story.sequence("first_dive")
@@ -193,7 +218,7 @@ func _run() -> void:
 			frame._process(1.7)
 			for settle in range(3): await process_frame
 			var path:=OUTPUT+"first_dive-01-t1-%dx%d.png" % [physical.x,physical.y]
-			assert(root.get_texture().get_image().save_png(ProjectSettings.globalize_path(path))==OK,"Cannot save "+path)
+			assert(_capture_image().save_png(ProjectSettings.globalize_path(path))==OK,"Cannot save "+path)
 			saved+=1
 		for reduced_case in [{"id":"garden_crisis","beat":2},{"id":"epilogue","beat":8}]:
 			environment.reduced_motion=true
@@ -207,7 +232,7 @@ func _run() -> void:
 			assert(frame.action_layer.has_directed_action(str(reduced_case.id),int(reduced_case.beat)),"Reduced-motion action missing")
 			if capture:
 				var reduced_path:=OUTPUT+"reduced-motion-%s-%02d-%dx%d.png" % [reduced_case.id,reduced_case.beat,physical.x,physical.y]
-				assert(root.get_texture().get_image().save_png(ProjectSettings.globalize_path(reduced_path))==OK,"Cannot save "+reduced_path)
+				assert(_capture_image().save_png(ProjectSettings.globalize_path(reduced_path))==OK,"Cannot save "+reduced_path)
 				saved+=1
 			checked+=1
 		environment.reduced_motion=false
@@ -222,7 +247,7 @@ func _run() -> void:
 				frame._process(1.0)
 				for settle in range(3): await process_frame
 				var appearance_path:=OUTPUT+"nala-daily-%s-%dx%d.png" % [appearance,physical.x,physical.y]
-				assert(root.get_texture().get_image().save_png(ProjectSettings.globalize_path(appearance_path))==OK,"Cannot save "+appearance_path)
+				assert(_capture_image().save_png(ProjectSettings.globalize_path(appearance_path))==OK,"Cannot save "+appearance_path)
 				saved+=1
 			state.player={"appearance":"female_nusantara"}
 	frame.free()
