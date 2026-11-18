@@ -19,6 +19,8 @@ const CHILD_ATLAS := preload("res://resources/art/village-expansion-v1/residents
 const VILLAGE_PORTRAITS := preload("res://resources/art/npc-atlas.png")
 const VILLAGE_RESIDENTS := preload("res://resources/art/village-residents-v1.png")
 const LURAH_TEACHING_CLOSE := preload("res://resources/art/cinematics-v2/close-pose/ki-lurah-teaching.png")
+const LURAH_TEACHING_POINT := preload("res://resources/art/cinematics-v2/close-pose/ki-lurah-teaching-point.png")
+const GITO_SLING_RELEASE := preload("res://resources/art/cinematics-v2/close-pose/gito-sling-release.png")
 const PHASE_ONE_STORY := preload("res://scripts/PhaseOneCutscenes.gd")
 const RANTO_PORTRAIT := preload("res://resources/art/cinematics-v2/pak-ranto-portrait.png")
 const NALA_DIVING := {
@@ -77,8 +79,8 @@ const BALAI_BACKGROUND_LURAH_SCALE := 2.50
 const BALAI_NEAR_SUPPORT_SCALES := [2.50, 2.60, 2.50]
 const FEAST_BACKGROUND_SCALE := 1.98
 const FEAST_LURAH_START_SCALE := 1.90
-const HARBOR_LURAH_X := .415
-const HARBOR_CHILD_X := [.070,.180,.290]
+const HARBOR_LURAH_X := .285
+const HARBOR_CHILD_X := [.045,.125,.205]
 const CAPSULE_CROWD_X := [.065,.145,.225,.305,.385]
 const VICTORY_CHILD_MARKS := [Vector2(.045,.62),Vector2(.13,.62),Vector2(.215,.62),Vector2(.30,.62),Vector2(.65,.59)]
 const FOCAL_SCALES := {
@@ -307,7 +309,7 @@ func _draw_waist_sway(atlas: Texture2D, source: Rect2, dest: Rect2, feet: Vector
 	draw_texture_rect_region(atlas,Rect2(upper_dest.position-waist,upper_dest.size),upper_source)
 	draw_set_transform(Vector2.ZERO)
 
-func _actor(feet: Vector2, unit: float, coat: Color, child: bool = false, stride: float = 0.0, sprite_key: String = "", idle_lean: float = 0.0) -> void:
+func _actor(feet: Vector2, unit: float, coat: Color, child: bool = false, stride: float = 0.0, sprite_key: String = "", idle_lean: float = 0.0, gesture: float = 0.0) -> void:
 	# The contact line stays on the deck while the near-camera figure grows.
 	draw_line(feet + Vector2(-13, 1) * unit, feet + Vector2(13, 1) * unit, Color(.12, .13, .13, .24), maxf(1.0, 2.0 * unit))
 	if RESIDENT_CELLS.has(sprite_key):
@@ -328,7 +330,11 @@ func _actor(feet: Vector2, unit: float, coat: Color, child: bool = false, stride
 		var cell:Vector2i=CHILD_CELLS[sprite_key]
 		var source:=Rect2(cell.x*96,cell.y*128,96,128)
 		var dest:=Rect2(feet+Vector2(-17,-43)*unit,Vector2(34,44)*unit)
-		_draw_waist_sway(CHILD_ATLAS,source,dest,feet,idle_lean,82.0)
+		var atlas: Texture2D=CHILD_ATLAS
+		if sprite_key=="gito" and gesture>.35:
+			atlas=GITO_SLING_RELEASE
+			source=Rect2(0,0,96,128)
+		_draw_waist_sway(atlas,source,dest,feet,idle_lean,82.0)
 		return
 	var scale:=unit*(.72 if child else 1.0)
 	draw_set_transform(feet,0.0,Vector2(scale,scale))
@@ -426,7 +432,7 @@ func _draw_prologue(view: Vector2, motion: float) -> void:
 
 func _draw_harbor_lesson(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
-	var pier_y:=view.y*.57
+	var pier_y:=view.y*.55
 	var compass:=Vector2(view.x*.49,view.y*.475)
 	# Hold the wide harbor long enough to establish the village, then favor
 	# the teacher while keeping his feet on the painted pier.
@@ -441,16 +447,17 @@ func _draw_harbor_lesson(view: Vector2, motion: float) -> void:
 		compass+Vector2(2,0)*unit]),Color("9d4536"))
 	for i in range(3):
 		var child_key: String=["bagas","kinasih","gito"][i]
-		var near_x: float=[.055,.145,.235][i]
+		var near_x: float=[.045,.125,.205][i]
 		var feet:=Vector2(view.x*lerpf(HARBOR_CHILD_X[i],near_x,approach),pier_y+(float(i%2)*2.0+float(i%3)*3.0*approach)*unit)
 		if not EnvironmentState.reduced_motion: feet.y+=sin(motion*1.5+float(i)*.9)*unit
 		_actor(feet,unit*lerpf(WIDE_STAGE_SCALES["harbor_child"],1.72,approach),Color("6a8c75"),true,0.0,child_key)
-	var lurah_feet:=Vector2(view.x*lerpf(HARBOR_LURAH_X,.34,approach),pier_y)
-	var close_size:=lerpf(98.0,132.0,approach)*unit
+	var lurah_feet:=Vector2(view.x*HARBOR_LURAH_X,pier_y)
+	var close_size:=lerpf(98.0,124.0,approach)*unit
 	var close_rect:=Rect2(Vector2(-close_size*.51,-close_size*.99),Vector2(close_size,close_size))
 	draw_line(lurah_feet+Vector2(-16,1)*unit,lurah_feet+Vector2(18,1)*unit,Color(.15,.12,.11,.24),maxf(1.0,2.0*unit))
 	draw_set_transform(lurah_feet,_stage_lean(motion,0,.012)*approach)
-	draw_texture_rect(LURAH_TEACHING_CLOSE,close_rect,false)
+	var teaching_pose:=LURAH_TEACHING_POINT if not EnvironmentState.reduced_motion and motion>=1.35 and motion<3.15 else LURAH_TEACHING_CLOSE
+	draw_texture_rect(teaching_pose,close_rect,false)
 	draw_set_transform(Vector2.ZERO)
 	if approach<.45:
 		var pointer:=lurah_feet+Vector2(18,-23)*unit
@@ -744,7 +751,7 @@ func _draw_garden(view: Vector2, motion: float) -> void:
 		if motif_beat==2:
 			var gito_feet:=Vector2(view.x*.31,view.y*.67)
 			var gito_unit:=unit*_focal_scale("gito",SUPPORT_STAGE_SCALES["garden_child"])
-			var gito_hand:=gito_feet+Vector2(9,-17)*gito_unit
+			var gito_hand:=gito_feet+Vector2(11,-28)*gito_unit
 			for i in range(3):
 				var launch:=.18+float(i)*.20
 				var t:=_progress(motion-launch,.75)
@@ -770,12 +777,13 @@ func _draw_garden(view: Vector2, motion: float) -> void:
 				if child_key=="gito" and not EnvironmentState.reduced_motion:
 					for shot in range(3):
 						throw_pose=maxf(throw_pose,sin(_progress(motion-.12-float(shot)*.20,.28)*PI))
-				_actor(child_feet,unit*child_scale,Color("53766e"),true,0.0,child_key,_stage_lean(motion,i,.040)+throw_pose*.075)
+				_actor(child_feet,unit*child_scale,Color("53766e"),true,0.0,child_key,_stage_lean(motion,i,.040)+throw_pose*.035,throw_pose)
 				if child_key=="gito":
-					var wrist:=child_feet+Vector2(9,-17)*unit*child_scale
-					var pouch:=wrist+Vector2(4+throw_pose*3,-5-throw_pose*4)*unit
-					draw_line(wrist,pouch,Color("483027"),maxf(1.0,unit*2.0))
-					draw_rect(Rect2(pouch-Vector2(2,1)*unit,Vector2(4,3)*unit),Color("c18b4d"))
+					if throw_pose>.35:
+						var wrist:=child_feet+Vector2(11,-28)*unit*child_scale
+						var pouch:=wrist+Vector2(4,-5)*unit
+						draw_line(wrist,pouch,Color("483027"),maxf(1.0,unit*2.0))
+						draw_rect(Rect2(pouch-Vector2(2,1)*unit,Vector2(4,3)*unit),Color("c18b4d"))
 				if rally<1.0:
 					var shadow:=Vector2(view.x*child_x,child_ground)
 					draw_line(shadow-Vector2(6,0)*unit,shadow+Vector2(6,0)*unit,Color(.12,.13,.13,.28),unit)
