@@ -24,6 +24,10 @@ const GITO_SLING_RELEASE := preload("res://resources/art/cinematics-v2/close-pos
 const VICTORY_CHILD_POSES := preload("res://resources/art/cinematics-v2/victory-child-poses.png")
 const GARDEN_KINASIH_CLUE := preload("res://resources/art/cinematics-v2/garden-kinasih-clue.png")
 const WIRA_TEA_OFFER := preload("res://resources/art/cinematics-v2/close-pose/mbah-wira-tea-offer.png")
+const BENO_JALA_OFFER := preload("res://resources/art/cinematics-v2/close-pose/beno-jala-offer.png")
+const BENO_EMPTY_OFFER := preload("res://resources/art/cinematics-v2/close-pose/beno-empty-offer.png")
+const JALA_TOOL := preload("res://resources/art/cinematics-v2/close-pose/jala-tool.png")
+const SMARAPEDIA_OPEN := preload("res://resources/art/cinematics-v2/close-pose/smarapedia-open.png")
 const SARAS_STONE_REVEAL := preload("res://resources/art/cinematics-v2/close-pose/saras-stone-reveal.png")
 const RATIH_DACIN := preload("res://resources/art/cinematics-v2/close-pose/mbok-ratih-dacin.png")
 const TEDI_WRENCH := preload("res://resources/art/cinematics-v2/close-pose/kang-tedi-wrench.png")
@@ -585,15 +589,26 @@ func _draw_tea_and_net(view: Vector2, motion: float, beat: int) -> void:
 	for i in range(3):
 		var lift:=fposmod(motion*9.0+float(i)*11.0,34.0)
 		draw_arc(mug+Vector2((5.0+float(i)*4.0)*unit,-(5.0+lift)*unit),(2.0+float(i%2))*unit,PI,TAU,6,Color(.87,.98,.83,.30*(1.0-lift/34.0)),unit)
-	if beat==10:
-		var net:=Vector2(view.x*.42,desk_y-15*unit)
-		draw_line(net+Vector2(-14,12)*unit,net+Vector2(23,-3)*unit,Color("c68c56"),3*unit)
-		draw_arc(net+Vector2(24,-5)*unit,13*unit,0,TAU,16,Color("64e0d5"),3*unit)
 	if motif_id=="prologue":
 		var near_y:=view.y*.68
-		_draw_nala_daily(Vector2(view.x*.22,near_y),unit*2.55,2)
-		_actor(Vector2(view.x*.50,near_y),unit*2.55,Color("876943"),false,0.0,"wira")
-		_actor(Vector2(view.x*.78,near_y),unit*2.55,Color("6f7891"),false,0.0,"beno")
+		var nala_feet:=Vector2(view.x*.57,near_y)
+		var beno_feet:=nala_feet-Vector2(70*unit,0)
+		var wira_feet:=Vector2(view.x*.22,near_y)
+		var book_on_counter:=Rect2(Vector2(view.x*.32,desk_y-46*unit),Vector2(72,48)*unit)
+		draw_rect(Rect2(book_on_counter.position+Vector2(8,43)*unit,Vector2(58,4)*unit),Color(.15,.08,.05,.42))
+		draw_texture_rect(SMARAPEDIA_OPEN,book_on_counter,false)
+		_actor(wira_feet,unit*2.55,Color("876943"),false,0.0,"wira")
+		var handoff:=smoothstep(0.0,1.0,_progress(motion-.50,1.0)) if beat==10 else (1.0 if beat==11 else 0.0)
+		var beno_sprite: Texture2D=BENO_JALA_OFFER if handoff<.01 else BENO_EMPTY_OFFER
+		var beno_dest:=Rect2(beno_feet+Vector2(-18,-39)*unit*2.55,Vector2(36,40)*unit*2.55)
+		draw_line(beno_feet+Vector2(-13,1)*unit*2.55,beno_feet+Vector2(13,1)*unit*2.55,Color(.12,.13,.13,.24),2*unit)
+		draw_texture_rect(beno_sprite,beno_dest,false)
+		_draw_nala_daily(nala_feet,unit*2.55,2)
+		if handoff>.0:
+			var source_prop:=beno_dest.position+Vector2(36.0/64.0,6.0/64.0)*beno_dest.size
+			var target_prop:=nala_feet+Vector2(-36,-78)*unit
+			var prop_position:=source_prop.lerp(target_prop,handoff)-Vector2(0,sin(handoff*PI)*8*unit)
+			draw_texture_rect(JALA_TOOL,Rect2(prop_position,Vector2(29,32)*unit),false)
 
 func _draw_first_kedai(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)

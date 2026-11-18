@@ -1,6 +1,8 @@
 # Beno's Jala Kognisi pose and SmaraPedia prop
 
-The 64×64 offer pose derives from frame 0 of the project-owned `client-godot/resources/art/npc-facing-v2/beno-front.png`, full-file SHA-256 `539c4831184a15d2a611354904875c35ab881d41d8f748e2d874de479d22003f`. `tools/cutscene-pixel/author_beno_jala.py` preserves Beno's body and gripping fingers while replacing the raised wrench head with a copper Jala hoop, cyan mesh, ferrule and handle drawn at source-pixel resolution. The finished `client-godot/resources/art/cinematics-v2/close-pose/beno-jala-offer.png` has SHA-256 `34f6e60ea942cada407716d368c36d34265ad2b64682ba9fc30810941c36d0ef`.
+The 64×64 offer pose derives from frame 0 of the project-owned `client-godot/resources/art/npc-facing-v2/beno-front.png`, full-file SHA-256 `539c4831184a15d2a611354904875c35ab881d41d8f748e2d874de479d22003f`. `tools/cutscene-pixel/author_beno_jala.py` preserves Beno's body and gripping fingers while replacing the raised wrench head with a copper Jala hoop, cyan mesh, ferrule and handle drawn at source-pixel resolution. The finished `client-godot/resources/art/cinematics-v2/close-pose/beno-jala-offer.png` has SHA-256 `ea7c7eb96b70f9a2f2f4d8e5e9707378e0e1833b2d3f34641162e06c1380cf95`.
+
+The same source produces `beno-empty-offer.png` (SHA-256 `5d2b0b779ca5fec11ec03142b81c88d7f04aabcd4bbdc4c10664e3438abe8706`) and a separate 20×20 `jala-tool.png` (SHA-256 `46278cfe68b0c5a9e09caeef007c1fc418eaf0fe80a5833e5090017ff3feda3b`). The cutscene swaps the full offer pose for the empty pose as this single tool travels from Beno's fingers to Nala; it never draws a duplicate floating hoop.
 
 The same script draws `client-godot/resources/art/cinematics-v2/close-pose/smarapedia-open.png` on a 48×32 transparent pixel grid. Its two parchment leaves, dark spine, copper corners and small gold mark are original project-authored pixels; SHA-256 `b8d0eb252afedec5d83f2f9a8c2112a7b71fcf8b5053940cf3332e9baa6130b7`.
 
