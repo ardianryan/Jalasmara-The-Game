@@ -8,7 +8,7 @@ const CAPTURE_ONLY := [
 	{"id":"prologue","beat":1},{"id":"prologue","beat":4},
 	{"id":"prologue","beat":6},{"id":"prologue","beat":9},
 	{"id":"first_dive","beat":1},{"id":"first_kedai","beat":1},
-	{"id":"first_service","beat":1},{"id":"garden_crisis","beat":2},
+	{"id":"first_service","beat":1},{"id":"garden_crisis","beat":2},{"id":"garden_crisis","beat":4},
 	{"id":"saras_visit","beat":2},{"id":"cave_warning","beat":2},
 	{"id":"earthquake","beat":1},{"id":"boss_intro","beat":1},
 	{"id":"boss_phase_two","beat":1},{"id":"victory","beat":1},
@@ -38,10 +38,10 @@ const CASES := [
 	{"id":"garden_crisis","beat":1,"role":"darmi","kind":"resident","feet":Vector2(.47,.67)},
 	{"id":"garden_crisis","beat":2,"role":"gito","kind":"child","feet":Vector2(.31,.67)},
 	{"id":"garden_crisis","beat":3,"role":"guard","kind":"guard","feet":Vector2(.67,.63),"tier":"support"},
-	{"id":"garden_crisis","beat":4,"role":"lurah","kind":"npc","feet":Vector2(.47,.63)},
+	{"id":"garden_crisis","beat":4,"role":"lurah","kind":"npc","feet":Vector2(.44,.66)},
 	{"id":"garden_crisis","beat":5,"role":"kinasih","kind":"child","feet":Vector2(.30,.655)},
 	{"id":"saras_visit","beat":2,"role":"saras","kind":"npc","feet":Vector2(.68,.68),"scale":2.52},
-	{"id":"earthquake","beat":1,"role":"lurah","kind":"npc","feet":Vector2(.24,.64)},
+	{"id":"earthquake","beat":1,"role":"lurah","kind":"npc","feet":Vector2(.25,.67)},
 	{"id":"earthquake","beat":2,"role":"raka","kind":"npc","feet":Vector2(.82,.66)},
 	{"id":"earthquake","beat":3,"role":"kinasih","kind":"child","feet":Vector2(.42,.64)},
 	{"id":"earthquake","beat":4,"role":"saras","kind":"npc","feet":Vector2(.82,.66)},
@@ -173,11 +173,17 @@ func _run() -> void:
 			assert(approach.feet.x>landed.feet.x and approach.feet.x-landed.feet.x<24.0*screen_unit,"Garden guard must step into the same grounded mark")
 			assert(is_zero_approx(landed.stride) and is_equal_approx(approach.feet.y,landed.feet.y),"Garden guard must settle without vertical drift")
 			checked+=1
+		var lurah_arriving: Dictionary=frame.action_layer._garden_lurah_pose(frame.action_layer.size,.05)
+		var lurah_settled: Dictionary=frame.action_layer._garden_lurah_pose(frame.action_layer.size,1.5)
+		assert(lurah_arriving.feet.x<lurah_settled.feet.x and is_equal_approx(lurah_settled.feet.y,frame.action_layer.size.y*.66),"Garden Lurah must enter and land at the foreground floor mark")
+		assert(is_zero_approx(lurah_settled.stride),"Garden Lurah must stop stepping when planted")
+		checked+=2
 		for council_index in range(5):
 			var arriving: Dictionary=frame.action_layer._balai_council_pose(frame.action_layer.size,.05,council_index)
 			var settled: Dictionary=frame.action_layer._balai_council_pose(frame.action_layer.size,1.8,council_index)
 			assert(absf(arriving.feet.x-settled.feet.x)>5.0 and absf(arriving.feet.x-settled.feet.x)<23.0*screen_unit,"Balai actor must join the map without sliding across the stage")
-			assert(is_zero_approx(settled.stride) and is_equal_approx(settled.feet.y,frame.action_layer.size.y*.64),"Balai actor must finish at the floor mark")
+			var floor_y:=.67 if council_index==0 else .64
+			assert(is_zero_approx(settled.stride) and is_equal_approx(settled.feet.y,frame.action_layer.size.y*floor_y),"Balai actor must finish at the floor mark")
 			checked+=1
 		for scene_case in CASES:
 			var id: String=scene_case.id
@@ -201,8 +207,9 @@ func _run() -> void:
 			var scale: float=float(scene_case.get("scale",frame.action_layer._focal_scale(role)))
 			var focal_unit: float=screen_unit*physical_scale
 			var ink_height:=_ink_height(_region_for(scene_case.kind,role),scale*focal_unit)
-			var minimum:=45.0 if scene_case.get("tier","")=="support" else 90.0
-			var maximum:=80.0 if scene_case.get("tier","")=="support" else 110.0
+			var foreground: bool=(id=="garden_crisis" and beat_index==4) or (id=="earthquake" and beat_index==1)
+			var minimum:=115.0 if foreground else (45.0 if scene_case.get("tier","")=="support" else 90.0)
+			var maximum:=145.0 if foreground else (80.0 if scene_case.get("tier","")=="support" else 110.0)
 			assert(ink_height>=minimum and ink_height<=maximum,"On-stage %s/%d %s ink %.1f px at %s" % [id,beat_index,role,ink_height,physical])
 			var feet: Vector2=Vector2(scene_case.feet)*Vector2(physical)
 			assert(feet.y-ink_height>frame.upper.size.y*root.get_final_transform().y.length()-5.0,"Focal head under title bar: %s/%d" % [id,beat_index])

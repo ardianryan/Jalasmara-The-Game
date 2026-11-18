@@ -74,9 +74,9 @@ const FOCAL_SCALES := {
 	"garden_crisis:1:darmi": 2.22,
 	"garden_crisis:2:gito": 2.48,
 	"garden_crisis:3:guard": 1.67,
-	"garden_crisis:4:lurah": 2.48,
+	"garden_crisis:4:lurah": 3.25,
 	"garden_crisis:5:kinasih": 2.48,
-	"earthquake:1:lurah": 2.48,
+	"earthquake:1:lurah": 3.20,
 	"earthquake:2:raka": 2.68,
 	"earthquake:3:kinasih": 2.48,
 	"earthquake:4:saras": 2.52,
@@ -662,9 +662,14 @@ func _garden_guard_pose(view: Vector2, motion: float, index: int) -> Dictionary:
 	var stride:=sin(motion*11.0+float(index)*PI)*.48 if arrival<1.0 else 0.0
 	return {"feet":feet,"stride":stride}
 
+func _garden_lurah_pose(view: Vector2, motion: float) -> Dictionary:
+	var entrance:=smoothstep(0.0,1.0,_progress(motion,.85))
+	var feet:=Vector2(view.x*(.32+.12*entrance),view.y*.66)
+	var stride:=sin(motion*11.0)*.48 if entrance<1.0 else 0.0
+	return {"feet":feet,"stride":stride}
+
 func _draw_garden(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
-	var ground:=view.y*.63
 	if motif_beat<=3:
 		for i in range(2):
 			var first_hit:=.18+float(i)*.20+.75
@@ -703,10 +708,10 @@ func _draw_garden(view: Vector2, motion: float) -> void:
 					var shadow:=Vector2(view.x*child_x,child_ground)
 					draw_line(shadow-Vector2(6,0)*unit,shadow+Vector2(6,0)*unit,Color(.12,.13,.13,.28),unit)
 	else:
-		var entrance:=smoothstep(0.0,1.0,_progress(motion,.85))
 		if motif_beat==4:
-			var lurah_feet:=Vector2(view.x*(.35+.12*entrance),ground)
-			_actor(lurah_feet,unit*_focal_scale("lurah",1.15),Color("7e623d"),false,0.0,"lurah")
+			var lurah_pose:=_garden_lurah_pose(view,motion)
+			var lurah_feet: Vector2=lurah_pose.feet
+			_actor(lurah_feet,unit*_focal_scale("lurah",1.15),Color("7e623d"),false,lurah_pose.stride,"lurah")
 			var staff:=lurah_feet+Vector2(36,0)*unit
 			var plant:=smoothstep(0.0,1.0,_progress(motion-.58,.35))
 			draw_line(staff+Vector2(0,-91-9*(1.0-plant))*unit,staff+Vector2(0,2-9*(1.0-plant))*unit,Color("4a3325"),3*unit)
@@ -742,11 +747,12 @@ func _draw_cave(view: Vector2, motion: float) -> void:
 
 func _balai_council_pose(view: Vector2, motion: float, index: int) -> Dictionary:
 	var unit:=_unit(view)
-	var x: float=[.24,.38,.52,.66,.86][index]
+	var x: float=[.25,.39,.53,.67,.86][index]
 	var entrance:=smoothstep(0.0,1.0,_progress(motion-float(index)*.10,.86))
 	var direction:=1.0 if index<3 else -1.0
 	var shake:=0.0 if EnvironmentState.reduced_motion else sin(motion*23.0+float(index)*1.7)*2.0*unit*(1.0-_progress(motion,1.15))
-	var feet:=Vector2(view.x*x-direction*13*unit*(1.0-entrance),view.y*.64+shake)
+	var floor_y:=.67 if index==0 else .64
+	var feet:=Vector2(view.x*x-direction*13*unit*(1.0-entrance),view.y*floor_y+shake)
 	var stride:=sin(motion*12.0+float(index)*PI*.65)*.50 if entrance<1.0 else 0.0
 	return {"feet":feet,"stride":stride}
 
@@ -760,10 +766,11 @@ func _draw_earthquake(view: Vector2, motion: float) -> void:
 			var chip:=Vector2(view.x*(.28+float(i)*.12),view.y*(.565+float(i%2)*.015))
 			var quake:=0.0 if EnvironmentState.reduced_motion else sin(motion*18.0+float(i)*1.8)*3*unit*(1.0-ring)
 			draw_rect(Rect2(chip+Vector2(0,quake),Vector2(2,2)*unit),Color(.64,.43,.61,.30*(1.0-ring)))
-		for i in range(5):
+		for i in [1,2,3,4,0]:
 			var council_key: String=["lurah","wira","beno","saras","raka"][i]
 			var pose:=_balai_council_pose(view,motion,i)
-			_actor(pose.feet,unit*_focal_scale(council_key,SUPPORT_STAGE_SCALES["balai_council"]),Color("72583e").lerp(Color("a1846a"),float(i%3)/2.0),false,pose.stride,council_key)
+			var actor_scale:=_focal_scale("lurah") if i==0 else 2.05
+			_actor(pose.feet,unit*actor_scale,Color("72583e").lerp(Color("a1846a"),float(i%3)/2.0),false,pose.stride,council_key)
 	elif motif_beat==2:
 		_actor(Vector2(view.x*.24,view.y*.64),unit*SUPPORT_STAGE_SCALES["balai_council"],Color("72583e"),false,0.0,"lurah")
 		_actor(Vector2(view.x*.82,view.y*.66),unit*_focal_scale("raka"),Color("e6e1d6"),false,0.0,"raka")
