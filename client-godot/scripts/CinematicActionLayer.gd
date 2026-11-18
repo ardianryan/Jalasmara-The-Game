@@ -442,9 +442,9 @@ func _draw_harbor_lesson(view: Vector2, motion: float) -> void:
 		var near_x: float=[.055,.145,.235][i]
 		var feet:=Vector2(view.x*lerpf(HARBOR_CHILD_X[i],near_x,approach),pier_y+(float(i%2)*2.0+float(i%3)*3.0*approach)*unit)
 		if not EnvironmentState.reduced_motion: feet.y+=sin(motion*1.5+float(i)*.9)*unit
-		_actor(feet,unit*WIDE_STAGE_SCALES["harbor_child"],Color("6a8c75"),true,0.0,child_key)
-	var lurah_feet:=Vector2(view.x*lerpf(HARBOR_LURAH_X,.36,approach),pier_y)
-	var lurah_scale:=lerpf(WIDE_STAGE_SCALES["harbor_lurah"],3.04,approach)
+		_actor(feet,unit*lerpf(WIDE_STAGE_SCALES["harbor_child"],1.72,approach),Color("6a8c75"),true,0.0,child_key)
+	var lurah_feet:=Vector2(view.x*lerpf(HARBOR_LURAH_X,.34,approach),pier_y)
+	var lurah_scale:=lerpf(WIDE_STAGE_SCALES["harbor_lurah"],2.35,approach)
 	_actor(lurah_feet,unit*lurah_scale,Color("7e623d"),false,0.0,"lurah")
 	var pointer:=lurah_feet+Vector2(17,-18)*unit
 	draw_line(pointer,compass+Vector2(-3,1)*unit,Color("826347"),2*unit)
