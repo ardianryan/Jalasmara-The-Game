@@ -15,8 +15,8 @@ const CAPTURE_ONLY := [
 	{"id":"victory","beat":3},{"id":"epilogue","beat":2},{"id":"epilogue","beat":4}
 ]
 const WIDE_SHOT_CASES := [
-	{"key":"harbor_lurah","kind":"npc","role":"lurah","feet":Vector2(.36,.57),"minimum":78.0,"maximum":110.0},
-	{"key":"harbor_child","kind":"child","role":"bagas","feet":Vector2(.055,.57),"minimum":55.0,"maximum":90.0},
+	{"key":"harbor_lurah","kind":"npc","role":"lurah","feet":Vector2(.415,.57),"minimum":78.0,"maximum":110.0},
+	{"key":"harbor_child","kind":"child","role":"bagas","feet":Vector2(.070,.57),"minimum":78.0,"maximum":90.0},
 	{"key":"capsule_crowd","kind":"npc","role":"ratih","feet":Vector2(.065,.56),"minimum":52.0,"maximum":82.0},
 	{"key":"victory_nala","kind":"nala","role":"nala","feet":Vector2(.52,.64),"minimum":85.0,"maximum":110.0},
 	{"key":"victory_beno","kind":"npc","role":"beno","feet":Vector2(.40,.62),"minimum":55.0,"maximum":85.0},
@@ -143,6 +143,7 @@ func _run() -> void:
 		for settle in range(4): await process_frame
 		var physical_scale:=root.get_final_transform().y.length()
 		var screen_unit: float=frame.action_layer._unit(frame.action_layer.size)
+		var focal_unit: float=screen_unit*physical_scale
 		for adjacent in [[6,7],[7,8]]:
 			var previous_pose: Dictionary=frame.action_layer._arrival_pose(frame.action_layer.size,3.0,adjacent[0])
 			var next_pose: Dictionary=frame.action_layer._arrival_pose(frame.action_layer.size,0.0,adjacent[1])
@@ -157,7 +158,8 @@ func _run() -> void:
 		for support in SUPPORT_SCALES:
 			var support_spec:=_region_for(str(support.kind),str(support.role))
 			var support_height:=_ink_height(support_spec,float(action.SUPPORT_STAGE_SCALES[str(support.group)])*physical_scale*frame.action_layer._unit(frame.action_layer.size))
-			assert(support_height>=55.0 and support_height<=80.0,"Named support %s/%s ink %.1f px at %s" % [support.group,support.role,support_height,physical])
+			var council: bool=str(support.group)=="balai_council"
+			assert(support_height>=(72.0 if council else 55.0) and support_height<=(95.0 if council else 80.0),"Named support %s/%s ink %.1f px at %s" % [support.group,support.role,support_height,physical])
 			checked+=1
 		for wide_case in WIDE_SHOT_CASES:
 			var wide_spec:=_region_for(str(wide_case.kind),str(wide_case.role))
@@ -168,8 +170,17 @@ func _run() -> void:
 			assert(wide_feet.y<dialogue.position.y+5.0,"Wide shot %s feet behind dialogue" % wide_case.key)
 			checked+=1
 		for i in range(1,action.HARBOR_CHILD_X.size()):
-			assert(action.HARBOR_CHILD_X[i]-action.HARBOR_CHILD_X[i-1]>=.08,"Harbor children need separate silhouettes")
+			var gap: float=(action.HARBOR_CHILD_X[i]-action.HARBOR_CHILD_X[i-1])*physical.x
+			var width: float=34.0*float(action.WIDE_STAGE_SCALES["harbor_child"])*focal_unit
+			assert(gap>=width,"Harbor children need distinct full-body silhouettes")
 			checked+=1
+		var child_half_width: float=17.0*float(action.WIDE_STAGE_SCALES["harbor_child"])*focal_unit
+		var left_child: float=action.HARBOR_CHILD_X[0]*physical.x-child_half_width
+		var right_child: float=action.HARBOR_CHILD_X[-1]*physical.x+child_half_width
+		var left_lurah: float=action.HARBOR_LURAH_X*physical.x-18.0*float(action.WIDE_STAGE_SCALES["harbor_lurah"])*focal_unit
+		assert(left_child>=8.0,"Harbor lesson first child clips the frame edge")
+		assert(right_child+4.0<=left_lurah,"Harbor lesson child and Lurah need silhouette clearance")
+		checked+=2
 		for i in range(1,action.CAPSULE_CROWD_X.size()):
 			assert(action.CAPSULE_CROWD_X[i]-action.CAPSULE_CROWD_X[i-1]>=.075,"Capsule crowd adults must not collapse into one silhouette")
 			checked+=1
@@ -232,7 +243,6 @@ func _run() -> void:
 			assert(frame.action_layer.has_directed_action(id,beat_index),"Missing directed action: %s %d" % [id,beat_index])
 			var role: String=scene_case.role
 			var scale: float=float(scene_case.get("scale",frame.action_layer._focal_scale(role)))
-			var focal_unit: float=screen_unit*physical_scale
 			var ink_height:=_ink_height(_region_for(scene_case.kind,role),scale*focal_unit)
 			var foreground: bool=(id=="garden_crisis" and beat_index==4) or (id=="earthquake" and beat_index==1)
 			var minimum:=115.0 if foreground else (45.0 if scene_case.get("tier","")=="support" else 90.0)

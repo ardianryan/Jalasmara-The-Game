@@ -50,7 +50,7 @@ const RESIDENT_CELLS := {"darmi": Rect2(0,627,627,627),"ujang": Rect2(1024,0,512
 const SUPPORT_STAGE_SCALES := {
 	"prologue_child": 1.65,
 	"garden_child": 1.95,
-	"balai_council": 1.65,
+	"balai_council": 2.10,
 	"feast_ratih": 1.70,
 	"feast_tedi": 1.70,
 	"feast_darmi": 1.70,
@@ -61,7 +61,7 @@ const SUPPORT_STAGE_SCALES := {
 }
 const WIDE_STAGE_SCALES := {
 	"harbor_lurah": 2.30,
-	"harbor_child": 1.75,
+	"harbor_child": 2.05,
 	"capsule_crowd": 1.68,
 	"victory_nala": 2.38,
 	"victory_beno": 1.78,
@@ -72,10 +72,11 @@ const REFUSAL_CHILD_X := [.055,.145,.235,.325,.415]
 const FEAST_SUPPORT_X := [.065,.15,.235,.32,.405,.49]
 const REFUSAL_CHILD_SCALE := 2.10
 const REFUSAL_CHILD_SCALES := [2.10,2.16,2.22,2.16,2.10]
-const BALAI_BACKGROUND_LURAH_SCALE := 2.28
+const BALAI_BACKGROUND_LURAH_SCALE := 2.50
 const FEAST_BACKGROUND_SCALE := 1.98
 const FEAST_LURAH_START_SCALE := 1.90
-const HARBOR_CHILD_X := [.055,.145,.235]
+const HARBOR_LURAH_X := .415
+const HARBOR_CHILD_X := [.070,.180,.290]
 const CAPSULE_CROWD_X := [.065,.145,.225,.305,.385]
 const VICTORY_CHILD_MARKS := [Vector2(.045,.62),Vector2(.13,.62),Vector2(.215,.62),Vector2(.30,.62),Vector2(.65,.59)]
 const FOCAL_SCALES := {
@@ -424,7 +425,7 @@ func _draw_prologue(view: Vector2, motion: float) -> void:
 func _draw_harbor_lesson(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
 	var pier_y:=view.y*.57
-	var compass:=Vector2(view.x*.44,view.y*.475)
+	var compass:=Vector2(view.x*.49,view.y*.475)
 	draw_rect(Rect2(compass-Vector2(8,6)*unit,Vector2(17,13)*unit),Color("5b3b25"))
 	draw_rect(Rect2(compass-Vector2(6,4)*unit,Vector2(13,9)*unit),Color("ddbd77"))
 	draw_line(compass+Vector2(-4,0)*unit,compass+Vector2(5,0)*unit,Color("476b6a"),unit)
@@ -432,13 +433,13 @@ func _draw_harbor_lesson(view: Vector2, motion: float) -> void:
 	draw_colored_polygon(PackedVector2Array([
 		compass+Vector2(0,-4)*unit,compass+Vector2(-2,0)*unit,
 		compass+Vector2(2,0)*unit]),Color("9d4536"))
-	_actor(Vector2(view.x*.36,pier_y),unit*WIDE_STAGE_SCALES["harbor_lurah"],Color("7e623d"),false,0.0,"lurah")
+	_actor(Vector2(view.x*HARBOR_LURAH_X,pier_y),unit*WIDE_STAGE_SCALES["harbor_lurah"],Color("7e623d"),false,0.0,"lurah")
 	for i in range(3):
 		var child_key: String=["bagas","kinasih","gito"][i]
 		var feet:=Vector2(view.x*HARBOR_CHILD_X[i],pier_y+float(i%2)*2*unit)
 		if not EnvironmentState.reduced_motion: feet.y+=sin(motion*1.5+float(i)*.9)*unit
 		_actor(feet,unit*WIDE_STAGE_SCALES["harbor_child"],Color("6a8c75"),true,0.0,child_key)
-	var pointer:=Vector2(view.x*.41,pier_y-18*unit)
+	var pointer:=Vector2(view.x*.465,pier_y-18*unit)
 	draw_line(pointer,compass+Vector2(-3,1)*unit,Color("826347"),2*unit)
 	for i in range(3):
 		var wake:=Vector2(view.x*(.44+float(i)*.04),view.y*(.51+float(i%2)*.025))
@@ -807,7 +808,7 @@ func _draw_earthquake(view: Vector2, motion: float) -> void:
 		for i in [1,2,3,4,0]:
 			var council_key: String=["lurah","wira","beno","saras","raka"][i]
 			var pose:=_balai_council_pose(view,motion,i)
-			var actor_scale:=_focal_scale("lurah") if i==0 else 2.05
+			var actor_scale:=_focal_scale("lurah") if i==0 else 2.25
 			_actor(pose.feet,unit*actor_scale,Color("72583e").lerp(Color("a1846a"),float(i%3)/2.0),false,pose.stride,council_key)
 	elif motif_beat==2:
 		_actor(Vector2(view.x*.29,view.y*.64),unit*BALAI_BACKGROUND_LURAH_SCALE,Color("72583e"),false,0.0,"lurah")
