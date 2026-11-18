@@ -21,10 +21,11 @@ func _initialize() -> void:
 
 func _capture(label:String) -> void:
 	for frame in range(4): await process_frame
-	RenderingServer.force_draw(false)
-	var image:=root.get_texture().get_image()
-	assert(image.get_size()==Vector2i(width,375 if width==667 else 390))
-	image.save_png(output+"/"+label+".png")
+	if DisplayServer.get_name()!="headless":
+		RenderingServer.force_draw(false)
+		var image:=root.get_texture().get_image()
+		assert(image.get_size()==Vector2i(width,375 if width==667 else 390))
+		image.save_png(output+"/"+label+".png")
 	var rig:Node3D=renderer.actors_3d._body_rig(actor)
 	frames.append({"label":label,"position":[actor.position.x,actor.position.y],"pose":rig.pose_snapshot()})
 
