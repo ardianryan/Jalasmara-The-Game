@@ -1,5 +1,9 @@
 # Jalasmara visual evidence
 
+## Public staging and cutscene actor continuation, 18 November 2026
+
+The [public hub at 844×390](moodboard-staging-20261118/hub-ready-844x390.webp) and [forest at 667×375](moodboard-staging-20261118/forest-canopy-667x375.webp) came from the actual staging image for source `7c9936a`, CI PCK `ccb99c1f2800883b187eb5ea82ba95a1d7f50735f818f4c3bdb8363c070338f9`; the [release report](../reviews/moodboard-release-2026-11-18.md) links the 6/6 public smoke and SHA values. These are project-origin Chromium/SwiftShader captures, not physical-device or redistributed moodboard art. Later [Ki Lurah and Kedai crowd](cutscene-support-blocking-20261118/feast-after-667x375.webp), [garden children](cutscene-support-blocking-20261118/garden-after-667x375.webp), and [refusal group](cutscene-support-blocking-20261118/refusal-after-667x375.webp) are **local native candidate** images from source after that staging release; see the [blocking review](../reviews/cutscene-support-blocking-followup-2026-11-18.md). They are not visible on staging yet.
+
 ## Source-pinned local Phase 1 browser replay, 18 November 2026
 
 The [667×375 Gajah Mina intro](phase1-browser-current-20261118/boss-intro-667x375.png) and [ending card](phase1-browser-current-20261118/ending-card-667x375.png) come from local Chromium/SwiftShader replay of source `1249b90118672817f67820162e9086d9f2866d93`, PCK SHA-256 `4425ddabd7fc2da2aa0b3dafe3bbef094ae3fd146b73a2f2d498343f9cca3532` (81,698,736 bytes). The full 12-scene results are in `artifacts/browser/phase-one-journey-4b09ce88-08b6-4e27-8b35-3a0a3591e1b0/results.json`; [review and limits](../reviews/moodboard-parity-pass-2026-11-18.md). These are original project captures, not staging, physical-device or moodboard assets. Their source SHA precedes this documentation commit; runtime files are unchanged by the documentation.
