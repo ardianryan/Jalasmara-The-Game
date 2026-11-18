@@ -15,13 +15,13 @@ const CAPTURE_ONLY := [
 	{"id":"victory","beat":3},{"id":"epilogue","beat":2},{"id":"epilogue","beat":4}
 ]
 const WIDE_SHOT_CASES := [
-	{"key":"harbor_lurah","kind":"npc","role":"lurah","feet":Vector2(.33,.57),"minimum":78.0,"maximum":110.0},
-	{"key":"harbor_child","kind":"child","role":"bagas","feet":Vector2(.045,.57),"minimum":45.0,"maximum":70.0},
+	{"key":"harbor_lurah","kind":"npc","role":"lurah","feet":Vector2(.36,.57),"minimum":78.0,"maximum":110.0},
+	{"key":"harbor_child","kind":"child","role":"bagas","feet":Vector2(.055,.57),"minimum":55.0,"maximum":90.0},
 	{"key":"capsule_crowd","kind":"npc","role":"ratih","feet":Vector2(.055,.56),"minimum":40.0,"maximum":70.0},
 	{"key":"victory_nala","kind":"nala","role":"nala","feet":Vector2(.52,.64),"minimum":85.0,"maximum":110.0},
-	{"key":"victory_beno","kind":"npc","role":"beno","feet":Vector2(.38,.62),"minimum":55.0,"maximum":85.0},
-	{"key":"victory_child","kind":"child","role":"gito","feet":Vector2(.05,.62),"minimum":45.0,"maximum":75.0},
-	{"key":"victory_resident","kind":"resident","role":"darmi","feet":Vector2(.71,.62),"minimum":50.0,"maximum":85.0}
+	{"key":"victory_beno","kind":"npc","role":"beno","feet":Vector2(.40,.62),"minimum":55.0,"maximum":85.0},
+	{"key":"victory_child","kind":"child","role":"gito","feet":Vector2(.045,.62),"minimum":55.0,"maximum":90.0},
+	{"key":"victory_resident","kind":"resident","role":"darmi","feet":Vector2(.78,.62),"minimum":50.0,"maximum":85.0}
 ]
 const CASES := [
 	{"id":"prologue","beat":3,"role":"ranto","kind":"ranto","feet":Vector2(.27,.67),"scale":1.0},
@@ -167,6 +167,20 @@ func _run() -> void:
 			assert(wide_feet.y-wide_height>frame.upper.size.y*physical_scale-5.0,"Wide shot %s head behind title" % wide_case.key)
 			assert(wide_feet.y<dialogue.position.y+5.0,"Wide shot %s feet behind dialogue" % wide_case.key)
 			checked+=1
+		for i in range(1,action.HARBOR_CHILD_X.size()):
+			assert(action.HARBOR_CHILD_X[i]-action.HARBOR_CHILD_X[i-1]>=.08,"Harbor children need separate silhouettes")
+			checked+=1
+		for i in range(1,4):
+			assert(action.VICTORY_CHILD_MARKS[i].x-action.VICTORY_CHILD_MARKS[i-1].x>=.08,"Victory dock children need separate silhouettes")
+			checked+=1
+		var bagas_entering: Dictionary=frame.action_layer._map_bagas_pose(frame.action_layer.size,.05)
+		var bagas_settled: Dictionary=frame.action_layer._map_bagas_pose(frame.action_layer.size,1.5)
+		assert(bagas_entering.feet.x<bagas_settled.feet.x and is_equal_approx(bagas_settled.feet.y,frame.action_layer.size.y*.68),"Map-room Bagas must enter and settle on the floor")
+		assert(is_zero_approx(bagas_settled.stride),"Map-room Bagas must stop stepping")
+		var bagas_ink:=_ink_height(_region_for("child","bagas"),1.95*screen_unit*physical_scale)
+		assert(bagas_ink>=65.0 and bagas_ink<=100.0,"Map-room Bagas is still miniature or clipped: %.1f px at %s" % [bagas_ink,physical])
+		assert(bagas_settled.feet.y-bagas_ink>frame.upper.size.y*physical_scale-5.0 and bagas_settled.feet.y<dialogue.position.y+5.0,"Map-room Bagas must remain between title and dialogue")
+		checked+=4
 		for guard_index in range(2):
 			var approach: Dictionary=frame.action_layer._garden_guard_pose(frame.action_layer.size,.18,guard_index)
 			var landed: Dictionary=frame.action_layer._garden_guard_pose(frame.action_layer.size,1.5,guard_index)

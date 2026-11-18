@@ -61,13 +61,15 @@ const SUPPORT_STAGE_SCALES := {
 }
 const WIDE_STAGE_SCALES := {
 	"harbor_lurah": 2.30,
-	"harbor_child": 1.38,
+	"harbor_child": 1.75,
 	"capsule_crowd": 1.30,
 	"victory_nala": 2.38,
 	"victory_beno": 1.78,
-	"victory_child": 1.43,
+	"victory_child": 1.72,
 	"victory_resident": 1.55
 }
+const HARBOR_CHILD_X := [.055,.145,.235]
+const VICTORY_CHILD_MARKS := [Vector2(.045,.62),Vector2(.13,.62),Vector2(.215,.62),Vector2(.30,.62),Vector2(.65,.59)]
 const FOCAL_SCALES := {
 	"prologue:4:raka": 2.68,
 	"prologue:5:lurah": 2.65,
@@ -202,6 +204,7 @@ func _draw_fractured_pipe(view: Vector2, motion: float) -> void:
 func _draw_ancient_map(view: Vector2, motion: float) -> void:
 	var actor_unit:=_unit(view)
 	_draw_nala_daily(Vector2(view.x*.17,view.y*.68),actor_unit*1.75,2)
+	var bagas_pose:=_map_bagas_pose(view,motion)
 	var speaker: String={4:"saras",5:"lurah",6:"beno"}.get(motif_beat,"")
 	var center:=Vector2(view.x*.50,view.y*.38)
 	var unit:=maxf(1.0,view.y/270.0)
@@ -223,13 +226,18 @@ func _draw_ancient_map(view: Vector2, motion: float) -> void:
 		if reveal < .72+float(i)*.09: continue
 		var depth_y:=marker.y+(8.0+float(i)*7.0)*unit
 		draw_line(Vector2(marker.x,depth_y),Vector2(marker.x+(5.0+float(i)*3.0)*unit,depth_y),Color(.35,.90,1.0,.30),unit)
-	var uv_lamp:=Vector2(view.x*.91,view.y*.37)
+	var uv_lamp: Vector2=bagas_pose.feet+Vector2(-14,-53)*actor_unit
 	draw_colored_polygon(PackedVector2Array([uv_lamp,center+Vector2(-35,-33)*unit,center+Vector2(32,16)*unit]),Color(.37,.90,.98,.05+.11*reveal))
+	_actor(bagas_pose.feet,actor_unit*1.95,Color("638a83"),true,bagas_pose.stride,"bagas")
 	draw_rect(Rect2(uv_lamp,Vector2(13,8)*unit),Color("66583e"))
 	draw_rect(Rect2(uv_lamp+Vector2(2,1)*unit,Vector2(8,5)*unit),Color("6ce7ee"))
 	if not speaker.is_empty():
 		var coat:=Color("a79667") if speaker=="saras" else (Color("866c51") if speaker=="lurah" else Color("6f7891"))
 		_actor(Vector2(view.x*.80,view.y*.68),actor_unit*_focal_scale(speaker),coat,false,0.0,speaker)
+
+func _map_bagas_pose(view: Vector2, motion: float) -> Dictionary:
+	var arrival:=smoothstep(0.0,1.0,_progress(motion,.8))
+	return {"feet":Vector2(view.x*lerpf(.59,.64,arrival),view.y*.68),"stride":sin(motion*10.0)*.4 if arrival<1.0 else 0.0}
 
 func _unit(view: Vector2) -> float:
 	return maxf(.8,view.y/375.0)
@@ -394,13 +402,13 @@ func _draw_harbor_lesson(view: Vector2, motion: float) -> void:
 	draw_colored_polygon(PackedVector2Array([
 		compass+Vector2(0,-4)*unit,compass+Vector2(-2,0)*unit,
 		compass+Vector2(2,0)*unit]),Color("9d4536"))
-	_actor(Vector2(view.x*.33,pier_y),unit*WIDE_STAGE_SCALES["harbor_lurah"],Color("7e623d"),false,0.0,"lurah")
+	_actor(Vector2(view.x*.36,pier_y),unit*WIDE_STAGE_SCALES["harbor_lurah"],Color("7e623d"),false,0.0,"lurah")
 	for i in range(3):
 		var child_key: String=["bagas","kinasih","gito"][i]
-		var feet:=Vector2(view.x*(.045+float(i)*.065),pier_y+float(i%2)*2*unit)
+		var feet:=Vector2(view.x*HARBOR_CHILD_X[i],pier_y+float(i%2)*2*unit)
 		if not EnvironmentState.reduced_motion: feet.y+=sin(motion*1.5+float(i)*.9)*unit
 		_actor(feet,unit*WIDE_STAGE_SCALES["harbor_child"],Color("6a8c75"),true,0.0,child_key)
-	var pointer:=Vector2(view.x*.38,pier_y-18*unit)
+	var pointer:=Vector2(view.x*.41,pier_y-18*unit)
 	draw_line(pointer,compass+Vector2(-3,1)*unit,Color("826347"),2*unit)
 	for i in range(3):
 		var wake:=Vector2(view.x*(.44+float(i)*.04),view.y*(.51+float(i%2)*.025))
@@ -946,14 +954,15 @@ func _draw_victory(view: Vector2, motion: float) -> void:
 		var tablet:=Vector2(view.x*.52,view.y*(.42-.07*emerge))
 		draw_rect(Rect2(tablet,Vector2(12,9)*unit),Color("d8ad69"))
 		draw_rect(Rect2(tablet+Vector2(3,2)*unit,Vector2(5,4)*unit),Color("59e4df"))
-		_actor(Vector2(view.x*.38,view.y*.62),unit*WIDE_STAGE_SCALES["victory_beno"],Color("7c7958"),false,0.0,"beno")
+		_actor(Vector2(view.x*.40,view.y*.62),unit*WIDE_STAGE_SCALES["victory_beno"],Color("7c7958"),false,0.0,"beno")
 		for i in range(5):
 			var child_key: String=["gito","bagas","kinasih","cempaka","danu"][i]
 			var hop:=0.0 if EnvironmentState.reduced_motion else absf(sin(motion*4.0+float(i)*.9))*3.0*unit
-			_actor(Vector2(view.x*(.05+float(i)*.057),view.y*.62-hop),unit*WIDE_STAGE_SCALES["victory_child"],Color("7c7958"),true,0.0,child_key)
+			var mark: Vector2=VICTORY_CHILD_MARKS[i]
+			_actor(Vector2(view.x*mark.x,view.y*mark.y-hop),unit*WIDE_STAGE_SCALES["victory_child"],Color("7c7958"),true,0.0,child_key)
 		for i in range(2):
 			var resident_key: String=["darmi","ujang"][i]
-			var resident_feet:=Vector2(view.x*(.71+float(i)*.15),view.y*.62)
+			var resident_feet:=Vector2(view.x*(.78+float(i)*.12),view.y*.62)
 			_actor(resident_feet,unit*WIDE_STAGE_SCALES["victory_resident"],Color("8c7654"),false,0.0,resident_key)
 			var release:=smoothstep(0.0,1.0,_progress(motion-.4-float(i)*.18,1.1))
 			var capsule:=resident_feet+Vector2(16+release*8,-28+release*25)*unit
