@@ -4,8 +4,10 @@ const SIZES := [Vector2i(667,375),Vector2i(844,390)]
 const OUTPUT := "res://../artifacts/godot/phase-one-support-stage-parity/"
 const CASES := [
 	{"id":"prologue","beat":5,"label":"refusal"},
+	{"id":"garden_crisis","beat":2,"label":"garden_children"},
 	{"id":"earthquake","beat":2,"label":"balai"},
 	{"id":"epilogue","beat":1,"label":"feast"},
+	{"id":"epilogue","beat":2,"label":"feast_witnesses"},
 	{"id":"epilogue","beat":3,"label":"celebration"},
 ]
 
@@ -37,6 +39,14 @@ func _run() -> void:
 	for physical in SIZES:
 		root.size = physical
 		for settle in range(4): await process_frame
+		for index in range(6):
+			var lean: float = frame.action_layer._stage_lean(2.0,index,.04)
+			assert(absf(lean) <= .04, "Stage actor tilt exceeds the small pixel-motion budget")
+			checks += 1
+		environment.reduced_motion = true
+		assert(frame.action_layer._stage_lean(2.0,1) == 0.0, "Reduced motion must stop actor lean")
+		environment.reduced_motion = false
+		checks += 1
 		var unit: float = frame.action_layer._unit(frame.action_layer.size) * root.get_final_transform().y.length()
 		var refusal_x: Array = action.REFUSAL_CHILD_X
 		assert(refusal_x.size() == 5 and refusal_x[0] >= .05 and refusal_x[-1] <= .43, "Five children must fit on the refusal pier")
@@ -74,6 +84,13 @@ func _run() -> void:
 				RenderingServer.force_draw(false)
 				var image: Image = root.get_texture().get_image()
 				var path := OUTPUT + "%s-%dx%d.png" % [scene_case.label,physical.x,physical.y]
+				assert(image.save_png(ProjectSettings.globalize_path(path)) == OK, "Could not save " + path)
+				captures += 1
+				frame._process(.65)
+				for settle in range(2): await process_frame
+				RenderingServer.force_draw(false)
+				image = root.get_texture().get_image()
+				path = OUTPUT + "%s-late-%dx%d.png" % [scene_case.label,physical.x,physical.y]
 				assert(image.save_png(ProjectSettings.globalize_path(path)) == OK, "Could not save " + path)
 				captures += 1
 	environment.reduced_motion = old_motion

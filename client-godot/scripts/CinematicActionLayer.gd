@@ -282,26 +282,48 @@ func _pipe_outlet(view: Vector2, sealed: bool = false) -> Vector2:
 func _progress(motion: float, seconds: float) -> float:
 	return clampf(motion/seconds,0.0,1.0)
 
-func _actor(feet: Vector2, unit: float, coat: Color, child: bool = false, stride: float = 0.0, sprite_key: String = "") -> void:
+func _stage_lean(motion: float, index: int, amplitude: float = .028) -> float:
+	if EnvironmentState.reduced_motion: return 0.0
+	return sin(motion*1.6+float(index)*1.37)*amplitude
+
+func _draw_waist_sway(atlas: Texture2D, source: Rect2, dest: Rect2, feet: Vector2, lean: float, cut_y: float) -> void:
+	if absf(lean) < .001:
+		draw_texture_rect_region(atlas,dest,source)
+		return
+	var ratio:=cut_y/source.size.y
+	var waist:=dest.position+Vector2(dest.size.x*.5,dest.size.y*ratio)
+	var lower_source:=Rect2(source.position+Vector2(0,cut_y),Vector2(source.size.x,source.size.y-cut_y))
+	var lower_dest:=Rect2(Vector2(dest.position.x,waist.y),Vector2(dest.size.x,dest.size.y*(1.0-ratio)))
+	draw_texture_rect_region(atlas,lower_dest,lower_source)
+	var overlap:=2.0/source.size.y
+	var upper_source:=Rect2(source.position,Vector2(source.size.x,cut_y+2.0))
+	var upper_dest:=Rect2(dest.position,Vector2(dest.size.x,dest.size.y*(ratio+overlap)))
+	draw_set_transform(feet+Vector2(0,waist.y-feet.y),lean)
+	draw_texture_rect_region(atlas,Rect2(upper_dest.position-waist,upper_dest.size),upper_source)
+	draw_set_transform(Vector2.ZERO)
+
+func _actor(feet: Vector2, unit: float, coat: Color, child: bool = false, stride: float = 0.0, sprite_key: String = "", idle_lean: float = 0.0) -> void:
 	# The contact line stays on the deck while the near-camera figure grows.
 	draw_line(feet + Vector2(-13, 1) * unit, feet + Vector2(13, 1) * unit, Color(.12, .13, .13, .24), maxf(1.0, 2.0 * unit))
 	if RESIDENT_CELLS.has(sprite_key):
 		var atlas: Texture2D=VILLAGE_PORTRAITS if sprite_key=="darmi" else VILLAGE_RESIDENTS
 		var source: Rect2=RESIDENT_CELLS[sprite_key]
-		var dest:=Rect2(feet+Vector2(-20,-43)*unit,Vector2(40,44)*unit)
+		draw_set_transform(feet,idle_lean)
+		var dest:=Rect2(Vector2(-20,-43)*unit,Vector2(40,44)*unit)
 		draw_texture_rect_region(atlas,dest,source)
+		draw_set_transform(Vector2.ZERO)
 		return
 	if NPC_FACES.has(sprite_key):
 		var frame:=0 if absf(stride)<.18 else (1 if stride>0 else 3)
 		var source:=Rect2(frame*64,0,64,64)
 		var dest:=Rect2(feet+Vector2(-18,-39)*unit,Vector2(36,40)*unit)
-		draw_texture_rect_region(NPC_FACES[sprite_key],dest,source)
+		_draw_waist_sway(NPC_FACES[sprite_key],source,dest,feet,idle_lean,38.0)
 		return
 	if CHILD_CELLS.has(sprite_key):
 		var cell:Vector2i=CHILD_CELLS[sprite_key]
 		var source:=Rect2(cell.x*96,cell.y*128,96,128)
 		var dest:=Rect2(feet+Vector2(-17,-43)*unit,Vector2(34,44)*unit)
-		draw_texture_rect_region(CHILD_ATLAS,dest,source)
+		_draw_waist_sway(CHILD_ATLAS,source,dest,feet,idle_lean,82.0)
 		return
 	var scale:=unit*(.72 if child else 1.0)
 	draw_set_transform(feet,0.0,Vector2(scale,scale))
@@ -381,7 +403,7 @@ func _draw_prologue(view: Vector2, motion: float) -> void:
 			_actor(Vector2(view.x*.56,ground),unit*_focal_scale("lurah"),Color("7e623d"),false,0.0,"lurah")
 			for i in range(5):
 				var child_key: String=["bagas","kinasih","gito","cempaka","danu"][i]
-				_actor(Vector2(view.x*REFUSAL_CHILD_X[i],ground-4*unit+float(i%2)*3*unit),unit*REFUSAL_CHILD_SCALE,Color("5c8580").lerp(Color("c4824a"),float(i%3)/2.0),true,sin(motion*4.0+float(i))*.2,child_key)
+				_actor(Vector2(view.x*REFUSAL_CHILD_X[i],ground-4*unit+float(i%2)*3*unit),unit*REFUSAL_CHILD_SCALE,Color("5c8580").lerp(Color("c4824a"),float(i%3)/2.0),true,0.0,child_key,_stage_lean(motion,i,.038))
 			var staff:=Vector2(view.x*.63,ground)
 			draw_line(staff+Vector2(0,-87)*unit,staff+Vector2(0,2)*unit,Color("4d3527"),3*unit)
 			draw_rect(Rect2(staff+Vector2(-3,-91)*unit,Vector2(7,5)*unit),Color("d6b577"))
@@ -717,7 +739,7 @@ func _draw_garden(view: Vector2, motion: float) -> void:
 				var child_ground:=view.y*.67 if child_key=="gito" else view.y*.63+float(i%2)*2*unit
 				var rally:=smoothstep(0.0,1.0,_progress(motion-.12-float(i)*.13,.52))
 				var child_feet:=Vector2(view.x*child_x,child_ground-sin(rally*PI)*4*unit)
-				_actor(child_feet,unit*child_scale,Color("53766e"),true,0.0,child_key)
+				_actor(child_feet,unit*child_scale,Color("53766e"),true,0.0,child_key,_stage_lean(motion,i,.040))
 				if rally<1.0:
 					var shadow:=Vector2(view.x*child_x,child_ground)
 					draw_line(shadow-Vector2(6,0)*unit,shadow+Vector2(6,0)*unit,Color(.12,.13,.13,.28),unit)
@@ -802,7 +824,7 @@ func _draw_earthquake(view: Vector2, motion: float) -> void:
 			if council_key!=speaker_key:
 				feet=Vector2(view.x*(.17+float(support_index)*.14),view.y*.64)
 				support_index+=1
-			_actor(feet,unit*_focal_scale(council_key,SUPPORT_STAGE_SCALES["balai_council"]),Color("5c7f77").lerp(Color("b06b46"),float(i%2)),false,0.0,council_key)
+			_actor(feet,unit*_focal_scale(council_key,SUPPORT_STAGE_SCALES["balai_council"]),Color("5c7f77").lerp(Color("b06b46"),float(i%2)),false,0.0,council_key,_stage_lean(motion,i,.020))
 		if motif_beat==4:
 			draw_line(map_center+Vector2(-16,-2)*unit,map_center+Vector2(17,4)*unit,Color(.47,.90,.89,.67),2*unit)
 			draw_circle(map_center+Vector2(17,4)*unit,2*unit,Color("b5f8dc"))
@@ -1087,7 +1109,7 @@ func _draw_feast(view: Vector2, motion: float) -> void:
 		var back_keys: Array[String]=["darmi","ujang","sari","beno"]
 		var back_x: Array[float]=[.08,.29,.48,.55]
 		for i in range(back_keys.size()):
-			_actor(Vector2(view.x*back_x[i],view.y*.625),unit*SUPPORT_STAGE_SCALES["feast_"+back_keys[i]],Color("7c714b"),false,0.0,back_keys[i])
+			_actor(Vector2(view.x*back_x[i],view.y*.625),unit*SUPPORT_STAGE_SCALES["feast_"+back_keys[i]],Color("7c714b"),false,0.0,back_keys[i],_stage_lean(motion,i,.022))
 		for i in range(2):
 			var witness_key: String=["ratih","tedi"][i]
 			var pose:=_feast_witness_pose(view,motion,i)
@@ -1098,7 +1120,7 @@ func _draw_feast(view: Vector2, motion: float) -> void:
 			var villager_key: String=people_keys[i]
 			var hop:=0.0 if motif_beat!=3 or EnvironmentState.reduced_motion else absf(sin(motion*3.0+float(i)*.8))*2*unit
 			var floor_y := .655 if i%2==0 else .68
-			_actor(Vector2(view.x*FEAST_SUPPORT_X[i],view.y*floor_y-hop),unit*FEAST_BACKGROUND_SCALE,Color("7c714b"),false,0.0,villager_key)
+			_actor(Vector2(view.x*FEAST_SUPPORT_X[i],view.y*floor_y-hop),unit*FEAST_BACKGROUND_SCALE,Color("7c714b"),false,0.0,villager_key,_stage_lean(motion,i,.026))
 	var lurah_steps:=smoothstep(0.0,1.0,_progress(motion,.85)) if motif_beat==2 else 0.0
 	var lurah_x:=lerpf(.685,.60,lurah_steps)
 	var lurah_y:=lerpf(.655,.69,lurah_steps)
