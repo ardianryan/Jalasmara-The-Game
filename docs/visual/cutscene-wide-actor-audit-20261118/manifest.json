@@ -1,0 +1,89 @@
+{
+  "sourceCommit": "1db661e",
+  "godot": "4.7.2.stable.official.ed1daf0bf",
+  "renderer": "Compatibility native Metal",
+  "conversion": "cwebp 1.6.0 -lossless",
+  "status": "local audit; no runtime change or staging",
+  "files": [
+    {
+      "file": "boss_intro-01-667x375.webp",
+      "bytes": 301490,
+      "sha256": "b76eb665a82f5ba6ef074c01ed9df37c002847e7d1fd69830fe59675877cac81"
+    },
+    {
+      "file": "boss_phase_two-01-667x375.webp",
+      "bytes": 334820,
+      "sha256": "7a54c0f6b28f209ca718b204b1e4bd7a18756d014507a373878578cac98f1689"
+    },
+    {
+      "file": "cave_warning-02-667x375.webp",
+      "bytes": 222638,
+      "sha256": "c526ef579d6fa11d369c5f79ccb6f7ef92b4d5673c5c23a2c66ebc6630bd7351"
+    },
+    {
+      "file": "earthquake-01-844x390.webp",
+      "bytes": 364932,
+      "sha256": "f0852bf9289e10f5ca975d0ec2cd9f69f023553fa4c41ebaf3e8583a3e4c60b6"
+    },
+    {
+      "file": "earthquake-03-667x375.webp",
+      "bytes": 310074,
+      "sha256": "99519da4344c156eadac4a2f0163853485a5e881d222ed4639242114ada201e1"
+    },
+    {
+      "file": "epilogue-02-667x375.webp",
+      "bytes": 308612,
+      "sha256": "05c0309ee2b618ccd5fdc1eabea34c980aad4a1d14e090a2240484dd499b768a"
+    },
+    {
+      "file": "epilogue-02-844x390.webp",
+      "bytes": 375440,
+      "sha256": "fc25ecb5fca3cfbfa0a5b2a5992daffa783a0f8cf90a4c7641cae9e50d9bdf01"
+    },
+    {
+      "file": "first_dive-01-667x375.webp",
+      "bytes": 255714,
+      "sha256": "65bcf5196cfb53ee60b664507ded2bbbd507b810e5efe0dfa3ea1281df1dcb24"
+    },
+    {
+      "file": "first_kedai-01-667x375.webp",
+      "bytes": 290218,
+      "sha256": "49264ad19fbe42cdff7e4bda787d21eeac8eed13b73bb4ed8a872d685294cb3e"
+    },
+    {
+      "file": "first_service-01-667x375.webp",
+      "bytes": 286140,
+      "sha256": "c269e5bb30da454cbc391ad766b0c4526796c92d96552c4ebe151781903a3f1d"
+    },
+    {
+      "file": "garden_crisis-05-667x375.webp",
+      "bytes": 339226,
+      "sha256": "59817d0b1fc1b004ab5f229d95e3668aaf10116e71ddf01f7f5d7279d7208431"
+    },
+    {
+      "file": "prologue-04-667x375.webp",
+      "bytes": 311300,
+      "sha256": "edeb76462572187fc5767694cc8f05029f3498d1b60a15f72f17fee860210dca"
+    },
+    {
+      "file": "prologue-04-844x390.webp",
+      "bytes": 390750,
+      "sha256": "a3273434632c75e5f77efdcf9bf93d5ec45a95d0556d343d2947c2410f6127b6"
+    },
+    {
+      "file": "saras_visit-02-667x375.webp",
+      "bytes": 286008,
+      "sha256": "c3053e24c079ba4401993c513dc22ce6ff06f8513455fdc26aaaf5d9d1fc7f06"
+    },
+    {
+      "file": "victory-03-667x375.webp",
+      "bytes": 290564,
+      "sha256": "4c67db5860aeed8401eb7574bb1812288f8b7cc354302bc45b80574e731ace3c"
+    },
+    {
+      "file": "victory-03-844x390.webp",
+      "bytes": 350824,
+      "sha256": "f24941bde1d18b88099f46d115eda85c1c2809ac09e5841c1123b194340395f0"
+    }
+  ]
+}
