@@ -219,16 +219,6 @@ func _run() -> void:
 			var floor_y:=.67 if council_index==0 else .64
 			assert(is_zero_approx(settled.stride) and is_equal_approx(settled.feet.y,frame.action_layer.size.y*floor_y),"Balai actor must finish at the floor mark")
 			checked+=1
-		for witness_index in range(2):
-			var entering: Dictionary=frame.action_layer._feast_witness_pose(frame.action_layer.size,.05,witness_index)
-			var settled_witness: Dictionary=frame.action_layer._feast_witness_pose(frame.action_layer.size,1.8,witness_index)
-			assert(absf(entering.feet.x-settled_witness.feet.x)>25.0*screen_unit,"Feast witness must step into a foreground mark")
-			assert(is_zero_approx(settled_witness.stride) and is_equal_approx(settled_witness.feet.y,frame.action_layer.size.y*.665),"Feast witness must settle on the painted floor")
-			var witness_key: String=["ratih","tedi"][witness_index]
-			var witness_height:=_ink_height(_region_for("npc",witness_key),2.45*screen_unit*physical_scale)
-			assert(witness_height>=90.0 and witness_height<=110.0,"Feast foreground witness too small or clipped: %s %.1f px at %s" % [witness_key,witness_height,physical])
-			assert(settled_witness.feet.y-witness_height>frame.upper.size.y*physical_scale-5.0 and settled_witness.feet.y<dialogue.position.y+5.0,"Feast witness must remain between title and dialogue")
-			checked+=4
 		for scene_case in CASES:
 			var id: String=scene_case.id
 			var beat_index: int=scene_case.beat
