@@ -3,6 +3,9 @@ shader_type canvas_item;
 uniform float elapsed = 0.0;
 uniform int plate = 0;
 uniform float motion_strength = 1.0;
+uniform vec3 ambient_tint : source_color = vec3(1.0, 1.0, 1.0);
+uniform float ambient_strength = 0.0;
+uniform float lantern_strength = 1.0;
 
 void fragment() {
 	vec2 uv = UV;
@@ -85,7 +88,7 @@ void fragment() {
 	float bands = sin(uv.y * 170.0 + uv.x * 28.0 - elapsed * 2.1);
 	float caustic = smoothstep(0.72, 0.92, bands) * 0.09 * water_mask * motion_strength;
 	float lantern = glow * (0.74 + 0.26 * sin(elapsed * 2.3)) * motion_strength;
-	vec3 color = mix(shifted_color, tint, caustic);
-	color += vec3(1.0, 0.65, 0.24) * lantern;
+	vec3 color = mix(shifted_color, mix(tint, ambient_tint, ambient_strength), caustic);
+	color += vec3(1.0, 0.65, 0.24) * lantern * lantern_strength;
 	COLOR = vec4(color, clamp(max(water_mask, soft_mask) * 0.72 + glow, 0.0, 0.8) * motion_strength);
 }

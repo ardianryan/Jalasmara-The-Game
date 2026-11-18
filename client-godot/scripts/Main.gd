@@ -540,7 +540,7 @@ func _play_cutscene(id: String, done := Callable()) -> void:
 		saved.set_value(str(GameState.player.get("id","")),id,true)
 		saved.save("user://phase-one-cutscenes.cfg")
 		cutscene_id = ""
-		cutscene_frame.hide()
+		cutscene_frame.call("fade_out")
 		AudioManager.set_cinematic_bgm("")
 		var callbacks := cutscene_active_done.duplicate()
 		cutscene_active_done.clear()

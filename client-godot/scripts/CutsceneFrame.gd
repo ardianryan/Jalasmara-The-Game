@@ -8,6 +8,7 @@ const BACKDROP_TRANSITION_SEC := 0.38
 const SHOT_PAN_SEC := 0.85
 const BOSS_HEAL_SEC := 1.2
 const SURFACE_CLEAR_SEC := 2.7
+const EXIT_FADE_SEC := 0.34
 
 class SurfaceFogOverlay extends Control:
 	var elapsed := 0.0
@@ -56,6 +57,11 @@ var motif_beat := 0
 var motif_time := 0.0
 var skip_button: Button
 var shade_target := Color.TRANSPARENT
+var scene_tone := "warm"
+var scene_is_land := false
+var actor_tint_target := Color.WHITE
+var exiting := false
+var exit_elapsed := 0.0
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -177,9 +183,20 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	if not visible: return
+	if exiting:
+		if EnvironmentState.reduced_motion:
+			hide()
+			return
+		exit_elapsed = minf(exit_elapsed + maxf(delta, 0.0), EXIT_FADE_SEC)
+		modulate = Color(1.0, 1.0, 1.0, 1.0 - smoothstep(0.0, 1.0, exit_elapsed / EXIT_FADE_SEC))
+		if exit_elapsed >= EXIT_FADE_SEC:
+			hide()
+			return
+	_update_environment_tint()
 	if EnvironmentState.reduced_motion:
 		surface_fog.hide()
 		shade.color = shade_target
+		action_layer.modulate = actor_tint_target
 		transition_elapsed = BACKDROP_TRANSITION_SEC
 		outgoing_plate.hide()
 		outgoing_plate.texture = null
@@ -205,6 +222,7 @@ func _process(delta: float) -> void:
 			surface_fog.queue_redraw()
 	_update_boss_position()
 	shade.color = shade.color.lerp(shade_target, 1.0 - exp(-delta / 0.42))
+	action_layer.modulate = action_layer.modulate.lerp(actor_tint_target, 1.0 - exp(-delta / 0.42))
 	if outgoing_plate.visible:
 		transition_elapsed = minf(transition_elapsed + delta, BACKDROP_TRANSITION_SEC)
 		var transition := _transition_progress()
@@ -377,6 +395,10 @@ func _skip_style(fill: Color, border: Color) -> StyleBoxFlat:
 
 func present(title: String, beat: Dictionary, index: int, total: int, cinematic_id: String) -> void:
 	var was_visible := visible
+	exiting = false
+	exit_elapsed = 0.0
+	modulate = Color.WHITE
+	if is_instance_valid(skip_button): skip_button.disabled = false
 	visible = true
 	var scene_key := ""
 	match cinematic_id:
@@ -450,8 +472,12 @@ func present(title: String, beat: Dictionary, index: int, total: int, cinematic_
 	shot_label.text = str(beat.get("shot", ""))
 	progress_label.text = "%d / %d" % [index, total]
 	var tone := str(beat.get("tone", "warm"))
-	shade_target = {"warm":Color(0.34,0.19,0.08,0.19),"plum":Color(0.22,0.06,0.29,0.34),"teal":Color(0.02,0.32,0.34,0.20),"deep":Color(0.02,0.08,0.19,0.46)}.get(tone,Color.TRANSPARENT)
-	if EnvironmentState.reduced_motion or not was_visible: shade.color = shade_target
+	scene_tone = tone
+	scene_is_land = scene_key in ["prologue", "griya-arrival-dock", "kedai-interior", "garden-crisis", "balai-quake", "griya-map-room", "griya-beranda-moonlit"]
+	_update_environment_tint()
+	if EnvironmentState.reduced_motion or not was_visible:
+		shade.color = shade_target
+		action_layer.modulate = actor_tint_target
 	boss_art.visible = cinematic_id in ["boss_intro", "boss_phase_two"] or (cinematic_id == "victory" and index <= 2)
 	boss_atlas.atlas = BOSS_HEALED if cinematic_id == "victory" else BOSS_CORRUPTED
 	boss_previous.visible = cinematic_id == "victory" and index == 1 and not EnvironmentState.reduced_motion
@@ -460,3 +486,35 @@ func present(title: String, beat: Dictionary, index: int, total: int, cinematic_
 	_update_boss_position()
 	_update_boss_tint()
 	queue_redraw()
+
+func fade_out() -> void:
+	if not visible or EnvironmentState.reduced_motion:
+		hide()
+		return
+	exiting = true
+	exit_elapsed = 0.0
+	skip_button.disabled = true
+	skip_button.release_focus()
+
+func _update_environment_tint() -> void:
+	var narrative: Color = {"warm":Color(0.34,0.19,0.08,0.19),"plum":Color(0.22,0.06,0.29,0.34),"teal":Color(0.02,0.32,0.34,0.20),"deep":Color(0.02,0.08,0.19,0.46)}.get(scene_tone,Color.TRANSPARENT)
+	if not scene_is_land:
+		shade_target = narrative
+		actor_tint_target = Color.WHITE
+		living_material.set_shader_parameter("ambient_strength", 0.0)
+		living_material.set_shader_parameter("lantern_strength", 1.0)
+		return
+	var weather: Dictionary = EnvironmentState.snapshot()
+	var daylight := clampf((float(weather.get("presentedDaylight", 0.24)) - 0.24) / 0.76, 0.0, 1.0)
+	var minute := float(weather.get("presentedMinuteOfDay", 720.0))
+	var dusk := smoothstep(960.0, 1045.0, minute) * (1.0 - smoothstep(1055.0, 1120.0, minute))
+	var clouds := clampf(float(weather.get("clouds", 0.0)), 0.0, 1.0)
+	var sky := Color("173b50").lerp(Color("fff0d7"), daylight).lerp(Color("ffd09b"), dusk * 0.88)
+	var environment_alpha := clampf(0.13 * (1.0 - daylight) + 0.055 * dusk + 0.035 * clouds, 0.025, 0.18)
+	var environment := Color(sky.r, sky.g, sky.b, environment_alpha)
+	var narrative_weight := 0.76 if scene_tone in ["plum", "deep"] else 0.42
+	shade_target = environment.lerp(narrative, narrative_weight)
+	actor_tint_target = Color("dbe8eb").lerp(Color.WHITE, daylight).lerp(Color("ffe8c3"), dusk * 0.18)
+	living_material.set_shader_parameter("ambient_tint", sky)
+	living_material.set_shader_parameter("ambient_strength", 0.28)
+	living_material.set_shader_parameter("lantern_strength", lerpf(1.3, 0.72, daylight))

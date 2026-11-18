@@ -64,6 +64,7 @@ const scripts = [
   "scripts/tests/phase-one-shot-motion.gd",
   "scripts/tests/phase-one-screenplay-polish-capture.gd",
   "scripts/tests/phase-one-backdrop-transition.gd",
+  "scripts/tests/phase-one-light-continuity.gd",
   "scripts/tests/phase-one-frame-transitions.gd",
   "scripts/tests/phase-one-final-action-choreography.gd",
   "scripts/tests/phase-one-victory-dock.gd",
