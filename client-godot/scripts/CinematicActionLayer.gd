@@ -456,7 +456,7 @@ func _draw_harbor_lesson(view: Vector2, motion: float) -> void:
 	var close_rect:=Rect2(Vector2(-close_size*.51,-close_size*.99),Vector2(close_size,close_size))
 	draw_line(lurah_feet+Vector2(-16,1)*unit,lurah_feet+Vector2(18,1)*unit,Color(.15,.12,.11,.24),maxf(1.0,2.0*unit))
 	draw_set_transform(lurah_feet,_stage_lean(motion,0,.012)*approach)
-	var teaching_pose:=LURAH_TEACHING_POINT if not EnvironmentState.reduced_motion and motion>=1.35 and motion<3.15 else LURAH_TEACHING_CLOSE
+	var teaching_pose: Texture2D = LURAH_TEACHING_POINT if not EnvironmentState.reduced_motion and motion>=1.35 and motion<3.15 else LURAH_TEACHING_CLOSE
 	draw_texture_rect(teaching_pose,close_rect,false)
 	draw_set_transform(Vector2.ZERO)
 	if approach<.45:
