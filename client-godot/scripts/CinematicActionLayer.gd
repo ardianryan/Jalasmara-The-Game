@@ -73,6 +73,7 @@ const FEAST_SUPPORT_X := [.065,.15,.235,.32,.405,.49]
 const REFUSAL_CHILD_SCALE := 2.10
 const REFUSAL_CHILD_SCALES := [2.10,2.16,2.22,2.16,2.10]
 const BALAI_BACKGROUND_LURAH_SCALE := 2.50
+const BALAI_NEAR_SUPPORT_SCALES := [2.50, 2.60, 2.50]
 const FEAST_BACKGROUND_SCALE := 1.98
 const FEAST_LURAH_START_SCALE := 1.90
 const HARBOR_LURAH_X := .415
@@ -795,6 +796,15 @@ func _balai_council_pose(view: Vector2, motion: float, index: int) -> Dictionary
 	var stride:=sin(motion*12.0+float(index)*PI*.65)*.50 if entrance<1.0 else 0.0
 	return {"feet":feet,"stride":stride}
 
+func _balai_near_support_pose(view: Vector2, motion: float, index: int) -> Dictionary:
+	var unit:=_unit(view)
+	var settle:=smoothstep(0.0,1.0,_progress(motion-float(index)*.12,.8))
+	var x: float=[.17,.32,.47][index]
+	var y: float=[.68,.67,.66][index]
+	var feet:=Vector2(view.x*x-(1.0-settle)*10.0*unit,view.y*y)
+	var stride:=sin(motion*11.0+float(index)*1.1)*.38 if settle<1.0 else 0.0
+	return {"feet":feet,"stride":stride}
+
 func _draw_earthquake(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
 	var map_center:=Vector2(view.x*.70,view.y*.53)
@@ -823,11 +833,12 @@ func _draw_earthquake(view: Vector2, motion: float) -> void:
 		var support_index:=0
 		for i in range(4):
 			var council_key: String=["lurah","wira","beno","saras"][i]
-			var feet:=Vector2(view.x*.82,view.y*.66)
-			if council_key!=speaker_key:
-				feet=Vector2(view.x*(.17+float(support_index)*.14),view.y*.64)
+			if council_key==speaker_key:
+				_actor(Vector2(view.x*.82,view.y*.66),unit*_focal_scale(council_key,SUPPORT_STAGE_SCALES["balai_council"]),Color("5c7f77").lerp(Color("b06b46"),float(i%2)),false,0.0,council_key,_stage_lean(motion,i,.020))
+			else:
+				var pose:=_balai_near_support_pose(view,motion,support_index)
+				_actor(pose.feet,unit*float(BALAI_NEAR_SUPPORT_SCALES[support_index]),Color("5c7f77").lerp(Color("b06b46"),float(i%2)),false,pose.stride,council_key,_stage_lean(motion,i,.020))
 				support_index+=1
-			_actor(feet,unit*_focal_scale(council_key,SUPPORT_STAGE_SCALES["balai_council"]),Color("5c7f77").lerp(Color("b06b46"),float(i%2)),false,0.0,council_key,_stage_lean(motion,i,.020))
 		if motif_beat==4:
 			draw_line(map_center+Vector2(-16,-2)*unit,map_center+Vector2(17,4)*unit,Color(.47,.90,.89,.67),2*unit)
 			draw_circle(map_center+Vector2(17,4)*unit,2*unit,Color("b5f8dc"))
