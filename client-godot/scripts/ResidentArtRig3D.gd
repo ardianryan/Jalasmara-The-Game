@@ -14,6 +14,7 @@ var _plant:RefCounted
 var _contacts:Dictionary={}
 var _factor:=1.0
 var _drop:=0.0
+var _pelvis_shift_x:=0.0
 var _held:Node3D
 var _tint:=Color.WHITE
 var _work_facing:=Vector2.RIGHT
@@ -183,6 +184,13 @@ func _advance_contacts(at:Vector2,ground:Vector3,time:float) -> Dictionary:
 	_integration={"slices":slices,"logicalDistance":logical,"physicalDistance":physical,"integratedPhysicalDistance":travelled,"largestSlice":largest,"discontinuity":discontinuity,"initial":_contacts.is_empty()}
 	return contacts
 
+func _reach_drop(side:String,ankle:Vector3,shift_x:float) -> float:
+	var hip2:=_relative(data.joints[side+"Hip"])
+	var hip:=Vector3(hip2.x+shift_x,-hip2.y,-.2)
+	var reach:float=_length("upper_leg_"+side)+_length("lower_leg_"+side)-.001
+	var horizontal:=Vector2(hip.x-ankle.x,hip.z-ankle.z).length_squared()
+	return hip.y-ankle.y-sqrt(maxf(0,reach*reach-horizontal))
+
 func update_pose(tint:Color) -> void:
 	if not ready_rig or not is_instance_valid(actor): return
 	var camera:Camera3D=renderer.camera_3d
@@ -198,23 +206,34 @@ func update_pose(tint:Color) -> void:
 	if _contacts.is_empty() or not paused:
 		_contacts=_advance_contacts(actor.position,ground,float(actor.get("_elapsed")))
 	var ankles:Dictionary={}
-	_drop=0
 	for side in ["left","right"]:
 		var foot:Dictionary=data.parts["foot_"+side]
 		var source_ankle:Array=data.legs[side][2]
 		var sole:Vector3=to_local(_contacts.feet[side].sole)
 		var offset:=(_v(source_ankle)-_v(foot.sole))*_factor
 		ankles[side]=sole+Vector3(offset.x,-offset.y,0)
-		var hip2:=_relative(data.joints[side+"Hip"])
-		var hip:=Vector3(hip2.x,-hip2.y,-.2)
-		var reach:float=_length("upper_leg_"+side)+_length("lower_leg_"+side)-.001
-		var horizontal:=Vector2(hip.x-Vector3(ankles[side]).x,hip.z-Vector3(ankles[side]).z).length_squared()
-		var vertical:=sqrt(maxf(0,reach*reach-horizontal))
-		_drop=maxf(_drop,hip.y-Vector3(ankles[side]).y-vertical)
+	var hip_left:=_relative(data.joints.leftHip)
+	var hip_right:=_relative(data.joints.rightHip)
+	var centered:float=(Vector3(ankles.left).x-hip_left.x+Vector3(ankles.right).x-hip_right.x)*.5
+	_pelvis_shift_x=clampf(centered,-7.0*float(actor.body_scale),7.0*float(actor.body_scale))
+	var left_drop:=_reach_drop("left",Vector3(ankles.left),_pelvis_shift_x)
+	var right_drop:=_reach_drop("right",Vector3(ankles.right),_pelvis_shift_x)
+	_drop=maxf(0,maxf(left_drop,right_drop))
+	for adjustment in range(4):
+		if _drop<9.0*float(actor.body_scale): break
+		var strained_side:="left" if left_drop>=right_drop else "right"
+		var strained_hip:=hip_left if strained_side=="left" else hip_right
+		var needed:float=Vector3(ankles[strained_side]).x-float(strained_hip.x)-_pelvis_shift_x
+		var next_shift:=clampf(_pelvis_shift_x+signf(needed)*.5*float(actor.body_scale),-7.0*float(actor.body_scale),7.0*float(actor.body_scale))
+		if is_equal_approx(next_shift,_pelvis_shift_x): break
+		_pelvis_shift_x=next_shift
+		left_drop=_reach_drop("left",Vector3(ankles.left),_pelvis_shift_x)
+		right_drop=_reach_drop("right",Vector3(ankles.right),_pelvis_shift_x)
+		_drop=maxf(0,maxf(left_drop,right_drop))
 	_links.clear()
 	for side in ["left","right"]:
 		var hip2:=_relative(data.joints[side+"Hip"])
-		var hip:=Vector3(hip2.x,-hip2.y-_drop,-.2)
+		var hip:=Vector3(hip2.x+_pelvis_shift_x,-hip2.y-_drop,-.2)
 		var ankle:Vector3=ankles[side]
 		var knee:=_ik3(hip,ankle,_length("upper_leg_"+side),_length("lower_leg_"+side),_bend("upper_leg_"+side,"lower_leg_"+side))
 		_links["leg_"+side]={"start":hip,"joint":knee,"end":ankle,"first":_length("upper_leg_"+side),"second":_length("lower_leg_"+side)}
@@ -223,7 +242,7 @@ func update_pose(tint:Color) -> void:
 		var foot:Dictionary=data.parts["foot_"+side]
 		var foot_local:Vector3=to_local(_contacts.feet[side].sole)
 		_put("foot_"+side,_screen(_contacts.feet[side].sole)+(_center("foot_"+side)-_v(foot.sole))*_factor,0,foot_local.z)
-	for name in ["torso","head"]: _put(name,(_center(name)-_v(data.pivot))*_factor+Vector2(0,_drop),0,.02 if name=="torso" else .05)
+	for name in ["torso","head"]: _put(name,(_center(name)-_v(data.pivot))*_factor+Vector2(_pelvis_shift_x,_drop),0,.02 if name=="torso" else .05)
 	var walking:bool=str(state.clip)=="walk" and (actor.moved_velocity.length()>.1 or paused)
 	var work:float=1.0 if str(state.clip)=="work_loop" else clampf(float(state.elapsed)/.8,0,1) if str(state.clip)=="start_work" else 1-clampf(float(state.elapsed)/.65,0,1) if str(state.clip)=="end_work" else 0.0
 	if state.has("workFacing"):
@@ -234,9 +253,9 @@ func update_pose(tint:Color) -> void:
 	_hands_local.clear()
 	for index in range(2):
 		var side:="left" if index==0 else "right"
-		var shoulder:=_relative(data.joints[side+"Shoulder"])+Vector2(0,_drop)
+		var shoulder:=_relative(data.joints[side+"Shoulder"])+Vector2(_pelvis_shift_x,_drop)
 		var lower:Array=data.parts["lower_arm_"+side].bone
-		var hand:=_relative(lower[1])+Vector2(0,_drop)
+		var hand:=_relative(lower[1])+Vector2(_pelvis_shift_x,_drop)
 		if walking and not reduced: hand+=Vector2(sin(float(_contacts.phaseDistance)/float(_contacts.stride)*TAU+index*PI)*3.0,0)*float(actor.body_scale)
 		if index==1: hand=hand.lerp(shoulder+Vector2(4,(_length("upper_arm_"+side)+_length("lower_arm_"+side))*.55),work)
 		var reach:float=_length("upper_arm_"+side)+_length("lower_arm_"+side)-.001
@@ -314,7 +333,7 @@ func _build_prop(kind:String) -> void:
 		_box(Vector3(0,-11,0),Vector3(7,3,2),"bb8a51")
 
 func debug_status() -> Dictionary:
-	return {"id":str(actor.resident_id),"authoredViews":1,"view":"front_three_quarter","mirrored":false,"bodyScale":float(actor.body_scale),"pelvisDrop":_drop,"contacts":_contacts.duplicate(true),"integration":_integration.duplicate(true),"workFacing":[_work_facing.x,_work_facing.y],"separateProp":_held.get_child_count()>0,"hands":hands.duplicate(),"links":_links.duplicate(true),"clip":str(_state.get("clip","idle")),"parts":sprites.size(),"bodyDrawCalls":1,"rootMotion":false,"logicalDirection":str(_state.get("direction","south")),"source":"original reviewed resident pixel partitions"}
+	return {"id":str(actor.resident_id),"authoredViews":1,"view":"front_three_quarter","mirrored":false,"bodyScale":float(actor.body_scale),"pelvisDrop":_drop,"pelvisShiftX":_pelvis_shift_x,"contacts":_contacts.duplicate(true),"integration":_integration.duplicate(true),"workFacing":[_work_facing.x,_work_facing.y],"separateProp":_held.get_child_count()>0,"hands":hands.duplicate(),"links":_links.duplicate(true),"clip":str(_state.get("clip","idle")),"parts":sprites.size(),"bodyDrawCalls":1,"rootMotion":false,"logicalDirection":str(_state.get("direction","south")),"source":"original reviewed resident pixel partitions"}
 
 func pose_snapshot() -> Dictionary:
 	return debug_status()
