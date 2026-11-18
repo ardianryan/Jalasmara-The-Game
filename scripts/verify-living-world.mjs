@@ -69,6 +69,7 @@ const scripts = [
   "scripts/tests/phase-one-victory-dock.gd",
   "scripts/tests/phase-one-portrait-fallback.gd",
   "scripts/tests/phase-one-hero-staging.gd",
+  "scripts/tests/phase-one-support-stage-parity.gd",
   "scripts/tests/phase-one-director-capture.gd",
   "scripts/tests/world-atlas-layout.gd",
   "scripts/tests/render-performance.gd",
