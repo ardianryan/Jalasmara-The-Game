@@ -1,0 +1,15 @@
+# Coastal landform trial — rejected after native review
+
+Status: review-only artifact from `work/land-shore-silhouette-20261118`, based on source `928abf6069b4cc66c17006551b982c46b25623e8`. **No candidate geometry or test is integrated into the game.** The four-panel source experiment was discarded because its visual gain was too small for the requested moodboard parity.
+
+The existing `NaturalTerrainEdges3D.gd` produces rooted stone shoulders under the authoritative land polygons. The trial varied shoulder width and internal ring heights using a broad, deterministic world-position wave. It preserved the land polygons, stairs, routes, dock and bridge geometry, collision, and rock support floor. The focused fixture passed: long-shore vertical and width variation, rooted lower-floor contact, route clearance, and wood exclusion. Existing `natural-terrain-edges.gd` passed with eight actual surfaces, 513 active nodes, 515 excluded connector sections, and 249 supported nodes; `terrain-facets.gd` passed. The final native render and these focused tests emitted no `SCRIPT ERROR` or `ERROR:`. The first import in the fresh worktree emitted missing imported-font errors while building its empty `.godot` cache; the completed import and subsequent runs were clean.
+
+| Same-camera lower coast | Baseline source `928abf6` | Trial |
+| --- | --- | --- |
+| 667×375 | [before](../visual/land-cliff-landform-20261118/before-667x375.png) | [after](../visual/land-cliff-landform-20261118/after-667x375.png) |
+
+The original-size 844×390 pair was also inspected and remains as ignored local captures under `artifacts/godot/landform-before-928abf6/` in the main checkout and `artifacts/godot/landform-after-928abf6/` in the trial worktree. Its SHA-256 values were `dc7ad1856aac31dad19e95d70abbb437195c3186680f8573e7d9a58cdef771a2` before and `037ef8c8db4c110e861fdbaa191ecaf30fc34e7170731a4b50dbbbffd6999481` after. The curated 667×375 proof has SHA-256 `9d0129fca8db9d09b9dae4df85ac0fc61c7a5795655cc514a29dd81bb43600f5` before and `54f979b72d107a331f1248d0f4b0cc39f96cd1911504544420ec78daa2c9fefd` after.
+
+Review decision: the trial mostly rearranged facets within the same broad cliff band. The upper shoreline silhouette still followed the same long, level authoritative floor boundary, so the player-visible landform was not substantially more natural. The slight improvement did not justify replacing a stable geometry helper. Future work must solve the silhouette itself with a separately reviewed, nonwalkable visual edge or authored bank shape that keeps actual floors, stairs, route clearance, shoreline supports and server walkability intact. Capture both game sizes on the same camera again before accepting such a change. Neither this review nor the headless tests proves Windows/Samsung GPU timing or traversal acceptance.
+
+Tools and provenance: project-authored Godot 4.7.2 Compatibility renderer and scripts on Apple M2; no third-party tool, image source, new game asset, license or runtime dependency. Proof PNGs are original Jalasmara game captures. The external moodboard served as a reference and was not copied into the repository.
