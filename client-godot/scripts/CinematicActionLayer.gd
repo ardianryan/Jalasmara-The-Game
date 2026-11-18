@@ -21,6 +21,7 @@ const VILLAGE_RESIDENTS := preload("res://resources/art/village-residents-v1.png
 const LURAH_TEACHING_CLOSE := preload("res://resources/art/cinematics-v2/close-pose/ki-lurah-teaching.png")
 const LURAH_TEACHING_POINT := preload("res://resources/art/cinematics-v2/close-pose/ki-lurah-teaching-point.png")
 const GITO_SLING_RELEASE := preload("res://resources/art/cinematics-v2/close-pose/gito-sling-release.png")
+const VICTORY_CHILD_POSES := preload("res://resources/art/cinematics-v2/victory-child-poses.png")
 const PHASE_ONE_STORY := preload("res://scripts/PhaseOneCutscenes.gd")
 const RANTO_PORTRAIT := preload("res://resources/art/cinematics-v2/pak-ranto-portrait.png")
 const NALA_DIVING := {
@@ -82,7 +83,7 @@ const FEAST_LURAH_START_SCALE := 1.90
 const HARBOR_LURAH_X := .285
 const HARBOR_CHILD_X := [.045,.125,.205]
 const CAPSULE_CROWD_X := [.065,.145,.225,.305,.385]
-const VICTORY_CHILD_MARKS := [Vector2(.045,.62),Vector2(.13,.62),Vector2(.215,.62),Vector2(.30,.62),Vector2(.65,.59)]
+const VICTORY_CHILD_MARKS := [Vector2(.045,.62),Vector2(.13,.62),Vector2(.215,.62),Vector2(.72,.62),Vector2(.65,.59)]
 const FOCAL_SCALES := {
 	"prologue:4:raka": 2.68,
 	"prologue:5:lurah": 2.65,
@@ -1029,6 +1030,7 @@ func _draw_victory(view: Vector2, motion: float) -> void:
 		draw_rect(Rect2(0,view.y*(.52-.48*sweep),view.x,5*unit),Color(.56,1.0,.93,.08*(1.0-sweep)))
 		_draw_victory_piers(view,unit)
 		_draw_victory_sampan(view,unit,motion)
+		_draw_victory_near_deck(view,unit)
 		var emerge:=smoothstep(0.0,1.0,clampf(motion/1.7,0.0,1.0))
 		var focus:=smoothstep(0.0,1.0,clampf((motion-.45)/1.0,0.0,1.0))
 		var nala_feet:=Vector2(view.x*lerpf(.52,.54,focus),view.y*(.70-.03*emerge))
@@ -1036,9 +1038,9 @@ func _draw_victory(view: Vector2, motion: float) -> void:
 		var tablet:=nala_feet+Vector2(0,-81+15*emerge)*unit
 		draw_rect(Rect2(tablet,Vector2(12,9)*unit),Color("d8ad69"))
 		draw_rect(Rect2(tablet+Vector2(3,2)*unit,Vector2(5,4)*unit),Color("59e4df"))
-		var beno_feet:=Vector2(view.x*lerpf(.40,.39,focus),view.y*lerpf(.62,.68,focus))
-		_actor(beno_feet,unit*lerpf(WIDE_STAGE_SCALES["victory_beno"],2.46,focus),Color("7c7958"),false,0.0,"beno")
+		# Beno moves to the near dock for this beat; his raised wrench is the source pose.
 		for i in range(5):
+			if i==0 or i==1: continue # Gito and Bagas act on the near dock.
 			var child_key: String=["gito","bagas","kinasih","cempaka","danu"][i]
 			var cheer:=0.0
 			if not EnvironmentState.reduced_motion and (i==2 or i==3):
@@ -1056,12 +1058,13 @@ func _draw_victory(view: Vector2, motion: float) -> void:
 				draw_line(streamer,streamer+Vector2(5,-4)*unit,Color("7bf1d4",cheer*.9),2*unit)
 		for i in range(2):
 			var resident_key: String=["darmi","ujang"][i]
-			var resident_feet:=Vector2(view.x*(.78+float(i)*.12),view.y*(.62+float(i)*.035*focus))
+			var resident_feet:=Vector2(view.x*(.82+float(i)*.12),view.y*(.62+float(i)*.035*focus))
 			_actor(resident_feet,unit*WIDE_STAGE_SCALES["victory_resident"],Color("8c7654"),false,0.0,resident_key)
 			var release:=smoothstep(0.0,1.0,_progress(motion-.4-float(i)*.18,1.1))
 			var capsule:=resident_feet+Vector2(16+release*8,-28+release*25)*unit
 			draw_rect(Rect2(capsule,Vector2(5,9)*unit),Color("a854b3"))
 			draw_rect(Rect2(capsule+Vector2(1,1)*unit,Vector2(3,2)*unit),Color("df9be1"))
+		_draw_victory_near_actors(view,unit,motion)
 	for i in range(34):
 		var rise:=fposmod(motion*(15.0+float(i%5)*4.0)+float(i)*12.0,view.y*.75)
 		var x:=view.x*(.23+float((i*17)%67)*.009)
@@ -1070,6 +1073,39 @@ func _draw_victory(view: Vector2, motion: float) -> void:
 
 func _victory_berth(view: Vector2) -> Rect2:
 	return Rect2(view.x*.43,view.y*.60,view.x*.25,view.y*.12)
+
+func _draw_victory_near_deck(view: Vector2, unit: float) -> void:
+	var lip:=PackedVector2Array([
+		Vector2(0,view.y*.654),Vector2(view.x*.423,view.y*.654),
+		Vector2(view.x*.435,view.y*.716),Vector2(0,view.y*.724)
+	])
+	draw_colored_polygon(lip,Color("855938"))
+	for row in range(4):
+		var y:=view.y*(.662+float(row)*.016)
+		draw_line(Vector2(0,y),Vector2(view.x*(.425+float(row)*.002),y),Color("453122"),unit)
+		draw_line(Vector2(0,y+2*unit),Vector2(view.x*(.425+float(row)*.002),y+2*unit),Color("ae7d4d"),unit)
+	draw_line(Vector2(0,view.y*.72),Vector2(view.x*.435,view.y*.716),Color("30241d"),3*unit)
+
+func _draw_victory_near_child(view: Vector2, unit: float, motion: float, row: int, x: float, delay: float) -> void:
+	var floor_feet:=Vector2(roundf(view.x*x),roundf(view.y*.68))
+	var jump:=0.0 if EnvironmentState.reduced_motion else maxf(0.0,sin(maxf(0.0,motion-delay)*4.8))*7*unit
+	var pose_frame:=1 if EnvironmentState.reduced_motion or jump>2.0*unit else 0
+	var source:=Rect2(pose_frame*96,row*128,96,128)
+	var scale:=unit*2.48
+	var dest:=Rect2(floor_feet-Vector2(17,43)*scale-Vector2(0,roundf(jump)),Vector2(34,44)*scale)
+	draw_line(floor_feet+Vector2(-10,1)*unit,floor_feet+Vector2(10,1)*unit,Color(.12,.13,.13,.24),2*unit)
+	draw_texture_rect_region(VICTORY_CHILD_POSES,dest,source)
+	if jump>1.0:
+		draw_rect(Rect2(floor_feet+Vector2(-2,-2)*unit,Vector2(4,2)*unit),Color(.90,.74,.45,.55))
+
+func _draw_victory_near_actors(view: Vector2, unit: float, motion: float) -> void:
+	_draw_victory_near_child(view,unit,motion,0,.115,.22)
+	var beno_floor:=Vector2(roundf(view.x*.295),roundf(view.y*.68))
+	var cheer:=0.0 if EnvironmentState.reduced_motion else maxf(0.0,sin(maxf(0.0,motion-.13)*4.3))*3.5*unit
+	_actor(beno_floor-Vector2(0,roundf(cheer)),unit*2.52,Color("7c7958"),false,0.0,"beno",_stage_lean(motion,2,.035))
+	if cheer>0.5:
+		draw_line(beno_floor+Vector2(-8,1)*unit,beno_floor+Vector2(8,1)*unit,Color(.12,.13,.13,.20),2*unit)
+	_draw_victory_near_child(view,unit,motion,1,.415,.52)
 
 func _draw_victory_piers(view: Vector2, unit: float) -> void:
 	var berth:=_victory_berth(view)
