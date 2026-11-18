@@ -1,6 +1,6 @@
 # Bagas telescope pose: authored pixels, 18 November 2026
 
-Status: **isolated candidate** on `work/bagas-telescope-pixel-20261118`, based on `main` `1a68c72`. It is not yet integrated, exported, or staged. The change addresses one readable resident action, not full directional art or moodboard parity.
+Status: **integrated locally** as `56798df` after independent original-size review. The isolated candidate was `ec0329a` on `work/bagas-telescope-pixel-20261118`, based on `main` `1a68c72`; its patch ID matched the integration commit before the clean worktree and branch were removed. The change is not yet exported through exact-SHA CI or staged. It addresses one readable resident action, not full directional art or moodboard parity.
 
 Bagas now raises a small brass-and-teal telescope to his eye during his scheduled `work_loop/inspect` phase. The pose is authored on the original 96×128 pixel grid: the right shoulder, sleeve, elbow, forearm and hand form one continuous shape, and the telescope meets the hand and eye. The separate carried telescope is hidden only for that pose and restored with the normal rig. His idle/walk art, foot contact, route, scale, collider and server state remain unchanged. Gito's existing lookout pose remains selected by the same helper.
 
