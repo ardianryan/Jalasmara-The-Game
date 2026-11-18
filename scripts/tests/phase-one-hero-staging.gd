@@ -169,18 +169,24 @@ func _run() -> void:
 			assert(wide_feet.y-wide_height>frame.upper.size.y*physical_scale-5.0,"Wide shot %s head behind title" % wide_case.key)
 			assert(wide_feet.y<dialogue.position.y+5.0,"Wide shot %s feet behind dialogue" % wide_case.key)
 			checked+=1
-		for i in range(1,action.HARBOR_CHILD_X.size()):
-			var gap: float=(action.HARBOR_CHILD_X[i]-action.HARBOR_CHILD_X[i-1])*physical.x
-			var width: float=34.0*float(action.WIDE_STAGE_SCALES["harbor_child"])*focal_unit
-			assert(gap>=width,"Harbor children need distinct full-body silhouettes")
-			checked+=1
-		var child_half_width: float=17.0*float(action.WIDE_STAGE_SCALES["harbor_child"])*focal_unit
-		var left_child: float=action.HARBOR_CHILD_X[0]*physical.x-child_half_width
-		var right_child: float=action.HARBOR_CHILD_X[-1]*physical.x+child_half_width
-		var left_lurah: float=action.HARBOR_LURAH_X*physical.x-18.0*float(action.WIDE_STAGE_SCALES["harbor_lurah"])*focal_unit
-		assert(left_child>=8.0,"Harbor lesson first child clips the frame edge")
-		assert(right_child+4.0<=left_lurah,"Harbor lesson child and Lurah need silhouette clearance")
-		checked+=2
+		for stage in range(2):
+			var child_scale: float=(float(action.WIDE_STAGE_SCALES["harbor_child"]) if stage==0 else 1.72)*focal_unit
+			var child_bounds: Array[Vector2]=[]
+			for child_key in ["bagas","kinasih","gito"]:
+				var cell: Vector2i=action.CHILD_CELLS[child_key]
+				var ink: Rect2i=action.CHILD_ATLAS.get_image().get_region(Rect2i(cell.x*96,cell.y*128,96,128)).get_used_rect()
+				var center: float=action.HARBOR_CHILD_X[child_bounds.size()]*physical.x
+				child_bounds.append(Vector2(center+(-17.0+34.0*ink.position.x/96.0)*child_scale,center+(-17.0+34.0*ink.end.x/96.0)*child_scale))
+			for i in range(1,child_bounds.size()):
+				assert(child_bounds[i-1].y+4.0<=child_bounds[i].x,"Harbor children need distinct ink silhouettes")
+				checked+=1
+			assert(child_bounds[0].x>=8.0,"Harbor lesson first child clips the frame edge")
+			var lurah_pose: Texture2D=action.LURAH_TEACHING_CLOSE
+			var lurah_ink: Rect2i=lurah_pose.get_image().get_used_rect()
+			var lurah_size: float=(98.0 if stage==0 else 124.0)*focal_unit
+			var left_lurah: float=action.HARBOR_LURAH_X*physical.x+(-.51+float(lurah_ink.position.x)/128.0)*lurah_size
+			assert(child_bounds[-1].y+4.0<=left_lurah,"Harbor lesson child and Lurah need ink clearance")
+			checked+=2
 		for i in range(1,action.CAPSULE_CROWD_X.size()):
 			assert(action.CAPSULE_CROWD_X[i]-action.CAPSULE_CROWD_X[i-1]>=.075,"Capsule crowd adults must not collapse into one silhouette")
 			checked+=1

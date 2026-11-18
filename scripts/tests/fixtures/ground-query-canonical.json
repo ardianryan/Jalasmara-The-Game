@@ -48,40 +48,36 @@
         "village_dirt_lower_court_segment_5_0",
         "village_dirt_lower_court_segment_5_1",
         "village_dirt_lower_court_join_7_0",
-        "village_dirt_lower_court_segment_6_0",
-        "village_dirt_lower_court_segment_6_1",
-        "village_dirt_lower_court_segment_6_2",
-        "village_dirt_lower_court_join_8_0",
-        "village_dirt_lower_court_segment_7_0",
-        "village_dirt_lower_court_segment_7_1",
-        "village_dirt_lower_court_join_9_0",
+        "village_dirt_lower_court_joined_lower_spine_0",
+        "village_dirt_lower_court_joined_lower_spine_1",
+        "village_dirt_lower_court_joined_lower_spine_2",
         "village_dirt_lower_court_segment_8_0",
+        "village_dirt_lower_court_join_9_0",
         "village_dirt_lower_court_join_10_0",
-        "village_dirt_lower_court_segment_9_0",
-        "village_dirt_lower_court_join_11_0",
-        "village_dirt_lower_court_segment_12_0",
-        "village_dirt_lower_court_join_14_0",
-        "village_dirt_lower_court_join_48_0",
+        "village_dirt_lower_court_join_44_0",
+        "village_dirt_upper_court_segment_7_0",
+        "village_dirt_upper_court_join_8_0",
+        "village_dirt_upper_court_join_11_0",
+        "village_dirt_upper_court_segment_10_0",
         "village_dirt_upper_court_join_12_0",
         "village_dirt_upper_court_segment_11_0",
+        "village_dirt_upper_court_segment_11_1",
         "village_dirt_upper_court_join_13_0",
-        "village_dirt_upper_court_join_15_0",
-        "village_dirt_upper_court_segment_14_0",
-        "village_dirt_upper_court_join_16_0",
-        "village_dirt_upper_court_segment_15_0",
-        "village_dirt_upper_court_segment_15_1",
-        "village_dirt_upper_court_join_17_0",
-        "village_dirt_upper_court_segment_16_0",
-        "village_dirt_upper_court_segment_16_1",
-        "village_dirt_upper_court_segment_17_0",
-        "village_dirt_upper_court_segment_24_0",
-        "village_dirt_upper_court_segment_24_1",
-        "village_dirt_upper_court_segment_24_2",
-        "village_dirt_upper_court_segment_24_3",
-        "village_dirt_upper_court_join_25_0",
-        "village_dirt_upper_court_segment_38_0",
-        "village_dirt_upper_court_join_41_0",
-        "village_dirt_upper_court_segment_48_0"
+        "village_dirt_upper_court_segment_12_0",
+        "village_dirt_upper_court_segment_12_1",
+        "village_dirt_upper_court_segment_13_0",
+        "village_dirt_upper_court_segment_20_0",
+        "village_dirt_upper_court_segment_20_1",
+        "village_dirt_upper_court_segment_20_2",
+        "village_dirt_upper_court_segment_20_3",
+        "village_dirt_upper_court_join_21_0",
+        "village_dirt_upper_court_segment_34_0",
+        "village_dirt_upper_court_join_37_0",
+        "village_dirt_upper_court_segment_44_0",
+        "village_stone_tread_0",
+        "village_stone_tread_1",
+        "village_stone_tread_2",
+        "village_stone_tread_3"
       ]
     },
     "forest": {
@@ -586,7 +582,7 @@
       ],
       "matches": [
         8,
-        70
+        62
       ],
       "floorHeight": 96,
       "groundHeight": 96
@@ -599,7 +595,7 @@
       ],
       "matches": [
         8,
-        64
+        56
       ],
       "floorHeight": 96,
       "groundHeight": 96
@@ -612,7 +608,7 @@
       ],
       "matches": [
         8,
-        67
+        59
       ],
       "floorHeight": 96,
       "groundHeight": 96
@@ -625,7 +621,7 @@
       ],
       "matches": [
         8,
-        67
+        59
       ],
       "floorHeight": 96,
       "groundHeight": 96
@@ -1747,9 +1743,7 @@
       ],
       "matches": [
         7,
-        12,
-        53,
-        54
+        12
       ],
       "floorHeight": 48,
       "groundHeight": 60
@@ -1761,9 +1755,7 @@
         815.0009765625
       ],
       "matches": [
-        7,
-        53,
-        54
+        7
       ],
       "floorHeight": 48,
       "groundHeight": 48
@@ -1775,9 +1767,7 @@
         815.010009765625
       ],
       "matches": [
-        7,
-        53,
-        54
+        7
       ],
       "floorHeight": 48,
       "groundHeight": 48
@@ -1912,8 +1902,7 @@
       ],
       "matches": [
         8,
-        58,
-        59
+        51
       ],
       "floorHeight": 96,
       "groundHeight": 96
@@ -1926,8 +1915,7 @@
       ],
       "matches": [
         8,
-        58,
-        59
+        51
       ],
       "floorHeight": 96,
       "groundHeight": 96
@@ -1941,8 +1929,7 @@
       "matches": [
         8,
         12,
-        58,
-        59
+        51
       ],
       "floorHeight": 48,
       "groundHeight": 96
@@ -2126,8 +2113,8 @@
       "matches": [
         7,
         13,
-        55,
-        56
+        47,
+        49
       ],
       "floorHeight": 48,
       "groundHeight": 60
@@ -2140,8 +2127,8 @@
       ],
       "matches": [
         7,
-        55,
-        56
+        47,
+        49
       ],
       "floorHeight": 48,
       "groundHeight": 48
@@ -2154,8 +2141,8 @@
       ],
       "matches": [
         7,
-        55,
-        56
+        47,
+        49
       ],
       "floorHeight": 48,
       "groundHeight": 48
@@ -2290,8 +2277,8 @@
       ],
       "matches": [
         8,
-        61,
-        62
+        53,
+        54
       ],
       "floorHeight": 96,
       "groundHeight": 96
@@ -2304,8 +2291,8 @@
       ],
       "matches": [
         8,
-        61,
-        62
+        53,
+        54
       ],
       "floorHeight": 96,
       "groundHeight": 96
@@ -2319,8 +2306,8 @@
       "matches": [
         8,
         13,
-        61,
-        62
+        53,
+        54
       ],
       "floorHeight": 48,
       "groundHeight": 96

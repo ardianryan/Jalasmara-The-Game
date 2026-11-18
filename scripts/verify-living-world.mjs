@@ -70,6 +70,7 @@ const scripts = [
   "scripts/tests/phase-one-victory-dock.gd",
   "scripts/tests/phase-one-portrait-fallback.gd",
   "scripts/tests/phase-one-hero-staging.gd",
+  "scripts/tests/cutscene-wide-actor-audit.gd",
   "scripts/tests/phase-one-support-stage-parity.gd",
   "scripts/tests/phase-one-director-capture.gd",
   "scripts/tests/cutscene-acting-followup.gd",
