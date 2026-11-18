@@ -1,0 +1,20 @@
+# Hub stair–home–dock site composition: rejected native trial
+
+**Decision:** Keep the current `main` ground paint. This isolated trial was based on `0b123f9` in `work/hub-site-composition-20261118`. It modified `packages/shared/src/village-ground.ts` temporarily, then restored that file before this diagnostic commit. No runtime geometry, route graph, collision, elevation, building, camera, or server walkability change is proposed for integration.
+
+The previous narrow-trail trials left a bright projected V/Y across the lower court. The source is the 72-unit-wide `joined_lower_spine` paint following `(600,950) → (1120,1000) → (1370,950) → (1600,950)`. The eastern end is Gito's lookout activity at `(1520,980)` and `(1580,980)`, rather than a second building; the central steps end near `(1370,815)`, Tedi's home occupies approximately `x920–1090/y850–940`, and the dock gangway begins at `(1120,1125)`. These are the site landmarks that any redesign must connect visually.
+
+The trial ended the western earth ribbon near `(1240,976)` and replaced the eastern ribbon with four clipped, convex site facets: a stair toe from `x1289–1455/y815–933`, a home-side transition from `x1212–1365/y868–1005`, a central court from `x1337–1492/y902–1026`, and an eastern worn lookout clearing from `x1464–1630/y912–1019`. The three central facets used the existing stone material; the lookout remained dirt. All paint surfaces were nonwalkable, so the authoritative route and floor were untouched. The proposal was materially different from the rejected taper, jitter and loose-stone overlays: it removed the long orange arm as a complete site rather than narrowing its edge.
+
+Native Godot 4.7.2 Compatibility at the project fixture's fixed daylight camera showed why it still fails. The V disappears, but the central stone facets merge into one conspicuous pale tiled slab floating visually on the grass. Its straight edges and large uniform material area compete with the terrain, and the eastern dirt clearing reads as a separate clipped patch. The home-to-dock connection remains legible, yet the new court is less grounded than the baseline. The result cannot be called moodboard parity.
+
+| Original-size A/B, baseline left and trial right | Review |
+| --- | --- |
+| [Central stairs, 667×375 per pane](../visual/hub-site-composition-20261118/hub-central-stairs-ab-667x375.webp) | The slab dominates the stair and tree clearing. |
+| [Lower coast, 844×390 per pane](../visual/hub-site-composition-20261118/hub-lower-coast-ab-844x390.webp) | Home and dock remain readable, but the upper-right court is a pasted tiled plane. |
+
+`npm run typecheck` and the focused `village-ground.test.ts` suite passed 8/8 for the temporary candidate. The generated candidate world map SHA-256 was `4ac0734f4475ba202838de36be257dfc2240039243515708b5d8538aaf750b9b`. A fresh isolated-worktree Godot editor import exited zero but logged missing cached font/theme resources while building imports; the subsequent native fixture rendered all six hub/forest frames, printed `TERRAIN FACETS RENDER PASS`, and had no `SCRIPT ERROR` or `ERROR:`. There was no full world suite, browser traversal, device measurement, CI, or staging activation for this rejected source. Full captures/logs remain ignored under `artifacts/godot/hub-site-candidate/` and `.runtime/hub-site-*.log` in the disposable worktree.
+
+The two curated A/B sheets are project-owned renderer output, encoded with Pillow 11.3.0. SHA-256: `d8112eac63de1768888e3e6d8894abfa2dde9601fb4b1de2ffed174f546487b9` (667) and `b05f7f21d006e8441fc73f8f8c156e575a0a25fbc910b7dc3a5db23aa83f8cfe` (844). No external art, generator output, new tool dependency, or license was added.
+
+The next attempt needs a designed ground-material transition and terrain relief that are authored with the stair and lower court together. Another uniform stone polygon or clipped dirt patch would reproduce this failure. Keep the real east lookout walkable route intact; require original-size native A/B and moving traversal before accepting any replacement.
