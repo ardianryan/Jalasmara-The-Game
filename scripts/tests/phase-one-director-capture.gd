@@ -53,6 +53,8 @@ func _check_controls(frame: Control, dialogue: Control, physical: Vector2i, labe
 	assert(dialogue.text_view.get_theme_font_size("normal_font_size") * scale >= 15.99, "Dialogue body below 16 px: " + label)
 	assert(dialogue.nameplate.get_theme_font_size("font_size") * scale >= 15.99, "Speaker name below 16 px: " + label)
 	assert(view.encloses(frame.title_label.get_global_rect()), "Cinematic title outside viewport: " + label)
+	var browser_menu := Rect2(Vector2((float(physical.x) - 48.0) * .5, 4.0) / scale, Vector2(48.0, 48.0) / scale)
+	assert(not frame.title_label.get_global_rect().intersects(browser_menu), "Cinematic title overlaps browser menu: " + label)
 	assert(view.encloses(frame.shot_label.get_global_rect()), "Shot label outside viewport: " + label)
 	assert(view.encloses(frame.progress_label.get_global_rect()), "Progress label outside viewport: " + label)
 

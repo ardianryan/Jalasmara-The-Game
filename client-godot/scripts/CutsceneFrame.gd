@@ -96,10 +96,14 @@ func _ready() -> void:
 	lower.anchor_right = 1.0
 	lower.anchor_bottom = 1.0
 	add_child(lower)
-	title_label = _label(upper, 26, Color("f3c677"))
-	title_label.anchor_right = 0.82
+	# Reserve the center of the letterbox for the browser's persistent menu button.
+	title_label = _label(upper, 20, Color("f3c677"))
+	title_label.anchor_right = 0.44
 	title_label.offset_left = 24
-	title_label.offset_top = 7
+	title_label.offset_right = -12
+	title_label.offset_top = 3
+	title_label.offset_bottom = 51
+	title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	skip_button = Button.new()
 	skip_button.text = "Lewati"
 	skip_button.add_theme_font_override("font",BODY)
