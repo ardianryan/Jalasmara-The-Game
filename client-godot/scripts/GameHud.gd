@@ -713,8 +713,8 @@ func update_state(state: Dictionary) -> void:
 	_can_shoot = bool(state.get("canShoot",false))
 	_can_interact = bool(state.get("canInteract",false)) or _can_shoot
 	_can_net = bool(state.get("canNet",false))
-	_action_label.text = str(state.get("action",""))
-	_action_label.tooltip_text = _action_label.text
+	_action_label.text = str(state.get("actionShort",state.get("action","")))
+	_action_label.tooltip_text = str(state.get("action",""))
 	_action_label.visible = _can_interact and not _modal
 	if not _status_full_text.is_empty():
 		status_label.text = compact_status_text(_status_full_text,_action_label.text if _action_label.visible else "")

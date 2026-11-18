@@ -39,6 +39,12 @@ func run() -> void:
 				assert(minf(control.get_global_rect().size.x,control.get_global_rect().size.y)*scale >= 48)
 				assert(maxf(control.get_global_rect().size.x,control.get_global_rect().size.y)*scale <= 65,"Standalone controls must remain compact physical targets")
 			assert(hud.get("_identity_plate").get_global_rect().size.y*scale <= 83)
+			if physical == Vector2i(667,375):
+				hud.update_state({"canInteract":true,"action":"Masuk Gerbang: Kembali ke Bandar Hujung","actionShort":"Kembali ke Desa"})
+				for frame in range(2): await process_frame
+				assert(hud.get("_action_label").text == "Kembali ke Desa")
+				assert(hud.get("_action_label").tooltip_text == "Masuk Gerbang: Kembali ke Bandar Hujung")
+				assert(hud.get("_action_plate").get_global_rect().size.x*scale < 170,"Forest gate prompt must leave the small gameplay viewport open")
 		if DisplayServer.get_name()!="headless":
 			await RenderingServer.frame_post_draw
 			root.get_texture().get_image().save_png(output+"/%dx%d-night.png"%[physical.x,physical.y])

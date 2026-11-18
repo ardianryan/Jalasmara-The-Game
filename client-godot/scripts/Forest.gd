@@ -561,7 +561,8 @@ func _find_nearby() -> void:
 			action_label = ("Periksa: " if discoveries.has("forest_cache") else "Buka: ") + str(nearest.get("name","Peti Perbekalan"))
 		else:
 			action_label = "Amati: " + str(nearest.get("name",""))
-	var hud_state := {"area":"Hutan Pesisir Wringin","coins":GameState.player.get("coins",0),"weight":0,"capacity":GameState.player.get("bagCapacity",20),"objective":objective,"action":action_label,"canInteract":not nearest.is_empty() and not busy,"canNet":false,"diving":false}
+	var short_action := "Kembali ke Desa" if not nearest.is_empty() and str(nearest.get("id","")) == "return" else action_label
+	var hud_state := {"area":"Hutan Pesisir Wringin","coins":GameState.player.get("coins",0),"weight":0,"capacity":GameState.player.get("bagCapacity",20),"objective":objective,"action":action_label,"actionShort":short_action,"canInteract":not nearest.is_empty() and not busy,"canNet":false,"diving":false}
 	var environment = get_node_or_null("/root/EnvironmentState")
 	if environment != null:
 		hud_state.merge(environment.snapshot())
