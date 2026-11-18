@@ -1,0 +1,17 @@
+# Gito lookout pose trial — rejected, 18 November 2026
+
+Status: **diagnostic only**. No runtime source, test script, player scale, schedule, route or asset was retained. The trial began from local `main` `203e0287f5f745ae70bb6ee232137d90bf0d59bb`. It was never pushed or released to staging.
+
+The playable Gito at the pier uses `ResidentArtRig3D` and the project-owned resident cutout atlas, not the fallback voxel child. His scheduled `research` activity and dialogue make him a bridge lookout. A proposed four-second work cycle brought his right hand to his brow and lowered the separate slingshot into the left hand. It reused the existing source-pixel arm and hand masks, without new/generated art, camera zoom or gameplay changes. The first native version raised the hand only to the chin and was nearly invisible at gameplay size. A second version targeted the original source coordinate `[66,22]`, outside the head's right edge, and produced a more visible silhouette but failed visual review: the forearm became hidden by the source head mask, leaving the hand looking like a protrusion from Gito's face. This is not a convincing lookout pose.
+
+| Actual-size native frame | Evidence |
+| --- | --- |
+| 667×375 rest | [rest](../visual/gito-lookout-pose-rejected-20261118/rest-667x375.webp) |
+| 667×375 attempted inspect | [inspect](../visual/gito-lookout-pose-rejected-20261118/inspect-667x375.webp) |
+| 844×390 attempted inspect | [inspect](../visual/gito-lookout-pose-rejected-20261118/inspect-844x390.webp) |
+
+The lossless evidence hashes are `47f9d18196e6e058f280ee45cbabb3e4a10eb345d5a7d6c90bba6287dafe8bfd` (rest 667), `3be779290b859d10b98ab705abe3e8815e06eb25f8eeb8b319e7e2331354465d` (inspect 667), and `9576d284e1443c8f6529b015ad51c2933ad2fe33b5534495d3274122a3d4ebdc` (inspect 844). All were captured from the isolated candidate at the exact viewport sizes and are rejection evidence, not distributable game assets.
+
+Mechanical tests passed but cannot override this visual failure. The source cutout SHA-256 matched rig metadata (`6dc5fbb107327c97205660817cf245661bea838d50be606735fe2c6a247d413e`); Gito's original arm/hand masks contained opaque pixels; the proposed hand target was within his fixed 32.59-pixel arm reach. `python3 tools/npc-rig/test_resident_parts.py` passed all six residents/84 parts and exact rest reconstruction. Godot 4.7.2 headless `resident-art-rig.gd` passed 576 poses with maximum pelvis drop 3.124. Native `playable-resident-pixel-audit.gd` passed 667×375 and 844×390 with eight motion headings, original sole contacts and maximum pelvis drop 6.207. One initial fixture failure was caused by the trial test leaving reduced motion active before its pause assertion; after correcting only that test setup, the focused headless run passed. The final native original-size frames, however, remained visually unacceptable.
+
+Source and license: original `assets/source-2d/village-expansion-v1/cutouts/residents.png` and its `provenance.json`; the runtime partition atlas remains unchanged. The review used local Godot 4.7.2 Compatibility (Apple M2/OpenGL 4.1 Metal), Pillow for alpha/hash checks, and ImageMagick for screenshot inspection and lossless WebP evidence. The next art pass needs an independently pixel-authored side/rear arm silhouette or separately authored scout pose with uninterrupted shoulder-to-hand coverage. Merely moving the current one-view mask toward the forehead does not solve it. Review that source at 667×375 and 844×390 before touching production rig logic.
