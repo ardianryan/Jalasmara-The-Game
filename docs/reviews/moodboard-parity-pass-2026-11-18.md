@@ -1,5 +1,17 @@
 # Moodboard parity pass — 18 November 2026
 
+## 18 November continuation
+
+The eight-source-package checkpoint was recorded at `ab70368164c8303e47c575535d699d7784974b65` on GitHub, Gitea and GitLab. [GitHub Actions run 44233169286](https://github.com/ardianryan/Jalasmara-The-Game/actions/runs/44233169286) passed both verification and full-source-image jobs for that exact SHA. It does not verify later source changes and was not activated on staging.
+
+The [Phase 1 feast foreground package](cutscene-feast-foreground-2026-11-18.md) was reviewed at native 667×375 and 844×390 and cherry-picked as `c391130` on local `main`. Mbok Ratih and Kang Tedi are now grounded full-body witnesses in the Raka confrontation. Its final isolated Godot run passed 166 layout checks and 308 capture events without script errors. The full 16-scene audit found smaller children in wide harbor/victory shots and small Bagas in the map room; those three beats received the later pass-5 correction below. Other choreography and story gaps remain. No continuation package is staged.
+
+The [coastal cliff strata package](land-cliff-strata-2026-11-18.md) was reviewed at both original viewport sizes and cherry-picked as `4a36b9c` plus its final test note `b07de2a`. Three focused headless Godot checks and the native A/B passed without final script errors. The interrupted bedding is an incremental material improvement; the landform still has broad facets and a fairly uniform ledge height. Its focused test is registered in the combined world runner. The [pollution visibility diagnostic](ocean-pollution-visibility-diagnostic-2026-11-18.md) was merged as documentation only at `21943c7`: the underwater baseline renderer stalled during warmup, so no plume runtime change or visual pass is claimed. Both completed worktrees and branches were removed.
+
+The [children and Bagas staging package](cutscene-children-pass5-2026-11-18.md) was reviewed at native 667×375 and 844×390 and cherry-picked as `229d03d`. Three harbor-lesson children and five victory children have larger separated full-body marks, and Bagas physically holds the UV lamp in the map room. The isolated Godot run passed 184 layout checks and captured 308 frames without final script errors. This improves readability, but the painted-background/stage integration and victory boat opening remain schematic. Its worktree and branch were removed. Combined validation and a new exact-SHA CI run are still required before any staging activation.
+
+On combined local `main` after pass 5, `npm run typecheck`, `npm run check:world` (including the registered cliff strata test and 10-species/722-frame swim atlas), and `npm run build` (Godot Web export, Vite and API TypeScript) passed. Some existing Godot fixtures report ObjectDB cleanup warnings, with no script error in the completed checks. The API suite was not rerun locally because its isolated MongoDB/Redis services are unavailable; GitHub Actions must run it for the final SHA. The accepted worktrees/branches are removed, leaving `main` only. Static/native evidence is still insufficient to declare full moodboard parity, especially the side-on pollution plume, cinematic choreography and physical-device motion.
+
 The owner asked for full parity with the supplied cozy pixel-art and tactile HUD moodboards. This is an active visual acceptance pass, not a declaration that the current build meets that target. The reference images are comparison material only; they are not distributed as game assets.
 
 ## Baseline and acceptance

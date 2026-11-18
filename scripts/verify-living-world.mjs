@@ -98,6 +98,7 @@ const scripts = [
   "scripts/tests/hub-house-alignment.gd",
   "scripts/tests/gateway-architecture06.gd",
   "scripts/tests/natural-terrain-edges.gd",
+  "scripts/tests/land-cliff-strata.gd",
   "scripts/tests/terrain-facets.gd",
   "scripts/tests/coastline-foliage.gd",
   "scripts/tests/land-wind-coverage.gd",
