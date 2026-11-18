@@ -734,6 +734,7 @@ func set_modal(open: bool) -> void:
 	if is_instance_valid(root_control):
 		update_state(_state)
 		for button in _utilities: button.disabled = open
+		_status_panel.visible = not open and not status_label.text.is_empty() and Time.get_ticks_msec()/1000.0<_message_until
 
 func _release_net() -> void:
 	if _net_held:
@@ -744,8 +745,8 @@ func _release_net() -> void:
 func message(text: String) -> void:
 	if not is_instance_valid(status_label): return
 	status_label.text = text
-	_status_panel.visible = not text.is_empty()
 	_message_until = Time.get_ticks_msec()/1000.0+4.0
+	_status_panel.visible = not _modal and not text.is_empty()
 	_layout()
 
 func _process(delta: float) -> void:
