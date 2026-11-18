@@ -304,13 +304,21 @@ func _build_growth() -> void:
 		tool.begin(Mesh.PRIMITIVE_TRIANGLES)
 		sockets.append(tool)
 	var mounted_count := 0
+	var previous_kind_by_terrain: Dictionary = {}
 	for entry in preload("res://scripts/ReefGrowth.gd").placements(world):
 		var mount := _coral_mount(entry.at)
 		var anchor: Vector2 = mount.at
 		var column: int = mount.column
+		var terrain_index: int = mount.terrain
+		var kind: int = int(entry.kind)
+		if previous_kind_by_terrain.has(terrain_index):
+			var previous: Dictionary = previous_kind_by_terrain[terrain_index]
+			if int(previous.kind) == kind and absf(anchor.x - float(previous.x)) < 500.0:
+				kind = (kind + 1) % 3
+		previous_kind_by_terrain[terrain_index] = {"kind": kind, "x": anchor.x}
 		var texture := AtlasTexture.new()
 		texture.atlas = atlas
-		texture.region = Rect2(Vector2(int(entry.kind)*cell.x,0),cell)
+		texture.region = Rect2(Vector2(kind*cell.x,0),cell)
 		texture.filter_clip = true
 		var plant := Sprite3D.new()
 		plant.texture = texture
@@ -322,26 +330,30 @@ func _build_growth() -> void:
 		plant.alpha_scissor_threshold = 0.5
 		plant.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
 		plant.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		plant.scale = Vector3(entry.size.x/cell.x,entry.size.y/cell.y,1)
+		var visual_size: Vector2 = entry.size * (0.89 if kind == 2 else 1.04 if kind == 1 else 1.0)
+		plant.scale = Vector3(visual_size.x/cell.x,visual_size.y/cell.y,1)
 		plant.flip_h = bool(entry.flip)
 		var pivot:=Node3D.new()
 		pivot.name="CoralRoot"
 		pivot.position=_point(anchor,50)
-		plant.position=Vector3(0,entry.size.y*.5,0)
+		plant.position=Vector3(0,visual_size.y*.5,0)
 		add_child(pivot)
 		pivot.add_child(plant)
-		_coral_pivots.append({"node":pivot,"position":anchor,"size":entry.size,"terrain":mount.terrain})
+		_coral_pivots.append({"node":pivot,"position":anchor,"size":visual_size,"terrain":terrain_index,"kind":kind})
 		if int(mount.terrain) < 0 or _materials.size() != 3:
 			continue
 		mounted_count += 1
-		var half_width: float = minf(float(entry.size.x) * 0.28, 42.0)
-		var y := anchor.y + 6.0
-		var back_left := _point(Vector2(anchor.x - half_width, y - 5.0), 28.0)
-		var back_right := _point(Vector2(anchor.x + half_width, y - 5.0), 28.0)
-		var front_left := _point(Vector2(anchor.x - half_width * 0.78, y + 5.0), 51.0)
-		var front_right := _point(Vector2(anchor.x + half_width * 0.78, y + 5.0), 51.0)
-		_triangle(sockets[column], back_left, back_right, front_right, column, Color(0.78, 0.94, 0.89))
-		_triangle(sockets[column], back_left, front_right, front_left, column, Color(0.69, 0.84, 0.79))
+		var half_width: float = minf(float(visual_size.x) * 0.38, 54.0)
+		var back_left := _point(anchor + Vector2(-half_width, -3.0), 26.0)
+		var back_right := _point(anchor + Vector2(half_width, -3.0), 26.0)
+		var crown := _point(anchor + Vector2(0, -12.0), 43.0)
+		var front_left := _point(anchor + Vector2(-half_width * 0.82, 14.0), 52.0)
+		var front_right := _point(anchor + Vector2(half_width * 0.82, 14.0), 52.0)
+		var foot := _point(anchor + Vector2(0, 24.0), 60.0)
+		_triangle(sockets[column], back_left, crown, front_left, column, Color(0.70, 0.86, 0.79))
+		_triangle(sockets[column], crown, back_right, front_right, column, Color(0.78, 0.94, 0.87))
+		_triangle(sockets[column], crown, front_right, front_left, column, Color(0.88, 0.98, 0.89))
+		_triangle(sockets[column], front_left, front_right, foot, column, Color(0.56, 0.75, 0.72))
 		socket_counts[column] += 1
 	for column in range(3):
 		if socket_counts[column] == 0:

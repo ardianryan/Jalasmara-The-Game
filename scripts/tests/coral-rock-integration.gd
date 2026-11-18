@@ -18,6 +18,14 @@ func run() -> void:
 	var stone := terrain.get_node_or_null("CoralRootStone0") as MeshInstance3D
 	assert(stone != null and stone.mesh.get_surface_count() == 1, "Contacts should be one batched rock mesh")
 	assert(stone.get_child_count() == 0 and stone.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_OFF)
+	var vertices: PackedVector3Array = stone.mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]
+	assert(vertices.size()==terrain._coral_pivots.size()*12,"Each coral mount needs four facets, not one flat card")
+	var rear_depth := INF
+	var front_depth := -INF
+	for vertex in vertices:
+		rear_depth = minf(rear_depth, vertex.z)
+		front_depth = maxf(front_depth, vertex.z)
+	assert(rear_depth<=26.0 and front_depth>=60.0,"Rock sockets must overlap the shelf and taper forward")
 	for entry in terrain._coral_pivots:
 		var pivot: Node3D = entry.node
 		assert(int(entry.terrain) == 0)

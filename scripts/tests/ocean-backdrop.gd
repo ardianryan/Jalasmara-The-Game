@@ -78,6 +78,14 @@ func run() -> void:
 	var cards := 0
 	for layer in start.layers: cards += int(layer.cards)
 	assert(cards==48,"Expected deterministic atmospheric card count")
+	var grounded_arches := 0
+	for card in backdrop._cards:
+		var material: ShaderMaterial = card.material
+		var center: Vector2 = material.get_shader_parameter("card_center")
+		var region: Vector4 = material.get_shader_parameter("region")
+		if center == Vector2(1550,900) and is_equal_approx(region.x,1.0/3.0) and is_equal_approx(region.y,0.5):
+			grounded_arches += 1
+	assert(grounded_arches==1,"Memory arch must bridge the rear reef without adding cards")
 	backdrop.update_camera(Vector2(1790,740),weather,10.0)
 	var moved := _positions(backdrop)
 	assert(_distinct_motion(before,moved,0)>=3,"Horizontal parallax collapsed to a single plane")

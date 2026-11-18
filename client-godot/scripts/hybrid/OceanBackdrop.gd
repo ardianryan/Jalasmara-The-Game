@@ -120,7 +120,10 @@ func _build_cards(width: float) -> void:
 		var center := Vector2(120 + column * 980, 1530 + (column % 2) * 260)
 		_card(1, 1 if column % 2 == 0 else 0, center, Vector2(980, 1120), false)
 		_card(1, 4, Vector2(center.x + 320, 2900 + (column % 2) * 270), Vector2(1200, 1050), false)
-	for point in [Vector2(1520,1370),Vector2(3860,2070),Vector2(4930,3090)]:
+	# The rear arch rises behind the memory tablet and lands in the lower reef.
+	# It stays behind all gameplay geometry and leaves the swim lane clear.
+	_card(1, 4, Vector2(1550, 900), Vector2(1020, 900), false)
+	for point in [Vector2(3860,2070),Vector2(4930,3090)]:
 		_card(1, 2, point, Vector2(1020,920), false)
 	for column in range(9):
 		var x := 80.0 + column * (width / 8.0)

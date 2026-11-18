@@ -86,13 +86,14 @@ func _process(delta: float) -> void:
 		_visible_bubbles += 1
 		var offset := Model.bubble_offset(index, _time, 135.0, reduced)
 		var phase := fposmod(float(index) * 0.341 + _time * (0.24 + float(index % 3) * 0.035), 1.0)
-		var at := _source + offset * Vector2(0.72, 1.0)
+		var current := clampf(float(weather.get("current_x", 7.0)), 0.0, 22.0)
+		var at := _source + offset * Vector2(0.72, 1.0) + Vector2(phase * current * 0.9, 0)
 		at = (at / 2.0).round() * 2.0
-		var radius := 5.3 + float(index % 3) * 1.9
-		var alpha := _strength * (1.0 - phase) * 0.72
+		var radius := 6.4 + float(index % 3) * 2.1
+		var alpha := _strength * (0.34 + (1.0 - phase) * 0.48)
 		var basis := Basis.from_scale(Vector3(radius * 2.0, radius * 2.0, 1.0))
 		mm.set_instance_transform(index, Transform3D(basis, Vector3(at.x, -at.y, PLUME_DEPTH)))
-		mm.set_instance_color(index, Color(0.78, 0.43, 0.85, alpha))
+		mm.set_instance_color(index, Color(0.83, 0.38, 0.89, alpha))
 
 func debug_status() -> Dictionary:
 	return {"strength": maxf(0.0, _strength), "visibleBubbles": _visible_bubbles, "budget": Model.MAX_UNDERWATER_BUBBLES, "source": [_source.x, _source.y]}
