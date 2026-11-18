@@ -1,0 +1,16 @@
+{
+  "asset": "Gito rear-facing head, vest and heels",
+  "status": "isolated native-review candidate; not a released asset",
+  "source": "../cutouts/residents.png",
+  "sourceSha256": "6dc5fbb107327c97205660817cf245661bea838d50be606735fe2c6a247d413e",
+  "authoring": "Project-owned pixels drawn at 96x128 through tools/npc-rig/author_gito_rear_candidate.py using Python and Pillow; no generated or borrowed moodboard pixels",
+  "outputs": [
+    "gito-rear-study.png",
+    "gito-rear-composed-study.png",
+    "../../../../client-godot/resources/art/resident-rigs-v1/gito-rear-upper.png",
+    "../../../../client-godot/resources/art/resident-rigs-v1/gito-rear-foot-left.png",
+    "../../../../client-godot/resources/art/resident-rigs-v1/gito-rear-foot-right.png"
+  ],
+  "license": "Original Jalasmara artwork under project LICENSE section 2",
+  "limits": "Only Gito north/rear uses this study. Other headings and Bagas remain front-three-quarter pending separately authored views. Native and device acceptance must be recorded separately."
+}

@@ -24,6 +24,10 @@ var _part_transforms:Dictionary={}
 var _body_material:ShaderMaterial
 var _lookout_mesh:MeshInstance3D
 var _lookout_material:ShaderMaterial
+var _rear_mesh:MeshInstance3D
+var _rear_material:ShaderMaterial
+var _rear_feet:Dictionary={}
+var _rear_foot_materials:Dictionary={}
 var _integration:Dictionary={}
 var ready_rig:=false
 
@@ -62,6 +66,7 @@ void fragment() { vec4 texel=texture(atlas_tex,part_uv); if(texel.a<0.5) discard
 	add_child(body_mesh)
 	if str(actor.resident_id)=="npc_kid_gito":
 		_configure_lookout_pose("gito-lookout.png")
+		_configure_rear_pose()
 	elif str(actor.resident_id)=="npc_kid_bagas":
 		_configure_lookout_pose("bagas-telescope.png")
 	var index:=0
@@ -107,6 +112,46 @@ void fragment() { vec4 texel=texture(pose_tex,UV); if(texel.a<0.5) discard; ALBE
 	_lookout_mesh.visible=false
 	add_child(_lookout_mesh)
 
+func _configure_rear_pose() -> void:
+	var pose:Texture2D=load("res://resources/art/resident-rigs-v1/gito-rear-upper.png")
+	if pose==null: return
+	_rear_mesh=MeshInstance3D.new()
+	_rear_mesh.name="AuthoredGitoRearUpper"
+	var quad:=QuadMesh.new()
+	quad.size=Vector2(96,128)*_factor
+	_rear_mesh.mesh=quad
+	_rear_material=ShaderMaterial.new()
+	var shader:=Shader.new()
+	shader.code="""shader_type spatial;
+render_mode unshaded, cull_disabled;
+uniform sampler2D pose_tex : source_color, filter_nearest, repeat_disable;
+uniform vec4 readable_tint : source_color = vec4(1.0);
+void fragment() { vec4 texel=texture(pose_tex,UV); if(texel.a<0.5) discard; ALBEDO=texel.rgb*readable_tint.rgb; }
+"""
+	_rear_material.shader=shader
+	_rear_material.set_shader_parameter("pose_tex",pose)
+	_rear_mesh.material_override=_rear_material
+	_rear_mesh.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_rear_mesh.visible=false
+	add_child(_rear_mesh)
+	for side in ["left","right"]:
+		var foot_texture:Texture2D=load("res://resources/art/resident-rigs-v1/gito-rear-foot-"+side+".png")
+		if foot_texture==null: continue
+		var foot_mesh:=MeshInstance3D.new()
+		foot_mesh.name="AuthoredGitoRearFoot"+side.capitalize()
+		var foot_quad:=QuadMesh.new()
+		foot_quad.size=Vector2.ONE
+		foot_mesh.mesh=foot_quad
+		var foot_material:=ShaderMaterial.new()
+		foot_material.shader=shader
+		foot_material.set_shader_parameter("pose_tex",foot_texture)
+		foot_mesh.material_override=foot_material
+		foot_mesh.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		foot_mesh.visible=false
+		add_child(foot_mesh)
+		_rear_feet["foot_"+side]=foot_mesh
+		_rear_foot_materials["foot_"+side]=foot_material
+
 func _v(value:Array) -> Vector2:
 	return Vector2(float(value[0]),float(value[1]))
 
@@ -124,8 +169,14 @@ func _put(name:String,at:Vector2,angle:float,depth:float) -> void:
 	var width:float=float(rect[2])*_factor
 	var height:float=float(rect[3])*_factor
 	if bool(part.hiddenByAuthoredClothing): width=0; height=0
+	if _rear_mesh!=null and _rear_mesh.visible and name in ["head","torso"]: width=0; height=0
 	var transform:=Transform3D(Basis(rotation.x*width,rotation.y*height,rotation.z),Vector3(at.x,-at.y,depth))
-	body_mesh.multimesh.set_instance_transform(int(sprites[name]),transform)
+	if _rear_mesh!=null and _rear_mesh.visible and _rear_feet.has(name):
+		var alternate:MeshInstance3D=_rear_feet[name]
+		alternate.transform=Transform3D(transform.basis,transform.origin+Vector3(0,0,.02))
+		body_mesh.multimesh.set_instance_transform(int(sprites[name]),Transform3D(Basis(rotation.x*0.0,rotation.y*0.0,rotation.z),transform.origin))
+	else:
+		body_mesh.multimesh.set_instance_transform(int(sprites[name]),transform)
 	_part_transforms[name]=transform
 
 func _bone(name:String,start:Vector2,end:Vector2,depth:float) -> void:
@@ -228,6 +279,13 @@ func update_pose(tint:Color) -> void:
 	_body_material.set_shader_parameter("readable_tint",tint)
 	var state:Dictionary=actor.body_animation_state()
 	var lookout:bool=_lookout_mesh!=null and str(state.get("clip",""))=="work_loop" and str(state.get("workPhase",""))=="inspect"
+	var rear:bool=_rear_mesh!=null and not lookout and str(state.get("direction",""))=="north"
+	if _rear_mesh!=null:
+		_rear_material.set_shader_parameter("readable_tint",tint)
+		_rear_mesh.visible=rear
+		for name in _rear_feet:
+			_rear_feet[name].visible=rear
+			_rear_foot_materials[name].set_shader_parameter("readable_tint",tint)
 	if _lookout_mesh!=null:
 		_lookout_material.set_shader_parameter("readable_tint",tint)
 		_lookout_mesh.visible=lookout
@@ -266,6 +324,8 @@ func update_pose(tint:Color) -> void:
 		_drop=maxf(0,maxf(left_drop,right_drop))
 	if _lookout_mesh!=null:
 		_lookout_mesh.position=Vector3((48.0-float(data.pivot[0]))*_factor+_pelvis_shift_x,-(64.0-float(data.pivot[1]))*_factor-_drop,.15)
+	if _rear_mesh!=null:
+		_rear_mesh.position=Vector3((48.0-float(data.pivot[0]))*_factor+_pelvis_shift_x,-(64.0-float(data.pivot[1]))*_factor-_drop,.04)
 	_links.clear()
 	for side in ["left","right"]:
 		var hip2:=_relative(data.joints[side+"Hip"])
@@ -371,7 +431,7 @@ func _build_prop(kind:String) -> void:
 		_box(Vector3(0,-11,0),Vector3(7,3,2),"bb8a51")
 
 func debug_status() -> Dictionary:
-	return {"id":str(actor.resident_id),"authoredViews":1,"view":"front_three_quarter","mirrored":false,"bodyScale":float(actor.body_scale),"pelvisDrop":_drop,"pelvisShiftX":_pelvis_shift_x,"contacts":_contacts.duplicate(true),"integration":_integration.duplicate(true),"workFacing":[_work_facing.x,_work_facing.y],"separateProp":_held.get_child_count()>0,"hands":hands.duplicate(),"links":_links.duplicate(true),"clip":str(_state.get("clip","idle")),"lookoutPose":_lookout_mesh!=null and _lookout_mesh.visible,"parts":sprites.size(),"bodyDrawCalls":1,"rootMotion":false,"logicalDirection":str(_state.get("direction","south")),"source":"original reviewed resident pixel partitions"}
+	return {"id":str(actor.resident_id),"authoredViews":2 if _rear_mesh!=null else 1,"view":"rear" if _rear_mesh!=null and _rear_mesh.visible else "front_three_quarter","mirrored":false,"bodyScale":float(actor.body_scale),"pelvisDrop":_drop,"pelvisShiftX":_pelvis_shift_x,"contacts":_contacts.duplicate(true),"integration":_integration.duplicate(true),"workFacing":[_work_facing.x,_work_facing.y],"separateProp":_held.get_child_count()>0,"hands":hands.duplicate(),"links":_links.duplicate(true),"clip":str(_state.get("clip","idle")),"lookoutPose":_lookout_mesh!=null and _lookout_mesh.visible,"parts":sprites.size(),"bodyDrawCalls":4 if _rear_mesh!=null and _rear_mesh.visible else 1,"rootMotion":false,"logicalDirection":str(_state.get("direction","south")),"source":"original reviewed resident pixel partitions plus authored Gito rear upper and heels"}
 
 func pose_snapshot() -> Dictionary:
 	return debug_status()

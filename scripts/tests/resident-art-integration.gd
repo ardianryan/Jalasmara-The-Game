@@ -38,7 +38,8 @@ func _assert_resident(actor:Node2D) -> void:
 	assert(rig!=null and rig.get_script().resource_path.ends_with("ResidentArtRig3D.gd"),"Actual LandActors must select original-art rig by canonical resident ID")
 	assert(_rig(actor)==rig,"Repeated production lookup must reuse one rig")
 	var pose:Dictionary=rig.pose_snapshot()
-	assert(str(pose.id)==str(actor.resident_id) and pose.authoredViews==1 and not pose.mirrored)
+	var expected_views:=2 if str(actor.resident_id)=="npc_kid_gito" else 1
+	assert(str(pose.id)==str(actor.resident_id) and pose.authoredViews==expected_views and not pose.mirrored)
 	assert(rig.find_children("OriginalResidentParts","MultiMeshInstance3D",true,false).size()==1,"One original-body draw holder per resident")
 	assert(rig.find_children("SeparateHeldProp","Node3D",true,false).size()==1 and pose.separateProp,"One independent role prop holder per resident")
 	assert(rig._held.global_position.distance_to(rig.hands.right)<.001,"Actual integrated prop remains attached to opaque palm")

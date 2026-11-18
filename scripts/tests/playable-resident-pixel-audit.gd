@@ -45,6 +45,8 @@ func _step(velocity:Vector2,elapsed:float) -> void:
 	actor._body_animation.update(.1,actor.moved_velocity,false,false,false,false,false,actor.activity_kind)
 	renderer.actors_3d.update_actors(.1)
 	var pose:Dictionary=renderer.actors_3d._body_rig(actor).pose_snapshot()
+	if resident_id=="npc_kid_gito":
+		assert(str(pose.view)==("rear" if str(actor.body_animation_state().direction)=="north" else "front_three_quarter"),"Gito rear source must follow north-facing travel only")
 	max_drop=maxf(max_drop,float(pose.pelvisDrop))
 	if float(pose.pelvisDrop)>=9*float(actor.body_scale):
 		deep_drops.append({"at":[actor.position.x,actor.position.y],"velocity":[actor.moved_velocity.x,actor.moved_velocity.y],"drop":pose.pelvisDrop,"shift":pose.get("pelvisShiftX",0),"links":pose.links})
@@ -133,6 +135,12 @@ func _run() -> void:
 			_step(directions[index],.1)
 			if failed: return
 			if tick in [2,6]: await _capture("heading-%d-step-%d"%[index,tick])
+		if resident_id=="npc_kid_gito" and index==3:
+			actor.moved_velocity=Vector2.ZERO
+			actor._body_animation.update(.2,Vector2.ZERO,false,false,false,false,false,actor.activity_kind)
+			renderer.actors_3d.update_actors(.2)
+			assert(str(rig.pose_snapshot().view)=="rear","Stopped north-facing Gito must keep authored rear view")
+			await _capture("heading-3-stop-rear")
 		for tick in range(8):
 			_step(-directions[index],.1)
 			if failed: return
