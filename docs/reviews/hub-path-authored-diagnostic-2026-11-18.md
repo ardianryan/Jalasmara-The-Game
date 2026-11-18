@@ -1,0 +1,18 @@
+# Hub path composition trial — rejected
+
+**Decision:** keep the existing hub path. This was a visual-only experiment on branch `work/hub-path-authored-20261118` from `292d8b3`. The candidate source was restored before this report was committed. No route, collision, floor, material, server state, or rendering change is proposed for integration.
+
+The remaining orange Y in the central hub comes from the 72-unit `joined_lower_spine` dirt ribbon in `packages/shared/src/village-ground.ts`: `(600,950) → (1120,1000) → (1370,950) → (1600,950)`. The camera turns its shallow bend into a strong diagonal. The previous `hub-v-bounded` change already removed the separate central-stair dirt spur `(1370,950) → (1370,815)`; the prominent orange arm at screen right is the spine's eastern continuation `(1370,950) → (1600,950)`, not that removed stair spur. The upper-court dirt branch is drawn by independent segment quads and joins. These are paint surfaces with `walkable: false`; the authoritative route graph is in `land.ts` and remained unchanged.
+
+I tested replacing the entire middle visual branch `(1120,1000) → (1370,950)` with eight grounded limestone slabs and narrow grass joints, connecting the existing dock landing toward the central stone stairs. At the 667×375 and 844×390 gameplay sizes the new slabs looked like a bright pasted diagonal, while the eastern orange arm still dominated. This did not meet the requested natural, integrated route composition. The comparison sheets show the baseline on the left and candidate on the right:
+
+| Native viewport | Same-camera comparison | Judgment |
+| --- | --- | --- |
+| 667×375 | [Stone causeway A/B](../visual/hub-path-authored-diagnostic-20261118/stone-causeway-ab-667x375.webp) | The stone line interrupts one orange arm, but does not resolve the Y and clashes with the warm packed-earth treatment. |
+| 844×390 | [Stone causeway A/B](../visual/hub-path-authored-diagnostic-20261118/stone-causeway-ab-844x390.webp) | The new slabs form a conspicuous repeated band and end abruptly at the remaining dirt. |
+
+The focused `village-ground.test.ts` suite passed 8/8 and `npm run typecheck` passed on the candidate. A cold Godot 4.7.2 Compatibility editor import reported missing font cache data before rebuilding imports; both subsequent native fixture runs passed six frames each, with no `SCRIPT ERROR` or `ERROR:` in their output. Each run used the same source camera and daylight environment from `scripts/tests/terrain-facets-render.gd`, with the matching map generated from its source revision. The candidate did not reach `npm run check:world`, browser traversal, Windows, Samsung S23, CI, or staging because it failed visual review. Full PNG captures and fixture JSON remain ignored under `artifacts/godot/hub-path-authored/` in this worktree.
+
+The next useful site pass should reconsider the eastern spine destination and whole forecourt footprint together, including any NPC route drawn over green ground, rather than add more stones, edge noise, or material tint. Preserve the existing route and server floor unless a coordinated gameplay change is explicitly reviewed. A cut at `(1370,950)` must not leave a visual dead end or make residents appear to walk off a path. This diagnostic establishes why the current Y remains; it does not establish moodboard parity.
+
+Evidence uses only project-owned Godot renders. The lossless comparison sheets were assembled with Pillow; no third-party art, moodboard image, runtime dependency, or license was added. SHA-256: `5b1b38b7f41f180f5121dd50d1fea8ecbf69c11d934fdaaeb07971d42fd9a758` (667×375) and `9819f5c5fed43384046b6cf5a9bee60ab05222718a12b41a12d4271e1b61144d` (844×390).
