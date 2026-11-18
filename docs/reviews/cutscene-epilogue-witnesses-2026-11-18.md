@@ -1,6 +1,6 @@
 # Epilogue witness cut-in: Ratih and Tedi
 
-Status: accepted local visual candidate on 18 November 2026; not yet merged or released to staging.
+Status: accepted and merged into local `main` as `a5c5fed` on 18 November 2026; not yet released to staging.
 
 The original native `epilogue:2` frame showed Ki Lurah and Raka clearly, but Mbok Ratih and Kang Tedi were 45–60 px stage figures. Their support during Raka's failed sealing attempt was too small to read at 667×375. This package gives only those two witnesses a near-plane entrance and readable, connected tools while leaving Lurah, Raka, dialogue, guards, and the other background residents in place. The near-plane actors stop with their feet on the Kedai floor above the dialogue panel. The previous small Ratih/Tedi calls are replaced. The beat's legacy `darmi` cutout is excluded because it uses the same Ratih source tile and would duplicate her; a distinct Bu Darmi cutout remains future art work. Ujang, Yu Sari, and Beno stay in the background.
 
