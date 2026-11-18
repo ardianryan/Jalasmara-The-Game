@@ -24,6 +24,7 @@ const GITO_SLING_RELEASE := preload("res://resources/art/cinematics-v2/close-pos
 const VICTORY_CHILD_POSES := preload("res://resources/art/cinematics-v2/victory-child-poses.png")
 const GARDEN_KINASIH_CLUE := preload("res://resources/art/cinematics-v2/garden-kinasih-clue.png")
 const WIRA_TEA_OFFER := preload("res://resources/art/cinematics-v2/close-pose/mbah-wira-tea-offer.png")
+const SARAS_STONE_REVEAL := preload("res://resources/art/cinematics-v2/close-pose/saras-stone-reveal.png")
 const RATIH_DACIN := preload("res://resources/art/cinematics-v2/close-pose/mbok-ratih-dacin.png")
 const TEDI_WRENCH := preload("res://resources/art/cinematics-v2/close-pose/kang-tedi-wrench.png")
 const KEDAI_INTERIOR := preload("res://resources/art/cinematics-v2/kedai-interior.png")
@@ -638,11 +639,19 @@ func _draw_first_kedai_wira(view: Vector2, motion: float) -> void:
 func _draw_saras(view: Vector2, motion: float) -> void:
 	if motif_beat!=2: return
 	var unit:=_unit(view)
-	var ground:=view.y*.68
-	_actor(Vector2(view.x*.68,ground),unit*2.52,Color("a79667"),false,0.0,"saras")
-	var shard:=Vector2(view.x*.705,ground-48*unit+sin(motion*1.6)*unit)
-	draw_colored_polygon(PackedVector2Array([shard,shard+Vector2(10,-4)*unit,shard+Vector2(14,6)*unit,shard+Vector2(3,10)*unit]),Color("8e9e91"))
-	draw_rect(Rect2(shard+Vector2(5,2)*unit,Vector2(3,3)*unit),Color("b96bb4"))
+	var ground:=view.y*.69
+	var approach:=smoothstep(0.0,1.0,clampf(motion/.75,0.0,1.0))
+	var feet:=Vector2(view.x*lerpf(.54,.51,approach),ground)
+	var actor_unit:=unit*3.90
+	draw_line(feet+Vector2(-13,1)*actor_unit,feet+Vector2(13,1)*actor_unit,Color(.12,.13,.13,.24),maxf(1.0,2.0*actor_unit))
+	var reveal:=motion>=.75 or EnvironmentState.reduced_motion
+	var source:=Rect2(64 if reveal else 0,0,64,64)
+	var dest:=Rect2(feet+Vector2(-18,-39)*actor_unit,Vector2(36,40)*actor_unit)
+	draw_texture_rect_region(SARAS_STONE_REVEAL,dest,source)
+	if reveal:
+		var glint:=dest.position+Vector2(51,17)*dest.size/64.0
+		var glint_alpha:=.28 if EnvironmentState.reduced_motion else .12+.19*absf(sin(motion*2.3))
+		draw_arc(glint,5*unit,PI*.1,PI*.9,9,Color(.57,1.0,.88,glint_alpha),maxf(1.0,unit))
 
 func _draw_first_dive(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
