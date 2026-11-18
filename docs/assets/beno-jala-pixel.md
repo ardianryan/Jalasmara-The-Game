@@ -1,0 +1,7 @@
+# Beno's Jala Kognisi pose and SmaraPedia prop
+
+The 64×64 offer pose derives from frame 0 of the project-owned `client-godot/resources/art/npc-facing-v2/beno-front.png`, full-file SHA-256 `539c4831184a15d2a611354904875c35ab881d41d8f748e2d874de479d22003f`. `tools/cutscene-pixel/author_beno_jala.py` preserves Beno's body and gripping fingers while replacing the raised wrench head with a copper Jala hoop, cyan mesh, ferrule and handle drawn at source-pixel resolution. The finished `client-godot/resources/art/cinematics-v2/close-pose/beno-jala-offer.png` has SHA-256 `34f6e60ea942cada407716d368c36d34265ad2b64682ba9fc30810941c36d0ef`.
+
+The same script draws `client-godot/resources/art/cinematics-v2/close-pose/smarapedia-open.png` on a 48×32 transparent pixel grid. Its two parchment leaves, dark spine, copper corners and small gold mark are original project-authored pixels; SHA-256 `b8d0eb252afedec5d83f2f9a8c2112a7b71fcf8b5053940cf3332e9baa6130b7`.
+
+Rebuild with `python3 tools/cutscene-pixel/author_beno_jala.py`. Validate with `python3 -m unittest discover -s tools/cutscene-pixel -p 'test_beno_jala.py'`; its CPU checks include connected hand/tool pixels and distinct book leaves/spine. Pillow is the only offline editing library used. The assets follow the project artwork terms in `LICENSE` section 2. No external sprite pack, moodboard bitmap, AI-generated raster or third-party runtime dependency was used. Runtime use and native-size acceptance are documented separately in the cutscene review.
