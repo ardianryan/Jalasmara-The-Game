@@ -49,6 +49,7 @@ const scripts = [
   "scripts/tests/hud-oxygen.gd",
   "scripts/tests/hud-footprint.gd",
   "scripts/tests/hud-short-landscape.gd",
+  "scripts/tests/hud-dialogue-night-audit.gd",
   "scripts/tests/hud-region-overflow.gd",
   "scripts/tests/analog-dialogue.gd",
   "scripts/tests/dialogue-compact.gd",

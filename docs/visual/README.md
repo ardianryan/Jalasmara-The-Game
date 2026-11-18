@@ -1,5 +1,13 @@
 # Jalasmara visual evidence
 
+## Moodboard parity review, local candidate, 18 November 2026
+
+| Ki Lurah's harbor lesson | Capsule crowd | Victory dock and ensemble | Griya roof before/after |
+| --- | --- | --- | --- |
+| ![Ki Lurah teaches children on the harbor dock at 667×375.](cutscene-lurah-lesson-667x375-20261118.webp) | ![A larger capsule crowd stands by the ship at 667×375.](cutscene-capsule-crowd-667x375-20261118.webp) | ![The village ensemble stands on a planked dock around Nala's boat at 667×375.](cutscene-victory-667x375-20261118.webp) | [See the actual-size land A/B images](land-moodboard-parity-20261118/griya-after-667x375.png) |
+
+These Godot 4.7.2 native frames are original project captures, not reference assets or staging screenshots. The [coastal cliff A/B pair](land-cliff-parity-20261118/coast-after-844x390.png), [ocean reef](ocean-parity-2026-11-18/reef-844x390.png) and [open cave mouth](ocean-cave-2026-11-18/passage-open-844x390.png) document the world pass. The [larger Ki Lurah in the garden](cutscene-foreground-20261118/garden-lurah-667x375.png) and [Balai council](cutscene-foreground-20261118/balai-council-667x375.png) document the foreground cutscene correction. The [parity report](../reviews/moodboard-parity-pass-2026-11-18.md) records source commits, hashes, tests and remaining gaps. The work is an incremental candidate; it does not establish full moodboard or physical-device acceptance.
+
 ## Phase 1 close-up staging, 18 November 2026
 
 ![Public 667×375 hub screenshot after the Phase 1 close-up release.](phase-one-closeup-20261118/staging-hub-667x375.webp)
