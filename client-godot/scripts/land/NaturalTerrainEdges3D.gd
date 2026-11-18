@@ -129,7 +129,7 @@ func make_profile(renderer: Node, surface: Dictionary, polygon: PackedVector2Arr
 		var bottom:=support-5.0
 		var drop:=height-bottom
 		var noise: float=node.noise
-		var lip_z:=height-minf(.45+noise*.75,drop*.06)
+		var lip_z:=height-minf(.45+noise*1.5+float(node.wave)*1.3,drop*.10)
 		var soil_z:=height-minf(10.0+noise*5.0,drop*.30)
 		node["support"]=support
 		node["rings"]=[Vector3(node.world.x,node.world.y,height+.10),Vector3(lip_xy.x,lip_xy.y,lip_z),Vector3(soil_xy.x,soil_xy.y,soil_z),Vector3(upper_xy.x,upper_xy.y,lerpf(soil_z,bottom,.28+noise*.13)),Vector3(belly_xy.x,belly_xy.y,lerpf(soil_z,bottom,.61+float(node.wave)*.17)),Vector3(toe_xy.x,toe_xy.y,bottom)]
@@ -139,7 +139,7 @@ func _node(logical: Vector2, at: Vector2, outward: Vector2, height: float) -> Di
 	# Coordinate noise is independent of edge order, global RNG, time and the camera.
 	var noise:=_noise(at*.039+Vector2(height*.13,height*.071))
 	var wave:=.5+.5*sin(at.x*.031+at.y*.024)
-	var lip:=12.0+noise*13.0+wave*4.0
+	var lip:=9.0+noise*26.0+wave*18.0
 	return {"logical":logical,"world":at,"outward":outward,"noise":noise,"wave":wave,"lip":lip,"toe":lip+11.0+noise*7.0}
 
 func _shape_node(renderer: Node, node: Dictionary, outline: PackedVector2Array, height: float) -> void:
@@ -167,9 +167,9 @@ func _shape_node(renderer: Node, node: Dictionary, outline: PackedVector2Array, 
 		distance+=8.0
 	width=maxf(8.0,width)
 	node.toe=width
-	node.lip=minf(float(node.lip),width*.26)
-	node.upper=width*(.32+float(node.noise)*.16)
-	node.belly=width*(.59+float(node.wave)*.23)
+	node.lip=minf(float(node.lip),width*.42)
+	node.upper=width*(.55+float(node.noise)*.12)
+	node.belly=width*(.74+float(node.wave)*.12)
 
 func _noise(point: Vector2) -> float:
 	var at:=point*.68

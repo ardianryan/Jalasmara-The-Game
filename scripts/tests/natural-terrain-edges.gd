@@ -24,12 +24,18 @@ func run() -> void:
 	assert(profile.bevels==4 and profile.excluded==0)
 	var normals: Dictionary={}
 	var fans:=0
+	var smallest_lip:=INF
+	var widest_lip:=0.0
 	for index in range(profile.nodes.size()):
 		var node: Dictionary=profile.nodes[index]
 		var next: Dictionary=profile.nodes[(index+1)%profile.nodes.size()]
 		assert(profile.active[index])
 		assert(node.rings.size()==6 and node.rings.back().z==-5.0 and node.support==0.0,"Root must meet the actual lower floor, not stop after a fixed 44px wall")
 		assert(node.toe>90 and node.toe<=150,"A 96px cliff needs a broad rooted rock slope, not a narrow near-vertical wall")
+		var lip_width: float=Vector2(node.rings[0].x,node.rings[0].y).distance_to(Vector2(node.rings[1].x,node.rings[1].y))
+		assert(lip_width<=node.toe*.42+.01,"The visible lip must remain within its rooted cliff shoulder")
+		smallest_lip=minf(smallest_lip,lip_width)
+		widest_lip=maxf(widest_lip,lip_width)
 		for layer in range(5): assert(node.rings[layer].z>node.rings[layer+1].z)
 		var normal: Vector3=(next.rings[2]-node.rings[2]).cross(node.rings[3]-node.rings[2]).normalized()
 		normals[str(normal.snapped(Vector3(.01,.01,.01)))]=true
@@ -37,6 +43,7 @@ func run() -> void:
 			assert(node.rings[1].distance_to(next.rings[1])>1,"Adjacent corner facets must form a continuous fan, not coincident 90-degree wall corners")
 			fans+=1
 	assert(fans==8 and normals.size()>16,"Shoulders need real noncoplanar facets, not a flat wall with scattered prop rocks")
+	assert(widest_lip>=30.0 and widest_lip-smallest_lip>=10.0,"The top cliff silhouette must include readable broad inlets and overhangs")
 	synthetic.map["routes"]=[[[400,750],[700,750]]]
 	var restricted: Dictionary=helper.make_profile(synthetic,square,_polygon(square.polygon),96)
 	var clipped_routes:=0
