@@ -51,7 +51,7 @@ func _coral_mount(entry_at: Vector2) -> Dictionary:
 		var anchor := Vector2(entry_at.x, maxf(entry_at.y, top + minf(18.0, rect.size.y * 0.18)))
 		if not Geometry2D.is_point_in_polygon(anchor, front):
 			continue
-		return {"at": anchor, "terrain": index, "column": 0 if rect.get_center().y < 2080 else 1 if rect.get_center().y < 3060 else 2}
+		return {"at": anchor, "terrain": index, "column": 0 if index == 12 or rect.get_center().y < 2080 else 1 if rect.get_center().y < 3060 else 2}
 	return {"at": entry_at, "terrain": -1, "column": 0}
 
 func configure(data: Dictionary) -> void:
@@ -116,7 +116,9 @@ func _build_reef(rect: Rect2, index: int) -> void:
 		for point in contours[index]: outline.append(Vector2(float(point[0]),float(point[1])))
 	if outline.size() < 3:
 		outline = PackedVector2Array([rect.position,Vector2(rect.end.x,rect.position.y),rect.end,Vector2(rect.position.x,rect.end.y)])
-	var column := 0 if rect.get_center().y < 2080 else 1 if rect.get_center().y < 3060 else 2
+	# The sanctuary shoulder uses the porous limestone atlas throughout its
+	# connected volume; the default karst crop reads as a black cavity here.
+	var column := 0 if index == 12 or rect.get_center().y < 2080 else 1 if rect.get_center().y < 3060 else 2
 	var profile: Dictionary = Layers.at_depth(rect.get_center().y)
 	var depth := float(profile.extrusion) * (0.88 + 0.12 * sin(index * 2.137))
 	var front := PackedVector2Array()

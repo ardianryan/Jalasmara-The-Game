@@ -24,6 +24,19 @@ function coastalContour(
   index: number,
 ): [number, number][] {
   const [x, y, width, height] = rect;
+  if (index === 12) {
+    // The sanctuary's long ledge is a tapering reef shoulder. Keep its swim
+    // boundary and rendered silhouette on this one authored contour.
+    return [
+      [4300, 2830], [4400, 2821], [4500, 2807], [4630, 2800],
+      [4740, 2805], [4870, 2830], [4990, 2820], [5100, 2802],
+      [5220, 2800], [5360, 2824], [5470, 2838], [5590, 2822],
+      [5720, 2809], [5860, 2835], [5970, 2847], [6080, 2832],
+      [6144, 2842], [6144, 2924], [5940, 2950], [5750, 2958],
+      [5520, 2915], [5310, 2958], [5100, 2940], [4880, 2915],
+      [4650, 2958], [4440, 2948],
+    ];
+  }
   if (width <= 100 || y < 400 || y >= 3500)
     return [
       [x, y],
