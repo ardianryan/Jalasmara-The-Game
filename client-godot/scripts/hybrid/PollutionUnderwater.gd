@@ -23,11 +23,12 @@ render_mode unshaded, blend_mix, depth_draw_never, cull_disabled;
 void fragment() {
 	vec2 p = UV * 2.0 - 1.0;
 	float r = length(p);
-	float ring = step(0.50, r) * (1.0 - step(0.88, r));
+	float ring = step(0.37, r) * (1.0 - step(0.91, r));
+	float haze = (1.0 - step(0.37, r)) * 0.28;
 	float glint = step(-0.68, p.x) * (1.0 - step(-0.28, p.x)) * step(-0.68, p.y) * (1.0 - step(-0.48, p.y));
-	if (max(ring, glint) < 0.5 || COLOR.a < 0.02) discard;
+	if (r > 0.91 || COLOR.a < 0.02) discard;
 	ALBEDO = COLOR.rgb;
-	ALPHA = COLOR.a;
+	ALPHA = COLOR.a * max(max(ring, glint), haze);
 }
 """
 	var material := ShaderMaterial.new()
@@ -89,8 +90,8 @@ func _process(delta: float) -> void:
 		var current := clampf(float(weather.get("current_x", 7.0)), 0.0, 22.0)
 		var at := _source + offset * Vector2(0.72, 1.0) + Vector2(phase * current * 0.9, 0)
 		at = (at / 2.0).round() * 2.0
-		var radius := 6.4 + float(index % 3) * 2.1
-		var alpha := _strength * (0.34 + (1.0 - phase) * 0.48)
+		var radius := 9.2 + float(index % 3) * 2.6
+		var alpha := _strength * (0.49 + (1.0 - phase) * 0.42)
 		var basis := Basis.from_scale(Vector3(radius * 2.0, radius * 2.0, 1.0))
 		mm.set_instance_transform(index, Transform3D(basis, Vector3(at.x, -at.y, PLUME_DEPTH)))
 		mm.set_instance_color(index, Color(0.83, 0.38, 0.89, alpha))
