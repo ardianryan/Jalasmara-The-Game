@@ -1,5 +1,5 @@
 {
-  "authority": "Current WORLD hub layout11; shared landPointInPolygon + mapFootMaterial, dock ramp0-to48 over1190-to1125",
+  "authority": "Current WORLD hub layout11; shared landPointInPolygon + mapFootMaterial, dock ramp0-to48 over1190-to1125; visual wood sill changes surface sound just above ramp without changing floor winner",
   "layoutVersion": 11,
   "cases": [
     {
@@ -45,7 +45,7 @@
       ],
       "groundHeight": 48,
       "onConnector": false,
-      "material": "dirt",
+      "material": "wood",
       "floorWinner": "village_dirt_lower_court_segment_5_0",
       "bodyLift": 0,
       "paceScale": 1
@@ -57,7 +57,7 @@
       ],
       "groundHeight": 48,
       "onConnector": false,
-      "material": "dirt",
+      "material": "wood",
       "floorWinner": "village_dirt_lower_court_segment_5_0",
       "bodyLift": 0,
       "paceScale": 1

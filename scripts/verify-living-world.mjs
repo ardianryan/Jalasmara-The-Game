@@ -131,6 +131,7 @@ const scripts = [
   "scripts/tests/village-boss-motion.gd",
   "scripts/tests/resident-art-rig.gd",
   "scripts/tests/resident-art-integration.gd",
+  "scripts/tests/playable-resident-pixel-audit.gd",
   "scripts/tests/resident-commute-contact.gd",
   "scripts/tests/npc-body-animation.gd",
   "scripts/tests/ujang-foot-contact.gd",
