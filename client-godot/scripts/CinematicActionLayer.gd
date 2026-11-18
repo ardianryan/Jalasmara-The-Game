@@ -481,17 +481,25 @@ func _draw_forgotten_work(view: Vector2, motion: float) -> void:
 		draw_rect(panel,Color(.12,.10,.13,.86))
 		draw_rect(panel,Color("d0a267"),false,3*unit)
 		draw_rect(Rect2(panel.position+Vector2(5,5)*unit,panel.size-Vector2(10,10)*unit),Color("715237"),false,unit)
-	draw_texture_rect(RANTO_PORTRAIT,Rect2(ranto+Vector2(-47,-102)*unit,Vector2(94,100)*unit),false)
-	draw_texture_rect_region(VILLAGE_PORTRAITS,Rect2(darmi+Vector2(-48,-101)*unit,Vector2(96,100)*unit),Rect2(0,512,512,512))
+	var ranto_lean:=0.0 if EnvironmentState.reduced_motion else -sin(_progress(motion-.28,.78)*PI)*.045
+	var darmi_lean:=0.0 if EnvironmentState.reduced_motion else sin(_progress(motion-.75,.88)*PI)*.035
+	draw_set_transform(ranto,ranto_lean)
+	draw_texture_rect(RANTO_PORTRAIT,Rect2(Vector2(-47,-102)*unit,Vector2(94,100)*unit),false)
+	draw_set_transform(darmi,darmi_lean)
+	draw_texture_rect_region(VILLAGE_PORTRAITS,Rect2(Vector2(-48,-101)*unit,Vector2(96,100)*unit),Rect2(0,512,512,512))
+	draw_set_transform(Vector2.ZERO)
 	draw_string(BODY_FONT,Vector2(view.x*.13,view.y*.41),"PAK RANTO",HORIZONTAL_ALIGNMENT_LEFT,view.x*.18,roundi(13*unit),Color("eed5a7"))
 	draw_string(BODY_FONT,Vector2(view.x*.61,view.y*.41),"BU DARMI",HORIZONTAL_ALIGNMENT_LEFT,view.x*.18,roundi(13*unit),Color("eed5a7"))
 	var scale_top:=ranto+Vector2(65,-51)*unit
 	draw_line(scale_top,scale_top+Vector2(0,39)*unit,Color("6e492c"),3*unit)
-	draw_line(scale_top+Vector2(-17,9)*unit,scale_top+Vector2(17,9)*unit,Color("d8b176"),3*unit)
+	var scale_swing:=0.0 if EnvironmentState.reduced_motion else sin(motion*8.0)*.11*(1.0-_progress(motion,.95))
+	draw_set_transform(scale_top+Vector2(0,9)*unit,scale_swing)
+	draw_line(Vector2(-17,0)*unit,Vector2(17,0)*unit,Color("d8b176"),3*unit)
 	for side in [-1.0,1.0]:
-		var pan:=scale_top+Vector2(side*17,31)*unit
-		draw_line(scale_top+Vector2(side*16,9)*unit,pan,Color("d8b176"),unit)
+		var pan:=Vector2(side*17,22)*unit
+		draw_line(Vector2(side*16,0)*unit,pan,Color("d8b176"),unit)
 		draw_line(pan+Vector2(-7,0)*unit,pan+Vector2(7,0)*unit,Color("d8b176"),3*unit)
+	draw_set_transform(Vector2.ZERO)
 	var trough:=darmi+Vector2(-55,-14)*unit
 	draw_rect(Rect2(trough,Vector2(66,13)*unit),Color("6b4528"))
 	draw_rect(Rect2(trough+Vector2(3,2)*unit,Vector2(60,4)*unit),Color("9b7450"))

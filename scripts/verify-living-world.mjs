@@ -75,6 +75,7 @@ const scripts = [
   "scripts/tests/phase-one-director-capture.gd",
   "scripts/tests/cutscene-acting-followup.gd",
   "scripts/tests/cutscene-articulated-poses.gd",
+  "scripts/tests/cutscene-market-reaction.gd",
   "scripts/tests/world-atlas-layout.gd",
   "scripts/tests/render-performance.gd",
   "scripts/tests/ocean-resolution.gd",
