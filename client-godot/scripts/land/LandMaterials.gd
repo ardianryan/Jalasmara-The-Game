@@ -66,6 +66,15 @@ void fragment() {
 		float tufts=step(.73,clump_seed)*min(1.0,blade);
 		color=mix(color,color*vec3(.70,.82,.68),tufts*.58);
 	}
+	if(kind==16 && abs(normal_world.z)>.85) {
+		// Packed earth has broad compressed patches, rather than a uniformly bright fill.
+		vec2 grit=floor(planar/12.0);
+		color*=mix(vec3(.88,.94,.96),vec3(1.08,1.01,.92),patch);
+		float pebble=step(.94,hash(vec3(grit,8.0)));
+		float speck=step(.89,hash(vec3(grit*2.0,13.0)));
+		color=mix(color,vec3(.48,.47,.38),pebble*.12);
+		color*=1.0-speck*.028;
+	}
 	if(kind==3) {
 		// A sparse, stepped mineral grain follows the face instead of the mesh triangles.
 		vec2 mineral=floor(planar/13.0);
@@ -162,7 +171,7 @@ func _init() -> void:
 func get_material(id: String) -> ShaderMaterial:
 	var key: String={"bridge":"wood","cliff":"stone"}.get(id,id)
 	if _cache.has(key): return _cache[key]
-	var types: Dictionary={"dirt":[0,"b18a5e",0],"grass":[1,"709665",-1],"sand":[2,"e0c58c",-1],"stone":[3,"7a8e88",1],"wood":[4,"a57b50",2],"dock":[11,"95714e",2],"thatch":[15,"b99258",4],"bamboo":[6,"c9b17d",3],"leaves":[7,"657361",5],"wind_leaves":[12,"657361",5],"metal":[8,"344a4b",-1],"bridge_board":[9,"a18760",-1],"bridge_board_light":[9,"ad926a",-1],"bridge_board_dark":[9,"947853",-1],"terracotta":[0,"bb7e58",-1],"cloth_cream":[0,"e2cfa1",-1],"office_shell":[8,"c6c5b4",-1],"office_glass":[8,"425e65",-1],"corporate_copper":[8,"a76045",-1],"roof_tiles":[5,"b87854",-1],"woven_teal":[10,"568779",-1],"paper":[0,"d5c092",-1]}
+	var types: Dictionary={"dirt":[16,"a78a69",0],"grass":[1,"709665",-1],"sand":[2,"e0c58c",-1],"stone":[3,"7a8e88",1],"wood":[4,"a57b50",2],"dock":[11,"95714e",2],"thatch":[15,"b99258",4],"bamboo":[6,"c9b17d",3],"leaves":[7,"657361",5],"wind_leaves":[12,"657361",5],"metal":[8,"344a4b",-1],"bridge_board":[9,"a18760",-1],"bridge_board_light":[9,"ad926a",-1],"bridge_board_dark":[9,"947853",-1],"terracotta":[0,"bb7e58",-1],"cloth_cream":[0,"e2cfa1",-1],"office_shell":[8,"c6c5b4",-1],"office_glass":[8,"425e65",-1],"corporate_copper":[8,"a76045",-1],"roof_tiles":[5,"b87854",-1],"woven_teal":[10,"568779",-1],"paper":[0,"d5c092",-1]}
 	types["wind_flower"]=[13,"bc9c7e",-1]
 	var data: Array=types.get(key,types.stone)
 	var material:=ShaderMaterial.new()
@@ -174,7 +183,7 @@ func get_material(id: String) -> ShaderMaterial:
 	var has_micro:=tile!="" and ResourceLoader.exists(tile_path)
 	material.set_shader_parameter("has_micro",has_micro)
 	if has_micro: material.set_shader_parameter("micro_texture",load(tile_path))
-	var micro_tuning: Dictionary={"grass":[.192,.90],"dirt":[.334,.55],"sand":[.469,.45],"stone":[.513,.40]}
+	var micro_tuning: Dictionary={"grass":[.192,.90],"dirt":[.334,.50],"sand":[.469,.45],"stone":[.513,.40]}
 	if micro_tuning.has(key):
 		material.set_shader_parameter("micro_mean",float(micro_tuning[key][0]))
 		material.set_shader_parameter("micro_strength",float(micro_tuning[key][1]))
