@@ -182,3 +182,20 @@ func add_house_details(renderer: Node, entry: Dictionary, center: Vector3, width
 			renderer._box("SideWindowFrame",center+Vector3(side*(width*.5+1.0),y,z),Vector3(2.0,29.0,33.0),wood)
 			renderer._box("SideWindowAmber",center+Vector3(side*(width*.5+2.3),y,z),Vector3(1.0,21.0,25.0),renderer._glow_material)
 			renderer._box("SideWindowMullion",center+Vector3(side*(width*.5+3.2),y,z),Vector3(1.0,2.8,26.0),wood)
+	if variant=="sasmita":
+		var roof_front: float=-depth*.57
+		var roof_back: float=depth*.57
+		var roof_top: float=eave_z+height*.43
+		for side in [-1.0,1.0]:
+			var outer_x: float=side*width*.55
+			var peak_x: float=side*width*.27
+			for end_y in [roof_front,roof_back]:
+				var eave:=center+Vector3(outer_x,end_y,eave_z+1.5)
+				var peak:=center+Vector3(peak_x,0,roof_top+2.0)
+				renderer._column(eave,peak,2.8,wood)
+				var brace:=center+Vector3(outer_x*.82,end_y*.82,eave_z-10.0)
+				renderer._column(brace,eave,3.0,bamboo)
+			var rail_y: float=front+depth*.15
+			renderer._column(center+Vector3(side*width*.44,rail_y,31),center+Vector3(side*width*.44,front-4.0,31),3.8,wood)
+			renderer._box("SasmitaPorchBaluster",center+Vector3(side*width*.44,rail_y,18),Vector3(5.0,5.0,29.0),wood)
+		renderer._column(center+Vector3(-width*.27,0,roof_top+2.0),center+Vector3(width*.27,0,roof_top+2.0),4.2,wood)

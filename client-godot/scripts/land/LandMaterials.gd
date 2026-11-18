@@ -55,9 +55,24 @@ void fragment() {
 		vec3 texel=texture(material_atlas,origin+tile*vec2(1.0/3.0,.5)).rgb;
 		color*=.94+texel*.12;
 	}
+	if(kind==1 && abs(normal_world.z)>.85) {
+		vec2 clump_cell=floor(planar/54.0);
+		float clump_seed=hash(vec3(clump_cell,37.0));
+		vec2 clump_at=mod(planar,54.0)-vec2(15.0+clump_seed*25.0,14.0+fract(clump_seed*7.17)*25.0);
+		vec2 block=floor(clump_at/6.0);
+		float blade=(1.0-step(.5,abs(block.x)))*(1.0-step(.5,abs(block.y)));
+		blade+=((1.0-step(.5,abs(block.x-1.0)))+(1.0-step(.5,abs(block.x+1.0))))*(1.0-step(.5,abs(block.y-1.0)));
+		float tufts=step(.73,clump_seed)*min(1.0,blade);
+		color=mix(color,color*vec3(.70,.82,.68),tufts*.58);
+	}
 	if(kind==3) {
-		float seam=step(.95,hash(vec3(floor(planar/19.0),3.0)));
-		color*=(1.0-seam*.15)*.95;
+		// A sparse, stepped mineral grain follows the face instead of the mesh triangles.
+		vec2 mineral=floor(planar/13.0);
+		float grain=hash(vec3(mineral,3.0));
+		float vein=hash(vec3(floor((mineral+vec2(floor(mineral.y/7.0)*3.0,0.0))/7.0),21.0));
+		float chip=step(.93,grain)*step(.46,vein);
+		float pale=step(.88,grain)*step(.62,vein);
+		color*=1.0-chip*.13+pale*.045;
 	}
 	if(kind==4 || kind==6) {
 		float seam=step(21.0,mod(planar.x,23.0));
@@ -93,6 +108,13 @@ void fragment() {
 		float fiber=step(2.5,mod(planar.x+floor(planar.y/28.0)*7.0,4.0));
 		color*=1.0-course*.18-fiber*.03;
 	}
+	if(kind==15) {
+		float row=floor(planar.y/19.0);
+		float span=mod(planar.y,19.0);
+		float end=step(18.0,mod(planar.x+mod(row,2.0)*10.0,20.0));
+		float straw=step(.76,hash(vec3(floor(planar.x/9.0),row,15.0)));
+		color*=1.04-step(15.0,span)*.16-end*.045+straw*.07;
+	}
 	if(kind==9) {
 		float fiber=hash(vec3(floor(planar.x/9.0),floor(planar.y/2.7),9.0));
 		color*=.96+fiber*.045;
@@ -106,8 +128,11 @@ void fragment() {
 	if(kind==8) color*=.92+step(13.0,mod(planar.x,18.0))*.12;
 	float side=1.0-smoothstep(.28,.82,abs(normal_world.z));
 	if(kind==1) color*=mix(vec3(1.0),vec3(.91,.95,.96),side);
-	if(kind==3) color*=mix(vec3(1.0),vec3(.85,.92,1.0),side);
-	if(kind==4 || kind==5 || kind==6 || kind==11) color*=mix(vec3(1.0),vec3(.94,.91,.96),side);
+	if(kind==3) {
+		float ledge=clamp((normal_world.z+.15)*1.4,0.0,1.0);
+		color*=mix(vec3(.70,.79,.82),vec3(1.03,1.04,1.00),ledge);
+	}
+	if(kind==4 || kind==5 || kind==6 || kind==11 || kind==15) color*=mix(vec3(1.0),vec3(.94,.91,.96),side);
 	ALBEDO=color;
 	ROUGHNESS=.96;
 	SPECULAR=.08;
@@ -128,7 +153,7 @@ func _init() -> void:
 func get_material(id: String) -> ShaderMaterial:
 	var key: String={"bridge":"wood","cliff":"stone"}.get(id,id)
 	if _cache.has(key): return _cache[key]
-	var types: Dictionary={"dirt":[0,"b18a5e",0],"grass":[1,"709665",-1],"sand":[2,"e0c58c",-1],"stone":[3,"9aa7a2",1],"wood":[4,"a57b50",2],"dock":[11,"95714e",2],"thatch":[5,"c5a16d",4],"bamboo":[6,"c9b17d",3],"leaves":[7,"657361",5],"wind_leaves":[12,"657361",5],"metal":[8,"344a4b",-1],"bridge_board":[9,"a18760",-1],"bridge_board_light":[9,"ad926a",-1],"bridge_board_dark":[9,"947853",-1],"terracotta":[0,"bb7e58",-1],"cloth_cream":[0,"e2cfa1",-1],"office_shell":[8,"c6c5b4",-1],"office_glass":[8,"425e65",-1],"corporate_copper":[8,"a76045",-1],"roof_tiles":[5,"b87854",-1],"woven_teal":[10,"568779",-1],"paper":[0,"d5c092",-1]}
+	var types: Dictionary={"dirt":[0,"b18a5e",0],"grass":[1,"709665",-1],"sand":[2,"e0c58c",-1],"stone":[3,"7a8e88",1],"wood":[4,"a57b50",2],"dock":[11,"95714e",2],"thatch":[15,"b99258",4],"bamboo":[6,"c9b17d",3],"leaves":[7,"657361",5],"wind_leaves":[12,"657361",5],"metal":[8,"344a4b",-1],"bridge_board":[9,"a18760",-1],"bridge_board_light":[9,"ad926a",-1],"bridge_board_dark":[9,"947853",-1],"terracotta":[0,"bb7e58",-1],"cloth_cream":[0,"e2cfa1",-1],"office_shell":[8,"c6c5b4",-1],"office_glass":[8,"425e65",-1],"corporate_copper":[8,"a76045",-1],"roof_tiles":[5,"b87854",-1],"woven_teal":[10,"568779",-1],"paper":[0,"d5c092",-1]}
 	types["wind_flower"]=[13,"bc9c7e",-1]
 	var data: Array=types.get(key,types.stone)
 	var material:=ShaderMaterial.new()
