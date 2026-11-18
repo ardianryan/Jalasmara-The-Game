@@ -22,6 +22,7 @@ const LURAH_TEACHING_CLOSE := preload("res://resources/art/cinematics-v2/close-p
 const LURAH_TEACHING_POINT := preload("res://resources/art/cinematics-v2/close-pose/ki-lurah-teaching-point.png")
 const GITO_SLING_RELEASE := preload("res://resources/art/cinematics-v2/close-pose/gito-sling-release.png")
 const VICTORY_CHILD_POSES := preload("res://resources/art/cinematics-v2/victory-child-poses.png")
+const GARDEN_KINASIH_CLUE := preload("res://resources/art/cinematics-v2/garden-kinasih-clue.png")
 const PHASE_ONE_STORY := preload("res://scripts/PhaseOneCutscenes.gd")
 const RANTO_PORTRAIT := preload("res://resources/art/cinematics-v2/pak-ranto-portrait.png")
 const NALA_DIVING := {
@@ -814,9 +815,21 @@ func _draw_garden(view: Vector2, motion: float) -> void:
 		for i in range(2):
 			_draw_corporate_guard(Vector2(view.x*(.73+float(i)*.12),view.y*.63),unit*1.67,0.0)
 		if motif_beat==5:
-			var kinasih_ground:=view.y*.655
-			_actor(Vector2(view.x*.30,kinasih_ground),unit*_focal_scale("kinasih"),Color("6c8e88"),true,0.0,"kinasih")
-			draw_rect(Rect2(view.x*.315,kinasih_ground-45*unit,5*unit,7*unit),Color("7bd5c2"))
+			_draw_garden_kinasih_clue(view,unit,motion)
+
+func _draw_garden_kinasih_clue(view: Vector2, unit: float, motion: float) -> void:
+	# The approved garden plate already carries the deck and hydroponic racks.
+	# Bring the child closer without painting a flat second platform over them.
+	var feet:=Vector2(roundf(view.x*.355),roundf(view.y*.69))
+	var pointing:=EnvironmentState.reduced_motion or (motion>=.45 and motion<2.0)
+	var source:=Rect2(96 if pointing else 0,0,96,128)
+	var scale:=unit*3.55
+	var dest:=Rect2(feet-Vector2(17,43)*scale,Vector2(34,44)*scale)
+	draw_line(feet+Vector2(-14,1)*unit,feet+Vector2(14,1)*unit,Color(.14,.12,.10,.30),2*unit)
+	draw_texture_rect_region(GARDEN_KINASIH_CLUE,dest,source)
+	var jar_center:=dest.position+Vector2((82 if pointing else 76)*dest.size.x/96.0,(40 if pointing else 66)*dest.size.y/128.0)
+	var pulse:=.50 if EnvironmentState.reduced_motion else .36+.16*absf(sin(motion*3.1))
+	draw_arc(jar_center,7*unit,0,TAU,16,Color(.43,1.0,.87,pulse),unit)
 
 func _draw_cave(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
