@@ -1,6 +1,6 @@
 # Playable pier resident pixel and gait review — 18 November 2026
 
-Status: isolated candidate on `work/playable-resident-pixel-20261118`; **not merged, released, or tested on staging**. The tested base is `8d1684e`. This pass addresses the Gito diagonal-turn pelvis drop while keeping the original resident source pixels and exact sole contacts. It does not claim full moodboard parity.
+Status: candidate `cd5921d` was reviewed and cherry-picked to local `main` as `97ace0c`; the worktree and branch were removed after patch-hash equality. **Not published or tested on staging.** The tested base is `8d1684e`. This pass addresses the Gito diagonal-turn pelvis drop while keeping the original resident source pixels and exact sole contacts. It does not claim full moodboard parity.
 
 ## Finding and change
 
