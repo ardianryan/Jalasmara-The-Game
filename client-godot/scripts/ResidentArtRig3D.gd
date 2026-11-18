@@ -22,6 +22,8 @@ var _atlas:Texture2D
 var body_mesh:MultiMeshInstance3D
 var _part_transforms:Dictionary={}
 var _body_material:ShaderMaterial
+var _lookout_mesh:MeshInstance3D
+var _lookout_material:ShaderMaterial
 var _integration:Dictionary={}
 var ready_rig:=false
 
@@ -58,6 +60,8 @@ void fragment() { vec4 texel=texture(atlas_tex,part_uv); if(texel.a<0.5) discard
 	body_mesh.material_override=_body_material
 	body_mesh.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(body_mesh)
+	if str(actor.resident_id)=="npc_kid_gito":
+		_configure_lookout_pose()
 	var index:=0
 	for name in data.parts:
 		var rect:Array=data.parts[name].rect
@@ -77,6 +81,29 @@ void fragment() { vec4 texel=texture(atlas_tex,part_uv); if(texel.a<0.5) discard
 	actor.set_meta("body_layered",true)
 	ready_rig=true
 	return true
+
+func _configure_lookout_pose() -> void:
+	var pose:Texture2D=load("res://resources/art/resident-rigs-v1/gito-lookout.png")
+	if pose==null: return
+	_lookout_mesh=MeshInstance3D.new()
+	_lookout_mesh.name="AuthoredLookoutPose"
+	var quad:=QuadMesh.new()
+	quad.size=Vector2(96,128)*_factor
+	_lookout_mesh.mesh=quad
+	_lookout_material=ShaderMaterial.new()
+	var shader:=Shader.new()
+	shader.code="""shader_type spatial;
+render_mode unshaded, cull_disabled;
+uniform sampler2D pose_tex : source_color, filter_nearest, repeat_disable;
+uniform vec4 readable_tint : source_color = vec4(1.0);
+void fragment() { vec4 texel=texture(pose_tex,UV); if(texel.a<0.5) discard; ALBEDO=texel.rgb*readable_tint.rgb; }
+"""
+	_lookout_material.shader=shader
+	_lookout_material.set_shader_parameter("pose_tex",pose)
+	_lookout_mesh.material_override=_lookout_material
+	_lookout_mesh.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_lookout_mesh.visible=false
+	add_child(_lookout_mesh)
 
 func _v(value:Array) -> Vector2:
 	return Vector2(float(value[0]),float(value[1]))
@@ -198,6 +225,11 @@ func update_pose(tint:Color) -> void:
 	_tint=tint
 	_body_material.set_shader_parameter("readable_tint",tint)
 	var state:Dictionary=actor.body_animation_state()
+	var lookout:bool=_lookout_mesh!=null and str(state.get("clip",""))=="work_loop" and str(state.get("workPhase",""))=="inspect"
+	if _lookout_mesh!=null:
+		_lookout_material.set_shader_parameter("readable_tint",tint)
+		_lookout_mesh.visible=lookout
+		body_mesh.visible=not lookout
 	_state=state.duplicate(true)
 	var paused:bool=EnvironmentState.clock_paused
 	var reduced:bool=EnvironmentState.reduced_motion
@@ -230,6 +262,8 @@ func update_pose(tint:Color) -> void:
 		left_drop=_reach_drop("left",Vector3(ankles.left),_pelvis_shift_x)
 		right_drop=_reach_drop("right",Vector3(ankles.right),_pelvis_shift_x)
 		_drop=maxf(0,maxf(left_drop,right_drop))
+	if _lookout_mesh!=null:
+		_lookout_mesh.position=Vector3((48.0-float(data.pivot[0]))*_factor+_pelvis_shift_x,-(64.0-float(data.pivot[1]))*_factor-_drop,.15)
 	_links.clear()
 	for side in ["left","right"]:
 		var hip2:=_relative(data.joints[side+"Hip"])
@@ -269,7 +303,8 @@ func update_pose(tint:Color) -> void:
 		var grip:=hand+((_v(data.parts["hand_"+side].grip)-_v(lower[1]))*_factor).rotated(hand_turn)
 		_hands_local[side]=grip
 		hands[side]=to_global(Vector3(grip.x,-grip.y,.12))
-	_held.position=Vector3(_hands_local.right.x,-_hands_local.right.y,.12)
+	var held_side:="left" if lookout else "right"
+	_held.position=Vector3(_hands_local[held_side].x,-_hands_local[held_side].y,.18 if lookout else .12)
 	_held.scale=Vector3.ONE*float(actor.body_scale)
 	var snapshots:Dictionary={}
 	for side in hands:
@@ -333,7 +368,7 @@ func _build_prop(kind:String) -> void:
 		_box(Vector3(0,-11,0),Vector3(7,3,2),"bb8a51")
 
 func debug_status() -> Dictionary:
-	return {"id":str(actor.resident_id),"authoredViews":1,"view":"front_three_quarter","mirrored":false,"bodyScale":float(actor.body_scale),"pelvisDrop":_drop,"pelvisShiftX":_pelvis_shift_x,"contacts":_contacts.duplicate(true),"integration":_integration.duplicate(true),"workFacing":[_work_facing.x,_work_facing.y],"separateProp":_held.get_child_count()>0,"hands":hands.duplicate(),"links":_links.duplicate(true),"clip":str(_state.get("clip","idle")),"parts":sprites.size(),"bodyDrawCalls":1,"rootMotion":false,"logicalDirection":str(_state.get("direction","south")),"source":"original reviewed resident pixel partitions"}
+	return {"id":str(actor.resident_id),"authoredViews":1,"view":"front_three_quarter","mirrored":false,"bodyScale":float(actor.body_scale),"pelvisDrop":_drop,"pelvisShiftX":_pelvis_shift_x,"contacts":_contacts.duplicate(true),"integration":_integration.duplicate(true),"workFacing":[_work_facing.x,_work_facing.y],"separateProp":_held.get_child_count()>0,"hands":hands.duplicate(),"links":_links.duplicate(true),"clip":str(_state.get("clip","idle")),"lookoutPose":_lookout_mesh!=null and _lookout_mesh.visible,"parts":sprites.size(),"bodyDrawCalls":1,"rootMotion":false,"logicalDirection":str(_state.get("direction","south")),"source":"original reviewed resident pixel partitions"}
 
 func pose_snapshot() -> Dictionary:
 	return debug_status()
