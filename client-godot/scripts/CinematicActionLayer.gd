@@ -938,17 +938,7 @@ func _draw_victory(view: Vector2, motion: float) -> void:
 			draw_line(Vector2(view.x*sweep,view.y*.15),Vector2(view.x*sweep,view.y*.69),Color(.55,1.0,.92,.30*(1.0-sweep)),3*unit)
 		draw_rect(Rect2(0,view.y*(.52-.48*sweep),view.x,5*unit),Color(.56,1.0,.93,.08*(1.0-sweep)))
 		_draw_victory_piers(view,unit)
-		var boat:=Vector2(view.x*.52,view.y*.64)
-		var boat_unit:=unit*2.25
-		draw_colored_polygon(PackedVector2Array([
-			boat+Vector2(-26,0)*boat_unit,boat+Vector2(27,0)*boat_unit,
-			boat+Vector2(20,10)*boat_unit,boat+Vector2(-21,10)*boat_unit
-		]),Color("493329"))
-		draw_line(boat+Vector2(-25,1)*boat_unit,boat+Vector2(25,1)*boat_unit,Color("d7a563"),2*unit)
-		draw_line(boat+Vector2(-19,5)*boat_unit,boat+Vector2(17,5)*boat_unit,Color("93603d"),unit)
-		for side in [-1.0,1.0]:
-			var wake:=boat+Vector2(side*29,10)*boat_unit
-			draw_line(wake,wake+Vector2(side*12,2)*unit,Color(.56,.94,.88,.38),2*unit)
+		_draw_victory_sampan(view,unit,motion)
 		var emerge:=smoothstep(0.0,1.0,clampf(motion/1.7,0.0,1.0))
 		_draw_nala_daily(Vector2(view.x*.52,view.y*(.70-.06*emerge)),unit*WIDE_STAGE_SCALES["victory_nala"],4)
 		var tablet:=Vector2(view.x*.52,view.y*(.42-.07*emerge))
@@ -974,12 +964,24 @@ func _draw_victory(view: Vector2, motion: float) -> void:
 		var y:=view.y*.79-rise
 		draw_rect(Rect2(x,y,(1.0+float(i%3))*unit,(1.0+float(i%3))*unit),Color(.38,.99,.96,.28+float(i%3)*.13))
 
+func _victory_berth(view: Vector2) -> Rect2:
+	return Rect2(view.x*.43,view.y*.60,view.x*.25,view.y*.12)
+
 func _draw_victory_piers(view: Vector2, unit: float) -> void:
-	# One continuous dock wraps around the boat berth. The rear gangway joins
-	# both foreground wings, so every resident has a visible timber surface.
+	var berth:=_victory_berth(view)
 	var rear:=Rect2(0,view.y*.53,view.x,view.y*.07)
-	var left:=Rect2(0,view.y*.60,view.x*.43,view.y*.12)
-	var right:=Rect2(view.x*.68,view.y*.60,view.x*.32,view.y*.12)
+	var left:=Rect2(0,berth.position.y,berth.position.x,berth.size.y)
+	var right:=Rect2(berth.end.x,berth.position.y,view.x-berth.end.x,berth.size.y)
+	var water:=PackedVector2Array([
+		berth.position+Vector2(0,3)*unit,
+		Vector2(berth.end.x,berth.position.y+3*unit),
+		berth.end-Vector2(3,0)*unit,
+		Vector2(berth.position.x+3*unit,berth.end.y)
+	])
+	draw_colored_polygon(water,Color("235f62"))
+	for band in range(3):
+		var ripple_y:=berth.position.y+(12+band*10)*unit
+		draw_line(Vector2(berth.position.x+9*unit,ripple_y),Vector2(berth.end.x-11*unit,ripple_y-2*unit),Color("397f78",.48-band*.08),unit)
 	for deck in [rear,left,right]:
 		draw_rect(deck,Color("704d31"))
 	for row in range(1,7):
@@ -996,11 +998,57 @@ func _draw_victory_piers(view: Vector2, unit: float) -> void:
 	draw_line(Vector2(0,view.y*.53),Vector2(view.x,view.y*.53),Color("d49f64"),2*unit)
 	draw_line(Vector2(0,view.y*.72),Vector2(left.end.x,view.y*.72),Color("d49f64"),2*unit)
 	draw_line(Vector2(right.position.x,view.y*.72),Vector2(view.x,view.y*.72),Color("d49f64"),2*unit)
+	for span in [Vector2(0,left.end.x),Vector2(right.position.x,view.x)]:
+		draw_rect(Rect2(span.x,view.y*.72,span.y-span.x,5*unit),Color("3a2b23"))
+		draw_line(Vector2(span.x,view.y*.72),Vector2(span.y,view.y*.72),Color("b6814c"),unit)
+	for support_x in [.12,.36,.76,.91]:
+		var x:=view.x*float(support_x)
+		draw_rect(Rect2(x-3*unit,view.y*.735,7*unit,view.y*.075),Color("382d27"))
+		draw_line(Vector2(x+2*unit,view.y*.735),Vector2(x+2*unit,view.y*.80),Color("795437"),unit)
 	for mouth_x in [left.end.x,right.position.x]:
-		draw_line(Vector2(mouth_x,view.y*.60),Vector2(mouth_x,view.y*.72),Color("302923"),3*unit)
+		var facing:=1.0 if mouth_x<view.x*.5 else -1.0
+		draw_colored_polygon(PackedVector2Array([
+			Vector2(mouth_x,berth.position.y+3*unit),
+			Vector2(mouth_x+facing*5*unit,berth.position.y+6*unit),
+			Vector2(mouth_x+facing*4*unit,berth.end.y),
+			Vector2(mouth_x,berth.end.y)
+		]),Color("322b25"))
 		draw_rect(Rect2(mouth_x-4*unit,view.y*.55,8*unit,view.y*.17),Color("4c3526"))
 		draw_rect(Rect2(mouth_x-5*unit,view.y*.55,10*unit,4*unit),Color("c6965d"))
 		draw_rect(Rect2(mouth_x-3*unit,view.y*.61,6*unit,2*unit),Color("b18a58"))
+
+func _draw_victory_sampan(view: Vector2, unit: float, motion: float) -> void:
+	var berth:=_victory_berth(view)
+	var boat_unit:=unit*2.25
+	var boat:=Vector2(view.x*.535,view.y*.635)
+	var bob:=0.0 if EnvironmentState.reduced_motion else sin(motion*2.1)*unit*.7
+	boat.y+=bob
+	var hull:=PackedVector2Array([
+		boat+Vector2(-31,0)*boat_unit,boat+Vector2(-25,-2)*boat_unit,
+		boat+Vector2(25,-2)*boat_unit,boat+Vector2(32,0)*boat_unit,
+		boat+Vector2(23,11)*boat_unit,boat+Vector2(13,13)*boat_unit,
+		boat+Vector2(-18,13)*boat_unit,boat+Vector2(-27,10)*boat_unit
+	])
+	draw_colored_polygon(PackedVector2Array([
+		boat+Vector2(-27,10)*boat_unit,boat+Vector2(26,10)*boat_unit,
+		boat+Vector2(21,14)*boat_unit,boat+Vector2(-21,14)*boat_unit
+	]),Color("123d45",.7))
+	draw_colored_polygon(hull,Color("3d281e"))
+	draw_colored_polygon(PackedVector2Array([
+		boat+Vector2(-26,1)*boat_unit,boat+Vector2(27,1)*boat_unit,
+		boat+Vector2(20,8)*boat_unit,boat+Vector2(-20,8)*boat_unit
+	]),Color("734729"))
+	draw_colored_polygon(PackedVector2Array([
+		boat+Vector2(-23,0)*boat_unit,boat+Vector2(23,0)*boat_unit,
+		boat+Vector2(16,4)*boat_unit,boat+Vector2(-16,4)*boat_unit
+	]),Color("2d2824"))
+	draw_line(boat+Vector2(-31,0)*boat_unit,boat+Vector2(31,0)*boat_unit,Color("d9a867"),2*unit)
+	draw_line(boat+Vector2(-23,8)*boat_unit,boat+Vector2(21,8)*boat_unit,Color("ad7040"),unit)
+	for rib in [-12.0,0.0,12.0]:
+		draw_line(boat+Vector2(rib,4)*boat_unit,boat+Vector2(rib+3,8)*boat_unit,Color("a36b3f"),unit)
+	for side in [-1.0,1.0]:
+		var wake:=boat+Vector2(side*29,9)*boat_unit
+		draw_line(wake,wake+Vector2(side*10,1)*unit,Color(.59,.91,.83,.43),unit)
 
 func _feast_witness_pose(view: Vector2, motion: float, index: int) -> Dictionary:
 	var arrival:=smoothstep(0.0,1.0,_progress(motion-float(index)*.12,.92))
