@@ -22,8 +22,16 @@ const LAMUN := Color("6faba2")
 class Plate extends Panel:
 	var paper := false
 	var quiet := false
+	var compact_notice := false
 	func _draw() -> void:
-		if quiet:
+		if compact_notice:
+			var face:=Rect2(0,0,size.x,size.y-3)
+			draw_rect(Rect2(0,3,size.x,size.y-3),Color("140d08"))
+			draw_rect(face,Color("1a110b"))
+			draw_rect(face.grow(-2),Color("2b1e16"))
+			draw_rect(face.grow(-4),Color("3d2b1f"))
+			draw_rect(face.grow(-2),Color("d4a359"),false,1)
+		elif quiet:
 			draw_rect(Rect2(Vector2.ZERO,size),Color(.13,.09,.06,.94))
 			draw_line(Vector2(0,size.y-1),Vector2(size.x,size.y-1),Color("af8759"),1)
 		else:
@@ -113,6 +121,7 @@ var _can_net := false
 var _can_shoot := false
 var _held_seconds := 0.0
 var _message_until := 0.0
+var _status_full_text := ""
 var _state: Dictionary = {}
 var _weather_plate: Panel
 var _action_plate: Panel
@@ -548,20 +557,27 @@ func _layout() -> void:
 		_minimap_shell.scale=Vector2.ONE*mini_scale
 		_minimap_shell.position=Vector2(viewport.x/2-64*mini_scale,bottom-128*mini_scale)
 		minimap_side=mini_side
-	var status_width:=minf((320 if physical.y<=480 and physical.x>physical.y else 360)*ratio,viewport.x-margin.x*2)
-	var status_font:=maxi(16,ceili(16*ratio))
-	var status_text_width:=status_width-24*ratio
+	var quiet_notice:=short_landscape and not bool(_state.get("diving",false))
+	var status_width:=minf((320 if short_landscape else 360)*ratio,viewport.x-margin.x*2)
+	var status_font:=maxi(14,ceili(14*ratio)) if quiet_notice else maxi(16,ceili(16*ratio))
+	var notice_padding:=10*ratio if quiet_notice else 12*ratio
+	var status_text_width:=status_width-notice_padding*2
 	status_label.add_theme_font_override("font",preload("res://resources/fonts/nunito-sans-latin-400-normal.woff2"))
 	status_label.add_theme_font_size_override("font_size",status_font)
 	var status_text_height:=status_label.get_theme_font("font").get_multiline_string_size(status_label.text,HORIZONTAL_ALIGNMENT_LEFT,status_text_width,status_font).y
-	var status_height:=maxf(48*ratio,status_text_height+16*ratio)
+	var status_height:=maxf((40 if quiet_notice else 48)*ratio,status_text_height+(12 if quiet_notice else 16)*ratio)
 	var status_y:=utilities_y+cell+line+10
 	if minimap_side>0: status_y=minf(status_y,bottom-minimap_side-status_height-8)
 	var status_x:=right-status_width if (physical.y<=480 and physical.x>physical.y) or bool(_state.get("diving",false)) else (viewport.x-status_width)/2
 	_status_panel.position=Vector2(status_x,status_y)
 	_status_panel.size=Vector2(status_width,status_height)
-	status_label.position=Vector2(12,8)*ratio
-	status_label.size=Vector2(status_text_width,status_height-16*ratio)
+	if _status_panel is Plate:
+		var notice:=_status_panel as Plate
+		if notice.compact_notice!=quiet_notice:
+			notice.compact_notice=quiet_notice
+			notice.queue_redraw()
+	status_label.position=Vector2(notice_padding,(6 if quiet_notice else 8)*ratio)
+	status_label.size=Vector2(status_text_width,status_height-(12 if quiet_notice else 16)*ratio)
 
 func _layout_portrait_instrument(ratio:float,instrument_scale:float,available_width:float) -> void:
 	var unit:=ratio/instrument_scale
@@ -703,6 +719,8 @@ func update_state(state: Dictionary) -> void:
 	_action_label.text = str(state.get("action",""))
 	_action_label.tooltip_text = _action_label.text
 	_action_label.visible = _can_interact and not _modal
+	if not _status_full_text.is_empty():
+		status_label.text = compact_status_text(_status_full_text,_action_label.text if _action_label.visible else "")
 	_action.disabled = _modal or not _can_interact
 	_action_title.text = "TEMBAK" if _can_shoot else "AKSI"
 	_action_key.text = "F" if _can_shoot else "E"
@@ -744,10 +762,21 @@ func _release_net() -> void:
 
 func message(text: String) -> void:
 	if not is_instance_valid(status_label): return
-	status_label.text = text
+	_status_full_text = text
+	status_label.text = compact_status_text(text,_action_label.text if _action_label.visible else "")
+	status_label.tooltip_text = text
 	_message_until = Time.get_ticks_msec()/1000.0+4.0
 	_status_panel.visible = not _modal and not text.is_empty()
 	_layout()
+
+static func compact_status_text(text: String,action: String) -> String:
+	var sentence_end:=text.find(". ")
+	var first_space:=action.find(" ")
+	if sentence_end<0 or first_space<0: return text
+	var shared_target:=action.substr(first_space+1).strip_edges()
+	if shared_target.length()<10 or not text.to_lower().contains(shared_target.to_lower()): return text
+	var first_sentence:=text.substr(0,sentence_end+1)
+	return first_sentence if first_sentence.length()>=8 else text
 
 func _process(delta: float) -> void:
 	if is_instance_valid(_status_panel) and _status_panel.visible and Time.get_ticks_msec()/1000.0>_message_until:
