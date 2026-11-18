@@ -1,0 +1,34 @@
+{
+  "sourceBase": "56798df",
+  "trialBase": "1a68c72",
+  "viewportPixels": [
+    "667x375",
+    "844x390"
+  ],
+  "godot": "4.7.2.stable.official.ed1daf0bf",
+  "renderer": "Compatibility native Metal",
+  "conversion": "cwebp 1.6.0 -lossless",
+  "status": "rejected trial; no runtime source retained",
+  "files": [
+    {
+      "file": "baseline-667x375.webp",
+      "bytes": 298408,
+      "sha256": "02781a2edb709a67aad31b2c72ac6e1dd2ee9742cbd6d31c04bbd7d505833c24"
+    },
+    {
+      "file": "baseline-844x390.webp",
+      "bytes": 364162,
+      "sha256": "760ea25a8da64436704feb1352ba46d773d808e425eadf932fb0d816ba521031"
+    },
+    {
+      "file": "candidate-667x375.webp",
+      "bytes": 297786,
+      "sha256": "20d9172671ded764e49b1ca793639ba7392348c05a4e9f995d1d3d40a075dd83"
+    },
+    {
+      "file": "candidate-844x390.webp",
+      "bytes": 364042,
+      "sha256": "fcf92710477df69f2b2ce295c13bdc60c46eae1b74284dfb9cbc7402a19e4e9f"
+    }
+  ]
+}
