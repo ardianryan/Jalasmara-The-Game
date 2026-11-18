@@ -27,6 +27,22 @@ func _upper_contour_y(polygon: PackedVector2Array, x: float) -> float:
 		upper = minf(upper, lerpf(a.y, b.y, (x - a.x) / (b.x - a.x)))
 	return upper
 
+func _inset_contour_point(point: Vector2, outline: PackedVector2Array, rect: Rect2, inset: float) -> Vector2:
+	var candidate := point.lerp(rect.get_center(), inset)
+	if Geometry2D.is_point_in_polygon(candidate, outline):
+		return candidate
+	candidate = point.lerp(rect.get_center(), 0.025)
+	if Geometry2D.is_point_in_polygon(candidate, outline):
+		return candidate
+	# A concave coast can leave the polygon along the center ray. Move into
+	# the local vertical slice instead, keeping every terrace vertex inside.
+	var inward_y := 1.0 if point.y < rect.get_center().y else -1.0
+	for offset in [16.0, 8.0, 4.0, 2.0, 1.0]:
+		candidate = point + Vector2(0.0, inward_y * minf(offset, rect.size.y * 0.1))
+		if Geometry2D.is_point_in_polygon(candidate, outline) and Geometry2D.is_point_in_polygon(point.lerp(candidate, 0.5), outline):
+			return candidate
+	return point
+
 func _coral_mount(entry_at: Vector2) -> Dictionary:
 	var contours: Array = world.get("terrainContours", [])
 	var rectangles: Array = world.get("terrain", [])
@@ -43,8 +59,7 @@ func _coral_mount(entry_at: Vector2) -> Dictionary:
 		var inset := float(Layers.at_depth(rect.get_center().y).inset)
 		var front := PackedVector2Array()
 		for point in outline:
-			var candidate := point.lerp(rect.get_center(), inset)
-			front.append(candidate if Geometry2D.is_point_in_polygon(candidate, outline) else point.lerp(rect.get_center(), 0.025))
+			front.append(_inset_contour_point(point, outline, rect, inset))
 		var top := _upper_contour_y(front, entry_at.x)
 		if not is_finite(top):
 			continue
@@ -123,8 +138,7 @@ func _build_reef(rect: Rect2, index: int) -> void:
 	var depth := float(profile.extrusion) * (0.88 + 0.12 * sin(index * 2.137))
 	var front := PackedVector2Array()
 	for point in outline:
-		var inset_point := point.lerp(rect.get_center(),float(profile.inset))
-		front.append(inset_point if Geometry2D.is_point_in_polygon(inset_point,outline) else point.lerp(rect.get_center(),0.025))
+		front.append(_inset_contour_point(point, outline, rect, float(profile.inset)))
 	var tool := SurfaceTool.new()
 	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var band_height:=float(profile.get("bandHeight",52.0))
