@@ -8,4 +8,4 @@ Rebuild from the repository root with ImageMagick 7.1.2-31:
 magick client-godot/resources/art/village-residents-v1.png -crop 512x512+0+0 +repage -filter Lanczos -resize 128x128 -alpha on -dither None -colors 64 PNG32:client-godot/resources/art/cinematics-v2/close-pose/ki-lurah-teaching.png
 ```
 
-The actor's feet and foredeck are composed in `CinematicActionLayer.gd`. It uses nearest texture sampling at runtime. This source art retains the project's existing artwork terms in `LICENSE`; the visual reference moodboards are not bundled.
+The actor's feet remain on the original painted harbor pier; `CinematicActionLayer.gd` controls a bounded whole-silhouette lean, staff-bell pulse and compass response. It uses nearest texture sampling at runtime. This source art retains the project's existing artwork terms in `LICENSE`; the visual reference moodboards are not bundled.
