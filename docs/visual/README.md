@@ -1,5 +1,11 @@
 # Jalasmara visual evidence
 
+## Latest candidate: victory dock and valve plume, 18 November 2026
+
+The [revised victory berth and sampan](cutscene-victory-dock-20261118/victory-dialogue-667x375.webp) and its [844×390 counterpart](cutscene-victory-dock-20261118/victory-dialogue-844x390.webp) are native Godot captures from the accepted local source. The [valve-plume baseline](pollution-valve-camera-20261118/baseline-844x390.png), [revised plume](pollution-valve-camera-20261118/candidate-844x390.png), and [cleared state](pollution-valve-camera-20261118/after-victory-667x375.png) are native fixture captures using the production valve atlas. The [landform trial](land-cliff-landform-20261118/after-667x375.png) was rejected; its geometry never entered the runtime. These are development proofs, not staging or physical-device acceptance. See the [parity review](../reviews/moodboard-parity-pass-2026-11-18.md) and individual reports for source, tests, provenance and limitations.
+
+The later [capsule-pitch crowd before](cutscene-capsule-crowd-20261118/before-667x375.webp) and [after](cutscene-capsule-crowd-20261118/after-667x375.webp) show five adults spread apart at game size. The [coast before](shoreline-silhouette-20261118/coast-before-844x390.png) and [after](shoreline-silhouette-20261118/coast-after-844x390.png) show a more irregular upper rock edge; [stair comparison](shoreline-silhouette-20261118/stairs-after-667x375.png) documents that the opening remains visible. These are local native images, not a completed browser/device visual acceptance.
+
 ## Moodboard parity review, local candidate, 18 November 2026
 
 | Ki Lurah's harbor lesson | Capsule crowd | Victory dock and ensemble | Griya roof before/after |

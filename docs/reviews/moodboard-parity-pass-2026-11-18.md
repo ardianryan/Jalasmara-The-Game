@@ -1,5 +1,17 @@
 # Moodboard parity pass — 18 November 2026
 
+## Latest local review
+
+The [victory-dock staging pass](cutscene-victory-dock-2026-11-18.md) was accepted as local `main` commit `55b2cbc` after original-size 667×375/844×390 review. An inset water berth, dock fascia and supports, and a tapered sampan give the arrival three readable planes while keeping Nala, the children and dialogue visible. The focused native test and 54-sample choreography test passed. Its source worktree and branch were removed.
+
+The [underwater valve plume pass](pollution-valve-clarity-2026-11-18.md) was accepted as local `main` commit `6825196`. Its 12 existing bubbles are more legible beside the real valve atlas at both game sizes, and disappear after victory. The native fixture and existing pollution authority test passed. The fixture establishes local valve alignment, not how the full arena looks or moves. Its source worktree and branch were removed.
+
+The [coastal landform trial](land-cliff-landform-trial-2026-11-18.md) was rejected: native A/B showed changed internal facets but the same long, level upper shoreline silhouette. Only its review and proof entered `main` as `59193b7`; the runtime geometry and new trial test were discarded. Its worktree and branch were removed. A separate silhouette correction is being explored. Full moodboard parity remains **unaccepted**; the current accepted source has not yet been pushed, checked by exact-SHA GitHub CI, or activated on staging. The latest staging source remains `e424af5`.
+
+The integrated candidate through `6825196` passed `npm run typecheck`, `npm run check:world` including the newly registered victory-dock fixture and 10-species/722-frame swim atlas, and `npm test` **124/124** with disposable MongoDB/Redis on ports 27041/6384. A separate isolated Phase 1 API journey passed **1/1**. These local service-backed tests do not substitute for exact-source GitHub CI. The [read-only browser audit](phase1-browser-moving-visual-audit-2026-11-18.md) is integrated as `015d66f`; it found the local PCK older than the candidate source, so no current-source browser playback is claimed.
+
+The [capsule crowd correction](cutscene-capsule-crowd-2026-11-18.md) was reviewed at 667×375/844×390 and integrated as `32ccf80`. Five adults in Raka's prologue pitch now have separated, larger silhouettes without covering the title or dialogue. Focused native staging passed 132 checks/128 captures, and strict director QA covered 100 frames across all 16 numbered scenes at both sizes. The [shoreline silhouette correction](shoreline-silhouette-2026-11-18.md) was integrated as `4bab958` after same-camera A/B showed actual variation in the upper cliff edge, with stairs and dock still clear. Three focused terrain tests and native six-frame comparison passed. Both worktrees and branches were removed. The cliff elevation/material still repeats, and the capsule crowd improvement does not resolve every remaining small actor or the lack of a moving browser review.
+
 ## 18 November continuation
 
 The eight-source-package checkpoint was recorded at `ab70368164c8303e47c575535d699d7784974b65` on GitHub, Gitea and GitLab. [GitHub Actions run 44233169286](https://github.com/ardianryan/Jalasmara-The-Game/actions/runs/44233169286) passed both verification and full-source-image jobs for that exact SHA. It does not verify later source changes and was not activated on staging.
