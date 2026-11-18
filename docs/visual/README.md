@@ -1,5 +1,11 @@
 # Jalasmara visual evidence
 
+## Source-pixel resident and prologue motion, 18 November 2026
+
+The accepted [Gito lookout at 667×375](gito-lookout-pixel-20261118/lookout-inspect-667.webp) and [844×390](gito-lookout-pixel-20261118/lookout-inspect-844.webp) show the authored arm pose during his dock inspection; [idle restoration](gito-lookout-pixel-20261118/lookout-restored-667.webp) verifies the pose ends. The [Ranto/Darmi market reaction](cutscene-market-reaction-20261118/market-normal-t1-667x375.webp) and [settled frame](cutscene-market-reaction-20261118/market-normal-t2-667x375.webp) are original-size native cutscene evidence. Their source, focused tests and limits are in the [Gito review](../reviews/gito-lookout-pixel-authored-2026-11-18.md) and [market review](../reviews/cutscene-market-reaction-2026-11-18.md). These are local source improvements, not proof of full moodboard parity or physical-device motion.
+
+The [rejected Reef 12 alpha A/B at 844×390](reef12-alpha-diagnostic-20261118/trial-a-844x390.webp) and [667×375](reef12-alpha-diagnostic-20261118/trial-b-667x375.webp) document a bright pasted transition that never entered runtime; see [the diagnostic](../reviews/reef12-alpha-edge-diagnostic-2026-11-18.md).
+
 ## Moodboard continuation on local `main`, 18 November 2026
 
 The [warmer packed-earth route A/B](route-material-comfy-20261118/hub-lower-coast-candidate-667x375.webp), [corrected harbor lesson](cutscene-focal-stage-20261118/prologue-01-t2-667x375.webp), [first dive](cutscene-focal-stage-20261118/first_dive-01-t2-667x375.webp), and [victory dock](cutscene-focal-stage-20261118/victory-03-t2-667x375.webp) are original-size local native candidates merged into source, **not currently on staging**. The [four-hour Kedai light A/B](cutscene-light-continuity-20261118/land-light-before-after-667x375.webp) shows a restrained time/weather tint; its live exit to gameplay still needs browser proof. The [rejected Reef 12 contour captures](reef12-contour-trial-20261118/rejected-crest-667x375.png) are diagnostic only and are not runtime assets. Exact commits, tools, provenance and limits are in the [continuation report](../reviews/moodboard-parity-followup-2026-11-18.md). These images are not copied moodboard art or physical Windows/S23 acceptance. Full parity remains open.
