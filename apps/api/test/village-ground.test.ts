@@ -313,6 +313,26 @@ test("lower spine is joined without a dirt V and four grounded stone treads appr
   );
 });
 
+test("dock landing composes stone steps and wood sill over the existing earth spur", () => {
+  const landing = painted.surfaces.filter((surface) => surface.id.startsWith("village_dock_landing_"));
+  assert.equal(landing.length, 5);
+  const lower = original.surfaces.find((surface) => surface.id === "lower_court")!;
+  for (const [index, surface] of landing.entries()) {
+    assert.equal(surface.material, index < 4 ? "stone" : "wood");
+    assert.equal(surface.elevation, lower.elevation);
+    assert.equal(surface.walkable, false);
+    assert.equal(surface.priority, index < 4 ? 9 : 10);
+    assert(simplePolygon(surface.polygon));
+    assert(area(surface.polygon) >= 500 && area(surface.polygon) <= 1500);
+    assert(surface.polygon.every(([x, y]) => x >= 1079 && x <= 1167 && y >= 999 && y <= 1125));
+    assert(surface.polygon.every(([x, y]) => insideOrBoundary({ x, y }, lower.polygon)));
+  }
+  assert.equal(mapFootMaterial(painted, { x: 1120, y: 1044 }), "stone");
+  assert.equal(mapFootMaterial(painted, { x: 1120, y: 1061 }), "dirt");
+  assert.equal(mapFootMaterial(painted, { x: 1120, y: 1120 }), "wood");
+  assert.deepEqual(decorateVillageGround(painted), painted);
+});
+
 test("forest and noncourt floors are untouched and invalid concave court authoring is rejected", () => {
   assert.deepEqual(decorateVillageGround(LAND_MAPS.forest), LAND_MAPS.forest);
   const invalid = fixture();

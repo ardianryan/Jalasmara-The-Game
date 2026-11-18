@@ -3,6 +3,7 @@ import type { LandMap, LandPoint, LandSurface } from "./land.js";
 const EPSILON = 1e-7;
 const PREFIX = "village_dirt_";
 const TREAD_PREFIX = "village_stone_tread_";
+const DOCK_PREFIX = "village_dock_landing_";
 const WIDTH = 72;
 const COURTS = new Set(["lower_court", "upper_court"]);
 const area = (polygon: readonly LandPoint[]) =>
@@ -175,6 +176,34 @@ function centralStairTreads(): LandSurface[] {
   }));
 }
 
+function dockLanding(): LandSurface[] {
+  const slabs: LandPoint[][] = [
+    [[1083, 1001], [1147, 999], [1151, 1010], [1145, 1020], [1089, 1022], [1081, 1013]],
+    [[1100, 1034], [1155, 1031], [1160, 1043], [1153, 1054], [1104, 1055], [1096, 1045]],
+    [[1084, 1068], [1141, 1066], [1147, 1077], [1139, 1090], [1090, 1092], [1080, 1080]],
+    [[1093, 1101], [1155, 1099], [1162, 1112], [1155, 1121], [1095, 1123], [1088, 1112]],
+  ];
+  const stone = slabs.map((polygon, index): LandSurface => ({
+    id: `${DOCK_PREFIX}stone_${index}`,
+    polygon,
+    material: "stone",
+    elevation: 1,
+    priority: 9,
+    walkable: false,
+  }));
+  return [
+    ...stone,
+    {
+      id: `${DOCK_PREFIX}wood_sill`,
+      polygon: [[1079, 1118], [1167, 1118], [1167, 1125], [1079, 1125]],
+      material: "wood",
+      elevation: 1,
+      priority: 10,
+      walkable: false,
+    },
+  ];
+}
+
 function routePaint(map: LandMap): { id: string; polygon: LandPoint[] }[] {
   const paint: { id: string; polygon: LandPoint[] }[] = [];
   const segments = new Set<string>(),
@@ -230,7 +259,7 @@ export function decorateVillageGround(map: LandMap): LandMap {
   const result = structuredClone(map);
   if (map.id !== "hub") return result;
   result.surfaces = result.surfaces.filter(
-    (surface) => !surface.id.startsWith(PREFIX) && !surface.id.startsWith(TREAD_PREFIX),
+    (surface) => !surface.id.startsWith(PREFIX) && !surface.id.startsWith(TREAD_PREFIX) && !surface.id.startsWith(DOCK_PREFIX),
   );
   const courts = result.surfaces.filter((surface) => COURTS.has(surface.id));
   const protectedSurfaces = result.surfaces.filter(
@@ -285,5 +314,15 @@ export function decorateVillageGround(map: LandMap): LandMap {
     courts.some((court) => court.id === "lower_court")
   )
     result.surfaces.push(...centralStairTreads());
+  if (
+    result.routes.some((route) => route.some((point, index) =>
+      index > 0 &&
+      ((samePoint(point, [1120, 1125]) && samePoint(route[index - 1], [1120, 1000])) ||
+        (samePoint(point, [1120, 1000]) && samePoint(route[index - 1], [1120, 1125]))),
+    )) &&
+    courts.some((court) => court.id === "lower_court") &&
+    result.stairs.some((stair) => stair.id === "dock_gangway")
+  )
+    result.surfaces.push(...dockLanding());
   return result;
 }
