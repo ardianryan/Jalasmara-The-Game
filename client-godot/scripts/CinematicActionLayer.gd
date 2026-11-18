@@ -315,12 +315,14 @@ func _draw_nala_daily(feet: Vector2, unit: float, direction: int = 2) -> void:
 	draw_line(feet + Vector2(-8, 1) * unit, feet + Vector2(8, 1) * unit, Color(.12, .13, .13, .24), maxf(1.0, 2.0 * unit))
 	draw_texture_rect_region(atlas,dest,source)
 
-func _draw_corporate_guard(feet: Vector2, unit: float, recoil: float = 0.0) -> void:
+func _draw_corporate_guard(feet: Vector2, unit: float, recoil: float = 0.0, stride: float = 0.0) -> void:
 	var anchor:=Vector2(roundf(feet.x+recoil*4.0*unit),roundf(feet.y))
+	var frame:=0 if absf(stride)<.18 else (1 if stride>0 else 3)
+	draw_line(anchor+Vector2(-11,1)*unit,anchor+Vector2(11,1)*unit,Color(.12,.13,.13,.26),maxf(1.0,2.0*unit))
 	draw_texture_rect_region(
 		NPC_FACES["raka"],
 		Rect2(anchor+Vector2(-18,-47)*unit,Vector2(36,48)*unit),
-		Rect2(0,0,64,64),Color(.74,.85,.85))
+		Rect2(frame*64,0,64,64),Color(.74,.85,.85))
 	draw_set_transform(anchor,0.0,Vector2(unit,unit))
 	draw_rect(Rect2(-10,-43,20,3),Color("334a4e"))
 	draw_rect(Rect2(-7,-46,14,4),Color("536e70"))
@@ -653,6 +655,13 @@ func _draw_tasting_leaf(center: Vector2, unit: float) -> void:
 		draw_colored_polygon(leaf,Color("75aa63"))
 		draw_line(stem+Vector2(0,-20)*unit,stem+Vector2(side*25,-32)*unit,Color("bfe0a0"),2*unit)
 
+func _garden_guard_pose(view: Vector2, motion: float, index: int) -> Dictionary:
+	var unit:=_unit(view)
+	var arrival:=smoothstep(0.0,1.0,_progress(motion-.10-float(index)*.12,.70))
+	var feet:=Vector2(view.x*(.67+float(index)*.12)+14.0*unit*(1.0-arrival),view.y*.63)
+	var stride:=sin(motion*11.0+float(index)*PI)*.48 if arrival<1.0 else 0.0
+	return {"feet":feet,"stride":stride}
+
 func _draw_garden(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
 	var ground:=view.y*.63
@@ -661,8 +670,8 @@ func _draw_garden(view: Vector2, motion: float) -> void:
 			var first_hit:=.18+float(i)*.20+.75
 			var recoil:=1.0-_progress(motion-first_hit,.43) if motion>=first_hit else 0.0
 			var guard_scale:=_focal_scale("guard",1.67)
-			var guard_ground:=view.y*.63
-			_draw_corporate_guard(Vector2(view.x*(.67+float(i)*.12),guard_ground),unit*guard_scale,recoil)
+			var guard_pose:=_garden_guard_pose(view,motion,i) if motif_beat==2 else {"feet":Vector2(view.x*(.67+float(i)*.12),view.y*.63),"stride":0.0}
+			_draw_corporate_guard(guard_pose.feet,unit*guard_scale,recoil,guard_pose.stride)
 		if motif_beat==1:
 			_actor(Vector2(view.x*.47,view.y*.67),unit*_focal_scale("darmi"),Color("a1846a"),false,0.0,"darmi")
 		if motif_beat!=2:
@@ -687,7 +696,12 @@ func _draw_garden(view: Vector2, motion: float) -> void:
 				var child_x: float=[.31,.14,.43,.51,.59][i]
 				var child_scale:=_focal_scale(child_key,SUPPORT_STAGE_SCALES["garden_child"])
 				var child_ground:=view.y*.67 if child_key=="gito" else view.y*.63+float(i%2)*2*unit
-				_actor(Vector2(view.x*child_x,child_ground),unit*child_scale,Color("53766e"),true,0.0,child_key)
+				var rally:=smoothstep(0.0,1.0,_progress(motion-.12-float(i)*.13,.52))
+				var child_feet:=Vector2(view.x*child_x,child_ground-sin(rally*PI)*4*unit)
+				_actor(child_feet,unit*child_scale,Color("53766e"),true,0.0,child_key)
+				if rally<1.0:
+					var shadow:=Vector2(view.x*child_x,child_ground)
+					draw_line(shadow-Vector2(6,0)*unit,shadow+Vector2(6,0)*unit,Color(.12,.13,.13,.28),unit)
 	else:
 		var entrance:=smoothstep(0.0,1.0,_progress(motion,.85))
 		if motif_beat==4:
@@ -726,16 +740,30 @@ func _draw_cave(view: Vector2, motion: float) -> void:
 			draw_rect(Rect2(rock,Vector2(3.0+float(i%3)*2.0,4)*unit),Color("a6b8af"))
 		draw_arc(Vector2(view.x*.61,view.y*.56),(20+_progress(motion,2.0)*120)*unit,PI,TAU,40,Color(.37,.91,.97,.35*(1.0-_progress(motion,2.0))),2*unit)
 
+func _balai_council_pose(view: Vector2, motion: float, index: int) -> Dictionary:
+	var unit:=_unit(view)
+	var x: float=[.24,.38,.52,.66,.86][index]
+	var entrance:=smoothstep(0.0,1.0,_progress(motion-float(index)*.10,.86))
+	var direction:=1.0 if index<3 else -1.0
+	var shake:=0.0 if EnvironmentState.reduced_motion else sin(motion*23.0+float(index)*1.7)*2.0*unit*(1.0-_progress(motion,1.15))
+	var feet:=Vector2(view.x*x-direction*13*unit*(1.0-entrance),view.y*.64+shake)
+	var stride:=sin(motion*12.0+float(index)*PI*.65)*.50 if entrance<1.0 else 0.0
+	return {"feet":feet,"stride":stride}
+
 func _draw_earthquake(view: Vector2, motion: float) -> void:
 	var unit:=_unit(view)
 	var map_center:=Vector2(view.x*.70,view.y*.53)
 	if motif_beat==1:
+		var ring:=_progress(motion,1.2)
+		draw_arc(Vector2(view.x*.73,view.y*.54),(7.0+ring*25)*unit,0,TAU,12,Color(.74,.35,.85,.35*(1.0-ring)),unit)
+		for i in range(5):
+			var chip:=Vector2(view.x*(.28+float(i)*.12),view.y*(.565+float(i%2)*.015))
+			var quake:=0.0 if EnvironmentState.reduced_motion else sin(motion*18.0+float(i)*1.8)*3*unit*(1.0-ring)
+			draw_rect(Rect2(chip+Vector2(0,quake),Vector2(2,2)*unit),Color(.64,.43,.61,.30*(1.0-ring)))
 		for i in range(5):
 			var council_key: String=["lurah","wira","beno","saras","raka"][i]
-			var x:float=[.24,.38,.52,.66,.86][i]
-			_actor(Vector2(view.x*x,view.y*.64),unit*_focal_scale(council_key,SUPPORT_STAGE_SCALES["balai_council"]),Color("72583e").lerp(Color("a1846a"),float(i%3)/2.0),false,sin(motion*10+float(i))*.15,council_key)
-			var ring:=_progress(motion,1.2)
-			draw_arc(Vector2(view.x*.73,view.y*.54),(7.0+ring*25)*unit,0,TAU,12,Color(.74,.35,.85,.35*(1.0-ring)),unit)
+			var pose:=_balai_council_pose(view,motion,i)
+			_actor(pose.feet,unit*_focal_scale(council_key,SUPPORT_STAGE_SCALES["balai_council"]),Color("72583e").lerp(Color("a1846a"),float(i%3)/2.0),false,pose.stride,council_key)
 	elif motif_beat==2:
 		_actor(Vector2(view.x*.24,view.y*.64),unit*SUPPORT_STAGE_SCALES["balai_council"],Color("72583e"),false,0.0,"lurah")
 		_actor(Vector2(view.x*.82,view.y*.66),unit*_focal_scale("raka"),Color("e6e1d6"),false,0.0,"raka")

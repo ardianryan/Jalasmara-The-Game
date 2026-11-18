@@ -5,9 +5,14 @@ var story: GDScript
 const SIZES := [Vector2i(667,375),Vector2i(844,390)]
 const OUTPUT := "res://../artifacts/godot/phase-one-character-closeup/"
 const CAPTURE_ONLY := [
-	{"id":"first_service","beat":1},{"id":"first_service","beat":2},
 	{"id":"prologue","beat":1},{"id":"prologue","beat":4},
-	{"id":"victory","beat":3}
+	{"id":"prologue","beat":6},{"id":"prologue","beat":9},
+	{"id":"first_dive","beat":1},{"id":"first_kedai","beat":1},
+	{"id":"first_service","beat":1},{"id":"garden_crisis","beat":2},
+	{"id":"saras_visit","beat":2},{"id":"cave_warning","beat":2},
+	{"id":"earthquake","beat":1},{"id":"boss_intro","beat":1},
+	{"id":"boss_phase_two","beat":1},{"id":"victory","beat":1},
+	{"id":"victory","beat":3},{"id":"epilogue","beat":4}
 ]
 const WIDE_SHOT_CASES := [
 	{"key":"harbor_lurah","kind":"npc","role":"lurah","feet":Vector2(.33,.57),"minimum":78.0,"maximum":110.0},
@@ -137,6 +142,7 @@ func _run() -> void:
 		root.size=physical
 		for settle in range(4): await process_frame
 		var physical_scale:=root.get_final_transform().y.length()
+		var screen_unit: float=frame.action_layer._unit(frame.action_layer.size)
 		for adjacent in [[6,7],[7,8]]:
 			var previous_pose: Dictionary=frame.action_layer._arrival_pose(frame.action_layer.size,3.0,adjacent[0])
 			var next_pose: Dictionary=frame.action_layer._arrival_pose(frame.action_layer.size,0.0,adjacent[1])
@@ -161,6 +167,18 @@ func _run() -> void:
 			assert(wide_feet.y-wide_height>frame.upper.size.y*physical_scale-5.0,"Wide shot %s head behind title" % wide_case.key)
 			assert(wide_feet.y<dialogue.position.y+5.0,"Wide shot %s feet behind dialogue" % wide_case.key)
 			checked+=1
+		for guard_index in range(2):
+			var approach: Dictionary=frame.action_layer._garden_guard_pose(frame.action_layer.size,.18,guard_index)
+			var landed: Dictionary=frame.action_layer._garden_guard_pose(frame.action_layer.size,1.5,guard_index)
+			assert(approach.feet.x>landed.feet.x and approach.feet.x-landed.feet.x<24.0*screen_unit,"Garden guard must step into the same grounded mark")
+			assert(is_zero_approx(landed.stride) and is_equal_approx(approach.feet.y,landed.feet.y),"Garden guard must settle without vertical drift")
+			checked+=1
+		for council_index in range(5):
+			var arriving: Dictionary=frame.action_layer._balai_council_pose(frame.action_layer.size,.05,council_index)
+			var settled: Dictionary=frame.action_layer._balai_council_pose(frame.action_layer.size,1.8,council_index)
+			assert(absf(arriving.feet.x-settled.feet.x)>5.0 and absf(arriving.feet.x-settled.feet.x)<23.0*screen_unit,"Balai actor must join the map without sliding across the stage")
+			assert(is_zero_approx(settled.stride) and is_equal_approx(settled.feet.y,frame.action_layer.size.y*.64),"Balai actor must finish at the floor mark")
+			checked+=1
 		for scene_case in CASES:
 			var id: String=scene_case.id
 			var beat_index: int=scene_case.beat
@@ -181,8 +199,8 @@ func _run() -> void:
 			assert(frame.action_layer.has_directed_action(id,beat_index),"Missing directed action: %s %d" % [id,beat_index])
 			var role: String=scene_case.role
 			var scale: float=float(scene_case.get("scale",frame.action_layer._focal_scale(role)))
-			var screen_unit: float=frame.action_layer._unit(frame.action_layer.size)*physical_scale
-			var ink_height:=_ink_height(_region_for(scene_case.kind,role),scale*screen_unit)
+			var focal_unit: float=screen_unit*physical_scale
+			var ink_height:=_ink_height(_region_for(scene_case.kind,role),scale*focal_unit)
 			var minimum:=45.0 if scene_case.get("tier","")=="support" else 90.0
 			var maximum:=80.0 if scene_case.get("tier","")=="support" else 110.0
 			assert(ink_height>=minimum and ink_height<=maximum,"On-stage %s/%d %s ink %.1f px at %s" % [id,beat_index,role,ink_height,physical])
