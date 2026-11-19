@@ -1,5 +1,9 @@
 # Jalasmara visual evidence
 
+## Consolidated main active on staging, 19 November 2026
+
+The [public ready hub at 844×390](staging-main-20261119/public-ready-hub-844x390.png) and [physical forest canopy at 667×375](staging-main-20261119/public-physical-canopy-667x375.png) are byte-for-byte Chromium/SwiftShader captures from staging source `7e1e43d06be3d7a62feb4e35d89eeb86d7fa1d63`, CI PCK `536e5e276e6b0891552871321d3e28ca8391cb8792c64af449bcef13f8227c54`. Their SHA-256 hashes are `62f96ffdd8d7c94f93d4d976f1d44d590053e98badebe6f42b06362fd8125ed8` and `a47517071fedf983aeb130580678d61818d81c519c481b490536f3e3db8ca930`. The [release report](../reviews/staging-main-release-2026-11-19.md) records the 6/6 public smoke, source and image pins, backup/rollback, provenance and limits. These are original project evidence, not physical Windows/S23 measurements or game assets; the original game-art rights remain separate from the code license.
+
 ## Local browser story replay, 19 November 2026
 
 The [boss phase-two frame](staging-main-browser-20261119/boss-phase-two-667x375.png) visibly reads `Inti Smara Terbuka`; the [epilogue frame](staging-main-browser-20261119/epilogue-667x375.png) shows the grounded witnesses and Raka dialogue. These 667×375 Chromium/SwiftShader screenshots are byte-identical project-origin captures from local source `ebac02f4cb3c3e238ca248838c5daf7baac959c9`, PCK `b7b2442a56e4a10a51f319393ce5bc1e18369aa7fcff7dc643e3cbbabee327cc`. Their respective SHA-256 hashes are `8f407527c7092013401e5c61237eadad914c2b9f3e31928de58be965f8d72fbd` and `058bfa6c604519bcc6008b9e86900ea40027ea8689e62b4bbe4f77c58e437a5c`; see the [replay report](../reviews/staging-main-consolidation-2026-11-19.md) for all 12 sequences, tests, provenance and limits. They are development evidence, not staging or physical-device screenshots, and do not change the rights to original game art.
