@@ -71,6 +71,8 @@ def author() -> Image.Image:
     draw.rectangle((80, 22, 82, 25), fill=glass)
     draw.rectangle((55, 22, 58, 29), fill=edge)
     draw.rectangle((56, 24, 58, 27), fill=brass_light)
+    # Pillow 9.4 and 11.3 disagree on this polygon edge pixel.
+    pose.putpixel((76, 47), skin_shadow)
     return pose
 
 
